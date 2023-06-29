@@ -1,12 +1,12 @@
 
 # Computer Systems Oribtal 
-Welcome to code respository for the Space And Systems Satellite Club's REALOP 1 Flight Software! The code here will be run on our flight computer, the Orbital Platform, which will be responsible for controlling and monitoring the CubeSat's various subsystems. Details regarding the Orbital Platform are available on this github repository (FILL THIS WITH ELEC's REPO).
+Welcome to code respository for the Space And Systems Satellite Club's REALOP 1 Flight Software! The code here will be run on our flight computer, the Orbital Platform, which will be responsible for controlling and monitoring the CubeSat's various subsystems. Details regarding the Orbital Platform are available on this github repository: [uwu64/orbital-platform](https://github.com/uwu64/orbital-platform).
 
 **NOTE**: Several images of the board or connectors aren't attached yet since the Orbital Platform is back in Davis. Wait a few weeks and the images will be here.
 
 ## REALOP 1
 
-Lorem Ipsum for now...
+**NEEDS TO BE FILLED OUT**
 
 ## Getting Started
 To get started with our code, you'll need to have a basic understanding of C programming and the tools we're using. You'll need to follow the instructions listed in the following sections:
