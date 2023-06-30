@@ -20,7 +20,7 @@ To get started with our code, you'll need to have a basic understanding of C pro
 A list of software that must be installed before hand:
 
 ### [GNU ARM Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain)
-The Toolchain can be installed in any folder of your liking, as long as it the 
+The Toolchain can be installed in any folder of your liking. The version we are currently working with is `12.2.MPACBTI-Rel1`
 
 ### [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html#get-software)
 
