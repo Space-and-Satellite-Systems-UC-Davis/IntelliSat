@@ -31,7 +31,7 @@ Scroll to the very bottom of the CubeIDE installation page, and click `Get Lates
 Follow this guide by ST : [Cube IDE Installation Guide](https://www.st.com/resource/en/user_manual/dm00603964-stm32cubeide-installation-guide-stmicroelectronics.pdf)
 #### Starting CubeIDE
 When you open CubeIDE, it'll prompty you to slect a workspace. To keep things seperate, it is recommended to make a folder somewhere on your computer just for the REALOP FSW. Then use that as the workspace. An example:
-[!Alt-Text](./img/cude_ide_open.png)
+![CubeOpen](./img/cude_ide_open.png)
 Upon clicking `Launch`, the IDE will open
 
 #### EGit
@@ -41,7 +41,7 @@ Before setting up anything else, first get Git integration in the CubeIDE. Follo
 #### Setting up the project properties
 The project properties must be configured so a `.bin` file is generated when the project is built. Go the the `Properties` tab by pressing `Alt+Enter`.
 A new window should open and you must navigate to `C/C++ Builds->Settings->MCU Post build outputs`. Tick the boxe that says `Convert to binary file (-O binary).
-[!Alt-Text](./img/cude_ide_binary_output.png)
+![BinaryOutput](./img/cude_ide_binary_output.png)
 
 ## Developing on the board
 
@@ -62,14 +62,14 @@ IMAGE
 
 ### Flashing the Platform
 With ST-LINK V2, fashing can be done right through the CUBE IDE. Before flashing, make sure the Orbital Platform is connected. Then make sure the REALOP Project is open in the IDE. Flashing can be done by pressing the `Run` in the top pane of the IDE.
-[!Alt-Text](./img/cube_ide_run_button.png)
+![RunButton](./img/cube_ide_run_button.png)
 This will first rebuild the project and then try connecting to the Platform. Once both are done, it will flash the program onto the Platform
 
 **NOTE**: Once this is completed, the Platform will start running the code immediately.
 
 ### Debugging the Platform
 In order to debug, make sure to have a breakpoint at some line in your code (ideally close to whichever component you think is failing). Then, make sure the Platform is physically connected. Press the `Debug` icon on the top pane. There will be a prompt to enter the `Debugger Layout`. Press `Yes`.
-[!Alt-Text](./img/cube_ide_debug_button.png)
+![DebugButton](./img/cube_ide_debug_button.png)
 The debugger will open up
 
 IMAGE
