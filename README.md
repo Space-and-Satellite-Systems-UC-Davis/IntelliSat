@@ -37,7 +37,7 @@ When you open CubeIDE, it'll prompty you to slect a workspace. To keep things se
 Upon clicking `Launch`, the IDE will open
 
 #### EGit
-Before setting up anything else, first get Git integration in the CubeIDE. Follow this tutorial : [EGit]([https://shadyelectronics.com/how-to-use-github-with-stm32cubeide/) (follow the instructions under **Cloning Repositories** to clone this repository on your system).
+Before setting up anything else, first get Git integration in the CubeIDE. Follow this tutorial : [EGit](https://shadyelectronics.com/how-to-use-github-with-stm32cubeide/) (follow the instructions under **Cloning Repositories** to clone this repository on your system).
 **NOTE**: You'll need both a *Github account* and a *Github Personal Access Token* (the token gets used whenver you are prompted to enter your githuub user password). **Make sure to save the Access Token, it's only shown to you once**.
 
 #### Setting up the project properties
