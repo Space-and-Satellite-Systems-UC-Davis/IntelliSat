@@ -38,35 +38,35 @@ Upon clicking `Launch`, the IDE will open
 #### EGit
 Before setting up anything else, first get Git integration in the CubeIDE. In the top panel, navigate to `Help -> Eclipse MarketPlace...`. Clicking on it opens a new window.
 
-IMAGE ./img/install/egit/egit_market.png
-IMAGE ./img/install/egit/egit_marketplace.png
+![Open Marketplace](./img/install/egit/egit_market.png)
+![Marketplace](./img/install/egit/egit_marketplace.png)
 
 There, search for `EGit`. Install EGit. The default options should be fine. Click on `Confirm`. The installation might take a minute or two.
 
-IMAGE ./img/install/egit/egit_EGit.png
-IMAGE ./img/install/egit/egit_confirm.png
+![Egit](./img/install/egit/egit_EGit.png)
+![Egit Installer](./img/install/egit/egit_confirm.png)
 
 If the process stops midway requesting confirmation, select the default option and click `Confirm`
 
-IMAGE ./img/install/egit/egit_options.png
+![EGit Confirm](./img/install/egit/egit_options.png)
 
 Once the process is over, the window will close. CubeIDE will now show that it is installing the software
 
-IMAGE ./img/install/egit/egit_installing.png
+![EGit Installing](./img/install/egit/egit_installing.png)
 
 When prompted with a window called *Trust*, check the box and click `Trust Selected`.
 
-IMAGE ./img/install/egit/egit_trust.png
+![EGit Trust](./img/install/egit/egit_trust.png)
 
 Once the installation is over, you will need be asked to restart the IDE. Click on `Restart`.
 
 When CubeIDE opens back up, navigate to `Windows -> Show View -> Others...`
 
-IMAGE ./img/install/egit/egit_view.png
+![Open View Settings](./img/install/egit/egit_view.png)
 
 In the new window, open the `Git` section and click on `Git Repositories`. Click `open`
 
-IMAGE ./img/install/egit/egit_repoview.png
+![View Window](./img/install/egit/egit_repoview.png)
 
 The new window opens up in bottom right of the IDE.
 
@@ -74,7 +74,7 @@ The new window opens up in bottom right of the IDE.
 
 Click on `Clone a Git Repository`. A new window will open
 
-IMAGE ./img/cloning/egit_cloning.png
+![Cloning Repo](./img/cloning/egit_cloning.png)
 
 Fill it out with the following info:
 ```
@@ -84,27 +84,27 @@ Password :  github Personal Access Token
 ```
 The rest of the necessary fields will fill up by themselved. Leave the others as is. Click `Next`. The window will display a list of branches to clone. Select whichever ones you want, and then click `Next`. You'll be asked where to clone the repo. Click on `Browse` and navigate to the location of the workplace, and select that folder.
 
-IMAGE ./img/cloning/egit_clonedest.png
+![Where to Clone](./img/cloning/egit_clonedest.png)
 
 Click `Finish`. After some time, the Git Repo window will show the Intellisat repo.
 
-IMAGE ./img/cloning/egit_repoIntellisat.png
+![Intellisat in Repos](./img/cloning/egit_repoIntellisat.png)
 
 The code can't be built and tested yet. To allow for that, go the the `Project Explorer` and click on `Import Projects...`. In the *Import* window, click on `Existing Projects into Workspace` under the `General` section.
 
-IMAGE ./img/cloning/egit_import.png
+![Import window](./img/cloning/egit_import.png)
 
 In the next window, select the `Select root directory` option. Make sure the directory is the workspace directory, where the repo from earlier was cloned. *Intellisat* must be visible as a project. Make sure it's selected, then click `Finish`. When done, the Intellisat project will be visible in the Projects window.
 
-IMAGE ./img/cloning/egit_importFinal.png
-IMAGE ./img/cloning/project_intellisat.png
+![Final Import Step](./img/cloning/egit_importFinal.png)
+![Intellisat in Projects](./img/cloning/project_intellisat.png)
 
 #### IntelliSat Project Properties
 
 With the Intellisat project selected in the *Projects* window, press `Alt + Enter`. A properties window will open. Navigate to `C/C++ Build -> Settings`. Make the following changes:
 
-IMAGE ./img/project_settings/projects_output.png
-IMAGE (./img/project_settings/projects_include.png
+![Build Outputs](./img/project_settings/projects_output.png)
+![Build Includes](./img/project_settings/projects_include.png)
 
 Click `Apply and Close`. Now the project can be worked on.
 
