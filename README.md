@@ -100,6 +100,7 @@ In the next window, select the `Select root directory` option. Make sure the dir
 ![Intellisat in Projects](./img/cloning/project_intellisat.png)
 
 #### IntelliSat Project Properties
+**NOTE**: The following settings should already be configured through the *.cprojects* file, but still check them to be on the safer side.
 
 With the Intellisat project selected in the *Projects* window, press `Alt + Enter`. A properties window will open. Navigate to `C/C++ Build -> Settings`. Make the following changes:
 
