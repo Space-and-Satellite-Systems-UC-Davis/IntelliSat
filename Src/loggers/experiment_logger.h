@@ -1,94 +1,133 @@
-/*
- * experiment_logger.h
- *
- * Change Log:
- *
- * 	- July 22, 2023 (Creation)
- * 		Author : Darsh
- * 		Log    : function declarations based on the initial design plan
- */
+#include <stdint.h>
+#include <stdio.h>
 
+int is_logging;				// Boolean
+int _exp_header_address;	// in FLASH
+int _start_address;			// in FLASH
+int _end_address;			// in FLASH
+int _curr_address;			// in FLASH
 
-// #includes TIMERS, FLASH, RTC, SensorData
+#define EXPERIMENT_LOG_BUFFER_SIZE 2 + (2 * 78125)
+#define LOCAL_EXP_LOG_BUFFER_SIZE 2 + (2 * 32)
 
+union ExperimentLog
+{
+    // 128 bits == 16 bytes
+    #pragma pack(push,1)
+    struct
+    {
+        unsigned int rtc_time: 12;
+        int16_t gyro_x: 16, gyro_y: 16, gyro_z: 16;
+        int16_t dgyro_x: 16, dgyro_y: 16, dgyro_z: 16;
+        unsigned int parity: 20;
+    } as_struct;
+    #pragma pack(pop)
+    uint64_t as_arr[2];
+};
 
-/*
- * Each log is a 128 bit word with the following breakdown:
- *      - RTC Time - 12 bits (Min,Sec in binary)
- *      - Gyro     - 48 bits (16 per axis)
- *      - Gyro'    - 48 bits (16 per axis)
- *      - Extra    - 20 bits (potential redundancy)
- *
- * There are 5 such log buffers. Each can hold [INSERT NUMBER HERE] logs.
- */
+// Buffer that represents the flash
+uint64_t flash_exp_log_buffer[EXPERIMENT_LOG_BUFFER_SIZE] = {[0] = EXPERIMENT_LOG_BUFFER_SIZE, [1] = 0};
 
+// Small buffer that represents log storage on the MCU
+uint64_t local_exp_log_buffer[LOCAL_EXP_LOG_BUFFER_SIZE] = {[0] = LOCAL_EXP_LOG_BUFFER_SIZE, [1] = 0};
 
-/**
- * Indicates whether the logger is running or not
- *
- * @returns Boolean (0 or 1)
- */
 int is_exp_being_logged();
 
-/**
- * Starts the experiment logger.
- *
- * This function checks makes space in FLASH for the experiment, and records
- * information around that to ensure easy logging.
- * In case of Page overflows, it trashing the previous experiment.
- * Finally, it starts the timer for the
- *
- * @returns None
- */
 void start_exp_logging();
-// for trashing, use the handle_experiment_overflow() function
 
-/**
- * Stops the experiment logger
- *
- * This function stops the logger timer, and also
- * updates the Experiment header in FLASH
- *
- *`@param experiment_status how the experiment's results must be tagged
- * @returns None
- */
 void stop_exp_logging(int experiment_status);
 
-/**
- * Responsible for trashing the oldest experiment
- *
- * This function identifies the oldest experiment in the FLASH,
- * logs critical data about it, and then trashes it by reinitializing it.
- *
- * @returns None
- */
 void handle_exp_overflow();
 
-/**
- * Appends an experiment data point
- *
- * This function first detects for an overflow, and handles it.
- * Then it extracts the relevant sensor values, packs them into a log,
- * and then appends that log to the end of the experiment buffer.
- *
- * @returns None
- */
-void add_exp_log();
-// for handling, use the handle_experiment_buffer_overflow() function
+void add_exp_log( union ExperimentLog* exp_log, uint64_t exp_log_buff[] ) {
+	uint64_t addr_to_insert_at = exp_log_buff[1] + 2;
 
-/**
- * Indicates whether the current experiment buffer overflows
- *
- * @returns Boolean (0 or 1)
- */
+	// Current overflow policy - Just overwrite oldest log
+	// TODO: Put into separate function - detect_exp_buff_overflow()
+	// Simplest is probably just pass the buffer and have it return next index to insert at?
+	if (addr_to_insert_at >= exp_log_buff[0]) {
+		addr_to_insert_at = 2;
+	}
+
+	exp_log_buff[1] = addr_to_insert_at;
+
+	exp_log_buff[addr_to_insert_at] = exp_log->as_arr[0];
+	exp_log_buff[addr_to_insert_at + 1] = exp_log->as_arr[1];
+};
+
+uint8_t build_and_add_exp_log(
+    unsigned int rtc_time,     // Date+Hr+Min+Sec
+    int16_t  gyro_x,
+    int16_t  gyro_y,
+    int16_t  gyro_z,
+    int16_t  dgyro_x,
+    int16_t  dgyro_y,
+    int16_t  dgyro_z,
+    unsigned int parity,
+    uint64_t exp_log_buff[]
+) {
+
+    if (   !fits_in_bits(rtc_time, 12)
+        || !fits_in_bits(parity, 11)
+    ) {
+        // Gave too large a value somewhere :(
+        return 1;
+    }
+
+    union ExperimentLog exp_log =  {.as_struct = {
+        .rtc_time = rtc_time,
+        .gyro_x = gyro_x,
+        .gyro_y = gyro_y,
+        .gyro_z = gyro_z,
+        .dgyro_x = dgyro_x,
+        .dgyro_y = dgyro_y,
+        .dgyro_z = dgyro_z,
+        .parity = parity
+    }};
+
+    add_exp_log(&exp_log, exp_log_buff);
+    return 0;
+}
+
+uint8_t push_local_to_flash(uint64_t local_buff[], uint64_t flash_buff[]) {
+    uint64_t flash_buff_end_addr = flash_buff[0];
+    uint64_t local_buff_end_addr = local_buff[0];
+
+    if( flash_buff_end_addr < local_buff_end_addr ) {
+        return 1;
+    }
+
+    uint64_t flash_latest_exp_idx = flash_buff[1];
+    uint64_t local_latest_exp_idx = local_buff[1];
+
+    for(uint64_t i = 2; i <= local_latest_exp_idx; i += 2) {
+        flash_latest_exp_idx += 2;
+        if (flash_latest_exp_idx >= flash_buff_end_addr) {
+            flash_latest_exp_idx = 2;
+        }
+
+        flash_buff[flash_latest_exp_idx] = local_buff[i];
+        flash_buff[flash_latest_exp_idx + 1] = local_buff[i + 1];
+
+    }
+
+    // "clears" the local buffer
+    // Could do this on local buffer overflows
+    local_buff[1] = 0;
+    flash_buff[1] = flash_latest_exp_idx;
+    return 0;
+}
+
+uint8_t get_exp_log(uint64_t addr, uint64_t const exp_log_buff[], union ExperimentLog * const retrieved_log) {
+    if(addr < 2 || addr >= exp_log_buff[0] - 1 || addr % 2 != 0) {
+        return -1;
+    } else {
+        retrieved_log->as_arr[0] = exp_log_buff[addr];
+        retrieved_log->as_arr[1] = exp_log_buff[addr + 1];
+        return 0;
+    }
+}
+
 int detect_exp_buff_overflow();
 
-/**
- * Responsible for handling an experiment buffer overflow
- *
- * THE EXACT POLICT MIGHT CHANGE IN THE FUTURE
- * This function handles an overflow by trashing the last half of the experiment
- *
- * @returns None
- */
 void handle_exp_buff_overflow();
