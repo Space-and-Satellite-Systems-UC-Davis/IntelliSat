@@ -1,0 +1,4 @@
+[submodule "Src/ADCS"]
+	path = Src/ADCS
+	url = https://github.com/UC-Davis-SSS-ADCS-Software/efos.git
+	branch = FSW_C
