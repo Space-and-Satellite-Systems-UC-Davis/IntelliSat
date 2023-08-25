@@ -5,15 +5,11 @@
 #include <stdint.h>
 #include <assert.h>
 
-
-#define EVENT_LOG_BUFFER_SIZE 2 + (1 * 468750)
 #define LOCAL_EVENT_LOG_BUFFER_SIZE 2 + (1 * 64)
 
-// Buffer that represents the NOR flash
-uint64_t flash_event_log_buffer[EVENT_LOG_BUFFER_SIZE] = {[0] = EVENT_LOG_BUFFER_SIZE, [1] = 1};
 
 // Small buffer that represents log storage on the MCU
-uint64_t local_event_log_buffer[LOCAL_EVENT_LOG_BUFFER_SIZE] = {[0] = EVENT_LOG_BUFFER_SIZE, [1] = 1};
+uint64_t local_event_log_buffer[LOCAL_EVENT_LOG_BUFFER_SIZE] = {[0] = LOCAL_EVENT_LOG_BUFFER_SIZE, [1] = 1};
 
 uint8_t get_local_event_log(uint64_t idx, uint64_t const event_log_buff[], union EventLog * const retrieved_log) {
     if(idx < 2 || idx >= event_log_buff[0]) {
@@ -24,7 +20,7 @@ uint8_t get_local_event_log(uint64_t idx, uint64_t const event_log_buff[], union
     }
 }
 
-int8_t get_latest_event_log(uint64_t const event_log_buff[], union EventLog * const retrieved_log) {
+uint8_t get_latest_event_log(uint64_t const event_log_buff[], union EventLog * const retrieved_log) {
     retrieved_log->as_uint64 = event_log_buff[event_log_buff[1]];
     return 0;
 }
@@ -61,6 +57,7 @@ uint8_t build_and_add_event_log(
         || !fits_in_bits(extra, 11)
     ) {
         // Gave too large a value somewhere :(
+        printf("Improper value\n");
         return 1;
     }
 
@@ -76,32 +73,14 @@ uint8_t build_and_add_event_log(
     return 0;
 }
 
-uint8_t push_local_to_flash(uint64_t local_buff[], uint64_t flash_buff[]) {
-    uint64_t target_buff_size = local_buff[0];
-    uint64_t buff_to_push_size = flash_buff[0];
+// Some testing of overflows and such
+// int main() {
+//     for (int i = 0; i < 128; ++i) {
+//         build_and_add_event_log(i, 0, 0, i, i, local_event_log_buffer);
+//     }
 
-    if( target_buff_size < buff_to_push_size ) {
-        return 1;
-    }
-
-    uint64_t target_latest_event_idx = local_buff[1];
-    uint64_t buff_to_push_latest_event_idx = flash_buff[1];
-
-    for(uint64_t i = 2; i <= buff_to_push_latest_event_idx; i++) {
-        target_latest_event_idx++;
-        if (target_latest_event_idx >= target_buff_size) {
-            target_latest_event_idx = 2;
-        }
-        local_buff[target_latest_event_idx] = flash_buff[i];
-    }
-
-    // Currently we "clear" the local buffer
-    // Works if we push the buffers contents once it fills up
-    flash_buff[1] = 1;
-    local_buff[1] = target_latest_event_idx;
-    return 0;
-}
-
-
-
-
+//     int last_inserted_idx = local_event_log_buffer[1];
+//     for(int i = 2; i < last_inserted_idx; ++i) {
+//         printf("Event Log, rtc_time: %u\n", ((union EventLog)local_event_log_buffer[i]).as_struct.rtc_datetime);
+//     }
+// }
