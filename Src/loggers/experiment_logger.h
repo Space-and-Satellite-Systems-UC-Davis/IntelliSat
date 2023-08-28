@@ -12,18 +12,26 @@ union ExperimentLog
     #pragma pack(push,1)
     struct
     {
-        unsigned int rtc_time: 12;
+        uint16_t rtc_time: 12;
         int16_t gyro_x: 16, gyro_y: 16, gyro_z: 16;
         int16_t dgyro_x: 16, dgyro_y: 16, dgyro_z: 16;
-        unsigned int extra: 20;
+        uint32_t  extra: 20;
     } as_struct;
     #pragma pack(pop)
     uint64_t as_arr[2];
 };
 
+struct UnpackedExpLog
+{
+    uint16_t rtc_time;
+    int16_t gyro_x, gyro_y, gyro_z;
+    int16_t dgyro_x, dgyro_y, dgyro_z;
+    uint32_t  extra;
+};
+
 struct LocalExpLogs {
     unsigned int buffer_size;
-    unsigned int index_to_insert_at;
+    unsigned int tail;
     uint64_t buffer[LOCAL_EXP_LOG_BUFFER_SIZE];
 };
 
@@ -35,7 +43,8 @@ void stop_exp_logging(int experiment_status);
 
 void handle_exp_overflow();
 
-void add_exp_log( union ExperimentLog* exp_log, struct LocalExpLogs * local_exp_logs );
+// Takes a uint64_t[2] and appends to the local buffer
+void add_exp_log( uint64_t exp_log[2], struct LocalExpLogs * local_exp_logs );
 
 uint8_t build_and_add_exp_log(
     unsigned int rtc_time,     // Date+Hr+Min+Sec

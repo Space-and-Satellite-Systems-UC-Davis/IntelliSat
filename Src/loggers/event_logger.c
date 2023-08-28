@@ -1,45 +1,38 @@
 #include "event_logger.h"
+#include "mockup_flash/flash.h"
 #include "fits_in_bits.h"
 
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
 
-#define LOCAL_EVENT_LOG_BUFFER_SIZE 2 + (1 * 64)
-
-
 // Small buffer that represents log storage on the MCU
 uint64_t local_event_log_buffer[LOCAL_EVENT_LOG_BUFFER_SIZE] = {[0] = LOCAL_EVENT_LOG_BUFFER_SIZE, [1] = 1};
 
-uint8_t get_local_event_log(uint64_t idx, uint64_t const event_log_buff[], union EventLog * const retrieved_log) {
-    if(idx < 2 || idx >= event_log_buff[0]) {
-        return -1;
-    } else {
-        retrieved_log->as_uint64 = event_log_buff[idx];
-        return 0;
-    }
-}
-
-uint8_t get_latest_event_log(uint64_t const event_log_buff[], union EventLog * const retrieved_log) {
-    retrieved_log->as_uint64 = event_log_buff[event_log_buff[1]];
-    return 0;
-}
-
 uint8_t add_event_log(
-    union EventLog* event_log,
-    uint64_t event_log_buff[]
+    uint64_t event_log,
+    struct LocalEventLogs * local_event_logs
 ) {
-    uint64_t current_log_index = event_log_buff[1] + 1;
+    uint64_t current_log_index = local_event_logs->tail;
 
-    if (current_log_index >= event_log_buff[0]) {
-        current_log_index = 2;
+    local_event_logs->buffer[current_log_index] = event_log;
+    
+    current_log_index++;
+    
+    if (current_log_index >= local_event_logs->buffer_size) {
+        local_event_logs->tail = 0;
+    } else {
+        local_event_logs->tail = current_log_index;
     }
 
-    event_log_buff[1] = current_log_index;
-
-    event_log_buff[current_log_index] = event_log->as_uint64;
     return 0;
 }
+
+struct LocalEventLogs local_event_logs = {
+    .buffer_size = LOCAL_EVENT_LOG_BUFFER_SIZE,
+    .tail = 0,
+    .buffer = {0}
+};
 
 uint8_t build_and_add_event_log(
     unsigned int rtc_datetime,     // Date+Hr+Min+Sec
@@ -47,7 +40,7 @@ uint8_t build_and_add_event_log(
     unsigned int action,
     unsigned int details,
     unsigned int extra,
-    uint64_t event_log_buff[]
+    struct LocalEventLogs * local_event_logs
 ) {
 
     if (   !fits_in_bits(rtc_datetime, 22)
@@ -69,18 +62,32 @@ uint8_t build_and_add_event_log(
         .extra = extra
     }};
 
-    add_event_log(&event_log, event_log_buff);
+    add_event_log(event_log.as_uint64, local_event_logs);
     return 0;
 }
 
-// Some testing of overflows and such
-// int main() {
-//     for (int i = 0; i < 128; ++i) {
-//         build_and_add_event_log(i, 0, 0, i, i, local_event_log_buffer);
-//     }
 
-//     int last_inserted_idx = local_event_log_buffer[1];
-//     for(int i = 2; i < last_inserted_idx; ++i) {
-//         printf("Event Log, rtc_time: %u\n", ((union EventLog)local_event_log_buffer[i]).as_struct.rtc_datetime);
-//     }
-// }
+
+int main() {
+    flash_event_logs_metadata = get_log_metadata(flash_event_log_buffer);
+
+    unsigned int curr_idx = 0;
+    for (int i = 0; i < 128; ++i) {
+        build_and_add_event_log(i, 0, 0, 0, i, &local_event_logs);
+        if (local_event_logs.tail == 0) {
+            printf("Moving from local to flash\n");
+            push_event_logs_to_flash(&local_event_logs);
+        }
+    }
+    
+    printf("Local Logs:\n");
+    for(int i = 0; i < local_event_logs.buffer_size; ++i) {
+        printf("L Event Log, rtc_time: %u\n", ((union EventLog){local_event_logs.buffer[i]}).as_struct.rtc_datetime );
+    }
+
+    
+    printf("\nMock Flash Logs:\n");
+    for(int i = 2; i < flash_event_logs_metadata.buffer_size; ++i) {
+        printf("F Event Log, rtc_time: %u\n", ((union EventLog){flash_event_log_buffer[i]}).as_struct.rtc_datetime );
+    }
+}

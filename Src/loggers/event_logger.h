@@ -1,3 +1,6 @@
+#ifndef LOGGERS_EVENT_LOGGER_H_
+#define LOGGERS_EVENT_LOGGER_H_
+
 // #includes here... FLASH, Scheduler, RTC
 #include <stdint.h>
 /*
@@ -42,7 +45,6 @@ void log_exp_buffer_overflow();
 void log_exp_overflow();
 void log_event_overflow();
 
-
 union EventLog {
 	struct __attribute__((packed))
 	{
@@ -55,11 +57,19 @@ union EventLog {
 	uint64_t as_uint64;
 };
 
-uint8_t get_local_event_log(uint64_t idx, uint64_t const event_log_buff[], union EventLog * const retrieved_log);
+#define LOCAL_EVENT_LOG_BUFFER_SIZE (1 * 64)
 
-uint8_t get_latest_event_log(uint64_t const event_log_buff[], union EventLog * const retrieved_log);
+struct LocalEventLogs {
+    uint64_t buffer_size;
+    uint64_t tail;
+    uint64_t buffer[LOCAL_EVENT_LOG_BUFFER_SIZE];
+};
 
-uint8_t add_event_log( union EventLog* event_log, uint64_t event_log_buff[]);
+uint8_t get_local_event_log(uint64_t idx, struct LocalEventLogs * local_event_logs, union EventLog * const retrieved_log);
+
+uint8_t get_latest_event_log(struct LocalEventLogs * local_event_logs, union EventLog * const retrieved_log);
+
+uint8_t add_event_log( uint64_t event_log, struct LocalEventLogs * local_event_logs);
 
 uint8_t build_and_add_event_log(
     unsigned int rtc_datetime,     // Date+Hr+Min+Sec
@@ -67,6 +77,7 @@ uint8_t build_and_add_event_log(
     unsigned int action,
     unsigned int details,
     unsigned int extra,
-    uint64_t event_log_buff[]
+    struct LocalEventLogs * local_event_logs
 );
 
+#endif
