@@ -1,6 +1,10 @@
 /*
  * clock_nvic_config.c
  *
+ *	- August 28, 2023
+ *		Author	: Darsh
+ *		Log		: clocks for SPI-1
+ *
  *	- May 14-16, 2023
  * 		Author       : Raphael, Darsh, Parteek
  *      Contributors : nithilsenthil, Huey, Raymond, Kevin
@@ -110,10 +114,12 @@ void init_clocks() {
 		| RCC_APB1ENR1_I2C2EN 		// enable I2C2
 		| RCC_APB1ENR1_SPI3EN 		// enable SPI3
 		| RCC_APB1ENR1_SPI2EN 		// enable SPI2
-		| RCC_APB1ENR1_USART3EN;		// enable USART3
+		| RCC_APB1ENR1_USART3EN;	// enable USART3
 
 	// enable Syscfg
-	RCC->APB2ENR = RCC_APB2ENR_SYSCFGEN;
+	RCC->APB2ENR =
+		  RCC_APB2ENR_SYSCFGEN		// enable Syscfg
+		| RCC_APB2ENR_SPI1EN;		// enable SPI1
 
 	// configure Flash Memory
 	FLASH->ACR =

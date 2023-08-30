@@ -1,6 +1,10 @@
 /*
  * gpio.c
  *
+ *	- August 28, 2023
+ *		Author	: Darsh
+ *		Log		: code for SPI-1 GPIO
+ *
  *	- May 11, 2023
  *		Author : Darsh
  *		Log    : Replaced some hardcoded value with placeholders from
@@ -44,8 +48,8 @@ void init_gpio() {
 	 * 		AG 				G6		(Output)
 	 * 		BTN1 			B11		(Input)
 	 * 		BTN0 			B10		(Input)
-	 * 		USART3 TX   	C4		(Alternate Function)
-	 * 		USART3 RX   	C5		(Alternate Function)
+	 * 		USART3 TX   	C4		(Alternate Function, AF7)
+	 * 		USART3 RX   	C5		(Alternate Function, AF7)
 	 */
 
 	// configure Input mode for BTN0 and BTN1
@@ -77,12 +81,38 @@ void init_gpio() {
 		| GPIO_MODER_MODE11_0	// LED A
 		| GPIO_MODER_MODE12_0;	// LED B
 
-	// configure the USART3 Pins to Alternate Function mode
+	// reset the modes on USART3 Pins
 	GPIOC->MODER &= ~(GPIO_MODER_MODE4_Msk | GPIO_MODER_MODE5_Msk);
+	// configure the USART3 Pins to Alternate Function mode
 	GPIOC->MODER |= (GPIO_MODER_MODE4_1 | GPIO_MODER_MODE5_1);
-	// configure the USART3 Pins to be used for UART
+
 	GPIOC->AFR[0] &= ~(GPIO_AFRL_AFSEL4_Msk | GPIO_AFRL_AFSEL5_Msk);
+	// configure each pin to AF7
 	GPIOC->AFR[0] |= (7U << GPIO_AFRL_AFSEL4_Pos) | (7U << GPIO_AFRL_AFSEL5_Pos);
+
+	// Reset mode on each SPI-1 pin
+	GPIOE->MODER &= ~(
+		  GPIO_MODER_MODE12_Msk
+		| GPIO_MODER_MODE13_Msk
+		| GPIO_MODER_MODE14_Msk
+		| GPIO_MODER_MODE15_Msk);
+	// set each pin to Alternate function
+	GPIOE->MODER |=
+		  GPIO_MODER_MODE12_0
+		| GPIO_MODER_MODE13_1
+		| GPIO_MODER_MODE14_1
+		| GPIO_MODER_MODE15_1;
+	// Reset alternate function selection on each SPI-1 pin
+	GPIOE->AFR[1] &= ~(
+		  GPIO_AFRH_AFSEL13_Msk
+		| GPIO_AFRH_AFSEL14_Msk
+		| GPIO_AFRH_AFSEL15_Msk);
+	// set each pin to AF5
+	GPIOE->AFR[1] |=
+		  5U << GPIO_AFRH_AFSEL13_Pos
+		| 5U << GPIO_AFRH_AFSEL14_Pos
+		| 5U << GPIO_AFRH_AFSEL15_Pos;
+
 }
 
 /**
