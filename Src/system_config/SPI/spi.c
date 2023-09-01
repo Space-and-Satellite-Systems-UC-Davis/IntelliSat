@@ -1,32 +1,23 @@
 /*
  * spi.c
  *
- *  - August 28, 2023 (Creation)
+ *  - August 28-31, 2023 (Creation)
  *      Author	: Darsh
- *      Log		: ...
+ *      Log		: SPI 1 config, disable, transmitrecieve
  */
 
 #include "spi.h"
-
-#define SPI1_CS           GPIOE,12
-#define NO_RECEPTION_BYTE 0xA1
-
-
-void spi1_start_communication() {
-	gpio_low(SPI1_CS);
-}
-
-void spi1_end_communication() {
-	gpio_high(SPI1_CS);
-}
 
 void spi1_disable() {
 	while(SPI1->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
 	while(SPI1->SR & SPI_SR_BSY);	// Wait till last data frame is processed
 	spi1_end_communication();
 	SPI1->SR &= ~SPI_SR_SPE;		// Disable SPI1
+
+	uint8_t temp;
 	while(SPI1->SR & SPI_SR_FRLVL){
-		// Wait till there is all data is received
+		// Wait till all data is received
+		temp = SPI1->DR;
 	}
 }
 
@@ -49,7 +40,7 @@ void spi1_config() {
 }
 
 // assumes spi1_start_communication() has already been called
-bool spi1_transmit_recieve(uint8_t trasnmission, uint8_t *reception, uint16_t size) {
+bool spi1_transmit_recieve(uint8_t trasnmission, uint8_t *reception) {
 	// check for issues...
 
 	// empty out the RXFIFO
@@ -63,11 +54,10 @@ bool spi1_transmit_recieve(uint8_t trasnmission, uint8_t *reception, uint16_t si
 
 	// wait to receive data if necessary
 	if (*reception != NO_RECEPTION_BYTE) {
-		while (SPI1->SR & SPI_SR_RXNE);		// wait for RXFIFO to get to recieved data
-		*reception = SPI1->DR;				// read from the RXFIFO
+		while (SPI1->SR & SPI_SR_RXNE) {
+			*reception = SPI1->DR;
+		}
 	}
 
 	return true;
-
-	// should I move the initial RXFIFO emptying loop into the case where we read? So that it's only going into the loop if the caller cares about RXFIFO?
 }
