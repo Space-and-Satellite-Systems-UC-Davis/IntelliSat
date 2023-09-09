@@ -226,6 +226,6 @@ void backup_domain_control_disable() {
 
 // ----------------------------------------------------------------------------
 
-void nop(int nop_loops) {
-	for (int i = 0; i < nop_loops; i++) {__NOP();}
+void nop(long long nop_loops) {
+	for (long long i = 0; i < nop_loops; i++) {__NOP();}
 }

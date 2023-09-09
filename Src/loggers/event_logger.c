@@ -67,7 +67,7 @@ uint8_t build_and_add_event_log(
 }
 
 
-
+/*
 int main() {
     flash_event_logs_metadata = get_log_metadata(flash_event_log_buffer);
 
@@ -91,3 +91,4 @@ int main() {
         printf("F Event Log, rtc_time: %u\n", ((union EventLog){flash_event_log_buffer[i]}).as_struct.rtc_datetime );
     }
 }
+*/

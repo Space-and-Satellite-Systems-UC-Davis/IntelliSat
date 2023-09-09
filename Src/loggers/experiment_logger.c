@@ -153,6 +153,7 @@ int detect_exp_buff_overflow();
 
 void handle_exp_buff_overflow();
 
+/*
 // Some testing of overflows and such
 int main() {
 
@@ -193,3 +194,4 @@ int main() {
     //     printf("F Exp Log, rtc_time: %u, gyro_x: %u\n", exp_log.as_struct.rtc_time, exp_log.as_struct.gyro_x );
     // }
 }
+*/

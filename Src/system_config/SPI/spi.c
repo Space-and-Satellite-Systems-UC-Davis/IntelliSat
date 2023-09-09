@@ -1,5 +1,8 @@
 /*
  * spi.c
+ *	- September 5-6, 2023
+ *		Author	: Darsh
+ *		Log		: SPI 2 config, transmitrecieve. Made generic enable and disable
  *
  *  - August 28-31, 2023 (Creation)
  *      Author	: Darsh
@@ -8,56 +11,59 @@
 
 #include "spi.h"
 
-void spi1_disable() {
-	while(SPI1->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
-	while(SPI1->SR & SPI_SR_BSY);	// Wait till last data frame is processed
-	spi1_end_communication();
-	SPI1->SR &= ~SPI_SR_SPE;		// Disable SPI1
+void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
+	gpio_low(cs_port, cs_pin);
+}
+
+void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
+	gpio_high(cs_port, cs_pin);
+}
+
+void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
+	while(spi->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
+	while(spi->SR & SPI_SR_BSY);	// Wait till last data frame is processed
+	spi_stop_communication(cs_port, cs_pin);
+	spi->CR1 &= ~SPI_CR1_SPE;		// Disable SPI2
 
 	uint8_t temp;
-	while(SPI1->SR & SPI_SR_FRLVL){
+	while(spi->SR & SPI_SR_FRLVL){
 		// Wait till all data is received
-		temp = SPI1->DR;
+		temp = SPI2->DR;
 	}
 }
 
-void spi1_config() {
-	spi1_disable();
+void spi2_config() {
+	spi_disable(SPI2, SPI2_CS);
 
-	SPI1->CR1 = 0;
-	SPI1->CR2 = 0;
-	SPI1->CR1 |=
+	SPI2->CR1 = 0;
+	SPI2->CR2 = 0;
+	SPI2->CR1 |=
 		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64`
 		| SPI_CR1_SSM				// Software Slave Management (CS is controlled by software)
+		| SPI_CR1_SSI				// Software Slave Select     (CS is controlled by software)
 		| SPI_CR1_MSTR;				// Master Mode
-	SPI1->CR2 |=
-		  SPI_CR2_FRTXH				// RXNE event generated when RXFIFO is 8 bits full
+	SPI2->CR2 |=
+		  SPI_CR2_FRXTH				// RXNE event generated when RXFIFO is 8 bits full
 		| 7U << SPI_CR2_DS_Pos;		// SPI transfer data length is 8 bits
 
-	spi1_enable();
-
-	// Reconsider Baud Rate?
+	spi_enable(SPI2);
 }
 
-// assumes spi1_start_communication() has already been called
-bool spi1_transmit_recieve(uint8_t trasnmission, uint8_t *reception) {
+// assumes spi_start_communication(SPI2) has already been called
+bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 	// check for issues...
 
-	// empty out the RXFIFO
-	while (SPI1->SR & SPI_SR_RXNE) {
-		*reception = SPI1->DR;
-	}
 
-	while(!(SPI1->SR & SPI_SR_TXE));					// wait for TXFIFO to be empty
-	*((volatile uint8_t) &(SPI1->DR)) = transmission;	// fill TXFIFO with the instruction
-	while(!(SPI1->SR & SPI_SR_TXE));					// wait for the instruction to be shifted out
+	for (uint16_t i = 0; i < size; i++) {
+		while(!(SPI2->SR & SPI_SR_TXE));	// wait for TXFIFO to be empty
+		SPI2->DR = transmission[i];			// fill TXFIFO with the instruction
 
-	// wait to receive data if necessary
-	if (*reception != NO_RECEPTION_BYTE) {
-		while (SPI1->SR & SPI_SR_RXNE) {
-			*reception = SPI1->DR;
+		while (SPI2->SR & SPI_SR_RXNE) {
+			reception[i] = SPI2->DR;
 		}
 	}
+
+	while((SPI2->SR & SPI_SR_BSY));			// wait till all the communication is over
 
 	return true;
 }

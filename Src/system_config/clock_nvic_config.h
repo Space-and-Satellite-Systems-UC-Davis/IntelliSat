@@ -15,8 +15,6 @@
 
 typedef enum {false, true} bool;
 
-void nop(int nop_loops);
-
 /**
  * Initializes the clocks of the microcontroller.
  *

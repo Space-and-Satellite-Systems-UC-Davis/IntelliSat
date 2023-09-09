@@ -1,6 +1,10 @@
 /*
  * platform_init.c
  *
+ * 	- September 7, 2023
+ * 		Author : Darsh
+ * 		Log	   : Added spi2_config()
+ *
  *	- May 22, 2023
  *		Authod : Darsh
  *		Contributors : Parteek
@@ -15,6 +19,7 @@
 #include "./UART/uart.h"
 #include "./I2C/i2c.h"
 #include "./RTC/rtc.h"
+#include "./SPI/spi.h"
 #include "./Interrupts/exti_config.h"
 
 /*
@@ -33,6 +38,7 @@ void init_platform() {
 	init_nvic();	// initialize the NVIC
 
 	rtc_update_prescaler(0);  // ensure the RTC is working properly
-	init_softi2c(OP1_I2C2);		  // initialize the sotfware implemented I2C for I2C Bus 2
-	uart_init(USART3, 9600);	  // initialize the hardware for USART Bus 3
+	init_softi2c(OP1_I2C2);	  // initialize the sotfware implemented I2C for I2C Bus 2
+	spi2_config();			  // initialize the SPI 2 hardware
+	uart_init(USART3, 9600);  // initialize the hardware for USART Bus 3
 }
