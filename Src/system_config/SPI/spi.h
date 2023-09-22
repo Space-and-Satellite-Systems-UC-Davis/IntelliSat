@@ -24,12 +24,16 @@
 #define SPI3_CS
 #define SPI1_CS_PUPD
 
+/**************************** SPI INITIALIZATIONS ****************************/
+
 #define spi_enable(spi) spi->CR1 |= SPI_CR1_SPE
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin);
 
 void spi1_config();
 void spi2_config();
 void spi3_config();
+
+/***************************** SPI COMMUNICATION *****************************/
 
 void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin);
 void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin);
@@ -38,4 +42,4 @@ bool spi1_transmit_recieve(uint8_t* trasnmission, uint8_t *reception, uint16_t s
 bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size);
 bool spi3_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size);
 
-#endif
+#endif	// REALOP1_SPI_H_

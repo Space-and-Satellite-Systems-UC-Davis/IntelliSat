@@ -10,61 +10,74 @@
 #ifndef REALOP1_LED_H_
 #define REALOP1_LED_H_
 
-#include "../../system_config/GPIO/gpio.h"
+#include "../GPIO/gpio.h"
+
+/***************************** LED INITIALIZERS ******************************/
+
+/*
+ * Configures the GPIO ports and pins for the following LEDs:
+ * 		D0-D7  ,  A  ,  B  ,  C  ,  AG  ,  HB
+ *
+ * 	@param   None
+ * 	@returns None
+ */
+void all_led_init();
+
+/******************************* LED TOGGLERS ********************************/
 
 /**
- * Sets the state of a LED A connected to a GPIO pin.
+ * Sets the state of LED A.
  *
- * @param value The value to set the LED to (0 off or 1 on).
+ * @param   b    The value to set the LED to (0 off or 1 on).
  *
  * @returns None
  */
-void op_led_a(int value);
+#define op_led_a(b) gpio_set(GPIOG, 11, value)
 
 /**
- * Sets the state of an LED B connected to a GPIO pin.
+ * Sets the state of LED B.
  *
- * @param value The value to set the LED to (0 off or 1 on).
+ * @param   b    The value to set the LED to (0 off or 1 on).
  *
  * @returns None
  */
-void op_led_b(int value);
+#define op_led_b(b) gpio_set(GPIOG, 12, b)
 
 /**
- * Sets the state of an LED C connected to a GPIO pin.
+ * Sets the state of LED C.
  *
- * @param value The value to set the LED to (0 off or 1 on).
+ * @param   b    The value to set the LED to (0 off or 1 on).
  *
  * @returns None
  */
-void op_led_c(int value);
+#define op_led_c(b) gpio_set(GPIOG, 9, value)
 
 /**
- * Sets the state of the LED fault indicator.
+ * Sets the state of the Fault indicator LED.
  *
- * @param value The value to set the LED fault indicator to (0 off or 1 on).
+ * @param   b    The value to set the LED to (0 off or 1 on).
  *
  * @returns None
  */
-void op_led_fault(int value);
+#define op_led_fault(b) gpio_set(GPIOG, 7, b)
 
 /**
- * Sets the state of an LED connected to a GPIO pin.
+ * Sets the state of the All Good LED
  *
- * @param value The value to set the LED to (0 off or 1 on).
+ * @param   b    The value to set the LED to (0 off or 1 on).
  *
  * @returns None
  */
-void op_led_ag(int value);
+#define op_led_ag(b) gpio_set(GPIOG, 6, b)
 
 /**
- * Sets the state of an Heart Beat LED connected to a GPIO pin.
+ * Sets the state of an Heart Beat LED
  *
- * @param value The value to set the LED to (0 off or 1 on).
+ * @param   b    The value to set the LED to (0 off or 1 on).
  *
  * @returns None
  */
-void op_led_hb(int value);
+#define op_led_hb(b) gpio_set(GPIOE, 2, b)
 
 /**
  * Sets the value of a specified LED D.

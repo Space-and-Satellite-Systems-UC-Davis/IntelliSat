@@ -1,5 +1,10 @@
 /*
  * spi.c
+ *
+ * 	- September 22, 2023
+ *		Author	: Darsh
+ *		Log		: Included all stages of initializations in spi.h / spi.c
+ *
  *	- September 5-6, 2023
  *		Author	: Darsh
  *		Log		: SPI 2 config, transmitrecieve. Made generic enable and disable
@@ -11,13 +16,7 @@
 
 #include "spi.h"
 
-void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
-	gpio_low(cs_port, cs_pin);
-}
-
-void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
-	gpio_high(cs_port, cs_pin);
-}
+/**************************** SPI INITIALIZATIONS ****************************/
 
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	while(spi->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
@@ -83,12 +82,12 @@ void spi2_config() {
 	SPI2->CR2 = 0;
 	SPI2->CR1 |=
 		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64`
-		| SPI_CR1_SSM				// Software Slave Management (CS is controlled by software)
-		| SPI_CR1_SSI				// Software Slave Select     (CS is controlled by software)
-		| SPI_CR1_MSTR;				// Master Mode
+		| SPI_CR1_SSM				// (CS is controlled by software)
+		| SPI_CR1_SSI				// (CS is controlled by software)
+		| SPI_CR1_MSTR;
 	SPI2->CR2 |=
-		  SPI_CR2_FRXTH				// RXNE event generated when RXFIFO is 8 bits full
-		| 7U << SPI_CR2_DS_Pos;		// SPI transfer data length is 8 bits
+		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
+		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
 
 	spi_enable(SPI2);
 }
@@ -109,6 +108,15 @@ void spi3_config() {
 
 }
 
+/***************************** SPI COMMUNICATION *****************************/
+
+void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
+	gpio_low(cs_port, cs_pin);
+}
+
+void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
+	gpio_high(cs_port, cs_pin);
+}
 
 bool spi1_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 

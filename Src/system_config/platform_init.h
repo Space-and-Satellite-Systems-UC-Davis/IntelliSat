@@ -9,14 +9,13 @@
 #ifndef REALOP1_PLATFORM_INIT_H_
 #define REALOP1_PLATFORM_INIT_H_
 
-#include "clock_nvic_config.h"
-
+#include "core_config.h"
 
 /*
- * Configures the system's various features, such as clocks, nvic, gpio, protocol hardware, and more.
+ * Configures the system's various features,
+ * such as clocks, protocol hardware, and more.
  *
- * @param None
- *
+ * @param   None
  * @returns None
  */
 void init_platform();

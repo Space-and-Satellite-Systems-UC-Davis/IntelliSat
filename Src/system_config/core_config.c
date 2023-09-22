@@ -1,5 +1,9 @@
 /*
- * clock_nvic_config.c
+ * core_config.c
+ *
+ *  - September 23, 2023
+ *  	Author	: Darsh
+ *  	Log		: Cleaned up non-core configs
  *
  *	- August 28, 2023
  *		Author	: Darsh
@@ -26,112 +30,43 @@
  *      Log          : All necessary clock registers configured
  */
 
-#include "clock_nvic_config.h"
+#include "core_config.h"
 
-// initializing global counters and trackers
-int core_MHz = 0;
-int heartbeat_counter = 0;
-int ag_counter = 0;
-
-
-#define LSI 'i'
-#define LSE 'l'
-#define HSI 'h'
-#define HSE 'x'
+// Global variable
+int core_MHz;
 
 /**
- * Selects and Oscillator for the RTC to use, and enables the RTC's Clock Source.
- * NOTE : The selected Oscillator must be turned on beforehand.
+ * Initializes the clocks of the micro-controller.
  *
- * @param clock_source   An character to specify which oscillator the RTC uses. There are predefined options in clock_nvic_config.h
- * @param forced_config  Setting this to 'false' results in the configuration not taking place in case the RTC is pre-initialized
- * @returns None
+ * This function sets up the various clock sources and
+ * frequencies for the micro-controller.
  *
- */
-void rtc_clock_config(char clock_source, int forced_config) {
-	// do nothing if clock is already configured
-	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
-		return;
-	}
-
-	backup_domain_control_enable();
-
-	// store the current clock configuration, in case of bad input
-	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
-
-	// reset the clock
-	RCC->BDCR &= ~RCC_BDCR_RTCSEL;
-
-	// Select the RTC clock source
-	switch (clock_source) {
-		case LSE:
-			RCC->BDCR |= RCC_BDCR_RTCSEL_0;
-			break;
-		case LSI:
-			RCC->BDCR |= RCC_BDCR_RTCSEL_1;
-			break;
-		case HSE:
-			RCC->BDCR |= RCC_BDCR_RTCSEL_Msk;
-			break;
-		default:
-			RCC->BDCR |= temp;	// restore the original configuration
-			break;
-	}
-
-	// Enable the RTC Clock
-	RCC->BDCR |= RCC_BDCR_RTCEN;
-
-	backup_domain_control_disable();
-}
-
-/**
- * Initializes the clocks of the microcontroller.
- *
- * This function sets up the various clock sources and frequencies for the microcontroller.
- * It also reads the unique ID of the microcontroller and stores it in an array.
- *
- * @param None
+ * @param   None
  * @returns None
  */
-void init_clocks() {
-	// Flash (NOT the NOR FLASH)
+void init_core_clocks() {
+	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
-
-	RCC->AHB2ENR =
-		  RCC_AHB2ENR_GPIOAEN	// enable GPIO Port A
-		| RCC_AHB2ENR_GPIOBEN	// enable GPIO Port B
-		| RCC_AHB2ENR_GPIOCEN	// enable GPIO Port C
-		| RCC_AHB2ENR_GPIODEN	// enable GPIO Port D
-		| RCC_AHB2ENR_GPIOEEN	// enable GPIO Port E
-		| RCC_AHB2ENR_GPIOFEN	// enable GPIO Port F
-		| RCC_AHB2ENR_GPIOGEN	// enable GPIO Port G
-		| RCC_AHB2ENR_GPIOHEN	// enable GPIO Port H
-		| RCC_AHB2ENR_OTGFSEN	// enable OTG full speed
-		| RCC_AHB2ENR_ADCEN		// enable ADC
-		| RCC_AHB2ENR_RNGEN;	// enable Random Number Generator
-	RCC->AHB3ENR = RCC_AHB3ENR_QSPIEN;	// enable clock to QSPI
-	// enable clock to different perihpherals and protocol hardware
-	RCC->APB1ENR1 =
-		  RCC_APB1ENR1_PWREN 		// enable Power Control
-		| RCC_APB1ENR1_I2C2EN 		// enable I2C2
-		| RCC_APB1ENR1_USART3EN;	// enable USART3
-
-	// enable Syscfg
-	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-
-	// configure Flash Memory
-	FLASH->ACR =
+	FLASH->ACR |=
 		  FLASH_ACR_DCEN			// Flash data cache enable
 		| FLASH_ACR_ICEN			// Flash instruction cache enable
 		| FLASH_ACR_PRFTEN			// Flash prefetch enable
 		| FLASH_ACR_LATENCY_4WS;	// 4 HCLCK periods of latency in Flash access time
 
+	RCC->AHB2ENR |=
+		  RCC_AHB2ENR_OTGFSEN	// enable OTG full speed
+		| RCC_AHB2ENR_ADCEN		// enable ADC
+		| RCC_AHB2ENR_RNGEN;	// enable Random Number Generator
+
+	RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN 	// enable Power Control
+	RCC->APB2ENR  |= RCC_APB2ENR_SYSCFGEN;	//
+
 	// enable internal oscillators
-	RCC->CR |= RCC_CR_HSION; 				// enable HSI
-	RCC->CSR |= RCC_CSR_LSION;				// Turn on the LSI Oscillator
-	while (!(RCC->CSR & RCC_CSR_LSIRDY));	// wait for the LSI Oscillator to stabilize
-//	RCC->BDCR |= RCC_BDCR_LSEON;			// Turn on the LSE Oscillator
-//	while (!(RCC->BDCR & RCC_BDCR_LSERDY));	// wait for the LSE Oscillator to stabilize
+	RCC->CR |= RCC_CR_HSION; 					// enable HSI
+	RCC->CSR |= RCC_CSR_LSION;					// Turn on the LSI Oscillator
+	while (!(RCC->CSR & RCC_CSR_LSIRDY));		// wait for the LSI Oscillator to stabilize
+	// RCC->BDCR |= RCC_BDCR_LSEON;				// Turn on the LSE Oscillator
+	// while (!(RCC->BDCR & RCC_BDCR_LSERDY));	// wait for the LSE Oscillator to stabilize
 
 	// configure Phased Lock Loop
 	RCC->PLLCFGR =
@@ -154,14 +89,9 @@ void init_clocks() {
 		| 12 << RCC_PLLSAI1CFGR_PLLSAI1N_Pos; 	// VCO multiplication factor set to 12
 	// enable PLL and PLLSAI1
 	RCC->CR |= RCC_CR_PLLON | RCC_CR_PLLSAI1ON;
-	// wait for PLL lock
 	while (!(RCC->CR & RCC_CR_PLLRDY));
-	// wait for PLLSAI1 lock
 	while (!(RCC->CR & RCC_CR_PLLSAI1RDY));
-	// system clock to PLL
-	RCC->CFGR = RCC_CFGR_SW;
-
-	rtc_clock_config(LSI, 0);
+	RCC->CFGR = RCC_CFGR_SW;	// system clock to PLL
 
 	core_MHz = 80;
 }
@@ -172,7 +102,7 @@ void init_clocks() {
  * 		- GPIO Pins 10-15
  * 			- Buttons 0 & 1
  *
- * @param None
+ * @param   None
  * @returns None
  */
 void init_nvic() {
@@ -184,25 +114,15 @@ void init_nvic() {
 	SysTick->CTRL = 0x3;
 	NVIC_EnableIRQ(SysTick_IRQn);
 
-	/*
-	 * Pins PB10 and PB11 are connected to buttons and trigger an interrupt
-	 * Thus the interrrupt must be configured.
-	 */
-
-	// Set a high priority for pin 10-15 interrupts, and enable the interrupts
-	NVIC_SetPriority(EXTI15_10_IRQn, 1);
-	NVIC_EnableIRQ(EXTI15_10_IRQn);
-
 	__enable_irq();
 }
 
 
 /**
  * Enables writing access to registers powered by the Backup Domain
- *    Key registers include RCC's BDRC, and several key RTC registers
+ * Key registers include RCC's BDRC, and several key RTC registers
  *
- * @param None
- *
+ * @param   None
  * @returns None
  */
 void backup_domain_control_enable() {
@@ -211,10 +131,9 @@ void backup_domain_control_enable() {
 
 /**
  * Disables writing access to registers powered by the Backup Domain
- *    Key registers include RCC's BDRC, and several key RTC registers
+ * Key registers include RCC's BDRC, and several key RTC registers
  *
- * @param None
- *
+ * @param   None
  * @returns None
  */
 void backup_domain_control_disable() {
