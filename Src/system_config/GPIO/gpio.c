@@ -93,29 +93,6 @@ void init_gpio() {
 	GPIOC->AFR[0] &= ~(GPIO_AFRL_AFSEL4_Msk | GPIO_AFRL_AFSEL5_Msk);
 	// configure each pin to AF7
 	GPIOC->AFR[0] |= (7U << GPIO_AFRL_AFSEL4_Pos) | (7U << GPIO_AFRL_AFSEL5_Pos);
-
-	// Reset mode on each SPI-2 pin
-	GPIOB->MODER &= ~(
-		  GPIO_MODER_MODE12_Msk
-		| GPIO_MODER_MODE13_Msk
-		| GPIO_MODER_MODE14_Msk
-		| GPIO_MODER_MODE15_Msk);
-	// set each pin to Alternate function
-	GPIOB->MODER |=
-		  GPIO_MODER_MODE12_0
-		| GPIO_MODER_MODE13_1
-		| GPIO_MODER_MODE14_1
-		| GPIO_MODER_MODE15_1;
-	// Reset alternate function selection on each SPI-2 pin
-	GPIOB->AFR[1] &= ~(
-		  GPIO_AFRH_AFSEL13_Msk
-		| GPIO_AFRH_AFSEL14_Msk
-		| GPIO_AFRH_AFSEL15_Msk);
-	// set each pin to AF5
-	GPIOB->AFR[1] |=
-		  5U << GPIO_AFRH_AFSEL13_Pos
-		| 5U << GPIO_AFRH_AFSEL14_Pos
-		| 5U << GPIO_AFRH_AFSEL15_Pos;
 }
 
 /**

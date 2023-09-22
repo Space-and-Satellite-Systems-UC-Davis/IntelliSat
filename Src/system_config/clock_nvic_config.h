@@ -13,8 +13,6 @@
 #include "stm32l476xx.h"
 #include "../globals.h"
 
-typedef enum {false, true} bool;
-
 /**
  * Initializes the clocks of the microcontroller.
  *

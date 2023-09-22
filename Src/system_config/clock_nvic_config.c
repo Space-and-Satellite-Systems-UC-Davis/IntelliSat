@@ -94,7 +94,9 @@ void rtc_clock_config(char clock_source, int forced_config) {
  * @returns None
  */
 void init_clocks() {
-	// enable clock to different peripherals
+	// Flash (NOT the NOR FLASH)
+	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
+
 	RCC->AHB2ENR =
 		  RCC_AHB2ENR_GPIOAEN	// enable GPIO Port A
 		| RCC_AHB2ENR_GPIOBEN	// enable GPIO Port B
@@ -112,14 +114,10 @@ void init_clocks() {
 	RCC->APB1ENR1 =
 		  RCC_APB1ENR1_PWREN 		// enable Power Control
 		| RCC_APB1ENR1_I2C2EN 		// enable I2C2
-		| RCC_APB1ENR1_SPI3EN 		// enable SPI3
-		| RCC_APB1ENR1_SPI2EN 		// enable SPI2
 		| RCC_APB1ENR1_USART3EN;	// enable USART3
 
 	// enable Syscfg
-	RCC->APB2ENR =
-		  RCC_APB2ENR_SYSCFGEN		// enable Syscfg
-		| RCC_APB2ENR_SPI1EN;		// enable SPI1
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
 
 	// configure Flash Memory
 	FLASH->ACR =

@@ -83,6 +83,7 @@ void EXTI15_10_IRQHandler(){
 	}
 }
 
+extern button;
 /**
  * Interrupt Handler for Button 0
  * Prints a message to the console
@@ -92,7 +93,7 @@ void EXTI15_10_IRQHandler(){
  * @returns None
  */
 void Button0_Handler(){
-	printMsg("Button 0 Pressed!\n");
+	button = true;
 }
 
 /**
