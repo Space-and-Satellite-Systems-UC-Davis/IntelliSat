@@ -3,6 +3,10 @@
  *
  * Change Log:
  *
+ * 	- September 22, 2023
+ * 		Author	: Darsh
+ * 		Log		: Added Clocks and GPIO
+ *
  *	- May 11, 2023
  *		Author       : Darsh
  *		Log          : Added comments, plus configurable baud rate
@@ -16,6 +20,30 @@
 
 #include "uart.h"
 
+/************************ GPIO INITIALIZATION HELPERS ************************/
+
+void usart1_gpio_init();
+void usart2_gpio_init();
+
+void usart3_gpio_init() {
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+	while (GPIOC->OTYPER == 0xFFFFFFFF);
+
+	// configure the USART3 Pins to Alternate Function mode
+	GPIOC->MODER &= ~(GPIO_MODER_MODE4_Msk | GPIO_MODER_MODE5_Msk);
+	GPIOC->MODER |= (GPIO_MODER_MODE4_1 | GPIO_MODER_MODE5_1);
+
+	// configure each pin to AF7
+	GPIOC->AFR[0] &= ~(GPIO_AFRL_AFSEL4_Msk | GPIO_AFRL_AFSEL5_Msk);
+	GPIOC->AFR[0] |= (7U << GPIO_AFRL_AFSEL4_Pos) | (7U << GPIO_AFRL_AFSEL5_Pos);
+}
+
+void uart4_gpio_init();
+void uart5_gpio_init();
+
+
+/*************************** USART INITIALIZATIONS ***************************/
+
 /*
  * Initializes the UART hardware to conduct UART communication with
  * 1 start bit, 8 data bits, 1 stop bits, No parity
@@ -25,7 +53,31 @@
  *
  * @returns None
  */
-void uart_init(USART_TypeDef *bus, int baud_rate){
+bool usart_init(USART_TypeDef *bus, int baud_rate){
+	switch(bus) {
+		case USART1:
+			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+			break;
+		case USART2:
+			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+			break;
+		case USART3:
+			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
+			usart3_gpio_init();
+			break;
+		case UART4:
+			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
+			break;
+		case UART5:
+			RCC->APB1ENR1 |= RCC_APB1ENR1_UART5EN;
+			break;
+		case LPUART1:
+			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
+			break;
+		default:
+			return false;
+	}
+
 	// Clear control register 1 (disables UART and any random default configurations)
 	bus->CR1 = 0;
 
@@ -41,6 +93,8 @@ void uart_init(USART_TypeDef *bus, int baud_rate){
 	bus->CR1 |= USART_CR1_UE;
 }
 
+/**************************** USART COMMUNICATION ****************************/
+
 /*
  * Utilizes USART hardware transmitter to send a character
  * to a listerner on the other end (details on pinout in gpio.h)
@@ -50,7 +104,7 @@ void uart_init(USART_TypeDef *bus, int baud_rate){
  *
  * @returns None
  */
-void uart_transmitChar(USART_TypeDef *bus, char c) {
+void usart_transmitChar(USART_TypeDef *bus, char c) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
@@ -70,7 +124,7 @@ void uart_transmitChar(USART_TypeDef *bus, char c) {
  *
  * @returns None
  */
-void uart_transmitStr(USART_TypeDef *bus, char message[]) {
+void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
@@ -85,3 +139,4 @@ void uart_transmitStr(USART_TypeDef *bus, char message[]) {
 	// Wait for the Transfer to be completed by monitoring the TC flag
 	while(!(bus->ISR & USART_ISR_TC));
 }
+

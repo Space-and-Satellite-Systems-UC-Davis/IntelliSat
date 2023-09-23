@@ -1,31 +1,32 @@
 /*
- * clock_nvic_config.h
+ * core_config.h
  *
- *  - Created on: Apr 29, 2023
+ *  - September 23, 2023
+ *  	Author	: Darsh
+ *  	Log		: file name change
+ *
+ *  - April 29, 2023
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
  *      Log          : All necessary clock registers configured
  */
 
-#ifndef REALOP1_CLOCK_NVIC_CONFIG_H_
-#define REALOP1_CLOCK_NVIC_CONFIG_H_
+#ifndef REALOP1_CORE_CONFIG_H_
+#define REALOP1_CORE_CONFIG_H_
 
 #include "stm32l476xx.h"
 #include "../globals.h"
 
-typedef enum {false, true} bool;
-
-void nop(int nop_loops);
-
 /**
- * Initializes the clocks of the microcontroller.
+ * Initializes the clocks of the micro-controller.
  *
- * This function sets up the various clock sources and frequencies for the microcontroller.
- * It also reads the unique ID of the microcontroller and stores it in an array.
+ * This function sets up the various clock sources and
+ * frequencies for the micro-controller.
  *
+ * @param   None
  * @returns None
  */
-void init_clocks();
+void init_core_clocks();
 
 /**
  * Initializes the Nested Vector Interrupt Controller (NVIC) for
@@ -41,22 +42,20 @@ void init_nvic();
 
 /**
  * Enables writing access to registers powered by the Backup Domain
- *    Key registers include RCC's BDRC, and several key RTC registers
+ * Key registers include RCC's BDRC, and several key RTC registers
  *
- * @param None
- *
+ * @param   None
  * @returns None
  */
 void backup_domain_control_enable();
 
 /**
  * Disables writing access to registers powered by the Backup Domain
- *    Key registers include RCC's BDRC, and several key RTC registers
+ * Key registers include RCC's BDRC, and several key RTC registers
  *
- * @param None
- *
+ * @param   None
  * @returns None
  */
 void backup_domain_control_disable();
 
-#endif /* REALOP1_CLOCK_NVIC_CONFIG_H_ */
+#endif /* REALOP1_CORE_CONFIG_H_ */

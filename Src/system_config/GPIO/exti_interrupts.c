@@ -1,5 +1,9 @@
 /*
- * interrupt_handlers.c
+ * exti_interrupts.c
+ *
+ *  - September 23, 2023
+ *  	Author 	: Darsh
+ *  	Log		: changed to just contain EXTI interrupt handlers
  *
  * 	- May 14-16, 2023
  * 		Author       : Raphael, Darsh, Parteek
@@ -12,30 +16,30 @@
  *      Log          : wrote the Systick_Handler
  */
 
-#include "../../peripherals/LED/led.h"
-#include "../clock_nvic_config.h"
-#include "../../tools/print_scan.h"
+#include "../LED/led.h"
+#include "../Buttons/buttons.h"
+#include "../core_config.h"
 
 
 // initializing Global (external) variables
-int systick_time = 0;	// systick interrupt counter
-
-// prototypes for functions defined later
-void Button0_Handler();
-void Button1_Handler();
+int systick_time = 0;
 
 /**
  * Interrupt handler for the SysTick timer.
- * Increments the systick_time variable and updates the status of the heartbeat and activity LEDs.
+ * Increments the systick_time variable and
+ * updates the status of the heartbeat and activity LEDs.
  *
  * @param None
  *
  * @returns None
  */
 void SysTick_Handler() {
+	static int heartbeat_counter = 0;
+	static int ag_counter = 0;
+
 	systick_time++;
 
-	// heartbeat led
+	// toggle LEDs
 	if (!(systick_time % 1000)) {
 		heartbeat_counter = 100;
 	}
@@ -58,7 +62,8 @@ void SysTick_Handler() {
 
 /*
  * Interrupt Handler for GPIO Pins 10 - 15 (all ports)
- * Figures out which pin caused the interrupt, then calls it's respective handler
+ * Figures out which pin caused the interrupt, then calls
+ * it's respective handler
  *
  * @param None
  *
@@ -67,10 +72,12 @@ void SysTick_Handler() {
 void EXTI15_10_IRQHandler(){
 	/*
 	 * General Procedure
-	 * 		- Check which pins caused the interrupt by checking the Pending Request Register
-	 * 		- For the request that is pending, clear the interrupt flag by writing a
-	 * 		  1 to the same Pending Request Register
-	 * 		- Call the Interrupt Handler for whatever is connected to that pin (or the pin itself)
+	 * 		- Check which pins caused the interrupt
+	 * 		  by checking the Pending Request Register
+	 * 		- For the request that is pending, clear the interrupt flag
+	 * 		  by writing a 1 to the same Pending Request Register
+	 * 		- Call the Interrupt Handler for whatever
+	 * 		  is connected to that pin (or the pin itself)
 	 */
 
 	if (EXTI->PR1 & EXTI_PR1_PIF10) {		// Button 0
@@ -82,29 +89,3 @@ void EXTI15_10_IRQHandler(){
 		Button1_Handler();
 	}
 }
-
-/**
- * Interrupt Handler for Button 0
- * Prints a message to the console
- *
- * @param None
- *
- * @returns None
- */
-void Button0_Handler(){
-	printMsg("Button 0 Pressed!\n");
-}
-
-/**
- * Interrupt Handler for Button 1
- * Prints a message to the console
- *
- * @param None
- *
- * @returns None
- */
-void Button1_Handler(){
-	printMsg("Button 1 Pressed!\n");
-}
-
-
