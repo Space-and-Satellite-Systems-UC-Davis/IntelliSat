@@ -94,5 +94,21 @@ void Button0_Handler(){
  * @returns None
  */
 void Button1_Handler(){
-	printMsg("Button 1 Pressed!\n");
+	TIM2->CR1 &= ~TIM_CR1_CEN;
+
+	static char press = 0;
+	int arr_val;
+	int core_clock_speed = core_MHz * 1000000;
+
+	arr_val = (core_clock_speed / (press + 1)) - 1;
+
+	TIM2->PSC = press;
+	TIM2->ARR = arr_val;
+
+	TIM2->CR1 |= TIM_CR1_CEN;
+
+	printMsg("\tPress = %d\n", press);
+	if (++press > 3) {
+		press = 0;
+	}
 }
