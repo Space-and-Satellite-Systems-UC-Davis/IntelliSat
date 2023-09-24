@@ -6,8 +6,17 @@
 
 short int qspi_status;
 bool qspi_in_use = false;
+bool qspi_dma_use = false;
 bool timeout = false;
 
+
+int get_qspi_status() {
+	return qspi_status;
+}
+
+/*
+ *
+ */
 void qspi_config(uint8_t flash_size) {
 	qspi_on();	// qspi peripheral clock
 
@@ -68,8 +77,19 @@ void qspi_config(uint8_t flash_size) {
 	qspi_enable();
 }
 
-bool qspi_set_command(uint8_t fmode, uint8_t imode, uint8_t admode, uint8_t abmode, uint8_t dcyc, uint8_t dmode) {
-	if (qspi_in_use) {
+/*
+ *
+ */
+bool qspi_set_command(
+		uint8_t fmode,
+		uint8_t imode,
+		uint8_t admode,
+		uint8_t abmode,
+		uint8_t dcyc,
+		uint8_t dmode,
+		bool    dma = false
+) {
+	if (qspi_status == QSPI_BUSY || (dma && QSPI_DMA_UNAVAILABLE)) {
 		return false;
 	}
 	qspi_disable();
@@ -80,6 +100,7 @@ bool qspi_set_command(uint8_t fmode, uint8_t imode, uint8_t admode, uint8_t abmo
 		& ~(QUADSPI_CCR_ABMODE)
 		& ~(QUADSPI_CCR_DCYC)
 		& ~(QUADSPI_CCR_DMODE);
+	QUADSPI->CCR &= ~QUADSPI_CCR_INSTRUCTION_Msk;
 	QUADSPI->CCR |=
 		  (fmode << QUADSPI_CCR_FMODE_Pos)
 		| (imode << QUADSPI_CCR_IMODE_Pos)
@@ -87,7 +108,10 @@ bool qspi_set_command(uint8_t fmode, uint8_t imode, uint8_t admode, uint8_t abmo
 		| (abmode << QUADSPI_CCR_ABMODE_Pos)
 		| (dcyc << QUADSPI_CCR_DCYC_Pos)
 		| (dmode << QUADSPI_CCR_DMODE_Pos);
-	qspi_in_use = true;
+	if (dma) {
+		// TODO: configure DMA
+	}
+	qspi_status = QSPI_READY;
 	return true;
 }
 
@@ -97,28 +121,41 @@ bool qspi_send_command(
 		uint32_t data_length,
 		uint8_t *data,
 		bool r_or_w,
-		uint32_t timeout_period
+		uint32_t timeout_period = QSPI_TIMEOUT_PERIOD,
+		bool dma = false
 ) {
-	if (!qspi_in_use) {
+	if (qspi_status != QSPI_READY) {
 		return false;
 	}
-	QUADSPI->CCR &= ~QUADSPI_CCR_INSTRUCTION_Msk;
-	if (timeout_period > 0) {
-		// TODO: Set Time Out + Interrupt
-	}
-	qspi_enable();
 
+	if (dma) {
+		// TODO: configure DMA
+		QUADSPI->CR |= QUADSPI_CR_DMAEN;
+		qspi_dma_use = true;
+	}
+
+	qspi_enable();
 	QUADSPI->DLR =  data_length - 1;
 	QUADSPI->CCR |= (instruction << QUADSPI_CCR_INSTRUCTION_Pos);
 	QUADSPI->AR  =   address;
+
+	qspi_status = QSPI_BUSY;
+
+	if (dma) {
+		/*
+		 * When the transfer is complete, the TC interrupt of the QSPI
+		 * will close the DMA Channel as well as the QSPI process
+		 */
+		return true;
+	}
 
 	for (uint64_t i = 0; i < data_length; i++) {
 		while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
 			if ((r_or_w == true) && (QUADSPI->SR & QUADSPI_SR_TCF)) {
 				break;
 			}
-			if (qspi_status == QSPI_TIMEDOUT) {
-				// TODO: abort
+			if (qspi_status == QSPI_TIMEDOUT) {	// set by an interrupt
+				QUADSPI->CR |= QUADSPI_CR_ABORT;
 				goto qspi_send_command_complete;
 		}
 		if (r_or_w == true) {
@@ -132,22 +169,30 @@ qspi_send_command_complete:
 
 	while (QUADSPI->SR & QUADSPI_SR_BUSY);
 	qspi_disable();
+	if (dma) {
+		// TODO: stop dma
+	}
 
-	qspi_in_use = false;
+	if (qspi_status != QSPI_TIMDEOUT) {
+		qspi_status = QSPI_STATUS;
+	}
 	return true;
 }
+
+
+
 
 // Status-Polling Mode for 4 wire QSPI
 bool qspi_status_poll(
 		uint8_t instruction,
 		uint8_t mask,
 		uint8_t match,
-		uint32_t timeout_period
+		uint32_t timeout_period = QSPI_TIMEOUT_PERIOD
 ) {
-	if (qspi_in_use) {
+	if (qspi_status == QSPI_BUSY) {
 		return false;
 	}
-	qspi_in_use = true;
+	qspi_in_use = QSPI_BUTY;
 
 	qspi_disable();
 	QUADSPI->PSMKR = mask;
@@ -164,10 +209,6 @@ bool qspi_status_poll(
 		| QUADSPI_CCR_IMODE
 		| QUADSPI_CCR_INSTRUCTION_Msk);
 
-	if (timeout_period > 0) {
-		// TODO: Set Time Out + Interrupt
-	}
-
 	qspi_enable();
 	QUADSPI->CCR |=
 		  (2U << QUADSPI_CCR_FMODE_Pos)
@@ -176,15 +217,13 @@ bool qspi_status_poll(
 		| (1U << QUADSPI_CCR_IMODE_Pos)
 		| (instruction << QUADSPI_CCR_INSTRUCTION_Pos);
 
-	// while (QUADSPI->SR & QUADSPI_SR_BUSY);
-
 	/*
 	 * Once the Instruction is written, QSPI peripheral will keep polling
 	 * until the match is found. Then the interrupt is responsible for
 	 * clearing the flag, stopping the status polling mode, and stopping
 	 * the peripheral
-	 * Until then, the qspi_in_use variable will indicate
-	 * that the peripheral can't be used.
+	 * Until then, qspi_status = QSPI_BUSY will indicate that
+	 * the peripheral can't be used.
 	 */
 
 	return true;
@@ -196,10 +235,14 @@ bool qspi_status_poll(
 
 
 
-#define qspi_stop_status_polling() \
+#define qspi_stop_status_polling() { \
 		QUADSPI->CCR  &= ~(QUADSPI_CCR_FMODE | QUADSPI_CCR_DMODE); \
-		QUADSPI->CR   &= ~QUADSPI_CR_APMS
+		QUADSPI->CR   &= ~QUADSPI_CR_APMS; \
+}
 
+/*
+ *
+ */
 void QUADSPI_IRQHandler() {
 	if (QUADSPI->SR & QUADSPI_SR_SMF) {	// Status Polling complete
 		QUADSPI->FCR |= QUADSPI_FCR_CSMF;
@@ -207,27 +250,31 @@ void QUADSPI_IRQHandler() {
 
 		qspi_stop_status_polling();
 		qspi_disable();
-		qspi_in_use = false;
+		qspi_status = QSPI_SUCCESSFUL;
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TEF) {	// Transfer Error
 		QUADSPI->FCR |= QUADSPI_FCR_CTEF;
 
-		// TODO
+		qspi_status = QSPI_TRANSFER_ERROR;
+		// TODO: 17.4.13
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TCF) {	// Transfer Complete
 		QUADSPI->FCR |= QUADSPI_FCR_CTCF;
+
+		qspi_status = QSPI_SUCCESSFUL;
+		// TODO
+		/*
+		 * Reset QUADSPI Configurations
+		 */
+		if (qspi_dma_use) {
+			/*
+			 * Reset DMA Channel
+			 */
+		}
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TOF) {	// Timeout
 		QUADSPI->FCR |= QUADSPI_FCR_CTOF;
-		QUADSPI->CR  &= ~QUADSPI_CR_TEIE;
 
-
-		if (QUADSPI->CCR & QUADSPI_CCR_FMODE == 2U) {
-			qspi_stop_status_polling();
-		} else {
-			timeout = true;
-		}
-		qspi_disable();
-		qspi_in_use = false;
+		// isn't used as Memory-Mapped mode isn't used
 	}
 }

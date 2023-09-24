@@ -16,49 +16,7 @@
  *      Log          : wrote the Systick_Handler
  */
 
-#include "../LED/led.h"
 #include "../Buttons/buttons.h"
-#include "../core_config.h"
-
-
-// initializing Global (external) variables
-int systick_time = 0;
-
-/**
- * Interrupt handler for the SysTick timer.
- * Increments the systick_time variable and
- * updates the status of the heartbeat and activity LEDs.
- *
- * @param None
- *
- * @returns None
- */
-void SysTick_Handler() {
-	static int heartbeat_counter = 0;
-	static int ag_counter = 0;
-
-	systick_time++;
-
-	// toggle LEDs
-	if (!(systick_time % 1000)) {
-		heartbeat_counter = 100;
-	}
-	if (!(systick_time % 250)) {
-		ag_counter = 10;
-	}
-	if (heartbeat_counter) {
-		op_led_hb(1);
-		heartbeat_counter--;
-	} else {
-		op_led_hb(0);
-	}
-	if (ag_counter) {
-		op_led_ag(1);
-		ag_counter--;
-	} else {
-		op_led_ag(0);
-	}
-}
 
 /*
  * Interrupt Handler for GPIO Pins 10 - 15 (all ports)
