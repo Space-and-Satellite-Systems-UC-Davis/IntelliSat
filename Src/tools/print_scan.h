@@ -1,8 +1,6 @@
 /*
  * print_scan.h
  *
- * Change Log:
- *
  * 	- May 11, 2023 (Creation)
  * 		Author : Darsh
  * 		Log    : Created the printMsg function

@@ -1,6 +1,10 @@
 /*
  * gpio.h
  *
+ *  - September 23, 2023
+ *  	Author	: Darsh
+ *  	Log		: Removed gpio_init()
+ *
  *  - Apr 29, 2023 (Creation)
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
@@ -11,16 +15,24 @@
 #define REALOP1_GPIO_H_
 
 #include "stm32l476xx.h"
-#include "../clock_nvic_config.h"
 
-/**
- * Initializes the GPIO pins for the microcontroller.
- *
- * @param None
- *
- * @returns None
+/* OP R1 GPIO pinout
+ * 		D7 to D0		D7-D0 	(Output)
+ * 		HEARTBEAT 		E2		(Output)
+ * 		A 				G11		(Output)
+ * 		B 				G12		(Output)
+ * 		C 				G9		(Output)
+ * 		FAULT			G7		(Output)
+ * 		AG 				G6		(Output)
+ * 		BTN1 			B11		(Input)
+ * 		BTN0 			B10		(Input)
+ * 		USART3 TX   	C4		(Alternate Function, AF7)
+ * 		USART3 RX   	C5		(Alternate Function, AF7)
+ * 		SPI2 CS			B12		(Output)
+ * 		SPI2 CLK		B13		(Alternate Function, AF5)
+ * 		SPI2 MISO		B14		(Alternate Function, AF5)
+ * 		SPI2 MOSI		B15		(Alternate Function, AF5)
  */
-void init_gpio();
 
 /**
  * Sets the specified GPIO pin to high.

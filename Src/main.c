@@ -1,20 +1,14 @@
+#include "platform_init.h"
+
 /*
- * RTC testing
+ * For now this won't be implemented on the main branch
+ * Therefore, the main branch cannot be built.
+ * Each development / feature branch has it's own implementation
+ * which is used for testing specific features.
  */
-
-#include "./system_config/platform_init.h"
-#include "./tools/print_scan.h"
-#include "./system_config/RTC/rtc.h"
-
+void branch_main();
 
 int main() {
 	init_platform();
-	uint8_t hour, minute, sec;
-	while(1) {
-		// Read and Display the RTC Time
-		rtc_get_time(&hour, &minute, &sec);
-		printMsg("Current Time : %d : %d : %d\n", hour, minute, sec);
-
-		nop(1000000);
-	}
+	branch_main();
 }

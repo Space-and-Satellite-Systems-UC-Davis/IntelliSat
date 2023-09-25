@@ -1,8 +1,6 @@
 /*
  * print_scan.c
  *
- * Change Log:
- *
  * 	- May 11, 2023 (Creation)
  * 		Author : Darsh
  * 		Log    : Created the printMsg function
@@ -29,5 +27,5 @@ void printMsg(char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	uart_transmitStr(USART3, buff);
+	usart_transmitStr(USART3, buff);
 }

@@ -1,6 +1,10 @@
 /*
  * rtc.h
  *
+ *  - September 23, 2023
+ *  	Author	: Darsh
+ *  	Log		: Included configurations
+ *
  *  - May 22-25, 2023 (Creation)
  *  	Author : Darsh
  *  	Log    : Wrote the primary rtc interface
@@ -8,9 +12,12 @@
 
 #include "rtc.h"
 
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+
 /*
  * Opens the RTC up for making changes to it.
- * NOTE: This action stops the RTC from running, until writing priveledge is closed.
+ * NOTE: This action stops the RTC from running,
+ * until writing privilege is closed.
  *
  * @param None
  *
@@ -20,7 +27,7 @@ void rtc_open_writing_priveledge() {
 	// Allow Backup Domain Writing Access
 	backup_domain_control_enable();
 
-	// Enable RTC Write Priveledge
+	// Enable RTC Write Privilege
 	RTC->WPR = 0xCA;
 	RTC->WPR = 0x53;
 
@@ -30,7 +37,8 @@ void rtc_open_writing_priveledge() {
 }
 
 /*
- * Locks up the RTC so changes can't be made to it. This allows the RTC to start working again.
+ * Locks up the RTC so changes can't be made to it.
+ * This allows the RTC to start working again.
  *
  * @param None
  *
@@ -47,47 +55,83 @@ void rtc_close_writing_priveledge() {
 	backup_domain_control_disable();
 }
 
-/*
- * Sets the appropriate pre-scalers based on the oscillator source of the RTC.
+/***************************** RTC CONFIGURATIONS ****************************/
+
+/**
+ * Enables the RTC's Clock. Sets the appropriate pre-scalers
+ * based on the oscillator source of the RTC.
+ * NOTE : The selected Oscillator must be turned on beforehand.
  *
- * @param None
+ * @param clock_source   Predefined options in clock_nvic_config.h
+ * @param forced_config  Setting this to 'false' results in the configuration not taking place in case the RTC is pre-initialized
  *
  * @returns None
  */
-void rtc_update_prescaler(int forced_config) {
+void rtc_config(char clock_source, int forced_config) {
 	// do nothing if clock is already configured
 	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
 		return;
 	}
 
+	backup_domain_control_enable();
+
+	// store the current clock configuration, in case of bad input
+	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
+
+	// reset the clock
+	RCC->BDCR &= ~RCC_BDCR_RTCSEL;
+
+	// Select the RTC clock source
+	switch (clock_source) {
+		case LSE:
+			RCC->BDCR |= RCC_BDCR_RTCSEL_0;
+			break;
+		case LSI:
+			RCC->BDCR |= RCC_BDCR_RTCSEL_1;
+			break;
+		case HSE:
+			RCC->BDCR |= RCC_BDCR_RTCSEL_Msk;
+			break;
+		default:
+			RCC->BDCR |= temp;	// restore the original configuration
+			break;
+	}
+
+	// Enable the RTC Clock
+	RCC->BDCR |= RCC_BDCR_RTCEN;
+
+	backup_domain_control_disable();
+
 	rtc_open_writing_priveledge();
 
-	// check which oscillator the rtc is using,
-	// and use formulas from reference manual accordingly
-	switch (RCC->BDCR & RCC_BDCR_RTCSEL) {
-		case 1:	//LSE
+	// Select the RTC clock source
+	switch (clock_source) {
+		case LSE:
 			RTC->PRER =
 				  (127 << RTC_PRER_PREDIV_A_Pos)
 				| (255 << RTC_PRER_PREDIV_S_Pos);
 			break;
-		case 2:	// LSI
+		case LSI:
 			RTC->PRER =
 				  (127 << RTC_PRER_PREDIV_A_Pos)
 				| (249 << RTC_PRER_PREDIV_S_Pos);
 			break;
-		case 3:	// HSE
+		case HSE:
 			// Depends heavily on the clock source
 			break;
-		default: // No Clock
-			// Let prescalers be whatever they are
+		default:
+			// Let pre-scalers be whatever they are
 			break;
 	}
 
-	// Bypass the Shdow registers to read RTC directly
+	// Bypass the Shadow registers to read RTC directly
 	RTC->CR |= RTC_CR_BYPSHAD;
 
 	rtc_close_writing_priveledge();
+
 }
+
+/****************************** RTC TIME SETTERS *****************************/
 
 /*
  * Sets the Year, Month, Date, and Day in the RTC
@@ -178,9 +222,11 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
 	rtc_close_writing_priveledge();
 }
 
+/****************************** RTC TIME GETTERS *****************************/
+
 /*
  * Returns the current RTC Time.
- * NOTE : The return values are stored in the function arguements
+ * NOTE : The return values are stored in the function arguments
  *
  * @param hour    Where the function stores the current hour value
  * @param minute  Where the function stores the current minute value
@@ -191,10 +237,9 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 	if ((RTC->CR & RTC_CR_BYPSHAD)) {
 		// Bypassing Shadow Registers
-		// requires reading the registers multiple times to ensure consistent values
+		// requires reading the registers multiple times
 
 		// temporary variables to hold the second read.
-		// forcefully given these values to enter the while loop
 		uint8_t temp_hour   = *hour   + 1;
 		uint8_t temp_minute = *minute + 1;
 		uint8_t temp_second = *second + 1;
