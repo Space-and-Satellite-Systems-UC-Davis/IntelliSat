@@ -1,6 +1,10 @@
 /*
  * rtc.h
  *
+ *  - September 23, 2023
+ *  	Author	: Darsh
+ *  	Log		: Included configurations
+ *
  *  - May 22-23, 2023 (Creation)
  *  	Author : Darsh
  *  	Log    : Wrote the primary rtc interface
@@ -10,15 +14,23 @@
 #define REALOP1_RTC_H_
 
 #include "stm32l476xx.h"
-#include "../clock_nvic_config.h"
 #include <stdint.h>
+#include "../core_config.h"
+
+/***************************** RTC CONFIGURATIONS ****************************/
 
 /*
  * Functions to interface with the STM32L476ZG's Internal RTC
  *
  * NOTE: The selection of which oscillator the RTC uses is done through the
- * RCC registers, in system_config/clock_nvic_config : rtc_clock_config()
+ * RCC registers, in rtc_clock_config()
  */
+
+#define LSI 'i'
+#define LSE 'l'
+#define HSI 'h'
+#define HSE 'x'
+
 
 #define January    1
 #define February   2
@@ -41,14 +53,19 @@
 #define Saturday   6
 #define Sunday     7
 
-/*
- * Sets the appropriate pre-scalers based on the oscillator source of the RTC.
+/**
+ * Enables the RTC's Clock. Sets the appropriate pre-scalers
+ * based on the oscillator source of the RTC.
+ * NOTE : The selected Oscillator must be turned on beforehand.
  *
- * @param None
+ * @param  clock_source   Predefined options in clock_nvic_config.h
+ * @param  forced_config  Setting this to 'false' results in the configuration not taking place in case the RTC is pre-initialized
  *
  * @returns None
  */
-void rtc_update_prescaler(int forced_config);
+void rtc_config(char clock_source, int forced_config);
+
+/****************************** RTC TIME SETTERS *****************************/
 
 /*
  * Sets the Year, Month, Date, and Day in the RTC
@@ -76,9 +93,11 @@ void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day);
  */
 void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second);
 
+/****************************** RTC TIME GETTERS *****************************/
+
 /*
  * Returns the current RTC Time.
- * NOTE : The return values are stored in the function arguements
+ * NOTE : The return values are stored in the function arguments
  *
  * @param hour    Where the function stores the current hour value
  * @param minute  Where the function stores the current minute value

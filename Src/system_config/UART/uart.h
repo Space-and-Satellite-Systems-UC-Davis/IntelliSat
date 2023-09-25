@@ -1,8 +1,6 @@
 /*
  * uart.h
  *
- * Change Log:
- *
  *	- May 11, 2023
  *		Author       : Darsh
  *		Log          : Added comments, plus configurable baud rate
@@ -17,6 +15,7 @@
 #ifndef REALOP1_UART_H_
 #define REALOP1_UART_H_
 
+#include "../../globals.h"
 #include "../GPIO/gpio.h"
 #include <string.h>
 
@@ -29,7 +28,7 @@
  *
  * @returns None
  */
-void uart_init(USART_TypeDef *bus, int baud_rate);
+bool usart_init(USART_TypeDef *bus, int baud_rate);
 
 /*
  * Utilizes USART hardware transmitter to send a character
@@ -40,7 +39,7 @@ void uart_init(USART_TypeDef *bus, int baud_rate);
  *
  * @returns None
  */
-void uart_transmitChar(USART_TypeDef *bus, char c);
+void usart_transmitChar(USART_TypeDef *bus, char c);
 
 /*
  * Utilizes USART hardware transmitter to send a variable length string
@@ -51,6 +50,6 @@ void uart_transmitChar(USART_TypeDef *bus, char c);
  *
  * @returns None
  */
-void uart_transmitStr(USART_TypeDef *bus, char message[]);
+void usart_transmitStr(USART_TypeDef *bus, char message[]);
 
 #endif	// REALOP1_UART_H_
