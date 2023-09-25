@@ -87,7 +87,7 @@ bool qspi_set_command(
 		uint8_t abmode,
 		uint8_t dcyc,
 		uint8_t dmode,
-		bool    dma = false
+		bool    dma
 ) {
 	if (qspi_status == QSPI_BUSY || (dma && QSPI_DMA_UNAVAILABLE)) {
 		return false;
@@ -121,8 +121,8 @@ bool qspi_send_command(
 		uint32_t data_length,
 		uint8_t *data,
 		bool r_or_w,
-		uint32_t timeout_period = QSPI_TIMEOUT_PERIOD,
-		bool dma = false
+		uint32_t timeout_period,
+		bool dma
 ) {
 	if (qspi_status != QSPI_READY) {
 		return false;
@@ -157,6 +157,7 @@ bool qspi_send_command(
 			if (qspi_status == QSPI_TIMEDOUT) {	// set by an interrupt
 				QUADSPI->CR |= QUADSPI_CR_ABORT;
 				goto qspi_send_command_complete;
+			}
 		}
 		if (r_or_w == true) {
 			data[i] = *(__IO uint8_t *)((__IO uint32_t *) &QUADSPI->DR);
@@ -173,8 +174,8 @@ qspi_send_command_complete:
 		// TODO: stop dma
 	}
 
-	if (qspi_status != QSPI_TIMDEOUT) {
-		qspi_status = QSPI_STATUS;
+	if (qspi_status != QSPI_TIMEDOUT) {
+		qspi_status = QSPI_SUCCESSFUL;
 	}
 	return true;
 }
@@ -187,12 +188,12 @@ bool qspi_status_poll(
 		uint8_t instruction,
 		uint8_t mask,
 		uint8_t match,
-		uint32_t timeout_period = QSPI_TIMEOUT_PERIOD
+		uint32_t timeout_period
 ) {
 	if (qspi_status == QSPI_BUSY) {
 		return false;
 	}
-	qspi_in_use = QSPI_BUTY;
+	qspi_in_use = QSPI_BUSY;
 
 	qspi_disable();
 	QUADSPI->PSMKR = mask;
@@ -277,4 +278,10 @@ void QUADSPI_IRQHandler() {
 
 		// isn't used as Memory-Mapped mode isn't used
 	}
+}
+
+
+
+void branch_main() {
+	while(1);
 }

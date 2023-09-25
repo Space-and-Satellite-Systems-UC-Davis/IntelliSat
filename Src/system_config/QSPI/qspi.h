@@ -35,7 +35,7 @@ bool qspi_set_command(
 		uint8_t abmode,
 		uint8_t dcyc,
 		uint8_t dmode,
-		bool    dma = false
+		bool    dma
 );
 
 bool qspi_send_command(
@@ -44,8 +44,8 @@ bool qspi_send_command(
 		uint32_t data_length,
 		uint8_t  *data,
 		bool     r_or_w,
-		uint32_t timeout_period = QSPI_TIMEOUT_PERIOD,
-		bool     dma = false
+		uint32_t timeout_period,
+		bool     dma
 );
 
 bool qspi_status_poll(

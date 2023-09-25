@@ -53,7 +53,7 @@ void spi2_config() {
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	GPIOB->PUPD |= SPI2_CS_PUPD;
+	GPIOB->PUPDR |= SPI2_CS_PUPD;
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk
 		| GPIO_MODER_MODE13_Msk
@@ -118,9 +118,12 @@ void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
+/*
 bool spi1_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 
 }
+*/
+
 
 // assumes spi_start_communication(SPI2) has already been called
 bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
@@ -130,9 +133,9 @@ bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t s
 		while(!(SPI2->SR & SPI_SR_TXE));	// wait for TXFIFO to be empty
 		SPI2->DR = (*transmission)++;			// fill TXFIFO with the instruction
 
-		if (reception != NULL) {
+		if (reception) {
 			while (SPI2->SR & SPI_SR_RXNE) {
-				(*reception)++ = SPI2->DR;
+				*(reception++) = SPI2->DR;
 			}
 		}
 	}
@@ -150,6 +153,8 @@ bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t s
 	return true;
 }
 
+/*
 bool spi3_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
-
+	return true;
 }
+*/

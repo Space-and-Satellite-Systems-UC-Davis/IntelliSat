@@ -1,8 +1,6 @@
 /*
  * uart.h
  *
- * Change Log:
- *
  * 	- September 22, 2023
  * 		Author	: Darsh
  * 		Log		: Added Clocks and GPIO
@@ -54,24 +52,24 @@ void uart5_gpio_init();
  * @returns None
  */
 bool usart_init(USART_TypeDef *bus, int baud_rate){
-	switch(bus) {
-		case USART1:
+	switch((int)bus) {
+		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			break;
-		case USART2:
+		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 			break;
-		case USART3:
+		case (int)USART3:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
 			usart3_gpio_init();
 			break;
-		case UART4:
+		case (int)UART4:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
 			break;
-		case UART5:
+		case (int)UART5:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART5EN;
 			break;
-		case LPUART1:
+		case (int)LPUART1:
 			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 			break;
 		default:
@@ -129,7 +127,7 @@ void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Transfer each character one at a time
-	for (int i = 0; i < strlen(message); i++){
+	for (int i = 0; i < (int)strlen(message); i++){
 		// wait until Data register is empty
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register

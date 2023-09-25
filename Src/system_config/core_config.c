@@ -58,7 +58,7 @@ void init_core_clocks() {
 		| RCC_AHB2ENR_ADCEN		// enable ADC
 		| RCC_AHB2ENR_RNGEN;	// enable Random Number Generator
 
-	RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN 	// enable Power Control
+	RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN; 	// enable Power Control
 	RCC->APB2ENR  |= RCC_APB2ENR_SYSCFGEN;	//
 
 	// enable internal oscillators

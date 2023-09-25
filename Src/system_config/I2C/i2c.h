@@ -10,6 +10,7 @@
 #ifndef REALOP1_I2C_H_
 #define REALOP1_I2C_H_
 
+#include "../../globals.h"
 #include "stm32l476xx.h"
 #include "../GPIO/gpio.h"
 
