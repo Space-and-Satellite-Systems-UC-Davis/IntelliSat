@@ -6,8 +6,10 @@
  *  	Log		: ...
  */
 
+#include "../../globals.h"
 #include "timers.h"
 #include "../LED/led.h"
+#include "../../tools/print_scan.h"
 
 // initializing Global (external) variables
 int systick_time = 0;

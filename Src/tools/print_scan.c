@@ -22,12 +22,11 @@
  * @returns None
  */
 void printMsg(char *message, ...) {
-	// TODO : Add ability to accept variadic strings
 	char buff[128];
 
 	va_list args;
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	uart_transmitStr(USART3, buff);
+	usart_transmitStr(USART3, buff);
 }

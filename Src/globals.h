@@ -3,7 +3,6 @@
 
 #include "stm32l476xx.h"
 
-
 typedef enum {false, true} bool;
 
 // Global Variables

@@ -11,6 +11,8 @@
 
 void timer_init();
 
+void systick_init();
+
 
 
 #endif	// REALOP1_TIMERS_H_

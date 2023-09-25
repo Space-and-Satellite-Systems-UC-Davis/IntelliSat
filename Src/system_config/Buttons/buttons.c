@@ -6,10 +6,8 @@
  *  	Log		: Moved all button related code in one place
  */
 
-#include "buttons.h"
 
-extern bool button1;
-extern bool button2;
+#include "buttons.h"
 
 /*************************** Buttons Initializers ****************************/
 
@@ -73,6 +71,9 @@ void buttons_init() {
 
 #include "../../tools/print_scan.h"
 
+bool button0;
+bool button1;
+
 /**
  * Interrupt Handler for Button 0
  * Prints a message to the console
@@ -82,7 +83,7 @@ void buttons_init() {
  * @returns None
  */
 void Button0_Handler(){
-	button = true;
+	button0 = true;
 }
 
 /**
@@ -94,21 +95,5 @@ void Button0_Handler(){
  * @returns None
  */
 void Button1_Handler(){
-	TIM2->CR1 &= ~TIM_CR1_CEN;
-
-	static char press = 0;
-	int arr_val;
-	int core_clock_speed = core_MHz * 1000000;
-
-	arr_val = (core_clock_speed / (press + 1)) - 1;
-
-	TIM2->PSC = press;
-	TIM2->ARR = arr_val;
-
-	TIM2->CR1 |= TIM_CR1_CEN;
-
-	printMsg("\tPress = %d\n", press);
-	if (++press > 3) {
-		press = 0;
-	}
+	button1 = true;
 }
