@@ -13,6 +13,8 @@
 
 // initializing Global (external) variables
 int systick_time = 0;
+int ag_counter = 0;
+int heartbeat_counter = 0;
 
 void timer_init() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
@@ -42,9 +44,6 @@ void systick_init() {
  * @returns None
  */
 void SysTick_Handler() {
-	static int heartbeat_counter = 0;
-	static int ag_counter = 0;
-
 	systick_time++;
 
 	// toggle LEDs
@@ -68,9 +67,9 @@ void SysTick_Handler() {
 	}
 }
 
-void TIM2_IRQHandler() {
-	static int num = 0;
+int num = 0;
 
+void TIM2_IRQHandler() {
 	if (TIM2->SR & TIM_SR_UIF) {
 		TIM2->SR &= ~TIM_SR_UIF;
 
