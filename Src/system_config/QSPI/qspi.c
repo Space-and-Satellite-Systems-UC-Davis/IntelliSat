@@ -9,7 +9,9 @@ bool qspi_in_use = false;
 bool qspi_dma_use = false;
 bool timeout = false;
 
-
+/*
+ *
+ */
 int get_qspi_status() {
 	return qspi_status;
 }
@@ -93,6 +95,7 @@ bool qspi_set_command(
 		return false;
 	}
 	qspi_disable();
+	QUADSPI->CR &= ~QUADSPI_CR_TCIE;
 	QUADSPI->CCR &=
 		  ~(QUADSPI_CCR_FMODE)
 		& ~(QUADSPI_CCR_IMODE)
@@ -109,12 +112,31 @@ bool qspi_set_command(
 		| (dcyc << QUADSPI_CCR_DCYC_Pos)
 		| (dmode << QUADSPI_CCR_DMODE_Pos);
 	if (dma) {
-		// TODO: configure DMA
+		DMA2_Channel7->CCR &= ~(
+			  DMA_CCR_MEM2MEM_Msk
+			| DMA_CCR_MSIZE_Msk
+			| DMA_CCR_PSIZE_Msk
+			| DMA_CCR_MINC_Msk
+			| DMA_CCR_PINC_Msk
+			| DMA_CCR_CIRC_Msk
+			| DMA_CCR_DIR_Msk
+			| DMA_CCR_EN_Msk
+		);
+		RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
+		DMA2_CSELR->CSELR &= ~(DMA_CSELR_C7S_Msk);
+		DMA2_CSELR->CSELR |= (3U << DMA_CSELR_C7S_Pos);
+		DMA2_Channel7->CCR |=
+			  (0x00 << DMA_CCR_MSIZE_Pos)
+			| (0x00 << DMA_CCR_PSIZE_Pos)
+			| DMA_CCR_MINC;
 	}
 	qspi_status = QSPI_READY;
 	return true;
 }
 
+/*
+ *
+ */
 bool qspi_send_command(
 		uint8_t instruction,
 		uint32_t address,
@@ -129,9 +151,13 @@ bool qspi_send_command(
 	}
 
 	if (dma) {
-		// TODO: configure DMA
+		DMA2_Channel7->CNDTR = (uint16_t)data_length;
+		DMA2_Channel7->CPAR  = QUADSPI->DR;
+		DMA2_Channel7->CMAR  = data;
+		DMA2_Channel7->CCR  |=
+			  (r_or_w << DMA_CCR_DIR)
+			| DMA_CCR_EN;
 		QUADSPI->CR |= QUADSPI_CR_DMAEN;
-		qspi_dma_use = true;
 	}
 
 	qspi_enable();
@@ -146,6 +172,8 @@ bool qspi_send_command(
 		 * When the transfer is complete, the TC interrupt of the QSPI
 		 * will close the DMA Channel as well as the QSPI process
 		 */
+		QUADSPI->CR |= QUADSPI_CR_TCIE;
+		qspi_dma_use = true;
 		return true;
 	}
 
@@ -170,10 +198,6 @@ qspi_send_command_complete:
 
 	while (QUADSPI->SR & QUADSPI_SR_BUSY);
 	qspi_disable();
-	if (dma) {
-		// TODO: stop dma
-	}
-
 	if (qspi_status != QSPI_TIMEDOUT) {
 		qspi_status = QSPI_SUCCESSFUL;
 	}
@@ -232,10 +256,6 @@ bool qspi_status_poll(
 
 
 
-
-
-
-
 #define qspi_stop_status_polling() { \
 		QUADSPI->CCR  &= ~(QUADSPI_CCR_FMODE | QUADSPI_CCR_DMODE); \
 		QUADSPI->CR   &= ~QUADSPI_CR_APMS; \
@@ -257,20 +277,20 @@ void QUADSPI_IRQHandler() {
 		QUADSPI->FCR |= QUADSPI_FCR_CTEF;
 
 		qspi_status = QSPI_TRANSFER_ERROR;
-		// TODO: 17.4.13
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TCF) {	// Transfer Complete
 		QUADSPI->FCR |= QUADSPI_FCR_CTCF;
 
 		qspi_status = QSPI_SUCCESSFUL;
-		// TODO
-		/*
-		 * Reset QUADSPI Configurations
-		 */
+		QUADSPI->CCR &= ~(
+			  QUADSPI_CCR_FMODE_Msk
+			| QUADSPI_CCR_DMODE_Msk
+			| QUADSPI_CCR_ADMODE_Msk
+			| QUADSPI_CCR_IMODE
+			| QUADSPI_CCR_INSTRUCTION_Msk);
 		if (qspi_dma_use) {
-			/*
-			 * Reset DMA Channel
-			 */
+			qspi_dma_use = false;
+			DMA2_Channel7->CCR &= ~DMA_CCR_EN;
 		}
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TOF) {	// Timeout
@@ -278,10 +298,4 @@ void QUADSPI_IRQHandler() {
 
 		// isn't used as Memory-Mapped mode isn't used
 	}
-}
-
-
-
-void branch_main() {
-	while(1);
 }

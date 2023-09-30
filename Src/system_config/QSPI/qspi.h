@@ -18,6 +18,16 @@
 
 #define QSPI_TIMEOUT_PERIOD  1000000	// TODO
 
+#define QSPI_INDIRECT_WRITE		0x00
+#define QSPI_INDIRECT_READ		0x01
+#define QSPI_AUTOMATIC_POLLING	0x02
+#define QSPI_MEMORY_MAPPED		0x03
+
+#define QSPI_UNUSED	0x00
+#define QSPI_1_WIRE	0x01
+#define QSPI_2_WIRE	0x02
+#define QSPI_4_WIRE	0x03
+
 
 #define qspi_on()	   RCC->AHB3ENR |= RCC_AHB3ENR_QSPIEN
 #define qspi_off()	   RCC->AHB3ENR &= ~RCC_AHB3ENR_QSPIEN;

@@ -19,11 +19,25 @@
  * 	@returns None
  */
 void all_led_init() {
+	RCC->AHB2ENR |=
+		  RCC_AHB2ENR_GPIODEN
+		| RCC_AHB2ENR_GPIOEEN
+		| RCC_AHB2ENR_GPIOGEN;
+
 	while (GPIOD->OTYPER == 0xFFFFFFFF);
 	while (GPIOE->OTYPER == 0xFFFFFFFF);
 	while (GPIOG->OTYPER == 0xFFFFFFFF);
 
 	// configure the LED D0-D7 pins to be Output mode
+	GPIOD->MODER &= ~(
+			  GPIO_MODER_MODE0_Msk 	// D0
+			| GPIO_MODER_MODE1_Msk	// D1
+			| GPIO_MODER_MODE2_Msk	// D2
+			| GPIO_MODER_MODE3_Msk	// D3
+			| GPIO_MODER_MODE4_Msk	// D4
+			| GPIO_MODER_MODE5_Msk	// D5
+			| GPIO_MODER_MODE6_Msk	// D6
+			| GPIO_MODER_MODE7_Msk);// D7
 	GPIOD->MODER |=
 		  GPIO_MODER_MODE0_0 	// D0
 		| GPIO_MODER_MODE1_0	// D1
@@ -38,6 +52,12 @@ void all_led_init() {
 	GPIOE->MODER |= GPIO_MODER_MODE2_0;
 
 	// Configure the pins on Port G to be in Output Mode
+	GPIOG->MODER &= ~(
+			  GPIO_MODER_MODE6_Msk	// LED All Good (AG)
+			| GPIO_MODER_MODE7_Msk	// LED FAULT
+			| GPIO_MODER_MODE9_Msk	// LED C
+			| GPIO_MODER_MODE11_Msk	// LED A
+			| GPIO_MODER_MODE12_Msk);	// LED B
 	GPIOG->MODER |=
 		  GPIO_MODER_MODE6_0	// LED All Good (AG)
 		| GPIO_MODER_MODE7_0	// LED FAULT
