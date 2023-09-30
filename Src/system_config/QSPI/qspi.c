@@ -129,6 +129,7 @@ bool qspi_set_command(
 			  (0x00 << DMA_CCR_MSIZE_Pos)
 			| (0x00 << DMA_CCR_PSIZE_Pos)
 			| DMA_CCR_MINC;
+		qspi_dma_use = true;
 	}
 	qspi_status = QSPI_READY;
 	return true;
@@ -143,14 +144,13 @@ bool qspi_send_command(
 		uint32_t data_length,
 		uint8_t *data,
 		bool r_or_w,
-		uint32_t timeout_period,
-		bool dma
+		uint32_t timeout_period
 ) {
 	if (qspi_status != QSPI_READY) {
 		return false;
 	}
 
-	if (dma) {
+	if (qspi_dma_use) {
 		DMA2_Channel7->CNDTR = (uint16_t)data_length;
 		DMA2_Channel7->CPAR  = QUADSPI->DR;
 		DMA2_Channel7->CMAR  = data;
@@ -158,6 +158,7 @@ bool qspi_send_command(
 			  (r_or_w << DMA_CCR_DIR)
 			| DMA_CCR_EN;
 		QUADSPI->CR |= QUADSPI_CR_DMAEN;
+		QUADSPI->CR |= QUADSPI_CR_TCIE;
 	}
 
 	qspi_enable();
@@ -167,13 +168,12 @@ bool qspi_send_command(
 
 	qspi_status = QSPI_BUSY;
 
-	if (dma) {
+	if (qspi_dma_use) {
 		/*
 		 * When the transfer is complete, the TC interrupt of the QSPI
 		 * will close the DMA Channel as well as the QSPI process
 		 */
-		QUADSPI->CR |= QUADSPI_CR_TCIE;
-		qspi_dma_use = true;
+
 		return true;
 	}
 

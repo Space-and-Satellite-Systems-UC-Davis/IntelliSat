@@ -14,7 +14,7 @@
 #define QSPI_TIMEDOUT        -1
 #define QSPI_TRANSFER_ERROR  -2
 
-#define QSPI_DMA_UNAVAILABLE  false		// TODO
+#define QSPI_DMA_UNAVAILABLE false		// TODO
 
 #define QSPI_TIMEOUT_PERIOD  1000000	// TODO
 
@@ -54,8 +54,7 @@ bool qspi_send_command(
 		uint32_t data_length,
 		uint8_t  *data,
 		bool     r_or_w,
-		uint32_t timeout_period,
-		bool     dma
+		uint32_t timeout_period
 );
 
 bool qspi_status_poll(

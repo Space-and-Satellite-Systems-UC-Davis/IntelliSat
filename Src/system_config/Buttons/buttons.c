@@ -54,13 +54,18 @@ void buttons_init() {
 	while (GPIOB->OTYPER == 0xFFFFFFFF);
 
 	// configure Input mode for BTN0 and BTN1
-	GPIOB->MODER = 0x00000000;	// TODO
+	GPIOB->MODER &= ~(
+		  GPIO_MODER_MODE10_Msk
+		| GPIO_MODER_MODE11_Msk);
 	// configure Pull-Up mode for BTN0 and BTN1
+	GPIOB->PUPDR |= ~(
+		  GPIO_PUPDR_PUPD10_Msk		// BTN0
+		| GPIO_PUPDR_PUPD11_Msk);	// BTN1
 	GPIOB->PUPDR |=
 		  GPIO_PUPDR_PUPD10_0	// BTN0
 		| GPIO_PUPDR_PUPD11_0;	// BTN1
 
-	void button_interrupt_config();
+	button_interrupt_config();
 
 	// Set a high priority for pin 10-15 interrupts, and enable the interrupts
 	NVIC_SetPriority(EXTI15_10_IRQn, 1);
