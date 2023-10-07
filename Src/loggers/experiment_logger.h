@@ -35,6 +35,8 @@ struct LocalExpLogs {
     uint64_t buffer[LOCAL_EXP_LOG_BUFFER_SIZE];
 };
 
+extern struct ExperimentLogHeader * current_exp_header;
+
 int is_exp_being_logged();
 
 void start_exp_logging();
@@ -54,8 +56,7 @@ uint8_t build_and_add_exp_log(
     int16_t  dgyro_x,
     int16_t  dgyro_y,
     int16_t  dgyro_z,
-    unsigned int parity,
-    struct LocalExpLogs * local_exp_logs
+    unsigned int parity
 );
 
 uint8_t get_exp_log(uint64_t addr, uint64_t const exp_log_buff[], union ExperimentLog * const retrieved_log);
