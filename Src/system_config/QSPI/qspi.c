@@ -7,7 +7,6 @@
 short int qspi_status;
 bool qspi_in_use = false;
 bool qspi_dma_use = false;
-bool timeout = false;
 
 /*
  *
@@ -77,6 +76,8 @@ void qspi_config(uint8_t flash_size) {
 	QUADSPI->DCR = 0;
 	QUADSPI->DCR |= (flash_size << QUADSPI_DCR_FSIZE_Pos);
 	qspi_enable();
+
+	NVIC_EnableIRQ(QUADSPI_IRQn);
 }
 
 /*
@@ -157,12 +158,11 @@ bool qspi_send_command(
 		DMA2_Channel7->CCR  |=
 			  (r_or_w << DMA_CCR_DIR)
 			| DMA_CCR_EN;
-		QUADSPI->CR |= QUADSPI_CR_DMAEN;
-		QUADSPI->CR |= QUADSPI_CR_TCIE;
+		QUADSPI->CR |= (QUADSPI_CR_DMAEN | QUADSPI_CR_TCIE);
 	}
 
 	qspi_enable();
-	QUADSPI->DLR =  data_length - 1;
+	QUADSPI->DLR =  data_length - 1;	// -1 as stated in Reference Manual
 	QUADSPI->CCR |= (instruction << QUADSPI_CCR_INSTRUCTION_Pos);
 	QUADSPI->AR  =   address;
 

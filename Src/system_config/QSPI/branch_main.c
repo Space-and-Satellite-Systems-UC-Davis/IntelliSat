@@ -2,7 +2,7 @@
 #include "../../globals.h"
 
 
-#define DATA_LEN 3
+#define DATA_LEN 10
 
 void branch_main() {
 	qspi_config(23);
@@ -13,18 +13,18 @@ void branch_main() {
 		if (button1) {
 			button1 = false;
 
-			// Reading JPEC ID
+			// Reading
 			qspi_set_command(
 					QSPI_INDIRECT_READ,
 					QSPI_1_WIRE,
-					QSPI_UNUSED,
+					QSPI_1_WIRE,
 					QSPI_UNUSED,
 					0x00,
 					QSPI_1_WIRE,
 					true
 			);
 			qspi_send_command(
-					0x9F,
+					0x03,
 					0x00,
 					DATA_LEN,
 					buffer,
