@@ -5,47 +5,89 @@
 #include "../event_logger.h"
 #include "../experiment_logger.h"
 
-// Example of what the metadata could look like
-// This could be read once before logging and then the logger can use it to track logging.
-struct FlashLogMetadata
+#pragma pack(push,1)
+struct EventLogHeader
 {
-  uint64_t buffer_addr;   // Holds address of logs in flash
-  uint64_t tail;          // location of next position to add log. Can be absolute addr or offset from buffer_addr (i.e. 0 means at buffer addr)
-  uint64_t buffer_size;   // Can use size of buffer or last address to insert at.
-  uint64_t log_size;      // Holds the size of a single log (i.e. how many uint64_ts). Useful for if we want this to be more general. Otherwise we can hardcode it.
+  uint32_t start_addr: 24;
+  uint32_t end_addr: 24;
+  uint32_t latest_addr: 24;
+  uint32_t oldest_block_addr: 24;
 };
 
-// A generic function to pull metadata from the log section headers
-// Meant to be called before you write the first log
-// The most important part is the tail element as it WILL change as the program runs and must persist
-// The rest technically just stay the same and could be hard coded.
-struct FlashLogMetadata get_log_metadata(uint64_t flash_log_buffer[]);
+struct ExperimentLogHeader
+{
+  uint32_t start_addr: 24;
+  uint32_t end_addr: 24;
+  uint32_t latest_addr: 24;
+  uint32_t oldest_block_addr: 24;
+
+  uint32_t start_datetime: 22;
+  uint8_t exit_status: 4;
+  uint16_t extra: 14;
+};
+
+struct FlashHeader
+{
+  struct EventLogHeader events_header;
+  struct ExperimentLogHeader exp1_header;
+  struct ExperimentLogHeader exp2_header;
+  struct ExperimentLogHeader exp3_header;
+  struct ExperimentLogHeader exp4_header;
+  struct ExperimentLogHeader exp5_header;
+  uint8_t current_exp_num: 8;
+  uint32_t backup_tle_addr: 24;
+  uint8_t extra[155];
+};
+#pragma pack(pop)
 
 // EVENT LOGS
 // Copies event logs in bulk from local storage to mock flash
 // "empties" local buffer by setting the tail of of the local logs struct to 0
-// #define MOCK_EVENT_LOG_BUFFER_SIZE 2 + (1 * 468750)
-#define MOCK_EVENT_LOG_BUFFER_SIZE 2 + (1 * 64)
 uint8_t push_event_logs_to_flash(struct LocalEventLogs * local_event_logs);
-extern uint64_t flash_event_log_buffer[MOCK_EVENT_LOG_BUFFER_SIZE];
-extern struct FlashLogMetadata flash_event_logs_metadata;
+
+// #define MOCK_EVENT_LOG_BUFFER_SIZE 468750
+#define MOCK_EVENT_LOG_COUNT 64
+
 
 // Copies exp logs in bulk from local storage to mock flash
 // "empties" local buffer by setting tail to 0
-uint8_t push_local_exp_to_flash(struct LocalExpLogs * local_exp_logs);
-// #define MOCK_EXPERIMENT_LOG_BUFFER_SIZE 2 + (2 * 78125)
-#define MOCK_EXPERIMENT_LOG_BUFFER_SIZE 2 + (2 * 64)
-extern uint64_t flash_exp_log_buffer[MOCK_EXPERIMENT_LOG_BUFFER_SIZE];
-extern struct FlashLogMetadata flash_exp_logs_metadata;
+uint8_t push_exp_logs_to_flash(struct LocalExpLogs * local_exp_logs,  struct ExperimentLogHeader * exp_header);
+
+// #define MOCK_EXPERIMENT_LOG_BUFFER_SIZE 78125
+#define MOCK_EXP_LOG_COUNT 64
 
 
+// In-memory copy of the header stored in the (mock) flash
+extern struct FlashHeader flash_header;
+
+// Copies flash header data from mock flash to flash header struct
+// Can be used on startups after the first one, or perhaps for ECC tasks
+// void get_flash_header(struct FlashHeader * out);
+void fetch_flash_header();
 
 
+// Initialize header in flash with some default values. 
+// Useful for setting up the flash for the first time.
+void init_flash_header();
+
+enum LogType
+{
+  EVENT = 0,
+  EXP1 = 1,
+  EXP2 = 2,
+  EXP3 = 3,
+  EXP4 = 4,
+  EXP5 = 5
+};
 
 
+// Updates the header in mock flash by copying struct to header 
+void update_flash_header();
 
 
-
+// copies the oldest page from flash as `page_buff` argument
+// Returns the type of log (for ECC subsystem to inform flash driver where to write corrected page)
+enum LogType get_oldest_page(uint64_t page_buff[32], uint32_t * block_addr);
 
 
 

@@ -5,42 +5,46 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 
-// Small buffer that represents log storage on the MCU
-uint64_t local_event_log_buffer[LOCAL_EVENT_LOG_BUFFER_SIZE] = {[0] = LOCAL_EVENT_LOG_BUFFER_SIZE, [1] = 1};
+
+struct LocalEventLogs local_event_logs = {
+    .buffer_size = LOCAL_EVENT_LOG_BUFF_SIZE,
+    .tail = 0,
+    .buffer = {0}
+};
+
+// TODO: log overflows
+void handle_event_overflow() {
+    push_event_logs_to_flash(&local_event_logs);
+}
 
 uint8_t add_event_log(
-    uint64_t event_log,
-    struct LocalEventLogs * local_event_logs
+    uint64_t event_log
 ) {
-    uint64_t current_log_index = local_event_logs->tail;
+    uint64_t current_log_index = local_event_logs.tail;
 
-    local_event_logs->buffer[current_log_index] = event_log;
+    local_event_logs.buffer[current_log_index] = event_log;
     
     current_log_index++;
     
-    if (current_log_index >= local_event_logs->buffer_size) {
-        local_event_logs->tail = 0;
+    if (current_log_index >= local_event_logs.buffer_size) {
+        printf("overflow\n");
+        local_event_logs.tail = 0;
+        handle_event_overflow();
     } else {
-        local_event_logs->tail = current_log_index;
+        local_event_logs.tail = current_log_index;
     }
 
     return 0;
 }
-
-struct LocalEventLogs local_event_logs = {
-    .buffer_size = LOCAL_EVENT_LOG_BUFFER_SIZE,
-    .tail = 0,
-    .buffer = {0}
-};
 
 uint8_t build_and_add_event_log(
     unsigned int rtc_datetime,     // Date+Hr+Min+Sec
     unsigned int current_mode,
     unsigned int action,
     unsigned int details,
-    unsigned int extra,
-    struct LocalEventLogs * local_event_logs
+    unsigned int extra
 ) {
 
     if (   !fits_in_bits(rtc_datetime, 22)
@@ -62,33 +66,38 @@ uint8_t build_and_add_event_log(
         .extra = extra
     }};
 
-    add_event_log(event_log.as_uint64, local_event_logs);
+    add_event_log(event_log.as_uint64);
     return 0;
 }
 
 
-/*
-int main() {
-    flash_event_logs_metadata = get_log_metadata(flash_event_log_buffer);
 
-    unsigned int curr_idx = 0;
+int main() {
+
+    init_flash_header();
+    fetch_flash_header();
+
     for (int i = 0; i < 128; ++i) {
-        build_and_add_event_log(i, 0, 0, 0, i, &local_event_logs);
-        if (local_event_logs.tail == 0) {
-            printf("Moving from local to flash\n");
-            push_event_logs_to_flash(&local_event_logs);
-        }
+        build_and_add_event_log(i, 0, 0, 0, i);
     }
     
     printf("Local Logs:\n");
-    for(int i = 0; i < local_event_logs.buffer_size; ++i) {
-        printf("L Event Log, rtc_time: %u\n", ((union EventLog){local_event_logs.buffer[i]}).as_struct.rtc_datetime );
+    union EventLog ev_log;
+    for(uint32_t i = 0; i < local_event_logs.buffer_size; ++i) {
+        ev_log = (union EventLog)local_event_logs.buffer[i];
+        printf("Local ev Log #%u - rtc_time: %u, extra: %u\n", i, ev_log.as_struct.rtc_datetime, ev_log.as_struct.extra );
     }
+    puts("A");
 
-    
-    printf("\nMock Flash Logs:\n");
-    for(int i = 2; i < flash_event_logs_metadata.buffer_size; ++i) {
-        printf("F Event Log, rtc_time: %u\n", ((union EventLog){flash_event_log_buffer[i]}).as_struct.rtc_datetime );
-    }
+    uint64_t block_buff[32];
+    uint32_t block_addr;
+
+    enum LogType log_type = get_oldest_page(block_buff, &block_addr);
+    assert(log_type == EVENT);
+
+    union EventLog ev_logs[sizeof(block_buff)/sizeof(union EventLog)];
+
+    static_assert(sizeof(ev_logs) >= sizeof(block_buff), "Hmm");
+
+    memcpy(ev_logs, block_buff, sizeof(ev_logs));
 }
-*/

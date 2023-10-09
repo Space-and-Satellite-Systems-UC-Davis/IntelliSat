@@ -57,27 +57,31 @@ union EventLog {
 	uint64_t as_uint64;
 };
 
-#define LOCAL_EVENT_LOG_BUFFER_SIZE (1 * 64)
+#define LOCAL_EVENT_LOG_COUNT 32
+#define LOCAL_EVENT_LOG_BUFF_SIZE (LOCAL_EVENT_LOG_COUNT)
 
 struct LocalEventLogs {
-    uint64_t buffer_size;
-    uint64_t tail;
-    uint64_t buffer[LOCAL_EVENT_LOG_BUFFER_SIZE];
+    uint32_t buffer_size;
+    uint32_t tail;
+    uint64_t buffer[LOCAL_EVENT_LOG_BUFF_SIZE];
 };
 
 uint8_t get_local_event_log(uint64_t idx, struct LocalEventLogs * local_event_logs, union EventLog * const retrieved_log);
 
 uint8_t get_latest_event_log(struct LocalEventLogs * local_event_logs, union EventLog * const retrieved_log);
 
-uint8_t add_event_log( uint64_t event_log, struct LocalEventLogs * local_event_logs);
+uint8_t add_event_log( uint64_t event_log);
 
+/**
+ * Pass in event info to log. Stores event log locally.
+ * Calls 
+ */
 uint8_t build_and_add_event_log(
     unsigned int rtc_datetime,     // Date+Hr+Min+Sec
     unsigned int current_mode,
     unsigned int action,
     unsigned int details,
-    unsigned int extra,
-    struct LocalEventLogs * local_event_logs
+    unsigned int extra
 );
 
 #endif
