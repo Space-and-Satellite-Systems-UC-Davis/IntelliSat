@@ -9,12 +9,6 @@ void pwm_timer_gpio() {
 	GPIOD->AFR[1] |= (2 << GPIO_AFRH_AFSEL12_Pos);
 }
 
-/*
- * Configures the PWM timer registers to generate a signal at a given period
- *
- * @param   period Period of the PWM signal, in microseconds. Note: Cannot be above 32K.
- * @retturn bool   To indicate if the initialization was successful
- */
 bool init_pwm_timer(uint32_t period) {
 	pwm_timer_gpio();
 	EscControlTimer_ClockEnable();

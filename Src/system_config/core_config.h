@@ -29,18 +29,6 @@
 void init_core_clocks();
 
 /**
- * Initializes the Nested Vector Interrupt Controller (NVIC) for
- * 		- Systick Timer (1ms)
- * 		- GPIO Pins 10-15
- * 			- Buttons 0 & 1
- *
- * @param None
- *
- * @returns None
- */
-void init_nvic();
-
-/**
  * Enables writing access to registers powered by the Backup Domain
  * Key registers include RCC's BDRC, and several key RTC registers
  *

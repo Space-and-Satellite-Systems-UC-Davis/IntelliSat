@@ -14,15 +14,6 @@
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
-/*
- * Opens the RTC up for making changes to it.
- * NOTE: This action stops the RTC from running,
- * until writing privilege is closed.
- *
- * @param None
- *
- * @returns None
- */
 void rtc_open_writing_priveledge() {
 	// Allow Backup Domain Writing Access
 	backup_domain_control_enable();
@@ -36,14 +27,6 @@ void rtc_open_writing_priveledge() {
 	while (!(RTC->ISR & RTC_ISR_INITF));
 }
 
-/*
- * Locks up the RTC so changes can't be made to it.
- * This allows the RTC to start working again.
- *
- * @param None
- *
- * @returns None
- */
 void rtc_close_writing_priveledge() {
 	// Exit Initialization Mode
 	RTC->ISR &= ~RTC_ISR_INIT;
@@ -57,16 +40,6 @@ void rtc_close_writing_priveledge() {
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
-/**
- * Enables the RTC's Clock. Sets the appropriate pre-scalers
- * based on the oscillator source of the RTC.
- * NOTE : The selected Oscillator must be turned on beforehand.
- *
- * @param clock_source   Predefined options in clock_nvic_config.h
- * @param forced_config  Setting this to 'false' results in the configuration not taking place in case the RTC is pre-initialized
- *
- * @returns None
- */
 void rtc_config(char clock_source, int forced_config) {
 	// do nothing if clock is already configured
 	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
@@ -133,18 +106,6 @@ void rtc_config(char clock_source, int forced_config) {
 
 /****************************** RTC TIME SETTERS *****************************/
 
-/*
- * Sets the Year, Month, Date, and Day in the RTC
- * NOTE : rtc.h provides a few definitions to use for 'month' and 'day'
- * NOTE : 'year' refers only to the tens and ones digits, so 23 in 2023
- *
- * @param year   The tens and ones digits of year to be set.
- * @param month  The month to be set. Has usable declarations in rtc.h
- * @param date   The date to be set.
- * @param day    The day to be set. Has usable declarations in rtc.h
- *
- * @returns None
- */
 void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 	// check to make sure all inputs are valid
 	if (year == 0 || year > 99) {
@@ -187,15 +148,6 @@ void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 	rtc_close_writing_priveledge();
 }
 
-/*
- * Sets a Time on the RTC
- *
- * @param hour    The hour to be set
- * @param minute  The minute to be set
- * @param second  The second to be set
- *
- * @returns None
- */
 void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
 	rtc_open_writing_priveledge();
 
@@ -224,16 +176,6 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
 
 /****************************** RTC TIME GETTERS *****************************/
 
-/*
- * Returns the current RTC Time.
- * NOTE : The return values are stored in the function arguments
- *
- * @param hour    Where the function stores the current hour value
- * @param minute  Where the function stores the current minute value
- * @param second  Where the function stores the current second value
- *
- * @returns None
- */
 void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 	if ((RTC->CR & RTC_CR_BYPSHAD)) {
 		// Bypassing Shadow Registers

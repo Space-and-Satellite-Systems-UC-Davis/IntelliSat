@@ -11,7 +11,7 @@
 
 #include "../system_config/UART/uart.h"
 
-/*
+/**
  * Prints a variable length string to the console
  *
  * @param message The string (character array) to be printed

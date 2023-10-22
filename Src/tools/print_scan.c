@@ -12,13 +12,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-/*
- * Prints a variable length string to the console. Only prints 128 characters max
- *
- * @param message The string (character array) to be printed
- *
- * @returns None
- */
 void printMsg(char *message, ...) {
 	char buff[128];
 

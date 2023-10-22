@@ -67,7 +67,7 @@ void rtc_config(char clock_source, int forced_config);
 
 /****************************** RTC TIME SETTERS *****************************/
 
-/*
+/**
  * Sets the Year, Month, Date, and Day in the RTC
  * NOTE : rtc.h provides a few definitions to use for 'month' and 'day'
  * NOTE : 'year' refers only to the tens and ones digits, so 23 in 2023
@@ -81,7 +81,7 @@ void rtc_config(char clock_source, int forced_config);
  */
 void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day);
 
-/*
+/**
  * Sets a Time on the RTC
  *
  * @param hour    The hour to be set
@@ -95,7 +95,7 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second);
 
 /****************************** RTC TIME GETTERS *****************************/
 
-/*
+/**
  * Returns the current RTC Time.
  * NOTE : The return values are stored in the function arguments
  *

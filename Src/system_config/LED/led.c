@@ -11,13 +11,6 @@
 
 /***************************** LED INITIALIZERS ******************************/
 
-/*
- * Configures the GPIO ports and pins for the following LEDs:
- * 		D0-D7  ,  A  ,  B  ,  C  ,  AG  ,  HB
- *
- * 	@param   None
- * 	@returns None
- */
 void all_led_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
@@ -68,14 +61,6 @@ void all_led_init() {
 
 /******************************* LED TOGGLERS ********************************/
 
-/**
- * Sets the value of a specified LED D.
- *
- * @param pin   The pin number to set the value for.
- * @param value The value to set the pin to.
- *
- * @returns None
- */
 void op_led_dx(int pin, int value) {
 	if (pin & 0xFFFFFF00) return;	// not a valid D led pin number
 	gpio_set(GPIOD, pin, value);

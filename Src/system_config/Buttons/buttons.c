@@ -11,7 +11,7 @@
 
 /*************************** Buttons Initializers ****************************/
 
-/*
+/**
  * Initializes the EXTI controller for pins PB10 and PB11
  *
  * @param None
@@ -42,13 +42,6 @@ void button_interrupt_config() {
 	EXTI->FTSR1 &= ~EXTI_FTSR1_FT11;
 }
 
-/*
- * Initializes the GPIO for the buttons 0 & 1.
- * Also enables interrupts on both
- *
- * @param   None
- * @returns None
- */
 void buttons_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	while (GPIOB->OTYPER == 0xFFFFFFFF);
@@ -74,26 +67,10 @@ void buttons_init() {
 bool button0;
 bool button1;
 
-/**
- * Interrupt Handler for Button 0
- * Prints a message to the console
- *
- * @param None
- *
- * @returns None
- */
 void Button0_Handler(){
 	button0 = true;
 }
 
-/**
- * Interrupt Handler for Button 1
- * Prints a message to the console
- *
- * @param None
- *
- * @returns None
- */
 void Button1_Handler(){
 	button1 = true;
 }

@@ -22,7 +22,7 @@
 #include "system_config/UART/uart.h"
 #include "system_config/I2C/i2c.h"
 
-/*
+/**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
  *
@@ -36,7 +36,7 @@ void init_platform() {
 	all_led_init();
 	buttons_init();
 
-	systick_init();
+	heartbeat_init();
 
 	rtc_config(LSI, 0);
 	init_softi2c(OP1_I2C2);

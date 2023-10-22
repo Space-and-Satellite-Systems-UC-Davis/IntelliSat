@@ -14,8 +14,8 @@
 
 #define EscControlTimer_ID 				1
 #define EscControlTimer 				TIM1
-#define EscControlTimer_ClockEnable() 	RCC->APB2ENR |= RCC_APB1ENR_TIM1EN
-#define	EscControlTimer_ClockDisable() 	RCC->APB2ENR &= ~RCC_APB1ENR_TIM1EN
+#define EscControlTimer_ClockEnable() 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN
+#define	EscControlTimer_ClockDisable() 	RCC->APB2ENR &= ~RCC_APB2ENR_TIM1EN
 
 #define PreemptTimer_ID					2
 #define PreemptTimer     				TIM2
@@ -32,28 +32,34 @@
 #define ExpLogTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM6EN
 #define ExpLogTimer_ClockDisable() 		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM6EN
 
-#define PWMTimer_ID						4
-#define PWMTimer         				TIM4
-#define PWMTimer_ClockEnable() 			RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN
-#define PWMTimer_ClockDisable() 		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM4EN
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-
-bool register_timer(int timer, void* (handler_func)());
-bool configure_timer(TIM_TypeDef* tim, int units, uint16_t amount);
-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 #define PWM_TIMER_ON()  PWMTimer->CR1 |=  TIM_CR1_CEN;
 #define PWM_TIMER_OFF() PWMTimer->CR1 &= ~TIM_CR1_CEN;
+
+/**
+ * Configures the PWM timer registers to generate a signal at a given period.
+ *
+ * @param   period Period of the PWM signal, in microseconds. Note: Cannot be above 32K.
+ * @returns Boolean to indicate if the initialization was successful
+ */
 bool init_pwm_timer(uint32_t period);
+/**
+ * Changes the Duty Cycle of the PWM signal... assumes the PWM is being generated already.
+ * NOTE: Some percentges might not work properly due to integer math causing rounding errors
+ * 
+ * @param percent A value between 0-100 to indicate 
+*/
 void set_duty_cycle(uint8_t percent);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
+/**
+ * Initializes the Heartbeat LED Timer (the Systck). 
+ * Configures it to tick every ms.
+*/
 void heartbeat_init();
 
 

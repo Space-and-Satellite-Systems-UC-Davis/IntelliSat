@@ -35,15 +35,6 @@
 // Global variable
 int core_MHz;
 
-/**
- * Initializes the clocks of the micro-controller.
- *
- * This function sets up the various clock sources and
- * frequencies for the micro-controller.
- *
- * @param   None
- * @returns None
- */
 void init_core_clocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
@@ -109,46 +100,11 @@ void init_core_clocks() {
 	core_MHz = 80;
 }
 
-/**
- * Initializes the Nested Vector Interrupt Controller (NVIC) for
- * 		- Systick Timer (1ms)
- * 		- GPIO Pins 10-15
- * 			- Buttons 0 & 1
- *
- * @param   None
- * @returns None
- */
-void init_nvic() {
-	__disable_irq();
 
-	// configure for 1 ms period
-	SysTick->LOAD = (core_MHz / 8) * 1000;
-	// use AHB/8 as input clock, and enable counter interrupt
-	SysTick->CTRL = 0x3;
-	NVIC_EnableIRQ(SysTick_IRQn);
-
-	__enable_irq();
-}
-
-
-/**
- * Enables writing access to registers powered by the Backup Domain
- * Key registers include RCC's BDRC, and several key RTC registers
- *
- * @param   None
- * @returns None
- */
 void backup_domain_control_enable() {
 	PWR->CR1 |= PWR_CR1_DBP;
 }
 
-/**
- * Disables writing access to registers powered by the Backup Domain
- * Key registers include RCC's BDRC, and several key RTC registers
- *
- * @param   None
- * @returns None
- */
 void backup_domain_control_disable() {
 	PWR->CR1 &= ~PWR_CR1_DBP;
 }
