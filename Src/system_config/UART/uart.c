@@ -52,9 +52,12 @@ void uart5_gpio_init();
  * @returns None
  */
 bool usart_init(USART_TypeDef *bus, int baud_rate){
+	int presc = (RCC->CFGR & (RCC_CFGR_PPRE1_Msk));
+
 	switch((int)bus) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+			presc = (RCC->CFGR & (RCC_CFGR_PPRE2_Msk));
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -84,7 +87,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate){
 	//   - Baud rate to baud_rate
 	//   - Stop Bit to 1 bit   (STOP = 00)
 	bus->CR1 &= ~(USART_CR1_M0 | USART_CR1_M1);
-	bus->BRR = (core_MHz * 1000 * 1000) / baud_rate;	// clk_speed / baud_rate
+	bus->BRR = ((core_MHz * 1000 * 1000)/presc) / baud_rate;	// clk_speed / baud_rate
 	bus->CR2 &= ~USART_CR2_STOP;
 
 	// Enable UART3
@@ -138,4 +141,3 @@ void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	// Wait for the Transfer to be completed by monitoring the TC flag
 	while(!(bus->ISR & USART_ISR_TC));
 }
-

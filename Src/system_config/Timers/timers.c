@@ -1,9 +1,13 @@
 /*
  * timers.c
  *
+ *	- October 11, 2023
+ *		Author	: Darsh
+ *		Log		: ...
+ *
  *  - September 23, 2023
  *  	Author	: Darsh
- *  	Log		: ...
+ *  	Log		: Initial Setup
  */
 
 #include "../../globals.h"
@@ -16,16 +20,18 @@ int systick_time = 0;
 int ag_counter = 0;
 int heartbeat_counter = 0;
 
-void timer_init() {
-	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+/*                               HEARTBEAT - SYSTICK                         */
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-	TIM2->CR1  |= TIM_CR1_URS | TIM_CR1_DIR;
-	TIM2->DIER |= TIM_DIER_UIE;
-
-	NVIC_EnableIRQ(TIM2_IRQn);
-}
-
-void systick_init() {
+/**
+ * Starts the Systick, responsible for the global timer & the the blinking
+ * of the status LEDs.
+ *
+ * @param   None
+ * @returns None
+ */
+void heartbeat_init() {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
@@ -40,7 +46,6 @@ void systick_init() {
  * updates the status of the heartbeat and activity LEDs.
  *
  * @param None
- *
  * @returns None
  */
 void SysTick_Handler() {
@@ -67,12 +72,8 @@ void SysTick_Handler() {
 	}
 }
 
-int num = 0;
 
-void TIM2_IRQHandler() {
-	if (TIM2->SR & TIM_SR_UIF) {
-		TIM2->SR &= ~TIM_SR_UIF;
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+/*                                RAW INTERRUPTS                            */
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-		printMsg("%d\n", (num++));
-	}
-}
