@@ -3,6 +3,7 @@
 
 #include "stm32l476xx.h"
 
+typedef enum {false, true} bool;
 
 typedef enum {false, true} bool;
 

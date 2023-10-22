@@ -20,7 +20,6 @@
  * @returns None
  */
 void printMsg(char *message, ...) {
-	// TODO : Add ability to accept variadic strings
 	char buff[128];
 
 	va_list args;

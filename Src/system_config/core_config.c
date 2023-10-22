@@ -93,6 +93,19 @@ void init_core_clocks() {
 	while (!(RCC->CR & RCC_CR_PLLSAI1RDY));
 	RCC->CFGR = RCC_CFGR_SW;	// system clock to PLL
 
+	// configure UART to use HSI16
+	RCC->CCIPR |=
+		  (2U << RCC_CCIPR_UART5SEL_Pos)
+		| (2U << RCC_CCIPR_UART4SEL_Pos)
+		| (2U << RCC_CCIPR_USART3SEL_Pos)
+		| (2U << RCC_CCIPR_USART2SEL_Pos)
+		| (2U << RCC_CCIPR_USART1SEL_Pos);
+
+	// configure APB clocks to be System_Clock / 16
+	RCC->CFGR |=
+		  (7U << RCC_CFGR_PPRE1_Pos)	// APB1
+		| (7U << RCC_CFGR_PPRE2_Pos);	// APB2
+
 	core_MHz = 80;
 }
 
