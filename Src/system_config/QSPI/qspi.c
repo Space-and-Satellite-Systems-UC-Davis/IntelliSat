@@ -4,23 +4,28 @@
 
 #include "qspi.h"
 
-short int qspi_status;
-bool qspi_in_use = false;
-bool qspi_dma_use = false;
+//short int qspi_status;
+//bool qspi_in_use = false;
+//bool qspi_dma_use = false;
 
-/*
- *
- */
-int get_qspi_status() {
-	return qspi_status;
-}
+// (1 bit : qspi_in_use)(1 bit : qspi_dma_use)(last 4 bits : qspi_status)
+uint8_t qspi_details;
 
-/*
- *
- */
-void qspi_config(uint8_t flash_size) {
-	qspi_on();	// qspi peripheral clock
+#define get_qspi_status()   (qspi_details &  0b00001111)
+#define set_qspi_status(s)	\
+							(qspi_details &= ~0b00001111);\
+							(qspi_details |= s)
 
+#define qspi_start_use()	(qspi_details |=  0b1000000)
+#define qspi_stop_use()		(qspi_details &= ~0b1000000)
+#define qspi_in_use()  		(qspi_details &   0b1000000)
+
+#define qspi_dma_use()    (qspi_details |=  0b0100000)
+#define qspi_dma_disuse() (qspi_details &= ~0b0100000)
+#define qspi_dma_inuse()  (qspi_details &   0b0100000)
+
+
+void qspi_gpio_init() {
 	// GPIO
 	/* OP R1 GPIO pinout
 	 * 		QSPI CS			E11		(Alternate Function, AF10)
@@ -66,22 +71,51 @@ void qspi_config(uint8_t flash_size) {
 		  10U << GPIO_AFRH_AFSEL11_Pos |
 		  10U << GPIO_AFRH_AFSEL14_Pos |
 		  10U << GPIO_AFRH_AFSEL15_Pos;
+}
 
+/*
+ *
+ */
+void qspi_config(
+		uint8_t flash_size,
+		uint8_t address_size,
+		uint8_t alternateb_size
+) {
+	qspi_on();	// qspi peripheral clock
+
+	qspi_gpio_init();
 	qspi_disable();
 	QUADSPI->CR = 0;
 	QUADSPI->CR |=
-			(79U << QUADSPI_CR_PRESCALER_Pos) |
-			QUADSPI_CR_SSHIFT;
-
+		  ((core_MHz-1) << QUADSPI_CR_PRESCALER_Pos)
+		| QUADSPI_CR_SSHIFT
+		| QUADSPI_CR_APMS;
 	QUADSPI->DCR = 0;
 	QUADSPI->DCR |= (flash_size << QUADSPI_DCR_FSIZE_Pos);
+	QUADSPI->CCR &= ~(
+		  QUADSPI_CCR_ADSIZE
+		| QUADSPI_CCR_ABSIZE);
+	QUADSPI->CCR |=
+		  address_size << QUADSPI_CCR_ADSIZE_Pos
+		| alternateb_size << QUADSPI_CCR_ABSIZE_Pos;
 	qspi_enable();
 
 	NVIC_EnableIRQ(QUADSPI_IRQn);
 }
 
-/*
+/**
+ * Sets up a QSPI communication
+ * Must be run before the other qspi_start_command() and qspi_status_polling()
  *
+ * @param fmode	  The Instruction Type
+ * @param imode	  The # of wires used during Instruction Phase
+ * @param admode  The # of wires used during Address Phase
+ * @param abmode  The # of wires used during Alternate Bytes Phase
+ * @param dcyc	  The # of dummy cycles needed
+ * @param dmode   The # of wires used during Data Phase
+ * @param dma	  Whether DMA should be used or not
+ *
+ * @returns Whether the communication was set up or not
  */
 bool qspi_set_command(
 		uint8_t fmode,
@@ -92,7 +126,7 @@ bool qspi_set_command(
 		uint8_t dmode,
 		bool    dma
 ) {
-	if (qspi_status == QSPI_BUSY || (dma && QSPI_DMA_UNAVAILABLE)) {
+	if (get_qspi_status() == QSPI_BUSY || (dma && QSPI_DMA_UNAVAILABLE)) {
 		return false;
 	}
 	qspi_disable();
@@ -130,14 +164,24 @@ bool qspi_set_command(
 			  (0x00 << DMA_CCR_MSIZE_Pos)
 			| (0x00 << DMA_CCR_PSIZE_Pos)
 			| DMA_CCR_MINC;
-		qspi_dma_use = true;
+		qspi_dma_use();
 	}
-	qspi_status = QSPI_READY;
+	set_qspi_status(QSPI_READY);
 	return true;
 }
 
-/*
+/**
+ * Starts a QSPI communication
+ * Assumes that qspi_set_command() is already run
  *
+ * @param instruction    The instruction to send
+ * @param address        The address from the peripheral
+ * @param data_length    The amount of data expected to flow for this instruction
+ * @param data			 The buffer where data is located / will be stored (see below)
+ * @param r_or_w		 0:Read	, 1:Write
+ * @param timeout_period To trigger a timeout {not implemented}
+ *
+ * @returns Whether the communication was started properly or not
  */
 bool qspi_send_command(
 		uint8_t instruction,
@@ -147,11 +191,11 @@ bool qspi_send_command(
 		bool r_or_w,
 		uint32_t timeout_period
 ) {
-	if (qspi_status != QSPI_READY) {
+	if (get_qspi_status() != QSPI_READY) {
 		return false;
 	}
 
-	if (qspi_dma_use) {
+	if (qspi_dma_inuse()) {
 		DMA2_Channel7->CNDTR = (uint16_t)data_length;
 		DMA2_Channel7->CPAR  = QUADSPI->DR;
 		DMA2_Channel7->CMAR  = data;
@@ -166,9 +210,9 @@ bool qspi_send_command(
 	QUADSPI->CCR |= (instruction << QUADSPI_CCR_INSTRUCTION_Pos);
 	QUADSPI->AR  =   address;
 
-	qspi_status = QSPI_BUSY;
+	set_qspi_status(QSPI_BUSY);
 
-	if (qspi_dma_use) {
+	if (qspi_dma_inuse()) {
 		/*
 		 * When the transfer is complete, the TC interrupt of the QSPI
 		 * will close the DMA Channel as well as the QSPI process
@@ -182,7 +226,7 @@ bool qspi_send_command(
 			if ((r_or_w == true) && (QUADSPI->SR & QUADSPI_SR_TCF)) {
 				break;
 			}
-			if (qspi_status == QSPI_TIMEDOUT) {	// set by an interrupt
+			if (get_qspi_status() == QSPI_TIMEDOUT) {	// set by an interrupt
 				QUADSPI->CR |= QUADSPI_CR_ABORT;
 				goto qspi_send_command_complete;
 			}
@@ -198,26 +242,36 @@ qspi_send_command_complete:
 
 	while (QUADSPI->SR & QUADSPI_SR_BUSY);
 	qspi_disable();
-	if (qspi_status != QSPI_TIMEDOUT) {
-		qspi_status = QSPI_SUCCESSFUL;
+	if (get_qspi_status() != QSPI_TIMEDOUT) {
+		set_qspi_status(QSPI_SUCCESSFUL);
 	}
 	return true;
 }
 
 
-
-
-// Status-Polling Mode for 4 wire QSPI
+/**
+ * Starts the Status Polling Mode
+ * Assumes that qspi_set_command() is already run
+ *
+ * @param polling_mode   0:AND , 1:OR
+ * @param instruction    instruction to be sent
+ * @param mask		     the mask used prior to checking for matches
+ * @param match		     the desired pattern
+ * @param timeout_period to trigger a timeout {not implemented}
+ *
+ * @returns none
+ */
 bool qspi_status_poll(
+		bool polling_mode,
 		uint8_t instruction,
 		uint8_t mask,
 		uint8_t match,
 		uint32_t timeout_period
 ) {
-	if (qspi_status == QSPI_BUSY) {
+	if (get_qspi_status() == QSPI_BUSY) {
 		return false;
 	}
-	qspi_in_use = QSPI_BUSY;
+	set_qspi_status(QSPI_BUSY);
 
 	qspi_disable();
 	QUADSPI->PSMKR = mask;
@@ -255,14 +309,19 @@ bool qspi_status_poll(
 }
 
 
-
 #define qspi_stop_status_polling() { \
 		QUADSPI->CCR  &= ~(QUADSPI_CCR_FMODE | QUADSPI_CCR_DMODE); \
 		QUADSPI->CR   &= ~QUADSPI_CR_APMS; \
 }
 
-/*
+/**
+ * Handles QSPI Interrupts
+ * 		- SMF : Stops Polling
+ * 		- TEF : Marks the status as QSPI_TRANSFER_ERROR
+ * 		- TCF : Resets the instruction specific QSPI registers, and DMA if it was used
+ * 		- TOF : Won't ever trigger
  *
+ * @returns none
  */
 void QUADSPI_IRQHandler() {
 	if (QUADSPI->SR & QUADSPI_SR_SMF) {	// Status Polling complete
@@ -271,25 +330,25 @@ void QUADSPI_IRQHandler() {
 
 		qspi_stop_status_polling();
 		qspi_disable();
-		qspi_status = QSPI_SUCCESSFUL;
+		set_qspi_status(QSPI_SUCCESSFUL);
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TEF) {	// Transfer Error
 		QUADSPI->FCR |= QUADSPI_FCR_CTEF;
 
-		qspi_status = QSPI_TRANSFER_ERROR;
+		set_qspi_status(QSPI_TRANSFER_ERROR);
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TCF) {	// Transfer Complete
 		QUADSPI->FCR |= QUADSPI_FCR_CTCF;
 
-		qspi_status = QSPI_SUCCESSFUL;
+		set_qspi_status(QSPI_SUCCESSFUL);
 		QUADSPI->CCR &= ~(
 			  QUADSPI_CCR_FMODE_Msk
 			| QUADSPI_CCR_DMODE_Msk
 			| QUADSPI_CCR_ADMODE_Msk
 			| QUADSPI_CCR_IMODE
 			| QUADSPI_CCR_INSTRUCTION_Msk);
-		if (qspi_dma_use) {
-			qspi_dma_use = false;
+		if (qspi_dma_inuse()) {
+			qspi_dma_disuse();
 			DMA2_Channel7->CCR &= ~DMA_CCR_EN;
 		}
 	}

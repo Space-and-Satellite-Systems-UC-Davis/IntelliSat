@@ -223,23 +223,23 @@ void handle_exp_buff_overflow();
 
 /*
 // Some testing of overflows and such
-int main() {
+int branch_main() {
 
-//     // Start Logging Experiment
-//     //  - get metadata:
-//     //      - exp log size
-//     //      - exp log current insert idx
-//     //      - exp log start addr?
-//     //  - store metadata in struct
-//     //  - store logs locally
-//     //  - upon buffer fill:
-//     //      - move local logs to flash (could offload to DMA???)
-//     //      - After transfer is complete, update flash's metadata ( mainly log head )
-//     //      - possibly swap buffer used for local logging in the meantime
+     // Start Logging Experiment
+     //  - get metadata:
+     //      - exp log size
+     //      - exp log current insert idx
+     //      - exp log start addr?
+     //  - store metadata in struct
+     //  - store logs locally
+     //  - upon buffer fill:
+     //      - move local logs to flash (could offload to DMA???)
+     //      - After transfer is complete, update flash's metadata ( mainly log head )
+     //      - possibly swap buffer used for local logging in the meantime
 
-//     get_flash_header(&flash_header);
+	// get_flash_header(&flash_header);
 
-    
+
 
     unsigned int curr_idx = 0;
     for (int i = 0; i < 128; ++i) {
@@ -249,7 +249,7 @@ int main() {
         //     push_exp_logs_to_flash(&local_exp_logs, current_exp_header);
         // }
     }
-    
+
     printf("Local Logs:\n");
     for(uint64_t i = 0; i < local_exp_logs.buffer_size - 1; i += 2) {
         printf("L Exp Log, rtc_time: %u\n", ((union ExperimentLog){ {local_exp_logs.buffer[i], local_exp_logs.buffer[i + 1]}}).as_struct.rtc_time );

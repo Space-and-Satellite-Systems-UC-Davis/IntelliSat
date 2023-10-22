@@ -70,8 +70,7 @@ uint8_t build_and_add_event_log(
     return 0;
 }
 
-
-
+/*
 int main() {
 
     init_flash_header();
@@ -80,7 +79,7 @@ int main() {
     for (int i = 0; i < 128; ++i) {
         build_and_add_event_log(i, 0, 0, 0, i);
     }
-    
+
     printf("Local Logs:\n");
     union EventLog ev_log;
     for(uint32_t i = 0; i < local_event_logs.buffer_size; ++i) {
@@ -101,3 +100,4 @@ int main() {
 
     memcpy(ev_logs, block_buff, sizeof(ev_logs));
 }
+*/

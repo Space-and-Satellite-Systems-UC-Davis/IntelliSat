@@ -16,6 +16,38 @@
 
 #include "spi.h"
 
+/**
+ * Configures GPIO for the SPI-2 Peripheral
+ */
+void spi2_gpio_init() {
+	// Reset mode on each SPI-2 pin
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	GPIOB->PUPDR |= SPI2_CS_PUPD;
+	GPIOB->MODER &= ~(
+		  GPIO_MODER_MODE12_Msk
+		| GPIO_MODER_MODE13_Msk
+		| GPIO_MODER_MODE14_Msk
+		| GPIO_MODER_MODE15_Msk);
+	// set each pin to Alternate function
+	GPIOB->MODER |=
+		  GPIO_MODER_MODE12_0
+		| GPIO_MODER_MODE13_1
+		| GPIO_MODER_MODE14_1
+		| GPIO_MODER_MODE15_1;
+	// Reset alternate function selection on each SPI-2 pin
+	GPIOB->AFR[1] &= ~(
+		  GPIO_AFRH_AFSEL13_Msk
+		| GPIO_AFRH_AFSEL14_Msk
+		| GPIO_AFRH_AFSEL15_Msk);
+	// set each pin to AF5
+	GPIOB->AFR[1] |=
+		  5U << GPIO_AFRH_AFSEL13_Pos
+		| 5U << GPIO_AFRH_AFSEL14_Pos
+		| 5U << GPIO_AFRH_AFSEL15_Pos;
+}
+
+
 /**************************** SPI INITIALIZATIONS ****************************/
 
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
@@ -50,31 +82,7 @@ void spi1_config() {
 void spi2_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Clock
 
-	// Reset mode on each SPI-2 pin
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	GPIOB->PUPDR |= SPI2_CS_PUPD;
-	GPIOB->MODER &= ~(
-		  GPIO_MODER_MODE12_Msk
-		| GPIO_MODER_MODE13_Msk
-		| GPIO_MODER_MODE14_Msk
-		| GPIO_MODER_MODE15_Msk);
-	// set each pin to Alternate function
-	GPIOB->MODER |=
-		  GPIO_MODER_MODE12_0
-		| GPIO_MODER_MODE13_1
-		| GPIO_MODER_MODE14_1
-		| GPIO_MODER_MODE15_1;
-	// Reset alternate function selection on each SPI-2 pin
-	GPIOB->AFR[1] &= ~(
-		  GPIO_AFRH_AFSEL13_Msk
-		| GPIO_AFRH_AFSEL14_Msk
-		| GPIO_AFRH_AFSEL15_Msk);
-	// set each pin to AF5
-	GPIOB->AFR[1] |=
-		  5U << GPIO_AFRH_AFSEL13_Pos
-		| 5U << GPIO_AFRH_AFSEL14_Pos
-		| 5U << GPIO_AFRH_AFSEL15_Pos;
+	spi2_gpio_init();
 
 	spi_disable(SPI2, SPI2_CS);
 
@@ -118,12 +126,11 @@ void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
-/*
+
+
 bool spi1_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 
 }
-*/
-
 
 // assumes spi_start_communication(SPI2) has already been called
 bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
@@ -141,20 +148,9 @@ bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t s
 	}
 	while((SPI2->SR & SPI_SR_BSY));			// wait till all the communication is over
 
-	// DMA1_Channel 4 = RX
-
-//	DMA1_Channel4->CPAR  = SPI2->DR;
-//	DMA1_Channel4->CMAR  = transmission;
-//	DMA1_Channel4->CNDTR = size;
-//	DMA1_Channel4->CCR  |= DMA_CCR_EN;
-
-	// DMA1_Channel 5 = TX
-
 	return true;
 }
 
-/*
 bool spi3_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 	return true;
 }
-*/
