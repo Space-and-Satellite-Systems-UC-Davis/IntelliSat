@@ -44,6 +44,3 @@ void init_platform() {
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
-
-
-
