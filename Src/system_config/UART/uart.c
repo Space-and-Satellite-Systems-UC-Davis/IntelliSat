@@ -58,6 +58,9 @@ bool usart_init(USART_TypeDef *bus, int baud_rate){
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			presc = (RCC->CFGR & (RCC_CFGR_PPRE2_Msk));
+	switch((int)bus) {
+		case (int)USART1:
+			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -141,3 +144,4 @@ void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	// Wait for the Transfer to be completed by monitoring the TC flag
 	while(!(bus->ISR & USART_ISR_TC));
 }
+

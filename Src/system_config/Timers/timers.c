@@ -49,6 +49,7 @@ void heartbeat_init() {
  * @returns None
  */
 void SysTick_Handler() {
+
 	systick_time++;
 
 	// toggle LEDs
@@ -71,7 +72,6 @@ void SysTick_Handler() {
 		op_led_ag(0);
 	}
 }
-
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                                RAW INTERRUPTS                            */

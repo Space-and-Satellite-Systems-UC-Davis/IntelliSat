@@ -56,7 +56,5 @@ void set_duty_cycle(uint8_t percent);
 
 void heartbeat_init();
 
-//-----------------------------------------------------------------------------
-
 
 #endif	// REALOP1_TIMERS_H_

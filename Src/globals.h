@@ -5,9 +5,14 @@
 
 typedef enum {false, true} bool;
 
+typedef enum {false, true} bool;
+
 // Global Variables
 extern int core_MHz;
 extern int systick_time;
+
+extern bool button0;
+extern bool button1;
 
 void nop(long long nop_loops);
 
