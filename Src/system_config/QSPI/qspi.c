@@ -14,8 +14,10 @@
 
 // (1 bit : qspi_in_use)(1 bit : qspi_dma_use)(last 4 bits : qspi_status)
 uint8_t qspi_details;
-
-#define get_qspi_status()   (qspi_details &  0b00001111)
+ 
+uint8_t get_qspi_status() {
+	return (qspi_details & 0b00001111);
+}
 #define set_qspi_status(s)	\
 							(qspi_details &= ~0b00001111);\
 							(qspi_details |= s)
