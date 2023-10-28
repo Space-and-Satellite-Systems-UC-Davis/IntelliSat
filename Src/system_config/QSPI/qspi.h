@@ -14,7 +14,14 @@
 
 #define QSPI_TIMEOUT_PERIOD  	1000000	// TODO
 
-// Macros for FLASH Instrction mode (fmode in qspi_set_command())
+// Macros for the qspi status
+#define QSPI_READY            '4'
+#define QSPI_BUSY             '3'
+#define QSPI_SUCCESSFUL       '2'
+#define QSPI_TIMEDOUT         '1'
+#define QSPI_TRANSFER_ERROR   '0'
+
+// Macros for FLASH Instruction mode (fmode in qspi_set_command())
 #define QSPI_INDIRECT_WRITE		0x00
 #define QSPI_INDIRECT_READ		0x01
 #define QSPI_AUTOMATIC_POLLING	0x02
@@ -43,6 +50,14 @@ void qspi_config(
 		uint8_t address_size,
 		uint8_t alternateb_size
 );
+
+
+
+/*
+ * Returns the status of the qspi peripheral. 
+ * Can be QSPI_READY,QSPI_BUSY,QSPI_SUCCESSFUL,QSPI_TIMEOUT,QSPI_TRANSFER_ERROR
+ */
+uint8_t get_qspi_status();
 
 /**
  * Sets up a QSPI communication
@@ -109,12 +124,6 @@ bool qspi_status_poll(
 		uint8_t match,
 		uint32_t timeout_period
 );
-
-#define QSPI_READY            '4'
-#define QSPI_BUSY             '3'
-#define QSPI_SUCCESSFUL       '2'
-#define QSPI_TIMEDOUT         '1'
-#define QSPI_TRANSFER_ERROR   '0'
 
 #define QSPI_DMA_UNAVAILABLE 	false
 
