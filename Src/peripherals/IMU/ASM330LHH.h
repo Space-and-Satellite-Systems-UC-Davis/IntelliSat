@@ -11,6 +11,7 @@
 #define REALOP1_PERIPHERALS_IMU_H_
 
 #include "../../system_config/I2C/i2c.h"
+#include "../../system_config/SPI/spi.h"
 
 //Macros
 #define IMU_ADDR 0x6A

@@ -1,6 +1,10 @@
 /*
  * spi.c
  *
+ *  - October 29, 2023
+ *		Author	: Darsh
+ *		Log		: Generic spi functions.
+ *
  * 	- September 22, 2023
  *		Author	: Darsh
  *		Log		: Included all stages of initializations in spi.h / spi.c
@@ -117,6 +121,20 @@ void spi3_config() {
 
 }
 
+void spi_config(SPI_TypeDef *spi) {
+	switch ((uint32_t)spi) {
+		case (uint32_t)SPI1:
+			spi1_config();
+			break;
+		case (uint32_t)SPI2:
+			spi2_config();
+			break;
+		case (uint32_t)SPI3:
+			spi3_config();
+			break;
+	}
+}
+
 /***************************** SPI COMMUNICATION *****************************/
 
 void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
@@ -127,32 +145,22 @@ void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
-
-
-bool spi1_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
-
-}
-
-bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
+bool spi_transmit_recieve(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
 	while(size-- > 1) {
-		while(!(SPI2->SR & SPI_SR_TXE));	// wait for TXFIFO to be empty
-        if (transmission == NULL) {
-            SPI2->DR = SPI_DUMMY_BYTE;              // send a dummy byte to trigger the clock
-        } else {
-            SPI2->DR = (*transmission)++;			// fill TXFIFO with the instruction
-        }
+		while(!(spi->SR & SPI_SR_TXE));	// wait for TXFIFO to be empty
+		if (transmission == 0) {
+			spi->DR = SPI_DUMMY_BYTE;              // send a dummy byte to trigger the clock
+		} else {
+			spi->DR = (*transmission)++;			// fill TXFIFO with the instruction
+		}
 
 		if (reception) {
-			while (SPI2->SR & SPI_SR_RXNE) {
-				*(reception++) = SPI2->DR;
+			while (spi->SR & SPI_SR_RXNE) {
+				*(reception++) = spi->DR;
 			}
 		}
 	}
-	while((SPI2->SR & SPI_SR_BSY));			// wait till all the communication is over
+	while((spi->SR & SPI_SR_BSY));			// wait till all the communication is over
 
-	return true;
-}
-
-bool spi3_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 	return true;
 }
