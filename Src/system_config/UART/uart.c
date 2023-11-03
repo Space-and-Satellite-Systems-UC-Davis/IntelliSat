@@ -123,7 +123,7 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
  * @returns None
  */
 void usart_transmitStr(USART_TypeDef *bus, char message[]) {
-	// Enable UART3 and Transmitter
+	// Enable UART and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Transfer each character one at a time
@@ -138,3 +138,54 @@ void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	while(!(bus->ISR & USART_ISR_TC));
 }
 
+
+
+
+/*
+ *
+ */
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t len) {
+	// Enable UART and Transmitter
+	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
+
+	// Transfer each character one at a time
+	for (int i = 0; i < len; i++){
+		// wait until Data register is empty
+		while (!(bus->ISR & USART_ISR_TXE));
+		// Place the character in the Data Register
+		bus->TDR = message[i];
+	}
+
+	// Wait for the Transfer to be completed by monitoring the TC flag
+	while(!(bus->ISR & USART_ISR_TC));
+}
+
+void usart_recieveBtyes(USART_TypeDef *bus, uint8_t buffer[], uint16_len) {
+	// Enable UART and Receiver
+	bus->CR1 |= USART_CR1_UE | USART_CR1_RE;
+
+	for (int i = 0; i < len; i++) {
+		while (!(bus->ISR & USART_ISR_RXNE));
+		buffer[i] = bus->RDR;
+	}
+	// checks...
+}
+
+
+
+
+/*
+ * Interrupts Here...
+ * Extract 1 byte to, and pass it to a function
+ */
+void USART3_IRQHandler() {
+	if (USART3->ISR & RXNE) {
+		uint16_t rec = USART3->RDR;
+
+		// call function and pass char
+
+		while((USART3->ISR & RXNE)) {
+			rec = USART3->RDR;
+		}
+	}
+}
