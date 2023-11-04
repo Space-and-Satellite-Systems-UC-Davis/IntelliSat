@@ -17,6 +17,14 @@
 #include "stm32l476xx.h"
 #include "../globals.h"
 
+/*
+ * Returns the value of the core processor speed.
+ * NOTE: In MegaHertz
+ *
+ * @returns Processor Speed in MHz
+ */
+uint32_t get_core_speed();
+
 /**
  * Initializes the clocks of the micro-controller.
  *
