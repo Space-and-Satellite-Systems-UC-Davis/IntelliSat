@@ -17,6 +17,14 @@
 #include "stm32l476xx.h"
 #include "../globals.h"
 
+/*
+ * Returns the value of the core processor speed.
+ * NOTE: In MegaHertz
+ *
+ * @returns Processor Speed in MHz
+ */
+uint32_t get_core_speed();
+
 /**
  * Initializes the clocks of the micro-controller.
  *
@@ -27,6 +35,18 @@
  * @returns None
  */
 void init_core_clocks();
+
+/**
+ * Initializes the Nested Vector Interrupt Controller (NVIC) for
+ * 		- Systick Timer (1ms)
+ * 		- GPIO Pins 10-15
+ * 			- Buttons 0 & 1
+ *
+ * @param None
+ *
+ * @returns None
+ */
+void init_nvic();
 
 /**
  * Enables writing access to registers powered by the Backup Domain

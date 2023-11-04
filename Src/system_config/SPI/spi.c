@@ -136,7 +136,7 @@ bool spi1_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t s
 bool spi2_transmit_recieve(uint8_t* transmission, uint8_t *reception, uint16_t size) {
 	while(size-- > 1) {
 		while(!(SPI2->SR & SPI_SR_TXE));	// wait for TXFIFO to be empty
-        if (transmission == NULL) {
+        if (transmission == 0) {
             SPI2->DR = SPI_DUMMY_BYTE;              // send a dummy byte to trigger the clock
         } else {
             SPI2->DR = (*transmission)++;			// fill TXFIFO with the instruction

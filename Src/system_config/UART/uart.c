@@ -42,24 +42,34 @@ void uart5_gpio_init();
 
 /*************************** USART INITIALIZATIONS ***************************/
 
-bool usart_init(USART_TypeDef *bus, int baud_rate) {
-	switch((int)bus) {
-		case (int)USART1:
+/*
+ * Initializes the UART hardware to conduct UART communication with
+ * 1 start bit, 8 data bits, 1 stop bits, No parity
+ *
+ * @param bus        The USART Bus that needs initialization
+ * @param baud_rate  The desired Baud Rate of the UART system
+ *
+ * @returns None
+ */
+bool usart_init(USART_TypeDef *bus, int baud_rate){
+	switch((uint32_t)bus) {
+		case (uint32_t)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-		case (int)USART2:
+			break;
+		case (uint32_t)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 			break;
-		case (int)USART3:
+		case (uint32_t)USART3:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
 			usart3_gpio_init();
 			break;
-		case (int)UART4:
+		case (uint32_t)UART4:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
 			break;
-		case (int)UART5:
+		case (uint32_t)UART5:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART5EN;
 			break;
-		case (int)LPUART1:
+		case (uint32_t)LPUART1:
 			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 			break;
 		default:
@@ -71,11 +81,10 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 
 	// Configurations:
 	//   - Word Size to 8 bits (M0:M1 = 00)
-	//   - Baud rate to `baud_rate`
+	//   - Baud rate to baud_rate
 	//   - Stop Bit to 1 bit   (STOP = 00)
 	bus->CR1 &= ~(USART_CR1_M0 | USART_CR1_M1);
-    // clk_speed / baud_rate ... all UARTs use HSI16 as per core_cofig.c,init_core_clocks()
-	bus->BRR = (16 * 1000 * 1000) / baud_rate;
+	bus->BRR = (get_core_speed() * 1000 * 1000) / baud_rate;	// clk_speed / baud_rate
 	bus->CR2 &= ~USART_CR2_STOP;
 
 	// Enable UART3
@@ -85,6 +94,15 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 
 /**************************** USART COMMUNICATION ****************************/
 
+/*
+ * Utilizes USART hardware transmitter to send a character
+ * to a listerner on the other end (details on pinout in gpio.h)
+ *
+ * @param bus       The USART Bus doing the tranmission
+ * @param message   The character being sent
+ *
+ * @returns None
+ */
 void usart_transmitChar(USART_TypeDef *bus, char c) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
@@ -96,6 +114,15 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
 	while(!(bus->ISR & USART_ISR_TC));
 }
 
+/*
+ * Utilizes USART hardware transmitter to send a variable length string
+ * to a listerner on the other end (details on pinout in gpio.h)
+ *
+ * @param bus       The USART Bus doing the tranmission
+ * @param message   The string (character array) being sent
+ *
+ * @returns None
+ */
 void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
@@ -111,4 +138,3 @@ void usart_transmitStr(USART_TypeDef *bus, char message[]) {
 	// Wait for the Transfer to be completed by monitoring the TC flag
 	while(!(bus->ISR & USART_ISR_TC));
 }
-

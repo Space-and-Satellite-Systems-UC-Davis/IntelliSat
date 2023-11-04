@@ -33,7 +33,7 @@ int heartbeat_counter = 0;
  */
 void heartbeat_init() {
 	// configure for 1 ms period
-	SysTick->LOAD = (core_MHz / 8) * 1000;
+	SysTick->LOAD = (get_core_speed() / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
 	SysTick->CTRL = 0x3;
 	NVIC_EnableIRQ(SysTick_IRQn);

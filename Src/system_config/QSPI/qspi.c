@@ -90,7 +90,7 @@ void qspi_config(
 	qspi_disable();
 	QUADSPI->CR = 0;
 	QUADSPI->CR |=
-		  ((core_MHz-1) << QUADSPI_CR_PRESCALER_Pos)
+		  ((get_core_speed()-1) << QUADSPI_CR_PRESCALER_Pos)
 		| QUADSPI_CR_SSHIFT
 		| QUADSPI_CR_APMS;
 	QUADSPI->DCR = 0;

@@ -15,7 +15,7 @@ bool init_pwm_timer(uint32_t period) {
 
 	// (f_clk / f_goal) - 1  ==> ( 2*(core_MHz/16) / 1 MHz) - 1
 	// (2*(core_MHz/16)) due to RCC configurations in core_config.c
- 	EscControlTimer->PSC = 2*(core_MHz/16) - 1;		// Frequency in 1us;
+ 	EscControlTimer->PSC = get_core_speed() - 1;		// Frequency in 1us;
 	EscControlTimer->ARR = period;
 
 	EscControlTimer->EGR |= TIM_EGR_UG;
