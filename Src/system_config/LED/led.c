@@ -1,6 +1,10 @@
 /*
  * led.c
  *
+ *  - Nov 8-9, 2023
+ *      Author       : nithinsenthil
+ *      Log          : Updated LED GPIO config for OP Rev2
+ *
  *  - Apr 29, 2023 (Creation)
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
@@ -10,6 +14,55 @@
 #include "led.h"
 
 /***************************** LED INITIALIZERS ******************************/
+
+# ifdef OP_REV2
+
+void all_led_init() {
+	// GPIO
+	/* OP R2 GPIO pinout
+	 * 		LED GPIO OUT		E2		(Alternate Function, AF1)
+	 * 		LED GPIO OUT		E3		(Alternate Function, AF1)
+	 * 		LED GPIO OUT		E4		(Alternate Function, AF1)
+	 * 		LED GPIO OUT		E5		(Alternate Function, AF1)
+	 * 		LED GPIO OUT		E6		(Alternate Function, AF1)
+	 */
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
+
+	while (GPIOE->OTYPER == 0xFFFFFFFF);
+
+	// Configure output mode
+	GPIOE->MODER &= ~(
+		  GPIO_MODER_MODE2_Msk
+		| GPIO_MODER_MODE3_Msk
+		| GPIO_MODER_MODE4_Msk
+		| GPIO_MODER_MODE5_Msk
+		| GPIO_MODER_MODE6_Msk;
+
+	GPIOE->MODER |=
+		  GPIO_MODER_MODE2_0
+		| GPIO_MODER_MODE3_0
+		| GPIO_MODER_MODE4_0
+		| GPIO_MODER_MODE5_0
+		| GPIO_MODER_MODE6_0;
+
+	// Set alternate function to 1
+	GPIOE->AFR[0] &= ~(
+		  GPIO_AFRL_ALSEL2_Msk
+		| GPIO_AFRL_ALSEL3_Msk
+		| GPIO_AFRL_ALSEL4_Msk
+		| GPIO_AFRL_ALSEL5_Msk
+		| GPIO_AFRL_ALSEL6_Msk);
+
+	GPIOE->AFR[0] |=
+		  1U << GPIO_AFRL_AFSEL2_Pos
+		| 1U << GPIO_AFRL_AFSEL3_Pos
+		| 1U << GPIO_AFRL_AFSEL4_Pos
+		| 1U << GPIO_AFRL_AFSEL5_Pos
+		| 1U << GPIO_AFRL_AFSEL6_Pos;
+
+}
+
+# else
 
 void all_led_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
@@ -58,6 +111,8 @@ void all_led_init() {
 		| GPIO_MODER_MODE11_0	// LED A
 		| GPIO_MODER_MODE12_0;	// LED B
 }
+
+# endif
 
 /******************************* LED TOGGLERS ********************************/
 

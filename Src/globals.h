@@ -16,5 +16,6 @@ extern bool button1;
 
 void nop(long long nop_loops);
 
+#define OP_REV2
 
 #endif // REALOP1_GLOBALS_H_

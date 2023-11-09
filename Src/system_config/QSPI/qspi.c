@@ -1,6 +1,10 @@
 /*
  * qspi.c
  *
+ *  - Nov 8-9, 2023
+ *      Author       : nithinsenthil
+ *      Log          : Updated QSPI GPIO config for OP Rev2
+ *
  *  - October 22, 2023
  *      Author: Darsh
  *      Log   : Finally adding everything to the qspi.c file
@@ -28,6 +32,56 @@ uint8_t qspi_details;
 #define qspi_dma_disuse() (qspi_details &= ~0b0100000)
 #define qspi_dma_inuse()  (qspi_details &   0b0100000)
 
+# ifdef OP_REV2
+
+void qspi_gpio_init() {
+	// GPIO
+	/* OP R2 GPIO pinout
+	 * 		QSPI SCK		E10		(Alternate Function, AF10)
+	 * 		QSPI NCS		E11		(Alternate Function, AF10)
+	 * 		QSPI IO0		E12		(Alternate Function, AF10)
+	 * 		QSPI IO1		E13		(Alternate Function, AF10)
+	 * 		QSPI IO2		E14		(Alternate Function, AF10)
+	 * 		QSPI IO3		E15		(Alternate Function, AF10)
+	 */
+	// Reset mode on each QUADSPI pin
+	GPIOE->MODER &= ~(
+			  GPIO_MODER_MODE10_Msk
+			| GPIO_MODER_MODE11_Msk
+			| GPIO_MODER_MODE12_Msk
+			| GPIO_MODER_MODE13_Msk
+			| GPIO_MODER_MODE14_Msk
+			| GPIO_MODER_MODE15_Msk);
+
+	// set each pin to Alternate function
+	GPIOE->MODER |=
+		  GPIO_MODER_MODE10_1
+		| GPIO_MODER_MODE11_1
+		| GPIO_MODER_MODE12_1
+		| GPIO_MODER_MODE13_1
+		| GPIO_MODER_MODE14_1
+		| GPIO_MODER_MODE15_1;
+
+	// Reset alternate function selection on QUADSPI
+	GPIOE->AFR[1] &= ~(
+			  GPIO_AFRH_AFSEL10_Msk
+			| GPIO_AFRH_AFSEL11_Msk
+			| GPIO_AFRH_AFSEL12_Msk
+			| GPIO_AFRH_AFSEL13_Msk
+			| GPIO_AFRH_AFSEL14_Msk
+			| GPIO_AFRH_AFSEL15_Msk);
+
+	// set each pin to AF10
+	GPIOE->AFR[1] |=
+		  10U << GPIO_AFRH_AFSEL10_Pos |
+		  10U << GPIO_AFRH_AFSEL11_Pos |
+		  10U << GPIO_AFRH_AFSEL12_Pos |
+		  10U << GPIO_AFRH_AFSEL13_Pos |
+		  10U << GPIO_AFRH_AFSEL14_Pos |
+		  10U << GPIO_AFRH_AFSEL15_Pos;
+}
+
+#else
 
 void qspi_gpio_init() {
 	// GPIO
@@ -76,6 +130,8 @@ void qspi_gpio_init() {
 		  10U << GPIO_AFRH_AFSEL14_Pos |
 		  10U << GPIO_AFRH_AFSEL15_Pos;
 }
+
+# endif
 
 void qspi_config(
 		uint8_t flash_size,

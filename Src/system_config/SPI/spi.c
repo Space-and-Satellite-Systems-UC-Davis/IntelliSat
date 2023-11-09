@@ -1,6 +1,10 @@
 /*
  * spi.c
  *
+ *  - Nov 8-9, 2023
+ *      Author       : nithinsenthil
+ *      Log          : Updated SPI3 GPIO config for OP Rev2
+ *
  * 	- September 22, 2023
  *		Author	: Darsh
  *		Log		: Included all stages of initializations in spi.h / spi.c
@@ -20,6 +24,59 @@
 /**
  * Configures GPIO for the SPI-2 Peripheral
  */
+
+# ifdef OP_REV2
+
+// Many actions split in two to manage pins in both ports B and G
+void spi3_gpio_init() {
+	// GPIO
+	/* OP R2 GPIO pinout
+	 * 		SPI3 SCK		B3		(Alternate Function, AF6)
+	 * 		SPI3 MISO		B4		(Alternate Function, AF6)
+	 * 		SPI3 MOSI		B5		(Alternate Function, AF6)
+	 * 		SPI3 NCS		G15		(Alternate Function, AF6)
+	 */
+	// Reset mode on each SPI-3 pin
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
+
+	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	while (GPIOG->OTYPER == 0xFFFFFFFF);
+
+	// TODO: Check operand for accuracy
+	GPIOB->PUPDR |= SPI2_CS_PUPD; // What do these lines do, CubeIDE...
+	GPIOG->PUPDR |= SPI2_CS_PUPD; // isn't telling me what this macro is
+
+	GPIOB->MODER &= ~(
+		  GPIO_MODER_MODE3_Msk
+		| GPIO_MODER_MODE4_Msk
+		| GPIO_MODER_MODE5_Msk);
+
+	// Mask GPIO out pin separately
+	GPIOG->MODER &= ~(GPIO_MODER_MODE15_Msk);
+
+	// set each pin to Alternate function
+	GPIOB->MODER |=
+		  GPIO_MODER_MODE3_1
+		| GPIO_MODER_MODE4_1
+		| GPIO_MODER_MODE5_1;
+	GPIOG->MODER |= GPIO_MODER_MODE15_0;
+
+	// Reset alternate function selection on each SPI-3 pin
+	GPIOB->AFR[0] &= ~(
+		  GPIO_AFRL_AFSEL3_Msk
+		| GPIO_AFRL_AFSEL4_Msk
+		| GPIO_AFRL_AFSEL5_Msk);
+
+	// set each pin to AF5
+	GPIOB->AFR[0] |=
+		  6U << GPIO_AFRL_AFSEL3_Pos
+		| 6U << GPIO_AFRL_AFSEL4_Pos
+		| 6U << GPIO_AFRL_AFSEL5_Pos;
+}
+
+# else
+
 void spi2_gpio_init() {
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
@@ -47,7 +104,7 @@ void spi2_gpio_init() {
 		| 5U << GPIO_AFRH_AFSEL14_Pos
 		| 5U << GPIO_AFRH_AFSEL15_Pos;
 }
-
+# endif
 
 /**************************** SPI INITIALIZATIONS ****************************/
 

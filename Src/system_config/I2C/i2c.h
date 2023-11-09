@@ -1,6 +1,10 @@
 /*
  * i2c.h
  *
+ *  - Nov 8-9, 2023
+ *      Author       : nithinsenthil
+ *      Log          : Added macro for use with OP Rev2
+ *
  *  - Apr 29, 2023 (Creation)
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
@@ -16,6 +20,8 @@
 
 //Macros
 #define OP1_I2C2 GPIOF, 1, GPIOF, 0
+#define OP12_I2C1 GPIOB, 8, GPIOB, 9 // Mag on I2C1
+#define OP12_I2C2 GPIOF, 1, GPIOF, 0 // No changes in pinout -> Same as OP1 (Sun sensor pyramid connectors)
 
 /**
  * Sets the line mode of a GPIO pin for Software I2C communication.
