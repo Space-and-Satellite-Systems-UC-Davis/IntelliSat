@@ -7,10 +7,7 @@
  * Each development / feature branch has it's own implementation
  * which is used for testing specific features.
  */
-void branch_main() {
-	while (1) {
-	}
-}
+void branch_main();
 
 int main() {
 	init_platform();
