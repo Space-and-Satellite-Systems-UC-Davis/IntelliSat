@@ -26,7 +26,7 @@
  * @param   None
  * @returns None
  */
-void init_core_clocks();
+void init_coreClocks();
 
 /**
  * Enables writing access to registers powered by the Backup Domain
@@ -35,7 +35,7 @@ void init_core_clocks();
  * @param   None
  * @returns None
  */
-void backup_domain_control_enable();
+void backup_domain_controlEnable();
 
 /**
  * Disables writing access to registers powered by the Backup Domain
@@ -44,6 +44,6 @@ void backup_domain_control_enable();
  * @param   None
  * @returns None
  */
-void backup_domain_control_disable();
+void backup_domain_controlDisable();
 
 #endif /* REALOP1_CORE_CONFIG_H_ */

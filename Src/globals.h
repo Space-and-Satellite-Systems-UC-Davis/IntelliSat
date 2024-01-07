@@ -3,19 +3,19 @@
 
 #include "stm32l476xx.h"
 
-typedef enum {false, true} bool;
+
+#define OP_REV 2
+
+#if OP_REV == 1 || OP_REV == 2
+#define UNUSED_GPIO             GPIOG, 1
+#define LOCK_UNUSED_GPIO_HIGH() GPIOG->PUPDR |= (1 << GPIO_PUPDR_PUPD1)
+#endif
 
 typedef enum {false, true} bool;
+#define NULL 0
 
-// Global Variables
-extern int core_MHz;
-extern int systick_time;
-
-extern bool button0;
-extern bool button1;
 
 void nop(long long nop_loops);
-
-#define OP_REV2
+uint64_t getSysTime();
 
 #endif // REALOP1_GLOBALS_H_

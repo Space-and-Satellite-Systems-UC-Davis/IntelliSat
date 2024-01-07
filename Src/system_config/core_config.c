@@ -35,7 +35,7 @@
 // Global variable
 int core_MHz;
 
-void init_core_clocks() {
+void init_coreClocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
 	FLASH->ACR |=
@@ -86,7 +86,8 @@ void init_core_clocks() {
 
 	// configure UART to use HSI16
 	RCC->CCIPR |=
-		  (2U << RCC_CCIPR_UART5SEL_Pos)
+		  (2U << RCC_CCIPR_LPUART1SEL_Pos)
+		| (2U << RCC_CCIPR_UART5SEL_Pos)
 		| (2U << RCC_CCIPR_UART4SEL_Pos)
 		| (2U << RCC_CCIPR_USART3SEL_Pos)
 		| (2U << RCC_CCIPR_USART2SEL_Pos)
@@ -98,14 +99,35 @@ void init_core_clocks() {
 		| (7U << RCC_CFGR_PPRE2_Pos);	// APB2
 
 	core_MHz = 80;
+
+
+	// clock all GPIO ports
+	// - GPIO ports being unclocked is a reason drivers don't work, and is hard to debug
+	PWR->CR2 |= 1 << 9; // VDDIO2 supply for port G
+	RCC->AHB2ENR |=
+		  RCC_AHB2ENR_GPIOAEN
+		| RCC_AHB2ENR_GPIOBEN
+		| RCC_AHB2ENR_GPIOCEN
+		| RCC_AHB2ENR_GPIODEN
+		| RCC_AHB2ENR_GPIOEEN
+		| RCC_AHB2ENR_GPIOFEN
+		| RCC_AHB2ENR_GPIOGEN;
+	// wait until each GPIO is clocked and ready
+	while (GPIOA->OTYPER == 0xFFFFFFFF);
+	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	while (GPIOC->OTYPER == 0xFFFFFFFF);
+	while (GPIOD->OTYPER == 0xFFFFFFFF);
+	while (GPIOE->OTYPER == 0xFFFFFFFF);
+	while (GPIOF->OTYPER == 0xFFFFFFFF);
+	while (GPIOG->OTYPER == 0xFFFFFFFF);
 }
 
 
-void backup_domain_control_enable() {
+void backup_domain_controlEnable() {
 	PWR->CR1 |= PWR_CR1_DBP;
 }
 
-void backup_domain_control_disable() {
+void backup_domain_controlDisable() {
 	PWR->CR1 &= ~PWR_CR1_DBP;
 }
 

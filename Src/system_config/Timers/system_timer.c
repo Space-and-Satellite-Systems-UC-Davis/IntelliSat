@@ -13,15 +13,19 @@
 #include "../../globals.h"
 #include "timers.h"
 #include "../LED/led.h"
-#include "../../tools/print_scan.h"
 
-// initializing Global (external) variables
-int systick_time = 0;
-int ag_counter = 0;
-int heartbeat_counter = 0;
+
+// Global (external) variables and functions
+extern int core_MHz;	// from core_config.h
+
+uint64_t systick_time = 0;
+
+uint64_t getSysTime() {
+	return systick_time;
+}
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-/*                               HEARTBEAT - SYSTICK                         */
+/*                                 SYSTICK                                   */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 /**
@@ -31,7 +35,7 @@ int heartbeat_counter = 0;
  * @param   None
  * @returns None
  */
-void heartbeat_init() {
+void systick_init() {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
@@ -49,31 +53,8 @@ void heartbeat_init() {
  * @returns None
  */
 void SysTick_Handler() {
-
 	systick_time++;
-
-	// toggle LEDs
-	if (!(systick_time % 1000)) {
-		heartbeat_counter = 100;
-	}
-	if (!(systick_time % 250)) {
-		ag_counter = 10;
-	}
-	if (heartbeat_counter) {
-		op_led_hb(1);
-		heartbeat_counter--;
-	} else {
-		op_led_hb(0);
-	}
-	if (ag_counter) {
-		op_led_ag(1);
-		ag_counter--;
-	} else {
-		op_led_ag(0);
-	}
+	blinky();
+	// scheduler();
 }
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-/*                                RAW INTERRUPTS                            */
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 

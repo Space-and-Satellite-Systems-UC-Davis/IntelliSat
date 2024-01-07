@@ -1,4 +1,5 @@
 #include "platform_init.h"
+#include "tools/print_scan.h"
 
 /*
  * For now this won't be implemented on the main branch
@@ -6,7 +7,10 @@
  * Each development / feature branch has it's own implementation
  * which is used for testing specific features.
  */
-void branch_main();
+void branch_main() {
+	while (1) {
+	}
+}
 
 int main() {
 	init_platform();
