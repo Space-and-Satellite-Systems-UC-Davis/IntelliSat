@@ -61,7 +61,7 @@ void qspi_config(
  *
  * @returns Whether the communication was set up or not
  */
-bool qspi_set_command(
+bool qspi_setCommand(
 		uint8_t fmode,
 		uint8_t imode,
 		uint8_t admode,
@@ -84,7 +84,7 @@ bool qspi_set_command(
  *
  * @returns Whether the communication was started properly or not
  */
-bool qspi_send_command(
+bool qspi_sendCommand(
 		uint8_t  instruction,
 		uint32_t address,
 		uint32_t data_length,
@@ -105,7 +105,7 @@ bool qspi_send_command(
  *
  * @returns none
  */
-bool qspi_status_poll(
+bool qspi_statusPoll(
 		bool polling_mode,
 		uint8_t instruction,
 		uint8_t mask,
@@ -125,7 +125,7 @@ bool qspi_status_poll(
  * @param none
  * @returns Macros {QSPI_READY, QSPI_BUSY, QSPI_SUCCESSFUL, QSPI_TIMEDOUT, QSPI_TRANSFER_ERROR}
  */
-char get_qspi_status();
+char qspi_getStatus();
 
 #define QSPI_DMA_UNAVAILABLE 	false
 
