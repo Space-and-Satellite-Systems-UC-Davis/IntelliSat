@@ -79,7 +79,7 @@ void rtc_config(char clock_source, int forced_config);
  *
  * @returns None
  */
-void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day);
+void rtc_setCalendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day);
 
 /**
  * Sets a Time on the RTC
@@ -91,7 +91,7 @@ void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day);
  *
  * @returns None
  */
-void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second);
+void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
 /****************************** RTC TIME GETTERS *****************************/
 
@@ -105,7 +105,7 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second);
  *
  * @returns None
  */
-void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second);
+void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
 
 
 #endif // REALOP1_RTC_H_

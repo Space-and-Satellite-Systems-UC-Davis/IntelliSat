@@ -7,10 +7,23 @@
  */
 
 
-#include "print_scan.h"
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "print_scan.h"
+#include "../system_config/UART/uart.h"
+
+#if OP_REV == 1
+#define ConsoleUART 	USART3
+#elif OP_REV == 2
+#define ConsoleUART 	LPUART1
+#endif
+
+#define UART_BAUDRATE	9600
+
+void printer_init() {
+	usart_init(ConsoleUART, UART_BAUDRATE);
+}
 
 void printMsg(char *message, ...) {
 	char buff[128];
@@ -19,5 +32,5 @@ void printMsg(char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	usart_transmitStr(USART3, buff);
+	usart_transmitBytes(ConsoleUART, buff);
 }

@@ -31,25 +31,34 @@
 bool usart_init(USART_TypeDef *bus, int baud_rate);
 
 /*
- * Utilizes USART hardware transmitter to send a character
- * to a listerner on the other end (details on pinout in gpio.h)
- *
- * @param bus       The USART Bus doing the tranmission
- * @param message   The character being sent
- *
- * @returns None
- */
-void usart_transmitChar(USART_TypeDef *bus, char c);
-
-/*
  * Utilizes USART hardware transmitter to send a variable length string
- * to a listerner on the other end (details on pinout in gpio.h)
  *
- * @param bus       The USART Bus doing the tranmission
+ * @param bus       The USART Bus doing the transmission
  * @param message   The string (character array) being sent
  *
  * @returns None
  */
-void usart_transmitStr(USART_TypeDef *bus, char message[]);
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
+
+/*
+ * Returns the status of the USART reciever's FIFO buffer
+ *
+ * @param None
+ * @returns Whether the buffer has
+ */
+bool usart_recieveBufferNotEmpty();
+
+/*
+ * Utilizes the USART hardware receiver to get `size` number of bytes from a FIFO buffer.
+ * Will wait for more bytes in case enough aren't available.
+ * Incorporates a timeout system for safety.
+ *
+ * @param bus		The USART Bus that will be receiving
+ * @param buffer	The buffer where the received bytes must be stored. Length is assumed to be >= `size`
+ * @param size		The number of bytes to receive and store
+ *
+ * @returns			The number of bytes actually received and stored ( <= `size`)
+ */
+int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
 
 #endif	// REALOP1_UART_H_

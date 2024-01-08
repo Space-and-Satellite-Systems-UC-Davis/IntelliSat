@@ -14,9 +14,9 @@
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
-void rtc_open_writing_priveledge() {
+void rtc_openWritingPriveledge() {
 	// Allow Backup Domain Writing Access
-	backup_domain_control_enable();
+	backup_domain_controlEnable();
 
 	// Enable RTC Write Privilege
 	RTC->WPR = 0xCA;
@@ -27,7 +27,7 @@ void rtc_open_writing_priveledge() {
 	while (!(RTC->ISR & RTC_ISR_INITF));
 }
 
-void rtc_close_writing_priveledge() {
+void rtc_closeWritingPriveledge() {
 	// Exit Initialization Mode
 	RTC->ISR &= ~RTC_ISR_INIT;
 
@@ -35,7 +35,7 @@ void rtc_close_writing_priveledge() {
 	RTC->WPR = 0xFF;
 
 	// Close Backup Domain Writing Access
-	backup_domain_control_disable();
+	backup_domain_controlDisable();
 }
 
 /***************************** RTC CONFIGURATIONS ****************************/
@@ -46,7 +46,7 @@ void rtc_config(char clock_source, int forced_config) {
 		return;
 	}
 
-	backup_domain_control_enable();
+	backup_domain_controlEnable();
 
 	// store the current clock configuration, in case of bad input
 	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
@@ -73,9 +73,9 @@ void rtc_config(char clock_source, int forced_config) {
 	// Enable the RTC Clock
 	RCC->BDCR |= RCC_BDCR_RTCEN;
 
-	backup_domain_control_disable();
+	backup_domain_controlDisable();
 
-	rtc_open_writing_priveledge();
+	rtc_openWritingPriveledge();
 
 	// Select the RTC clock source
 	switch (clock_source) {
@@ -100,13 +100,13 @@ void rtc_config(char clock_source, int forced_config) {
 	// Bypass the Shadow registers to read RTC directly
 	RTC->CR |= RTC_CR_BYPSHAD;
 
-	rtc_close_writing_priveledge();
+	rtc_closeWritingPriveledge();
 
 }
 
 /****************************** RTC TIME SETTERS *****************************/
 
-void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
+void rtc_setCalendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 	// check to make sure all inputs are valid
 	if (year == 0 || year > 99) {
 		return;
@@ -121,7 +121,7 @@ void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 		return;
 	}
 
-	rtc_open_writing_priveledge();
+	rtc_openWritingPriveledge();
 
 	// reset all the values
 	RTC->DR &= ~(
@@ -145,11 +145,11 @@ void rtc_set_calendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 		| (date % 10)  << RTC_DR_DU_Pos		// Date Ones Digit
 	);
 
-	rtc_close_writing_priveledge();
+	rtc_closeWritingPriveledge();
 }
 
-void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
-	rtc_open_writing_priveledge();
+void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second) {
+	rtc_openWritingPriveledge();
 
 	// reset all the values
 	RTC->TR &= ~(
@@ -171,12 +171,12 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
 		| (second % 10) << RTC_TR_SU_Pos	// Second Ones Digit
 	);
 
-	rtc_close_writing_priveledge();
+	rtc_closeWritingPriveledge();
 }
 
 /****************************** RTC TIME GETTERS *****************************/
 
-void rtc_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second) {
+void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 	if ((RTC->CR & RTC_CR_BYPSHAD)) {
 		// Bypassing Shadow Registers
 		// requires reading the registers multiple times

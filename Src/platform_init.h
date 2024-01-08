@@ -14,13 +14,19 @@
 #ifndef REALOP1_PLATFORM_INIT_H
 #define REALOP1_PLATFORM_INIT_H
 
+#include "globals.h"
+
 #include "system_config/core_config.h"
-#include "system_config/Buttons/buttons.h"
-#include "system_config/LED/led.h"
 #include "system_config/Timers/timers.h"
+#include "system_config/Buttons/buttons.h"
+#include "system_config/SPI/spi.h"
+#include "system_config/QSPI/qspi.h"
+#include "system_config/LED/led.h"
 #include "system_config/RTC/rtc.h"
 #include "system_config/UART/uart.h"
-#include "system_config/I2C/i2c.h"
+#include "peripherals/IMU/ASM330LHH.h"
+#include "peripherals/MAG/QMC5883L.h"
+#include "tools/print_scan.h"
 
 /**
  * Configures the system's various features,
@@ -30,17 +36,18 @@
  * @returns None
  */
 void init_platform() {
-	init_core_clocks();
+	init_coreClocks();
 	PWR->CR2 |= PWR_CR2_IOSV;
 
-	all_led_init();
+	led_init();
 	buttons_init();
 
-	heartbeat_init();
-
 	rtc_config(LSI, 0);
-	init_softi2c(OP1_I2C2);
-	usart_init(USART3, 9600);
+	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
+	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+
+	printer_init();
+	systick_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

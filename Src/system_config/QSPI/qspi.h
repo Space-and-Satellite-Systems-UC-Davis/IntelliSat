@@ -14,11 +14,14 @@
 
 #define QSPI_TIMEOUT_PERIOD  	1000000	// TODO
 
-// Macros for FLASH Instrction mode (fmode in qspi_set_command())
-#define QSPI_INDIRECT_WRITE		0x00
-#define QSPI_INDIRECT_READ		0x01
-#define QSPI_AUTOMATIC_POLLING	0x02
-#define QSPI_MEMORY_MAPPED		0x03
+// Macros for FLASH Instruction mode (fmode in qspi_set_command())
+#define QSPI_FMODE_INDIRECT_WRITE		0x00
+#define QSPI_FMODE_INDIRECT_READ		0x01
+#define QSPI_FMODE_AUTOMATIC_POLLING	0x02
+#define QSPI_FMODE_MEMORY_MAPPED		0x03
+
+#define QSPI_READ	false
+#define QSPI_WRITE	true
 
 // Macros for # of wires per QSPI Instruction Phase (in qspi_set_command())
 #define QSPI_UNUSED	0x00
@@ -58,7 +61,7 @@ void qspi_config(
  *
  * @returns Whether the communication was set up or not
  */
-bool qspi_set_command(
+bool qspi_setCommand(
 		uint8_t fmode,
 		uint8_t imode,
 		uint8_t admode,
@@ -73,15 +76,15 @@ bool qspi_set_command(
  * Assumes that qspi_set_command() is already run
  *
  * @param instruction    The instruction to send
- * @param address        The address from the peripheral
- * @param data_length    The amount of data expected to flow for this instruction
- * @param data			 The buffer where data is located / will be stored (see below)
- * @param r_or_w		 0:Read	, 1:Write
+ * @param address        The address in the external memory
+ * @param data_length    The amount of data (# of bytes) in the data phase
+ * @param data			 The buffer where data is located / will be stored
+ * @param r_or_w		 either QSPI_READ or QSPI_WRITE (both are macros)
  * @param timeout_period To trigger a timeout {not implemented}
  *
  * @returns Whether the communication was started properly or not
  */
-bool qspi_send_command(
+bool qspi_sendCommand(
 		uint8_t  instruction,
 		uint32_t address,
 		uint32_t data_length,
@@ -102,7 +105,7 @@ bool qspi_send_command(
  *
  * @returns none
  */
-bool qspi_status_poll(
+bool qspi_statusPoll(
 		bool polling_mode,
 		uint8_t instruction,
 		uint8_t mask,
@@ -110,11 +113,19 @@ bool qspi_status_poll(
 		uint32_t timeout_period
 );
 
-#define QSPI_READY            '4'
-#define QSPI_BUSY             '3'
-#define QSPI_SUCCESSFUL       '2'
-#define QSPI_TIMEDOUT         '1'
-#define QSPI_TRANSFER_ERROR   '0'
+#define QSPI_READY            '4'	// qspi_set_command() has been run
+#define QSPI_BUSY             '3'	// executing a previous command
+#define QSPI_SUCCESSFUL       '2'	// status of the previously executed command
+#define QSPI_TIMEDOUT         '1'	// status of the previously executed command
+#define QSPI_TRANSFER_ERROR   '0'	// status of the previously executed command
+
+/**
+ * Returns the status of the QUADSPI hardware
+ *
+ * @param none
+ * @returns Macros {QSPI_READY, QSPI_BUSY, QSPI_SUCCESSFUL, QSPI_TIMEDOUT, QSPI_TRANSFER_ERROR}
+ */
+char qspi_getStatus();
 
 #define QSPI_DMA_UNAVAILABLE 	false
 
