@@ -10,24 +10,20 @@
 
 //-----------------------------------------------------------------------------
 
-#define TEST_TIMER       TIM2
+#if OP_REV == 1
 
-#define EscControlTimer_ID 				1
-#define EscControlTimer 				TIM1
-#define EscControlTimer_ClockEnable() 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN
-#define	EscControlTimer_ClockDisable() 	RCC->APB2ENR &= ~RCC_APB2ENR_TIM1EN
+#define PWMTimer 					TIM4
+#define PWMTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN
+#define	PWMTimer_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM4EN
 
-#define PreemptTimer_ID					2
-#define PreemptTimer     				TIM2
-#define PreemptTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
-#define	PreemptTimer_ClockDisable()		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
+#elif OP_REV == 2
 
-#define BkgrndTimer_ID     				3
-#define BkgrndTimer	     				TIM3
-#define BkgrndTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM3EN
-#define	BkgrndTimer_ClockDisable() 		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM3EN
+#define PWMTimer 					TIM2
+#define PWMTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
+#define	PWMTimer_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
 
-#define ExpLogTimer_ID					6
+#endif
+
 #define ExpLogTimer      				TIM6
 #define ExpLogTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM6EN
 #define ExpLogTimer_ClockDisable() 		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM6EN
@@ -44,14 +40,14 @@
  * @param   period Period of the PWM signal, in microseconds. Note: Cannot be above 32K.
  * @returns Boolean to indicate if the initialization was successful
  */
-bool init_pwm_timer(uint32_t period);
+bool pwm_initTimer(uint32_t period);
 /**
  * Changes the Duty Cycle of the PWM signal... assumes the PWM is being generated already.
  * NOTE: Some percentges might not work properly due to integer math causing rounding errors
  * 
  * @param percent A value between 0-100 to indicate 
 */
-void set_duty_cycle(uint8_t percent);
+void pwm_setDutyCycle(uint8_t percent);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -60,7 +56,21 @@ void set_duty_cycle(uint8_t percent);
  * Initializes the Heartbeat LED Timer (the Systck). 
  * Configures it to tick every ms.
 */
-void heartbeat_init();
+void systick_init();
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+#define logger_expTimerOn()  ExpLogTimer->CR1 |=  TIM_CR1_CEN;
+#define logger_expTimerOff() ExpLogTimer->CR1 &= ~TIM_CR1_CEN;
+
+/**
+ * Configures the Experiment Logger timer registers to generate
+ * an interrupt every 100 ms.
+ *
+ * @returns Boolean to indicate if the initialization was successful
+ */
+bool logger_initExpTimer(uint32_t period);
 
 
 #endif	// REALOP1_TIMERS_H_

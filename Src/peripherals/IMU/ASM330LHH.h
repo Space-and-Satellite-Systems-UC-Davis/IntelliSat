@@ -1,16 +1,26 @@
 /*
  * ASM330LHH.h  (IMU interface)
  *
+ *	- Jan  6, 2024
+ *		Author		 : Darsh
+ *		Log			 : Edited function names to follow consistent naming
+ *
  *  - Apr 29, 2023 (Creation)
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
  *      Log          : IMU Control functions written
  */
-
 #ifndef REALOP1_PERIPHERALS_IMU_H_
 #define REALOP1_PERIPHERALS_IMU_H_
 
 #include "../../system_config/I2C/i2c.h"
+
+//Macros
+#if   OP_REV == 1
+#define IMU_I2C GPIOF, 1, GPIOF, 0
+#elif OP_REV == 2
+#define IMU_I2C GPIOF, 1, GPIOF, 0
+#endif
 
 //Macros
 #define IMU_ADDR 0x6A
@@ -45,7 +55,7 @@
  *
  * @returns None
  */
-void op1_imu_acel_ctrl(int acel_rate, int acel_scale, int digital_filter_on);
+void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on);
 
 /**
  * Configures the gyroscope rate and scale for the IMU sensor.
@@ -55,7 +65,7 @@ void op1_imu_acel_ctrl(int acel_rate, int acel_scale, int digital_filter_on);
  *
  * @returns None
  */
-void op1_imu_gyro_ctrl(int gyro_rate, int gyro_scale);
+void imu_gyroCtrl(int gyro_rate, int gyro_scale);
 
 /**
  * Initializes the OP1 IMU with the given accelerometer and gyroscope settings.
@@ -67,55 +77,55 @@ void op1_imu_gyro_ctrl(int gyro_rate, int gyro_scale);
  *
  * @returns None
  */
-void op1_imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
+void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
 
 /**
  * Reads the X-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The X-axis acceleration value as a 16-bit signed integer.
  */
-int16_t op1_imu_read_acel_x();
+int16_t imu_readAcel_X();
 
 /**
  * Reads the y-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis acceleration value as a 16-bit signed integer.
  */
-int16_t op1_imu_read_acel_y();
+int16_t imu_readAcel_Y();
 
 /**
  * Reads the acceleration value of the z-axis from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The acceleration value of the z-axis.
  */
-int16_t op1_imu_read_acel_z();
+int16_t imu_readAcel_Z();
 
 /**
  * Reads the X-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The X-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t op1_imu_read_gyro_x();
+int16_t imu_readGyro_X();
 
 /**
  * Reads the y-axis gyroscope value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis gyroscope value as a 16-bit signed integer.
  */
-int16_t op1_imu_read_gyro_y();
+int16_t imu_readGyro_Y();
 
 /**
  * Reads the Z-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The Z-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t op1_imu_read_gyro_z();
+int16_t imu_readGyro_Z();
 
 /**
  * Reads the temperature from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The temperature value in 16-bit signed integer format.
  */
-int16_t op1_imu_read_temp();
+int16_t imu_readTemp();
 
 #endif /* REALOP1_PERIPHERALS_IMU_H_ */
