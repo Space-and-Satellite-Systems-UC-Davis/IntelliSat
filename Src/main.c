@@ -1,4 +1,5 @@
 #include "platform_init.h"
+#include "tools/print_scan.h"
 
 /*
  * For now this won't be implemented on the main branch

@@ -35,16 +35,7 @@
 // Global variable
 int core_MHz;
 
-/**
- * Initializes the clocks of the micro-controller.
- *
- * This function sets up the various clock sources and
- * frequencies for the micro-controller.
- *
- * @param   None
- * @returns None
- */
-void init_core_clocks() {
+void init_coreClocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
 	FLASH->ACR |=
@@ -93,50 +84,50 @@ void init_core_clocks() {
 	while (!(RCC->CR & RCC_CR_PLLSAI1RDY));
 	RCC->CFGR = RCC_CFGR_SW;	// system clock to PLL
 
+	// configure UART to use HSI16
+	RCC->CCIPR |=
+		  (2U << RCC_CCIPR_LPUART1SEL_Pos)
+		| (2U << RCC_CCIPR_UART5SEL_Pos)
+		| (2U << RCC_CCIPR_UART4SEL_Pos)
+		| (2U << RCC_CCIPR_USART3SEL_Pos)
+		| (2U << RCC_CCIPR_USART2SEL_Pos)
+		| (2U << RCC_CCIPR_USART1SEL_Pos);
+
+	// configure APB clocks to be System_Clock / 16
+	RCC->CFGR |=
+		  (7U << RCC_CFGR_PPRE1_Pos)	// APB1
+		| (7U << RCC_CFGR_PPRE2_Pos);	// APB2
+
 	core_MHz = 80;
+
+
+	// clock all GPIO ports
+	// - GPIO ports being unclocked is a reason drivers don't work, and is hard to debug
+	PWR->CR2 |= 1 << 9; // VDDIO2 supply for port G
+	RCC->AHB2ENR |=
+		  RCC_AHB2ENR_GPIOAEN
+		| RCC_AHB2ENR_GPIOBEN
+		| RCC_AHB2ENR_GPIOCEN
+		| RCC_AHB2ENR_GPIODEN
+		| RCC_AHB2ENR_GPIOEEN
+		| RCC_AHB2ENR_GPIOFEN
+		| RCC_AHB2ENR_GPIOGEN;
+	// wait until each GPIO is clocked and ready
+	while (GPIOA->OTYPER == 0xFFFFFFFF);
+	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	while (GPIOC->OTYPER == 0xFFFFFFFF);
+	while (GPIOD->OTYPER == 0xFFFFFFFF);
+	while (GPIOE->OTYPER == 0xFFFFFFFF);
+	while (GPIOF->OTYPER == 0xFFFFFFFF);
+	while (GPIOG->OTYPER == 0xFFFFFFFF);
 }
 
-/**
- * Initializes the Nested Vector Interrupt Controller (NVIC) for
- * 		- Systick Timer (1ms)
- * 		- GPIO Pins 10-15
- * 			- Buttons 0 & 1
- *
- * @param   None
- * @returns None
- */
-void init_nvic() {
-	__disable_irq();
 
-	// configure for 1 ms period
-	SysTick->LOAD = (core_MHz / 8) * 1000;
-	// use AHB/8 as input clock, and enable counter interrupt
-	SysTick->CTRL = 0x3;
-	NVIC_EnableIRQ(SysTick_IRQn);
-
-	__enable_irq();
-}
-
-
-/**
- * Enables writing access to registers powered by the Backup Domain
- * Key registers include RCC's BDRC, and several key RTC registers
- *
- * @param   None
- * @returns None
- */
-void backup_domain_control_enable() {
+void backup_domain_controlEnable() {
 	PWR->CR1 |= PWR_CR1_DBP;
 }
 
-/**
- * Disables writing access to registers powered by the Backup Domain
- * Key registers include RCC's BDRC, and several key RTC registers
- *
- * @param   None
- * @returns None
- */
-void backup_domain_control_disable() {
+void backup_domain_controlDisable() {
 	PWR->CR1 &= ~PWR_CR1_DBP;
 }
 
