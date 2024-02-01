@@ -17,7 +17,6 @@
 
 #include "../../globals.h"
 #include "../GPIO/gpio.h"
-#include <string.h>
 
 /*
  * Initializes the UART hardware to conduct UART communication with
@@ -34,11 +33,12 @@ bool usart_init(USART_TypeDef *bus, int baud_rate);
  * Utilizes USART hardware transmitter to send a variable length string
  *
  * @param bus       The USART Bus doing the transmission
- * @param message   The string (character array) being sent
+ * @param message   The buffer where the data is stored
+ * @param size      The size of the buffer to be sent
  *
  * @returns None
  */
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
 
 /*
  * Returns the status of the USART reciever's FIFO buffer

@@ -290,12 +290,12 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
 	while(!(bus->ISR & USART_ISR_TC));
 }
 
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Transfer each character one at a time
-	for (int i = 0; i < (int)strlen(message); i++){
+	for (int i = 0; i < size; i++){
 		// wait until Data register is empty
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register
@@ -337,11 +337,13 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
-		}
-
-		if (usart_recieverTimedOut(rxbuff)) {
+		} else {
 			break;
 		}
+
+//		if (usart_recieverTimedOut(rxbuff)) {
+//			break;
+//		}
 	}
 
 	return sz;
