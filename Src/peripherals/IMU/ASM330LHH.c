@@ -1,6 +1,10 @@
 /*
  * ASM330LHH.c  (IMU interface)
  *
+ *	- Jan 30, 2024
+ *		Author 		 : Basti
+ *		Log			 : Utilized the SPI function
+ *
  *	- Jan  6, 2024
  *		Author		 : Darsh
  *		Log			 : Edited function names to follow consistent naming
@@ -18,7 +22,6 @@
 #define GYRO_CTRL_REG  0x11
 #define IMU_RESET_REG  0x12
 #define IMU_RESET_CMD  0x01
-
 
 /*************************** IMU Helper Functions *************************/
 
