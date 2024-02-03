@@ -1,6 +1,10 @@
 /*
  * spi.h
  *
+ *	- October 29, 2023
+ *		Author	: Darsh
+ *		Log		: Generic spi functions.
+ *
  *	- September 22, 2023
  *		Author	: Darsh
  *		Log		: Included all stages of initializations in spi.h / spi.c
@@ -18,7 +22,6 @@
 #include "../GPIO/gpio.h"
 
 // predefined macros for cs_port,cs_pin (useful for later spi functions)
-
 #if OP_REV == 1
 
 #define SPI1_CS			  UNUSED_GPIO
@@ -41,7 +44,6 @@
 
 /**
  * Stops an SPI peripheral
- * 
 */
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin);
 
@@ -73,7 +75,7 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
 
 /**
  * Transmits and Recieves messages over an spi line
- * Assumes that communication has already been started using spi_start_communication()
+ * Assumes that communication has already been started using spi_startCommunicationunication()
  * 
  * NOTE: 1 call of this function will transmit out `size` bytes of data from the 
  * transmission buffer. In parallel, it will store in the 16 bytes that were present 
