@@ -19,54 +19,103 @@ int main() {
 
 
 
-//
+//-----------------------------------------------------------------------------
 
+#define IntercommUART UART1
 
-// TODO: Functions to check if char is a certain MetaDataType
+void intercomm_init() {
+	usart_init(IntercommUART, 9600);
+}
+
+enum metadata_types {
+	_Not_Metadata,
+	_Heartbeat,
+	_ACK_Ready,
+	_ACK_NotReady,
+	_NACK,
+	_STOP,
+	_Data_TransferRequest,
+	_Data_ReceiveRequest
+};
 
 enum data_types {
+	_Invalid,
 	_ExperimentLogBuffer,
 	_ExperimentData,
 	_EventLogBuffer,
 	_EventsData,
 	_TLE
-	// TOOD: ???
 };
 
+enum metadata_types intercomm_identifyMetadataType(char message) {
+	// parse and return right value: top 4 bits?
+}
+
+enum data_types intercomm_identifyDataType(char message) {
+	// if not a data request, return _Invalid
+	enum metadata_types type = intercomm_identifyMetadataType(message);
+	if (type != _Data_TransferRequest && type != _Data_ReceiveRequest_) {
+		return _Invalid;
+	}
+
+	// parse and return the right value: bottom 4 bits?
+}
+
+// -2 : Timedout, -1 : STOP, 0 : Not Ready, 1 : Ready
+uin8_t intercomm_waitForACK() {
+	uint64_t start_ms = getSysTime(), curr_ms = 0;
+	char recieved;
+	while (true) {
+		if (usart_recieveBytes(IntercommUART, &recieved, 1)) {
+			if        (intercomm_identifyMetadataType(recieved) == _ACK_Ready)    {
+				return 1;
+			} else if (intercomm_identifyMetadataType(recieved) == _ACK_NotReady) {
+				return 0;
+			} else if (intercomm_identifyMetadataType(recieved) == _STOP)         {
+				return -1;
+			}
+		}
+		curr_ms = getSysTime();
+		if (curr_ms - start_ms >= 10) {
+			break;
+		}
+	}
+	return -2;
+}
+
 void intercomm_stopCommunication() {
-	// TODO
+	// construct STOP message
+	usart_transmitBytes(IntercommUART, &stop_message, 1);
 }
 
 bool intercomm_initiateTransfers() {
-	// send Transfer
+	// send Transfer Request
 
-	// wait for ACK
-	uint64_t start_ms = getSysTime(), curr_ms = 0;
-	bool ready = false;
+	uin8_t ack_status = intercomm_waitForACK();
+
 
 	// If ACK is not Ready, wait for Ready
 
-	char message;
-	while (!ready) {
-		// check if a message was received, and if it's an ack with ready
 
-		// if message is STOP, return false?
+	return true;
+}
 
-		curr_ms = getSysTime();
-		if (curr_ms - start_ms >= 10) {
-			intercomm_stopCommunication();
+bool intercomm_TxRx(bool tx_or_rx, uint8_t data[], uint16_t size) {
+	char recievied;
+
+	for (int i = 0; i < size; i++) {
+		usart_transmitBytes(IntercommUART, data[i], 1);
+
+		if (usart_recieveBytes(IntercommUART, &recieved, 1)
+				&& intercomm_identifyMetadataType(recieved) == _STOP) {
 			return false;
 		}
 
 	}
 
-
-}
-
-bool intercomm_TxRx(bool tx_or_rx, uint8_t data[], uint16_t size) {
-	// Send Data
-
-	// Confirm that ACK was recieved
+	if (intercomm_waitForACK() != -2) {		// ACK, or STOP, received
+		return true;
+	}
 
 	return false;
 }
@@ -77,7 +126,6 @@ bool comms_DataSharingFunctionTransmit(enum data_types type_of_data) {
 	uint8_t *data;
 	uint16_t size;
 
-	// Initiate the InterComm Requests
 	if (intercomm_initiateTransfers() == false) {
 		intercomm_stopCommunication();
 		return false;
