@@ -21,6 +21,7 @@ int main() {
 
 //-----------------------------------------------------------------------------
 
+/*
 #define IntercommUART UART1
 
 void intercomm_init() {
@@ -135,3 +136,4 @@ bool comms_DataSharingFunctionTransmit(enum data_types type_of_data) {
 
 	return success;
 }
+*/

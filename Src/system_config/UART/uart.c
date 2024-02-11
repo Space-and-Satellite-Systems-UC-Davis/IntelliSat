@@ -197,7 +197,7 @@ void lpuart_gpio_init() {
 	GPIOC->MODER &= ~(GPIO_MODER_MODE0_Msk | GPIO_MODER_MODE1_Msk);
 	GPIOC->MODER |= (GPIO_MODER_MODE0_1 | GPIO_MODER_MODE1_1);
 
-	// configure each pin to AF7
+	// configure each pin to AF8
 	GPIOC->AFR[0] &= ~(GPIO_AFRL_AFSEL0_Msk | GPIO_AFRL_AFSEL1_Msk);
 	GPIOC->AFR[0] |= (8U << GPIO_AFRL_AFSEL0_Pos) | (8U << GPIO_AFRL_AFSEL1_Pos);
 
@@ -248,6 +248,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
 			uart_8bit_1stop(USART1, baud_rate, true);
+			NVIC_EnableIRQ(USART1_IRQn);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -257,6 +258,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
 			usart3_gpio_init();
 			uart_8bit_1stop(USART3, baud_rate, false);
+			NVIC_EnableIRQ(USART3_IRQn);
 			break;
 		case (int)UART4:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
@@ -270,6 +272,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 			lpuart_gpio_init();
 			uart_8bit_1stop(LPUART1, baud_rate, false);
+			NVIC_EnableIRQ(LPUART1_IRQn);
 			break;
 		default:
 			return false;
@@ -299,7 +302,7 @@ void usart_transmitBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 		// wait until Data register is empty
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register
-		bus->TDR = message[i];
+		bus->TDR = buffer[i];
 	}
 
 	// Wait for the Transfer to be completed by monitoring the TC flag
@@ -327,9 +330,13 @@ bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
 }
 
 int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
+	if (buffer == NULL || size <= 0) {
+		return 0;
+	}
+
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
-		return false;
+		return 0;
 	}
 
 	uint16_t sz = 0;
@@ -409,6 +416,11 @@ void UART5_IRQHandler() {
 }
 
 void LPUART1_IRQHandler() {
+	uint32_t status = LPUART1->ISR;
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
 	if (LPUART1->ISR & USART_ISR_RXNE) {
 		LPUART1->ISR &= ~USART_ISR_RXNE;
 #if OP_REV == 2
