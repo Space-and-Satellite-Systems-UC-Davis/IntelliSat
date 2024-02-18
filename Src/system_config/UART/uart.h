@@ -1,6 +1,10 @@
 /*
  * uart.h
  *
+ *  - February 18, 2024
+ * 		Author	: Darsh
+ * 		Log		: Functional UART Receiver, both internally and at an API level
+ *
  *	- May 11, 2023
  *		Author       : Darsh
  *		Log          : Added comments, plus configurable baud rate

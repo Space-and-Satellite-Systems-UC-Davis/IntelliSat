@@ -1,6 +1,10 @@
 /*
  * uart.h
  *
+ * 	- February 18, 2024
+ * 		Author	: Darsh
+ * 		Log		: Functional UART Receiver, both internally and at an API level
+ *
  * 	- September 22, 2023
  * 		Author	: Darsh
  * 		Log		: Added Clocks and GPIO
@@ -360,7 +364,6 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
-		USART1->ISR &= ~USART_ISR_RXNE;
 #if OP_REV == 1 || OP_REV == 2
 		enqueueBuffer(USART1_RxBuffer, USART1);
 #endif
@@ -375,7 +378,7 @@ void USART1_IRQHandler() {
 
 void USART2_IRQHandler() {
 	if (USART2->ISR & USART_ISR_RXNE) {
-		USART2->ISR &= ~USART_ISR_RXNE;
+		// read RDR
 	}
 	if (USART2->ISR & USART_ISR_RTOF) {
 		USART2->ISR &= ~USART_ISR_RTOF;
@@ -384,7 +387,6 @@ void USART2_IRQHandler() {
 
 void USART3_IRQHandler() {
 	if (USART3->ISR & USART_ISR_RXNE) {
-		USART3->ISR &= ~USART_ISR_RXNE;
 #if OP_REV == 1
 		enqueueBuffer(USART3_RxBuffer, USART3);
 #endif
@@ -399,7 +401,7 @@ void USART3_IRQHandler() {
 
 void UART4_IRQHandler() {
 	if (UART4->ISR & USART_ISR_RXNE) {
-		UART4->ISR &= ~USART_ISR_RXNE;
+		// read RDR
 	}
 	if (UART4->ISR & USART_ISR_RTOF) {
 		UART4->ISR &= ~USART_ISR_RTOF;
@@ -408,7 +410,7 @@ void UART4_IRQHandler() {
 
 void UART5_IRQHandler() {
 	if (UART5->ISR & USART_ISR_RXNE) {
-		UART5->ISR &= ~USART_ISR_RXNE;
+		// read RDR
 	}
 	if (UART5->ISR & USART_ISR_RTOF) {
 		UART5->ISR &= ~USART_ISR_RTOF;
@@ -416,13 +418,7 @@ void UART5_IRQHandler() {
 }
 
 void LPUART1_IRQHandler() {
-	uint32_t status = LPUART1->ISR;
-	__NOP();
-	__NOP();
-	__NOP();
-	__NOP();
 	if (LPUART1->ISR & USART_ISR_RXNE) {
-		LPUART1->ISR &= ~USART_ISR_RXNE;
 #if OP_REV == 2
 		enqueueBuffer(LPUART1_RxBuffer, LPUART1)
 #endif
@@ -434,4 +430,3 @@ void LPUART1_IRQHandler() {
 #endif
 	}
 }
-
