@@ -17,7 +17,8 @@
 #if   OP_REV == 1
 #define IMU_I2C GPIOF, 1, GPIOF, 0
 #elif OP_REV == 2
-#define IMU_I2C GPIOF, 1, GPIOF, 0
+#define IMU_SPI    SPI3
+#define IMU_SPI_CS SPI3_CS
 #endif
 
 //Macros

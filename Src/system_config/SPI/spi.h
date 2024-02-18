@@ -78,7 +78,7 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
  * Assumes that communication has already been started using spi_startCommunicationunication()
  * 
  * NOTE: 1 call of this function will transmit out `size` bytes of data from the 
- * transmission buffer. In parallel, it will store in the 16 bytes that were present 
+ * transmission buffer. In parallel, it will store in the `size` bytes that were present
  * on the MISO line during that transmission phase.
  * If you only want to transmit, (recieve nothing at all), set `reception = NULL`
  * If you only want to recieve, (not transmit anything at all), set `transmission = NULL`
@@ -91,6 +91,6 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
  * 
  * @returns Boolean to indicate if the communication was successful or not
 */
-bool spi_transmitRecieve(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma);
+bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma);
 
 #endif	// REALOP1_SPI_H_
