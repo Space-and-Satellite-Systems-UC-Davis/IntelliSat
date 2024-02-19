@@ -5,7 +5,7 @@
 #include "../../tools/print_scan.h"
 
 // Tests if n character can be received
-void tester1() {
+void uart_tester1() {
 	printMsg("*** Test 1 ***\r\n");
 
 	#define LEN 3
@@ -41,6 +41,6 @@ void tester1() {
 }
 
 // Receiver Overflow Tests?
-void tester2() {
+void uart_tester2() {
 	printMsg("*** Test 2 ***\r\n");
 }
