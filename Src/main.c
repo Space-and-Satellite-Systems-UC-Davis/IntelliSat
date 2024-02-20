@@ -1,6 +1,6 @@
 #include "platform_init.h"
 #include "tools/print_scan.h"
-
+#include "branch_main.h"
 /*
  * For now this won't be implemented on the main branch
  * Therefore, the main branch cannot be built.
