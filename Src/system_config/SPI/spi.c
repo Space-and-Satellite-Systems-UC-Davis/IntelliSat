@@ -1,9 +1,9 @@
 /*
  * spi.c
  *
- *  - Nov 8-9, 2023
- *      Author       : nithinsenthil
- *      Log          : Updated SPI3 GPIO config for OP Rev2
+ *  - October 29, 2023
+ *		Author	: Darsh
+ *		Log		: Generic spi functions.
  *
  * 	- September 22, 2023
  *		Author	: Darsh
@@ -20,6 +20,10 @@
 
 #include "spi.h"
 
+
+/**
+ * Configures GPIO for the SPI-2 Peripheral
+ */
 
 /**
  * Configures GPIO for the SPI-2 Peripheral
@@ -137,7 +141,7 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 void spi1_config() {
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// Clock
 
-	spi1_gpioInit();
+	// GPIO
 
 	spi_disable(SPI1, SPI1_CS);
 
@@ -153,7 +157,7 @@ void spi1_config() {
 void spi2_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Clock
 
-	spi2_gpioInit();
+	spi2_gpio_init();
 
 	spi_disable(SPI2, SPI2_CS);
 
@@ -174,20 +178,14 @@ void spi2_config() {
 void spi3_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// Clock
 
-	spi3_gpioInit();
+	// GPIO
 
-	spi_disable(SPI3, SPI3_CS);
+	// spi_disable(SPI3, SPI3_CS);
 
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;
-	SPI2->CR1 |=
-		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64`
-		| SPI_CR1_SSM				// (CS is controlled by software)
-		| SPI_CR1_SSI				// (CS is controlled by software)
-		| SPI_CR1_MSTR;
-	SPI2->CR2 |=
-		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
-		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
+	// CR1
+	// CR2
 
 	spi_enable(SPI3);
 
@@ -209,21 +207,21 @@ void spi_config(SPI_TypeDef *spi) {
 
 /***************************** SPI COMMUNICATION *****************************/
 
-void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
+void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_low(cs_port, cs_pin);
 }
 
-void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
+void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
-bool spi_transmitRecieve(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
+bool spi_transmit_recieve(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
 	while(size-- > 1) {
-		while(!(spi->SR & SPI_SR_TXE));			// wait for TXFIFO to be empty
-		if (transmission == NULL) {
-			spi->DR = SPI_DUMMY_BYTE;           // send a dummy byte to trigger the clock
+		while(!(spi->SR & SPI_SR_TXE));	// wait for TXFIFO to be empty
+		if (transmission == 0) {
+			spi->DR = SPI_DUMMY_BYTE;              // send a dummy byte to trigger the clock
 		} else {
-			spi->DR = (*transmission)++;		// fill TXFIFO with the instruction
+			spi->DR = (*transmission)++;			// fill TXFIFO with the instruction
 		}
 
 		if (reception) {
@@ -232,7 +230,7 @@ bool spi_transmitRecieve(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			}
 		}
 	}
-	while((spi->SR & SPI_SR_BSY));				// wait till all the communication is over
+	while((spi->SR & SPI_SR_BSY));			// wait till all the communication is over
 
 	return true;
 }
