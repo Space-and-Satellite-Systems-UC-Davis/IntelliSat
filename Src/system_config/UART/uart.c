@@ -306,7 +306,10 @@ void usart_transmitBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 		// wait until Data register is empty
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register
+
+		// TODO: Disable Interrupts
 		bus->TDR = buffer[i];
+		// TODO: Enable Interrupts
 	}
 
 	// Wait for the Transfer to be completed by monitoring the TC flag

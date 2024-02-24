@@ -2,7 +2,8 @@
 #include "intercomm.h"
 
 
-#define IntercommUART USART1
+#define IntercommUART 		LPUART1
+#define InterCommBaudRate 	9600	// kbps
 
 enum comm_wait_returns {
 	__STOP,
@@ -13,7 +14,7 @@ enum comm_wait_returns {
 
 //-----------------------------------------------------------------------------
 
-int8_t intercomm_waitForACK() {
+int8_t intercomm_waitForACK(uint16_t duration_ms) {
 	uint64_t startMs = getSysTime();
 	uint64_t currMs = 0;
 
@@ -30,14 +31,14 @@ int8_t intercomm_waitForACK() {
 		}
 
 		currMs = getSysTime();
-		if (currMs - startMs >= ACK_TIMEOUT_MS) {
+		if (currMs - startMs >= duration_ms) {
 			break;
 		}
 	}
 	return __TIMEDOUT;
 }
 
-int8_t intercomm_waitForReady() {
+int8_t intercomm_waitForReady(uint16_t duration_ms) {
 	uint64_t startMs = getSysTime();
 	uint64_t currMs = 0;
 
@@ -52,7 +53,7 @@ int8_t intercomm_waitForReady() {
 		}
 
 		currMs = getSysTime();
-		if (currMs - startMs >= READY_TIMEOUT_MS) {
+		if (currMs - startMs >= duration_ms) {
 			break;
 		}
 	}
@@ -82,14 +83,14 @@ enum data_types intercomm_identifyDataType(char message) {
 //-----------------------------------------------------------------------------
 
 void intercomm_init() {
-	usart_init(IntercommUART, 9600);
+	usart_init(IntercommUART, InterCommBaudRate);
 }
 
 bool intercomm_initiateTransfers(enum data_types type_of_data) {
 	uint8_t transferMessage = ((uint8_t)_Data_TransferRequest << 4) | (uint8_t)type_of_data;
 	usart_transmitBytes(IntercommUART, &transferMessage, 1);
 
-	int8_t commStatus = intercomm_waitForACK();
+	int8_t commStatus = intercomm_waitForACK(ACK_TIMEOUT_MS);
 	switch (commStatus) {
 		case __TIMEDOUT:
 			intercomm_stopCommunication();
@@ -100,7 +101,7 @@ bool intercomm_initiateTransfers(enum data_types type_of_data) {
 			return true;
 	}
 	// case __NOTREADY: wait for Ready
-	commStatus = intercomm_waitForReady();
+	commStatus = intercomm_waitForReady(READY_TIMEOUT_MS);
 	switch (commStatus) {
 		case __TIMEDOUT:
 			intercomm_stopCommunication();
@@ -126,7 +127,7 @@ bool intercomm_TxRx(bool tx_or_rx, uint8_t data[], uint16_t size) {
 		}
 	}
 
-	if (intercomm_waitForACK() != __TIMEDOUT) {
+	if (intercomm_waitForACK(ACK_TIMEOUT_MS) != __TIMEDOUT) {
 		// ACK, or STOP, received
 		return true;
 	}
