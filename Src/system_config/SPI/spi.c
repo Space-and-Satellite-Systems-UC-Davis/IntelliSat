@@ -1,9 +1,9 @@
 /*
  * spi.c
  *
- *  - Nov 8-9, 2023
- *      Author       : nithinsenthil
- *      Log          : Updated SPI3 GPIO config for OP Rev2
+ *  - October 29, 2023
+ *		Author	: Darsh
+ *		Log		: Generic spi functions.
  *
  * 	- September 22, 2023
  *		Author	: Darsh
@@ -25,7 +25,11 @@
  * Configures GPIO for the SPI-2 Peripheral
  */
 
-// Many actions split in two to manage pins in both ports B and G
+// Many actions split in two to manage pi/**
+ * Configures GPIO for the SPI-2 Peripheral
+ */
+
+ns in both ports B and G
 void spi3_gpioInit() {
 
 #if OP_REV == 2
@@ -133,9 +137,8 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 }
 
 void spi1_config() {
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// Clock
-
-	spi1_gpioInit();
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1	// GPIO
+i1_gpioInit();
 
 	spi_disable(SPI1, SPI1_CS);
 
@@ -149,9 +152,8 @@ void spi1_config() {
 }
 
 void spi2_config() {
-	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Clock
-
-	spi2_gpioInit();
+	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Cl	spi2_gpio_init();
+it();
 
 	spi_disable(SPI2, SPI2_CS);
 
@@ -170,11 +172,10 @@ void spi2_config() {
 }
 
 void spi3_config() {
-	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// Clock
+	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// C	// GPIO
+nit();
 
-	spi3_gpioInit();
-
-	spi_disable(SPI3, SPI3_CS);
+		// spi_disable(SPI3, SPI3_CS);
 
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;
@@ -188,6 +189,11 @@ void spi3_config() {
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
+	// CR1
+	// CR2
+	// CR1
+	// CR2
+
 
 	spi_enable(SPI3);
 
@@ -208,12 +214,11 @@ void spi_config(SPI_TypeDef *spi) {
 }
 
 /***************************** SPI COMMUNICATION *****************************/
+void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
 
-void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_low(cs_port, cs_pin);
-}
-
-void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
+}void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
+{
 	gpio_high(cs_port, cs_pin);
 }
 
@@ -241,9 +246,6 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			}
 		}
 	}
-
-	// wait till all the communication is over
-	while((spi->SR & SPI_SR_BSY));
 
 	return true;
 }
