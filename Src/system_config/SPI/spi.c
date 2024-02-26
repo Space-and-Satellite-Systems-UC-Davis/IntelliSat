@@ -218,7 +218,7 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 }
 
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
-	while(size-- > 1) {
+	while(size-- >= 1) {
 		// wait for TXFIFO to be empty
 		while(!(spi->SR & SPI_SR_TXE));	// TXE = TX Empty
 		if (transmission == NULL) {
