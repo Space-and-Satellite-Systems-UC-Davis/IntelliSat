@@ -45,38 +45,38 @@
 #define IMU_FS_2000_dps 	12
 #define IMU_FS_4000_dps 	1
 
-	/**
-	 * Configures the accelerometer control register of an IMU device.
-	 *
-	 * @param acel_rate The rate of the accelerometer.
-	 * @param acel_scale The scale of the accelerometer.
-	 * @param digital_filter_on Whether the digital filter is enabled or not.
-	 *
-	 * @returns None
-	 */
-	void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on);
+/**
+ * Configures the accelerometer control register of an IMU device.
+ *
+ * @param acel_rate The rate of the accelerometer.
+ * @param acel_scale The scale of the accelerometer.
+ * @param digital_filter_on Whether the digital filter is enabled or not.
+ *
+ * @returns None
+ */
+void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on);
 
-	/**
-	 * Configures the gyroscope rate and scale for the IMU sensor.
-	 *
-	 * @param gyro_rate The rate of the gyroscope.
-	 * @param gyro_scale The scale of the gyroscope.
-	 *
-	 * @returns None
-	 */
-	void imu_gyroCtrl(int gyro_rate, int gyro_scale);
+/**
+ * Configures the gyroscope rate and scale for the IMU sensor.
+ *
+ * @param gyro_rate The rate of the gyroscope.
+ * @param gyro_scale The scale of the gyroscope.
+ *
+ * @returns None
+ */
+void imu_gyroCtrl(int gyro_rate, int gyro_scale);
 
-	/**
-	 * Initializes the OP1 IMU with the given accelerometer and gyroscope settings.
-	 *
-	 * @param acel_rate The accelerometer data rate.
-	 * @param acel_scale The accelerometer full scale range.
-	 * @param gyro_rate The gyroscope data rate.
-	 * @param gyro_scale The gyroscope full scale range.
-	 *
-	 * @returns None
-	 */
-	void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
+/**
+ * Initializes the OP1 IMU with the given accelerometer and gyroscope settings.
+ *
+ * @param acel_rate The accelerometer data rate.
+ * @param acel_scale The accelerometer full scale range.
+ * @param gyro_rate The gyroscope data rate.
+ * @param gyro_scale The gyroscope full scale range.
+ *
+ * @returns None
+ */
+void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
 
 /**
  * Reads the X-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.

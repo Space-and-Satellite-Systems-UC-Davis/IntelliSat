@@ -20,16 +20,9 @@
 
 #include "spi.h"
 
-
 /**
  * Configures GPIO for the SPI-2 Peripheral
  */
-
-// Many actions split in two to manage pi/**
- * Configures GPIO for the SPI-2 Peripheral
- */
-
-ns in both ports B and G
 void spi3_gpioInit() {
 
 #if OP_REV == 2

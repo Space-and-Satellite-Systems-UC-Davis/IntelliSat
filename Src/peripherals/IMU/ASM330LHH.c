@@ -23,11 +23,10 @@
 #define IMU_RESET_REG  0x12
 
 // Sensitivity Values
-#define ASM330LHH_ACC_SENSITIVITY_FS_2G   0.061f
-#define ASM330LHH_ACC_SENSITIVITY_FS_4G   0.122f
-#define ASM330LHH_ACC_SENSITIVITY_FS_8G   0.244f
-#define ASM330LHH_ACC_SENSITIVITY_FS_16G  0.488f
-
+#define ASM330LHH_ACC_SENSITIVITY_FS_2G   		0.061f
+#define ASM330LHH_ACC_SENSITIVITY_FS_4G   		0.122f
+#define ASM330LHH_ACC_SENSITIVITY_FS_8G   		0.244f
+#define ASM330LHH_ACC_SENSITIVITY_FS_16G  		0.488f
 #define ASM330LHH_GYRO_SENSITIVITY_FS_125DPS    4.370f
 #define ASM330LHH_GYRO_SENSITIVITY_FS_250DPS    8.750f
 #define ASM330LHH_GYRO_SENSITIVITY_FS_500DPS   17.500f
@@ -35,11 +34,32 @@
 #define ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS  70.000f
 #define ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS 140.000f
 
-
-
 #define IMU_RESET_CMD  0x01
 
 /*************************** IMU Helper Functions *************************/
+
+void imu_spiWriteReg(void *address, uint8_t data) {
+	uint8_t spiDATA[2];
+	spiDATA[0] = address & 0x7F;
+	spiDATA[1] = data;
+
+	spi_startCommunication(IMU_SPI_CS);
+	spi_transmitReceive(IMU_SPI, spiDATA, NULL, 2, false);
+	spi_stopCommunication(IMU_SPI_CS);
+}
+
+int16_t imu_spiReadHighLow(void *low_address) {
+	uint8_t instruction = low_address | 0x80;
+	int datah, datal;
+
+	spi_startCommunication(IMU_SPI_CS);
+	spi_transmitReceive(IMU_SPI, &instruction, NULL, 1, false);
+	spi_transmitReceive(IMU_SPI, NULL, &datal, 1, false);
+	spi_transmitReceive(IMU_SPI, NULL, &datah, 1, false);
+	spi_stopCommunication(IMU_SPI_CS);
+	nop(10);
+	return (datah << 8) | datal;
+}
 
 /**
  * Configures the accelerometer control register of an IMU device.
@@ -64,15 +84,7 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	uint8_t spiDATA[2];
-	spiDATA[0] = ACCEL_RATE_REG & 0x7F;		//address of register
-	spiDATA[1] = data;						//data to be written in register
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, spiDATA, NULL, 2, false);
-	spi_stopCommunication(IMU_SPI_CS);
+	imu_spiWriteReg(ACCEL_RATE_REG, data);
 
 #endif
 }
@@ -98,15 +110,7 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	uint8_t spiDATA[2];
-	spiDATA[0] = GYRO_CTRL_REG & 0x7F;		//address of register
-	spiDATA[1] = data;						//data to be written in register
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, spiDATA, NULL, 2, false);
-	spi_stopCommunication(IMU_SPI_CS);
+	imu_spiWriteReg(GYRO_CTRL_REG, data);
 
 #endif
 }
@@ -118,45 +122,24 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 #if OP_REV == 1
 
 	softi2c_init(IMU_I2C);
-
 	softi2c_writeReg(IMU_I2C, IMU_ADDR, IMU_RESET_REG, IMU_RESET_CMD); // soft reset imu
-	nop(100);
-	imu_acelCtrl(acel_rate, acel_scale, 0);
-	imu_gyroCtrl(gyro_rate, gyro_scale);
 
 #elif OP_REV == 2
 
 	spi_config(IMU_SPI);
-
-	spi_startCommunication(IMU_SPI_CS);
-
-	uint8_t resetDATA[2];
-	resetDATA[0] = IMU_RESET_REG & 0x7F;	//address of register to soft reset
-	resetDATA[1] = IMU_RESET_CMD;			//to reset
-
-	//soft reset imu
-	//transmit
-	spi_transmitReceive(IMU_SPI, resetDATA, NULL, 2, false);
-
-
-
-	spi_stopCommunication(IMU_SPI_CS);
-	nop(100);	//delay
-
-	//initialize
-	imu_acelCtrl(acel_rate, acel_scale, 0);
-	imu_gyroCtrl(gyro_rate, gyro_scale);
+	imu_spiWriteReg(IMU_RESET_REG, data);
 
 #endif
+
+	//initialize accelerometer and gyroscope
+	imu_acelCtrl(acel_rate, acel_scale, 0);
+	imu_gyroCtrl(gyro_rate, gyro_scale);
 }
 
 int16_t imu_readAcel_X() {
 
 	uint8_t instructionHi = 0x29 | 0x80 ;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
-
 	uint8_t instructionLow = 0x28 | 0x80;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
 
 #if OP_REV == 1
 
@@ -164,37 +147,15 @@ int16_t imu_readAcel_X() {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	//Or the Hi and Low to get 16 bits
-	int16_t Result = (storeInstructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x28);
 
 #endif
 }
 
 int16_t imu_readAcel_Y() {
 
-	uint8_t instructionHi = 0x2B;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
-
-	uint8_t instructionLow = 0x2A;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
+	uint8_t instructionHi = 0x2B | 0x80;	//Where we send Hi instruction
+	uint8_t instructionLow = 0x2A | 0x80;	//Where we send Low instruction
 
 #if OP_REV == 1
 
@@ -202,37 +163,15 @@ int16_t imu_readAcel_Y() {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	//Or the Hi and Low to get 16 bits
-	int16_t Result = (instructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x2A);
 
 #endif
 }
 
 int16_t imu_readAcel_Z() {
 
-	uint8_t instructionHi = 0x2D;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
-
-	uint8_t instructionLow = 0x2C;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
+	uint8_t instructionHi = 0x2D | 0x80;	//Where we send Hi instruction
+	uint8_t instructionLow = 0x2C | 0x80;	//Where we send Low instruction
 
 #if OP_REV == 1
 
@@ -240,74 +179,31 @@ int16_t imu_readAcel_Z() {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	//Or the Hi and Low to get 16 bits
-	int16_t Result = (instructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x2C);
 
 #endif
 }
 
 int16_t imu_readGyro_X() {
 
-	uint8_t instructionHi = 0x23;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
+	uint8_t instructionHi = 0x23 | 0x80;	//Where we send Hi instruction
+	uint8_t instructionLow = 0x22 | 0x80;	//Where we send Low instruction
 
-	uint8_t instructionLow = 0x22;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
-
-#if OP_REV == 1
+	#if OP_REV == 1
 
 	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	int16_t Result = (instructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x22);
 
 #endif
 }
 
 int16_t imu_readGyro_Y() {
 
-	uint8_t instructionHi = 0x25;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
-
-	uint8_t instructionLow = 0x24;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
+	uint8_t instructionHi = 0x25 | 0x80;	//Where we send Hi instruction
+	uint8_t instructionLow = 0x24 | 0x80;	//Where we send Low instruction
 
 #if OP_REV == 1
 
@@ -315,37 +211,14 @@ int16_t imu_readGyro_Y() {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	//Or the Hi and Low to get 16 bits
-	int16_t Result = (instructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x24);
 
 #endif
 }
 
 int16_t imu_readGyro_Z() {
-
-	uint8_t instructionHi = 0x27;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
-
-	uint8_t instructionLow = 0x26;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
+	uint8_t instructionHi = 0x27 | 0x80;	//Where we send Hi instruction
+	uint8_t instructionLow = 0x26 | 0x80;	//Where we send Low instruction
 
 #if OP_REV == 1
 
@@ -353,37 +226,15 @@ int16_t imu_readGyro_Z() {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	//Or the Hi and Low to get 16 bits
-	int16_t Result = (instructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x26);
 
 #endif
 }
 
 int16_t imu_readTemp() {
 
-	uint8_t instructionHi = 0x21;	//Where we send Hi instruction
-	uint8_t storeInstructionHi;		//Where we receive Hi instruction
-
-	uint8_t instructionLow = 0x20;	//Where we send Low instruction
-	uint8_t storeInstructionLow;	//Where we receive Low instruction
+	uint8_t instructionHi = 0x21 | 0x80;	//Where we send Hi instruction
+	uint8_t instructionLow = 0x20 | 0x80;	//Where we send Low instruction
 
 #if OP_REV == 1
 
@@ -391,26 +242,7 @@ int16_t imu_readTemp() {
 
 #elif OP_REV == 2
 
-	spi_startCommunication(IMU_SPI_CS);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionHi, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionHi, 1, false);
-
-	//transmit
-	spi_transmitReceive(IMU_SPI, &instructionLow, NULL, 1, false);
-
-	//receive
-	spi_transmitReceive(IMU_SPI, NULL, &storeInstructionLow, 1, false);
-
-	//Or the Hi and Low to get 16 bits
-	int16_t Result = (instructionHi << 8 | storeInstructionLow);
-
-	spi_stopCommunication(IMU_SPI_CS);
-
-	return Result;
+	return imu_spiReadHighLow(0x20);
 
 #endif
 }
