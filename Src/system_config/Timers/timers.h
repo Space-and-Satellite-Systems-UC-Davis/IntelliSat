@@ -70,7 +70,7 @@ void systick_init();
  *
  * @returns Boolean to indicate if the initialization was successful
  */
-bool logger_initExpTimer(uint32_t period);
+bool logger_initExpTimer();
 
 
 #endif	// REALOP1_TIMERS_H_
