@@ -15,7 +15,7 @@
 
 #include "stm32l476xx.h"
 #include "../../globals.h"
-#include "../GPIO/gpio.h"
+#include <GPIO/gpio.h>
 
 // predefined macros for cs_port,cs_pin (useful for later spi functions)
 

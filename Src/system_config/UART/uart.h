@@ -16,7 +16,7 @@
 #define REALOP1_UART_H_
 
 #include "../../globals.h"
-#include "../GPIO/gpio.h"
+#include <GPIO/gpio.h>
 #include <string.h>
 
 /*
