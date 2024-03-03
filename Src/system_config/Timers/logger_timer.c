@@ -40,13 +40,13 @@ bool logger_initExpTimer()
 	ExpLogTimer->ARR = ARR;
 
 	// Count 0 to 100ms
-	ExpLogTimer->CR1 &= ~TIM_CR1_DIR;
+	// ExpLogTimer->CR1 &= ~TIM_CR1_DIR;
 	ExpLogTimer->CR1 |= TIM_CR1_URS;
 
 	// Enable timer interrupt
 	ExpLogTimer->DIER |= TIM_DIER_UIE;
 	// Enable TIM6 interrupt
-	NVIC_EnableIRQ(TIM6_IRQn);
+	NVIC_EnableIRQ(TIM6_DAC_IRQn);
 	// Reenable timer
 	logger_expTimerOn();
 
@@ -55,7 +55,7 @@ bool logger_initExpTimer()
 }
 
 
-void TIM6_IRQHandler()
+void TIM6_DACUNDER_IRQHandler()
 {
 	// TODO
 	if(TIM6->SR & TIM_SR_UIF)
