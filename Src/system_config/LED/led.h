@@ -10,8 +10,8 @@
 #ifndef REALOP1_LED_H_
 #define REALOP1_LED_H_
 
-#include "../../globals.h"
-#include "../GPIO/gpio.h"
+#include <globals.h>
+#include <GPIO/gpio.h>
 
 /***************************** LED INITIALIZERS ******************************/
 

@@ -15,7 +15,7 @@
 #define REALOP1_PERIPHERALS_MAG_H_
 
 
-#include "../../system_config/I2C/i2c.h"
+#include <I2C/i2c.h>
 
 #if   OP_REV == 1
 #define MAG_I2C GPIOF, 1, GPIOF, 0
