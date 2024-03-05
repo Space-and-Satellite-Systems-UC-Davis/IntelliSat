@@ -10,9 +10,9 @@
  *  	Log		: Initial Setup
  */
 
-#include "../../globals.h"
+#include <globals.h>
 #include "timers.h"
-#include "../LED/led.h"
+#include <LED/led.h>
 
 
 // Global (external) variables and functions

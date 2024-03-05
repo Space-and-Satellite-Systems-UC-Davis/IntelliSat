@@ -16,7 +16,7 @@
  *      Log          : wrote the Systick_Handler
  */
 
-#include "../Buttons/buttons.h"
+#include <Buttons/buttons.h>
 
 /*
  * Interrupt Handler for GPIO Pins 10 - 15 (all ports)
