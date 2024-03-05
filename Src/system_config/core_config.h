@@ -15,7 +15,7 @@
 #define REALOP1_CORE_CONFIG_H_
 
 #include "stm32l476xx.h"
-#include "../globals.h"
+#include <globals.h>
 
 /**
  * Initializes the clocks of the micro-controller.

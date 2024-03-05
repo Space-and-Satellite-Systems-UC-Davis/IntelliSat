@@ -1,4 +1,4 @@
-#include "../globals.h"
+#include <globals.h>
 
 #define ACK_TIMEOUT_MS	 10000	// 10 sec
 #define READY_TIMEOUT_MS 20000	// 20 sec

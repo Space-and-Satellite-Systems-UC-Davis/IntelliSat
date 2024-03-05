@@ -1,7 +1,7 @@
 #include "intercomm.h"
-#include "../system_config/UART/uart.h"
-#include "../system_config/Buttons/buttons.h"
-#include "../tools/print_scan.h"
+#include <UART/uart.h>
+#include <Buttons/buttons.h>
+#include <print_scan.h>
 
 
 void intercomm_tester1() {

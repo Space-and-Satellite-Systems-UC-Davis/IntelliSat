@@ -15,7 +15,7 @@
 
 #include "stm32l476xx.h"
 #include <stdint.h>
-#include "../core_config.h"
+#include <core_config.h>
 
 /***************************** RTC CONFIGURATIONS ****************************/
 

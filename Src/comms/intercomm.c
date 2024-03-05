@@ -1,4 +1,4 @@
-#include "../system_config/UART/uart.h"
+#include <UART/uart.h>
 #include "intercomm.h"
 
 

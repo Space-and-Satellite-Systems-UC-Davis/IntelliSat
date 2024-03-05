@@ -19,8 +19,8 @@
 #ifndef REALOP1_UART_H_
 #define REALOP1_UART_H_
 
-#include "../../globals.h"
-#include "../GPIO/gpio.h"
+#include <globals.h>
+#include <GPIO/gpio.h>
 
 /*
  * Initializes the UART hardware to conduct UART communication with

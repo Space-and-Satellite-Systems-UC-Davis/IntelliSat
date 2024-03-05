@@ -1,8 +1,9 @@
 // 2/18/2023 (Darsh)
 
+//#include <UART/uart.h>
 #include "uart.h"
-#include "../../globals.h"
-#include "../../tools/print_scan.h"
+#include <globals.h>
+#include <print_scan.h>
 
 // Tests if n character can be received
 void uart_tester1() {

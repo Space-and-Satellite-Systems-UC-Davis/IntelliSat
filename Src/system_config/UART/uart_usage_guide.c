@@ -10,9 +10,8 @@
 
 
 // To get the UART system, first include it's header file
-// note that the location of this might change depending on where your file is
+//#include <UART/uart.h>
 #include "uart.h"
-// #include "./UART/uart.h" if our file was located in the system_config function
 
 // Before making use of UART, it must be initialized
 void InitUart() {
