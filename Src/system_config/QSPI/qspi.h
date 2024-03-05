@@ -10,7 +10,7 @@
 #define REALOP1_QSPI_H_
 
 #include "stm32l476xx.h"
-#include "../../globals.h"
+#include <globals.h>
 
 #define QSPI_TIMEOUT_PERIOD  	1000000	// TODO
 

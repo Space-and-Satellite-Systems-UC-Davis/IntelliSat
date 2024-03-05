@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "print_scan.h"
-#include "../system_config/UART/uart.h"
+#include <UART/uart.h>
 
 #if OP_REV == 1
 #define ConsoleUART 	USART3

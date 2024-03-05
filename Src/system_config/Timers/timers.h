@@ -6,7 +6,7 @@
 #define REALOP1_TIMERS_H_
 
 #include "stm32l476xx.h"
-#include "../../globals.h"
+#include <globals.h>
 
 //-----------------------------------------------------------------------------
 
