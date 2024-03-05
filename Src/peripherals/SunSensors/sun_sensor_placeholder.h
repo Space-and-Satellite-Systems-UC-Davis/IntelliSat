@@ -2,8 +2,8 @@
  *
  */
 
-#include "../../globals.h"
-#include "../../system_config/I2C/I2C.h"
+#include <globals.h>
+#include <I2C/I2C.h>
 
 #if OP_REV == 2
 

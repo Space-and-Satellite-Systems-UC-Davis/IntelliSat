@@ -174,6 +174,112 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second) {
 	rtc_closeWritingPriveledge();
 }
 
+void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
+		rtc_openWritingPriveledge();
+		switch (bkp) {
+		    case 0:
+		        RTC->BKP0R = bits;
+		        break;
+		    case 1:
+		        RTC->BKP1R = bits;
+		        break;
+		    case 2:
+		        RTC->BKP2R = bits;
+		        break;
+		    case 3:
+		        RTC->BKP3R = bits;
+		        break;
+		    case 4:
+		        RTC->BKP4R = bits;
+		        break;
+		    case 5:
+		        RTC->BKP5R = bits;
+		        break;
+		    case 6:
+		        RTC->BKP6R = bits;
+		        break;
+		    case 7:
+		        RTC->BKP7R = bits;
+		        break;
+		    case 8:
+		        RTC->BKP8R = bits;
+		        break;
+		    case 9:
+		        RTC->BKP9R = bits;
+		        break;
+		    case 10:
+		        RTC->BKP10R = bits;
+		        break;
+		    case 11:
+		        RTC->BKP11R = bits;
+		        break;
+		    case 12:
+		        RTC->BKP12R = bits;
+		        break;
+		    case 13:
+		        RTC->BKP13R = bits;
+		        break;
+		    case 14:
+		        RTC->BKP14R = bits;
+		        break;
+		    case 15:
+		        RTC->BKP15R = bits;
+		        break;
+		    case 16:
+		        RTC->BKP16R = bits;
+		        break;
+		    case 17:
+		        RTC->BKP17R = bits;
+		        break;
+		    case 18:
+		        RTC->BKP18R = bits;
+		        break;
+		    case 19:
+		        RTC->BKP19R = bits;
+		        break;
+		    case 20:
+		        RTC->BKP20R = bits;
+		        break;
+		    case 21:
+		        RTC->BKP21R = bits;
+		        break;
+		    case 22:
+		        RTC->BKP22R = bits;
+		        break;
+		    case 23:
+		        RTC->BKP23R = bits;
+		        break;
+		    case 24:
+		        RTC->BKP24R = bits;
+		        break;
+		    case 25:
+		        RTC->BKP25R = bits;
+		        break;
+		    case 26:
+		        RTC->BKP26R = bits;
+		        break;
+		    case 27:
+		        RTC->BKP27R = bits;
+		        break;
+		    case 28:
+		        RTC->BKP28R = bits;
+		        break;
+		    case 29:
+		        RTC->BKP29R = bits;
+		        break;
+		    case 30:
+		        RTC->BKP30R = bits;
+		        break;
+		    case 31:
+		        RTC->BKP31R = bits;
+		        break;
+		    default:
+		        // Handle case when var is not in the range 0 to 31
+		        break;
+		}
+		rtc_closeWritingPriveledge();
+}
+
 /****************************** RTC TIME GETTERS *****************************/
 
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
