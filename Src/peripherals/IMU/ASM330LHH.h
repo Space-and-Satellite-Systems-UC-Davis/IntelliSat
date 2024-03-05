@@ -10,8 +10,8 @@
 #ifndef REALOP1_PERIPHERALS_IMU_H_
 #define REALOP1_PERIPHERALS_IMU_H_
 
-#include "../../system_config/I2C/i2c.h"
-#include "../../system_config/SPI/spi.h"
+#include <I2C/i2c.h>
+#include <SPI/spi.h>
 
 //Macros
 #if   OP_REV == 1

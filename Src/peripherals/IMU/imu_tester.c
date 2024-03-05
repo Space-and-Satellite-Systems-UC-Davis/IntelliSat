@@ -1,7 +1,7 @@
 #include "ASM330LHH.h"
-#include "../../globals.h"
-#include "../../tools/print_scan.h"
-#include "../../system_config/Buttons/buttons.h"
+#include <globals.h>
+#include <print_scan.h>
+#include <Buttons/buttons.h>
 
 void branch_main() {
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);

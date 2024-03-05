@@ -130,8 +130,8 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 }
 
 void spi1_config() {
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1	// GPIO
-i1_gpioInit();
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// GPIO
+	spi1_gpioInit();
 
 	spi_disable(SPI1, SPI1_CS);
 
@@ -145,8 +145,8 @@ i1_gpioInit();
 }
 
 void spi2_config() {
-	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Cl	spi2_gpio_init();
-it();
+	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Clock
+	spi2_gpioInit();						// GPIO
 
 	spi_disable(SPI2, SPI2_CS);
 
@@ -165,10 +165,10 @@ it();
 }
 
 void spi3_config() {
-	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// C	// GPIO
-nit();
+	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// Clock
+    spi3_gpioInit();						// GPIO
 
-		// spi_disable(SPI3, SPI3_CS);
+	spi_disable(SPI3, SPI3_CS);
 
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;
@@ -182,14 +182,8 @@ nit();
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
-	// CR1
-	// CR2
-	// CR1
-	// CR2
-
 
 	spi_enable(SPI3);
-
 }
 
 void spi_config(SPI_TypeDef *spi) {
@@ -207,16 +201,15 @@ void spi_config(SPI_TypeDef *spi) {
 }
 
 /***************************** SPI COMMUNICATION *****************************/
-void spi_start_communication(GPIO_TypeDef *cs_port, int cs_pin) {
+void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 
 	gpio_low(cs_port, cs_pin);
-}void spi_stop_communication(GPIO_TypeDef *cs_port, int cs_pin) {
-{
+}void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
-	while(size-- >= 1) {
+	while (size-- >= 1) {
 		// wait for TXFIFO to be empty
 		while(!(spi->SR & SPI_SR_TXE));	// TXE = TX Empty
 		if (transmission == NULL) {
@@ -232,13 +225,12 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		// read the reception line until it's empty
 		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
 			if (reception == NULL) {
-				uint8_t temp = spi->DR;
+				spi->DR;
 			} else {
 				*reception = spi->DR;
 				reception++;
 			}
 		}
 	}
-
 	return true;
 }

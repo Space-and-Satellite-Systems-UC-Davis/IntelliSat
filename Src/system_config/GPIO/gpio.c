@@ -49,7 +49,7 @@ int gpio_read(GPIO_TypeDef * port, int pin) {
 	return -1;
 }
 
-void gpio_mode(GPIO_TypeDef * port, int pin, int mode, int open_drain, int speed, int pull) {
+void gpio_mode(GPIO_TypeDef * port, int pin, enum gpio_modes mode, int open_drain, int speed, int pull) {
 	port->MODER = (port->MODER & ~(0x3 << (pin*2))) | ((mode & 0x3) << (pin*2));
 	port->OTYPER = (port->OTYPER & ~(0x1 << pin)) | ((open_drain & 0x1) << pin);
 	port->OSPEEDR = (port->OSPEEDR & ~(0x3 << (pin*2))) | ((speed & 0x3) << (pin*2));

@@ -40,7 +40,7 @@
 
 void imu_spiWriteReg(void *address, uint8_t data) {
 	uint8_t spiDATA[2];
-	spiDATA[0] = address & 0x7F;
+	spiDATA[0] = (uint8_t)address & 0x7F;
 	spiDATA[1] = data;
 
 	spi_startCommunication(IMU_SPI_CS);
@@ -49,7 +49,7 @@ void imu_spiWriteReg(void *address, uint8_t data) {
 }
 
 int16_t imu_spiReadHighLow(void *low_address) {
-	uint8_t instruction = low_address | 0x80;
+	uint8_t instruction = (uint8_t)low_address | 0x80;
 	int datah, datal;
 
 	spi_startCommunication(IMU_SPI_CS);
@@ -127,7 +127,7 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 #elif OP_REV == 2
 
 	spi_config(IMU_SPI);
-	imu_spiWriteReg(IMU_RESET_REG, data);
+	imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
 
 #endif
 
