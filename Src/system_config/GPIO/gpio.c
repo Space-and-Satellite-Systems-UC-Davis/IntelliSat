@@ -21,7 +21,7 @@
  */
 
 #include "gpio.h"
-
+/*
 void gpio_high(GPIO_TypeDef * port, int pin) {
 	port->BSRR = 1 << pin;
 }
@@ -48,3 +48,4 @@ int gpio_read(GPIO_TypeDef * port, int pin) {
 	// Prevent from reading junk data if pin is not set to an actual pin
 	return -1;
 }
+*/

@@ -15,7 +15,7 @@ typedef enum {false, true} bool;
 #define NULL 0
 
 
-void nop(long long nop_loops);
+//void nop(long long nop_loops);
 uint64_t getSysTime();
 
 #endif // REALOP1_GLOBALS_H_

@@ -17,6 +17,14 @@
 #include "stm32l476xx.h"
 #include "../globals.h"
 
+/*
+ * Returns the value of the core processor speed.
+ * NOTE: In MegaHertz
+ *
+ * @returns Processor Speed in MHz
+ */
+uint32_t get_core_speed();
+
 /**
  * Initializes the clocks of the micro-controller.
  *
@@ -26,7 +34,19 @@
  * @param   None
  * @returns None
  */
-void init_coreClocks();
+void init_core_clocks();
+
+/**
+ * Initializes the Nested Vector Interrupt Controller (NVIC) for
+ * 		- Systick Timer (1ms)
+ * 		- GPIO Pins 10-15
+ * 			- Buttons 0 & 1
+ *
+ * @param None
+ *
+ * @returns None
+ */
+void init_nvic();
 
 /**
  * Enables writing access to registers powered by the Backup Domain
@@ -35,7 +55,7 @@ void init_coreClocks();
  * @param   None
  * @returns None
  */
-void backup_domain_controlEnable();
+void backup_domain_control_enable();
 
 /**
  * Disables writing access to registers powered by the Backup Domain
@@ -44,6 +64,6 @@ void backup_domain_controlEnable();
  * @param   None
  * @returns None
  */
-void backup_domain_controlDisable();
+void backup_domain_control_disable();
 
 #endif /* REALOP1_CORE_CONFIG_H_ */

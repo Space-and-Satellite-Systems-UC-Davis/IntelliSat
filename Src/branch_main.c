@@ -54,15 +54,15 @@ unsigned int abs16(int16_t a) {
 	}
 }
 
-void nop(int nop_loops) {
+/*void nop(int nop_loops) {
 	for (int i = 0; i < nop_loops; i++) {__NOP();}
-}
+}*/
 
 void nop_ms(int ms) {
 	nop(80 * 250 * ms); // assume 80 MHz
 }
 
-int core_MHz = 0; // please update when configuring pll. not really used rn
+int core_MHz = 80; // please update when configuring pll. not really used rn
 void init_clocks() {
 	// read chip identification information. only useful when watching memory through debugger
 	volatile int id_w_x = (*(uint32_t*)(UID_BASE) & 0xFFFF0000) >> 16;
@@ -119,7 +119,7 @@ void init_clocks() {
 	core_MHz = 80;
 }
 
-void gpio_high(GPIO_TypeDef * port, int pin) {
+/*void gpio_high(GPIO_TypeDef * port, int pin) {
 	port->BSRR = 1 << pin;
 }
 
@@ -141,7 +141,7 @@ int gpio_read(GPIO_TypeDef * port, int pin) {
 	} else {
 		return 0;
 	}
-}
+}*/
 
 
 #define GPIO_DIGITAL_IN		0
@@ -364,9 +364,9 @@ void init_softi2c(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port,
 	softi2c_line_mode(sda_port, sda_pin, 1);
 }
 
-void softi2c_delay() {
+/*void softi2c_delay() {
 	nop(30);
-}
+}*/
 
 void softi2c_sig_start(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
 	softi2c_line_mode(scl_port, scl_pin, 1);
@@ -400,7 +400,7 @@ void softi2c_sig_stop(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_p
 	softi2c_delay();
 }
 
-void softi2c_send8(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int data8) {
+/*void softi2c_send8(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int data8) {
 	for (int i = 0; i < 8; i++) {
 		softi2c_line_mode(scl_port, scl_pin, 0);
 		softi2c_delay();
@@ -423,7 +423,7 @@ int softi2c_read8(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port,
 		softi2c_delay(); softi2c_delay();
 	}
 	return data;
-}
+}*/
 
 void softi2c_send_nack(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
 	softi2c_line_mode(scl_port, scl_pin, 0);
@@ -475,7 +475,7 @@ int softi2c_read_reg(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_po
 	return data;
 }
 
-bool softi2c_probe(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr) {
+/*bool softi2c_probe(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr) {
 	int nack = 0;
 	softi2c_sig_start(scl_port, scl_pin, sda_port, sda_pin);
 	softi2c_send8(scl_port, scl_pin, sda_port, sda_pin, device_addr << 1 | 1);
@@ -486,7 +486,7 @@ bool softi2c_probe(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port
 	} else {
 		return 1;
 	}
-}
+}*/
 
 int16_t softi2c_read_reg_hl(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int high_reg_addr, int low_reg_addr) {
 	return softi2c_read_reg(scl_port, scl_pin, sda_port, sda_pin, device_addr, high_reg_addr) << 8 | softi2c_read_reg(scl_port, scl_pin, sda_port, sda_pin, device_addr, low_reg_addr);
@@ -841,6 +841,8 @@ int branch_main() {
 			op2_printstr(",");
 			op2_printuint32(th);
 			op2_printnewline();
+
+			printMsg("print stuff\n");
 
 			targetms += 5;
 		}

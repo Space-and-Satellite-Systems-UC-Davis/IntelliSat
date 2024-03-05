@@ -10,22 +10,20 @@
 #ifndef REALOP1_LED_H_
 #define REALOP1_LED_H_
 
-#include "../../globals.h"
 #include "../GPIO/gpio.h"
 
 /***************************** LED INITIALIZERS ******************************/
 
 /*
- * Configures the GPIO ports and pins for all the LEDs
+ * Configures the GPIO ports and pins for the following LEDs:
+ * 		D0-D7  ,  A  ,  B  ,  C  ,  AG  ,  HB
  *
  * 	@param   None
  * 	@returns None
  */
-void led_init();
+void all_led_init();
 
 /******************************* LED TOGGLERS ********************************/
-
-#if OP_REV == 1
 
 /**
  * Sets the state of LED A.
@@ -34,7 +32,7 @@ void led_init();
  *
  * @returns None
  */
-#define led_a(b) gpio_set(GPIOG, 11, b)
+#define op_led_a(b) gpio_set(GPIOG, 11, value)
 
 /**
  * Sets the state of LED B.
@@ -43,7 +41,7 @@ void led_init();
  *
  * @returns None
  */
-#define led_b(b) gpio_set(GPIOG, 12, b)
+#define op_led_b(b) gpio_set(GPIOG, 12, b)
 
 /**
  * Sets the state of LED C.
@@ -52,7 +50,7 @@ void led_init();
  *
  * @returns None
  */
-#define led_c(b) gpio_set(GPIOG, 9, b)
+#define op_led_c(b) gpio_set(GPIOG, 9, value)
 
 /**
  * Sets the state of the Fault indicator LED.
@@ -61,7 +59,7 @@ void led_init();
  *
  * @returns None
  */
-#define led_fault(b) gpio_set(GPIOG, 7, b)
+#define op_led_fault(b) gpio_set(GPIOG, 7, b)
 
 /**
  * Sets the state of the All Good LED
@@ -70,7 +68,7 @@ void led_init();
  *
  * @returns None
  */
-#define led_ag(b) gpio_set(GPIOG, 6, b)
+#define op_led_ag(b) gpio_set(GPIOG, 6, b)
 
 /**
  * Sets the state of an Heart Beat LED
@@ -79,7 +77,7 @@ void led_init();
  *
  * @returns None
  */
-#define led_hb(b) gpio_set(GPIOE, 2, b)
+#define op_led_hb(b) gpio_set(GPIOE, 2, b)
 
 /**
  * Sets the value of a specified LED D.
@@ -89,63 +87,6 @@ void led_init();
  *
  * @returns None
  */
-void led_dx(int pin, int value);
-
-
-#elif OP_REV == 2
-
-/**
- * Sets the state of an Heart Beat LED
- *
- * @param   b    The value to set the LED to (0 off or 1 on).
- *
- * @returns None
- */
-#define led_hb(b) gpio_set(GPIOE, 2, b);
-
-/**
- * Sets the state of the D3 LED
- *
- * @param   b    The value to set the LED to (0 off or 1 on).
- *
- * @returns None
- */
-#define led_d3(b) gpio_set(GPIOE, 3, b);
-
-/**
- * Sets the state of the D2 LED
- *
- * @param   b    The value to set the LED to (0 off or 1 on).
- *
- * @returns None
- */
-#define led_d2(b) gpio_set(GPIOE, 4, b);
-
-/**
- * Sets the state of the D1 LED
- *
- * @param   b    The value to set the LED to (0 off or 1 on).
- *
- * @returns None
- */
-#define led_d1(b) gpio_set(GPIOE, 5, b);
-
-/**
- * Sets the state of the D0 LED
- *
- * @param   b    The value to set the LED to (0 off or 1 on).
- *
- * @returns None
- */
-#define led_d0(b) gpio_set(GPIOE, 6, b);
-
-#endif
-
-/**
- * Blinks the heartbeat LED every so often.
- * Meant to be called every 1ms
- */
-void blinky();
-
+void op_led_dx(int pin, int value);
 
 #endif /* REALOP1_LED_H_ */

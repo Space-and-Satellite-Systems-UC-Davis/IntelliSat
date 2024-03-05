@@ -1,10 +1,6 @@
 /*
  * i2c.h
  *
- *  - Nov 8-9, 2023
- *      Author       : nithinsenthil
- *      Log          : Added macro for use with OP Rev2
- *
  *  - Apr 29, 2023 (Creation)
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
@@ -18,6 +14,9 @@
 #include "stm32l476xx.h"
 #include "../GPIO/gpio.h"
 
+//Macros
+#define OP1_I2C2 GPIOF, 1, GPIOF, 0
+
 /**
  * Sets the line mode of a GPIO pin for Software I2C communication.
  *
@@ -28,7 +27,7 @@
  *
  * @returns None
  */
-void softi2c_lineMode(GPIO_TypeDef *port, int pin, bool deassert_line);
+void softi2c_line_mode(GPIO_TypeDef *port, int pin, bool deassert_line);
 
 /**
  * Initializes the software implementation of the I2C protocol.
@@ -40,7 +39,7 @@ void softi2c_lineMode(GPIO_TypeDef *port, int pin, bool deassert_line);
  *
  * @returns None
  */
-void softi2c_init(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
+void init_softi2c(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
 
 /**
  * Delays the execution of the program for a short period of time to allow for proper timing in the Software I2C protocol.
@@ -59,7 +58,7 @@ void softi2c_delay();
  *
  * @returns None
  */
-void softi2c_sigStart(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
+void softi2c_sig_start(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
 
 /**
  * Generates a repeated start signal for the Software I2C protocol.
@@ -71,7 +70,7 @@ void softi2c_sigStart(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_por
  *
  * @returns None
  */
-void softi2c_sigRepeatedStart(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
+void softi2c_sig_repeated_start(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
 
 /**
  * Sends a stop signal on the I2C bus using software implementation.
@@ -83,7 +82,7 @@ void softi2c_sigRepeatedStart(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef 
  *
  * @returns None
  */
-void softi2c_sigStop(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
+void softi2c_sig_stop(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
 
 /**
  * Sends an 8-bit data over an I2C bus.
@@ -120,7 +119,7 @@ int softi2c_read8(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, i
  *
  * @returns None
  */
-void softi2c_sendNack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
+void softi2c_send_nack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
 
 /**
  * Reads a single byte from an I2C device with a NACK signal.
@@ -132,7 +131,7 @@ void softi2c_sendNack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_por
  *
  * @returns The byte read from the I2C device.
  */
-int softi2c_readNack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
+int softi2c_read_nack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
 
 /**
  * Writes data to a register of a device using software I2C.
@@ -147,7 +146,7 @@ int softi2c_readNack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port
  *
  * @returns The number of NACKs received during the write operation.
  */
-int softi2c_writeReg(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int reg_addr, int data);
+int softi2c_write_reg(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int reg_addr, int data);
 
 /**
  * Reads a register from a device using software I2C.
@@ -161,7 +160,7 @@ int softi2c_writeReg(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port
  *
  * @returns The value of the register read from the device.
  */
-int softi2c_readReg(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int reg_addr);
+int softi2c_read_reg(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int reg_addr);
 
 /**
  * Probes a device on the I2C bus using software I2C.
@@ -189,6 +188,6 @@ bool softi2c_probe(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, 
  *
  * @returns The 16-bit register value read from the device.
  */
-int16_t softi2c_readRegHighLow(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int high_reg_addr, int low_reg_addr);
+int16_t softi2c_read_reg_hl(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int high_reg_addr, int low_reg_addr);
 
 #endif /* REALOP1_I2C_H_ */

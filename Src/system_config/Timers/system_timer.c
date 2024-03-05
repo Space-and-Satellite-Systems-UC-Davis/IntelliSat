@@ -16,13 +16,13 @@
 
 
 // Global (external) variables and functions
-extern int core_MHz;	// from core_config.h
+//extern int core_MHz;	// from core_config.h
 
-uint64_t systick_time = 0;
+//uint64_t systick_time = 0;
 
-uint64_t getSysTime() {
+/*uint64_t getSysTime() {
 	return systick_time;
-}
+}*/
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                                 SYSTICK                                   */
@@ -35,13 +35,13 @@ uint64_t getSysTime() {
  * @param   None
  * @returns None
  */
-void systick_init() {
+/*void systick_init() {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
 	SysTick->CTRL = 0x3;
 	NVIC_EnableIRQ(SysTick_IRQn);
-}
+}*/
 
 
 /**
@@ -52,9 +52,9 @@ void systick_init() {
  * @param None
  * @returns None
  */
-void SysTick_Handler() {
+/*void SysTick_Handler() {
 	systick_time++;
 	blinky();
 	// scheduler();
-}
+}*/
 

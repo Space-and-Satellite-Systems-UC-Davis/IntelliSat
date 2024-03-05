@@ -1,10 +1,6 @@
 /*
  * qspi.c
  *
- *  - Nov 8-9, 2023
- *      Author       : nithinsenthil
- *      Log          : Updated QSPI GPIO config for OP Rev2
- *
  *  - October 22, 2023
  *      Author: Darsh
  *      Log   : Finally adding everything to the qspi.c file
@@ -19,11 +15,9 @@
 // (1 bit : qspi_in_use)(1 bit : qspi_dma_use)(last 4 bits : qspi_status)
 uint8_t qspi_details;
 
-char qspi_getStatus() {
-	return (qspi_details & 0b00001111);
-}
-
-#define qspi_setStatus(s)	(qspi_details &= ~0b00001111);\
+#define get_qspi_status()   (qspi_details &  0b00001111)
+#define set_qspi_status(s)	\
+							(qspi_details &= ~0b00001111);\
 							(qspi_details |= s)
 
 #define qspi_start_use()	(qspi_details |=  0b1000000)
@@ -34,59 +28,9 @@ char qspi_getStatus() {
 #define qspi_dma_disuse() (qspi_details &= ~0b0100000)
 #define qspi_dma_inuse()  (qspi_details &   0b0100000)
 
-// Global (external) variables and functions
-extern int core_MHz;	// from core_config.h
 
-void qspi_gpioInit() {
-
-#if OP_REV == 2
+void qspi_gpio_init() {
 	// GPIO
-	/* OP R2 GPIO pinout
-	 * 		QSPI SCK		E10		(Alternate Function, AF10)
-	 * 		QSPI NCS		E11		(Alternate Function, AF10)
-	 * 		QSPI IO0		E12		(Alternate Function, AF10)
-	 * 		QSPI IO1		E13		(Alternate Function, AF10)
-	 * 		QSPI IO2		E14		(Alternate Function, AF10)
-	 * 		QSPI IO3		E15		(Alternate Function, AF10)
-	 */
-	// Reset mode on each QUADSPI pin
-	GPIOE->MODER &= ~(
-			  GPIO_MODER_MODE10_Msk
-			| GPIO_MODER_MODE11_Msk
-			| GPIO_MODER_MODE12_Msk
-			| GPIO_MODER_MODE13_Msk
-			| GPIO_MODER_MODE14_Msk
-			| GPIO_MODER_MODE15_Msk);
-
-	// set each pin to Alternate function
-	GPIOE->MODER |=
-		  GPIO_MODER_MODE10_1
-		| GPIO_MODER_MODE11_1
-		| GPIO_MODER_MODE12_1
-		| GPIO_MODER_MODE13_1
-		| GPIO_MODER_MODE14_1
-		| GPIO_MODER_MODE15_1;
-
-	// Reset alternate function selection on QUADSPI
-	GPIOE->AFR[1] &= ~(
-			  GPIO_AFRH_AFSEL10_Msk
-			| GPIO_AFRH_AFSEL11_Msk
-			| GPIO_AFRH_AFSEL12_Msk
-			| GPIO_AFRH_AFSEL13_Msk
-			| GPIO_AFRH_AFSEL14_Msk
-			| GPIO_AFRH_AFSEL15_Msk);
-
-	// set each pin to AF10
-	GPIOE->AFR[1] |=
-		  10U << GPIO_AFRH_AFSEL10_Pos |
-		  10U << GPIO_AFRH_AFSEL11_Pos |
-		  10U << GPIO_AFRH_AFSEL12_Pos |
-		  10U << GPIO_AFRH_AFSEL13_Pos |
-		  10U << GPIO_AFRH_AFSEL14_Pos |
-		  10U << GPIO_AFRH_AFSEL15_Pos;
-
-#elif OP_REV == 1
-
 	/* OP R1 GPIO pinout
 	 * 		QSPI CS			E11		(Alternate Function, AF10)
 	 * 		QSPI CLK		E10		(Alternate Function, AF10)
@@ -131,9 +75,6 @@ void qspi_gpioInit() {
 		  10U << GPIO_AFRH_AFSEL11_Pos |
 		  10U << GPIO_AFRH_AFSEL14_Pos |
 		  10U << GPIO_AFRH_AFSEL15_Pos;
-
-# endif
-
 }
 
 void qspi_config(
@@ -143,11 +84,11 @@ void qspi_config(
 ) {
 	qspi_on();	// qspi peripheral clock
 
-	qspi_gpioInit();
+	qspi_gpio_init();
 	qspi_disable();
 	QUADSPI->CR = 0;
 	QUADSPI->CR |=
-		  ((core_MHz-1) << QUADSPI_CR_PRESCALER_Pos)
+		  ((get_core_speed()-1) << QUADSPI_CR_PRESCALER_Pos)
 		| QUADSPI_CR_SSHIFT
 		| QUADSPI_CR_APMS;
 	QUADSPI->DCR = 0;
@@ -163,7 +104,7 @@ void qspi_config(
 	NVIC_EnableIRQ(QUADSPI_IRQn);
 }
 
-bool qspi_setCommand(
+bool qspi_set_command(
 		uint8_t fmode,
 		uint8_t imode,
 		uint8_t admode,
@@ -172,7 +113,7 @@ bool qspi_setCommand(
 		uint8_t dmode,
 		bool    dma
 ) {
-	if (qspi_getStatus() == QSPI_BUSY || (dma && QSPI_DMA_UNAVAILABLE)) {
+	if (get_qspi_status() == QSPI_BUSY || (dma && QSPI_DMA_UNAVAILABLE)) {
 		return false;
 	}
 	qspi_disable();
@@ -212,11 +153,11 @@ bool qspi_setCommand(
 			| DMA_CCR_MINC;
 		qspi_dma_use();
 	}
-	qspi_setStatus(QSPI_READY);
+	set_qspi_status(QSPI_READY);
 	return true;
 }
 
-bool qspi_sendCommand(
+bool qspi_send_command(
 		uint8_t instruction,
 		uint32_t address,
 		uint32_t data_length,
@@ -224,14 +165,14 @@ bool qspi_sendCommand(
 		bool r_or_w,
 		uint32_t timeout_period
 ) {
-	if (qspi_getStatus() != QSPI_READY) {
+	if (get_qspi_status() != QSPI_READY) {
 		return false;
 	}
 
 	if (qspi_dma_inuse()) {
 		DMA2_Channel7->CNDTR = (uint16_t)data_length;
 		DMA2_Channel7->CPAR  = QUADSPI->DR;
-		DMA2_Channel7->CMAR  = (void*)data;
+		DMA2_Channel7->CMAR  = data;
 		DMA2_Channel7->CCR  |=
 			  (r_or_w << DMA_CCR_DIR)
 			| DMA_CCR_EN;
@@ -243,7 +184,7 @@ bool qspi_sendCommand(
 	QUADSPI->CCR |= (instruction << QUADSPI_CCR_INSTRUCTION_Pos);
 	QUADSPI->AR  =   address;
 
-	qspi_setStatus(QSPI_BUSY);
+	set_qspi_status(QSPI_BUSY);
 
 	if (qspi_dma_inuse()) {
 		/*
@@ -256,15 +197,15 @@ bool qspi_sendCommand(
 
 	for (uint64_t i = 0; i < data_length; i++) {
 		while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
-			if ((r_or_w == QSPI_READ) && (QUADSPI->SR & QUADSPI_SR_TCF)) {
+			if ((r_or_w == true) && (QUADSPI->SR & QUADSPI_SR_TCF)) {
 				break;
 			}
-			if (qspi_getStatus() == QSPI_TIMEDOUT) {	// set by an interrupt
+			if (get_qspi_status() == QSPI_TIMEDOUT) {	// set by an interrupt
 				QUADSPI->CR |= QUADSPI_CR_ABORT;
 				goto qspi_send_command_complete;
 			}
 		}
-		if (r_or_w == QSPI_READ) {
+		if (r_or_w == true) {
 			data[i] = *(__IO uint8_t *)((__IO uint32_t *) &QUADSPI->DR);
 		} else {
 			*(__IO uint8_t *)((__IO uint32_t *) &QUADSPI->DR) = data[i];
@@ -275,23 +216,23 @@ qspi_send_command_complete:
 
 	while (QUADSPI->SR & QUADSPI_SR_BUSY);
 	qspi_disable();
-	if (qspi_getStatus() != QSPI_TIMEDOUT) {
-		qspi_setStatus(QSPI_SUCCESSFUL);
+	if (get_qspi_status() != QSPI_TIMEDOUT) {
+		set_qspi_status(QSPI_SUCCESSFUL);
 	}
 	return true;
 }
 
-bool qspi_statusPoll(
+bool qspi_status_poll(
 		bool polling_mode,
 		uint8_t instruction,
 		uint8_t mask,
 		uint8_t match,
 		uint32_t timeout_period
 ) {
-	if (qspi_getStatus() == QSPI_BUSY) {
+	if (get_qspi_status() == QSPI_BUSY) {
 		return false;
 	}
-	qspi_setStatus(QSPI_BUSY);
+	set_qspi_status(QSPI_BUSY);
 
 	qspi_disable();
 	QUADSPI->PSMKR = mask;
@@ -329,7 +270,7 @@ bool qspi_statusPoll(
 }
 
 
-#define qspi_stopStatusPolling() { \
+#define qspi_stop_status_polling() { \
 		QUADSPI->CCR  &= ~(QUADSPI_CCR_FMODE | QUADSPI_CCR_DMODE); \
 		QUADSPI->CR   &= ~QUADSPI_CR_APMS; \
 }
@@ -348,19 +289,19 @@ void QUADSPI_IRQHandler() {
 		QUADSPI->FCR |= QUADSPI_FCR_CSMF;
 		QUADSPI->CR  &= ~QUADSPI_CR_SMIE;
 
-		qspi_stopStatusPolling();
+		qspi_stop_status_polling();
 		qspi_disable();
-		qspi_setStatus(QSPI_SUCCESSFUL);
+		set_qspi_status(QSPI_SUCCESSFUL);
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TEF) {	// Transfer Error
 		QUADSPI->FCR |= QUADSPI_FCR_CTEF;
 
-		qspi_setStatus(QSPI_TRANSFER_ERROR);
+		set_qspi_status(QSPI_TRANSFER_ERROR);
 	}
 	if (QUADSPI->SR & QUADSPI_SR_TCF) {	// Transfer Complete
 		QUADSPI->FCR |= QUADSPI_FCR_CTCF;
 
-		qspi_setStatus(QSPI_SUCCESSFUL);
+		set_qspi_status(QSPI_SUCCESSFUL);
 		QUADSPI->CCR &= ~(
 			  QUADSPI_CCR_FMODE_Msk
 			| QUADSPI_CCR_DMODE_Msk
