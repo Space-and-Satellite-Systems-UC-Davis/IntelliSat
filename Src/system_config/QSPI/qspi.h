@@ -36,7 +36,7 @@
 
 /**
  * Configures the QSPI hardware so that it can be used later
- * 
+ *
  * @param flash_size      An integer that obeys : FLASH_SIZE_BITS = 2^(flash_size-1)
  * @param address_size    # of Bytes used by an address in the FLASH
  * @param alternateb_size # of Bytes used by an Alternate Bytes
