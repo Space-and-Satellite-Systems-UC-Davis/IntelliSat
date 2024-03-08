@@ -14,19 +14,19 @@
 #ifndef REALOP1_PLATFORM_INIT_H
 #define REALOP1_PLATFORM_INIT_H
 
-#include <globals.h>
+#include "globals.h"
 
-#include <core_config.h>
-#include <Timers/timers.h>
-#include <Buttons/buttons.h>
-#include <SPI/spi.h>
-#include <QSPI/qspi.h>
-#include <LED/led.h>
-#include <RTC/rtc.h>
-#include <UART/uart.h>
-#include <IMU/ASM330LHH.h>
-#include <MAG/QMC5883L.h>
-#include <print_scan.h>
+#include "system_config/core_config.h"
+#include "system_config/Timers/timers.h"
+#include "system_config/Buttons/buttons.h"
+#include "system_config/SPI/spi.h"
+#include "system_config/QSPI/qspi.h"
+#include "system_config/LED/led.h"
+#include "system_config/RTC/rtc.h"
+#include "system_config/UART/uart.h"
+#include "peripherals/IMU/ASM330LHH.h"
+#include "peripherals/MAG/QMC5883L.h"
+#include "tools/print_scan.h"
 
 
 /**
@@ -79,7 +79,10 @@ void init_platform(bool run_scheduler) {
 	led_init();
 	buttons_init();
 	printer_init();
+
 	systick_init(run_scheduler);
+
+	qspi_config(23, 2, 0);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

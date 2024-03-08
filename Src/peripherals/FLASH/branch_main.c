@@ -1,0 +1,329 @@
+#include "platform_init.h"
+#include "tools/print_scan.h"
+#include "peripherals/FLASH/W25Q128JV.h"
+
+/*
+ * For now this won't be implemented on the main branch
+ * Therefore, the main branch cannot be built.
+ * Each development / feature branch has it's own implementation
+ * which is used for testing specific features.
+ */
+
+/*
+ * FUNCTIONS TESTED SO FAR
+ * DONE readJedecID()
+ * - expected: 00 00 00 -> EF 17 9F
+ * - actual: 00 00 00 -> EF 17 9F
+ *
+ * DONE readRegisterOne(), writeEnable()
+ * - is able to read registerOne. verified concurrently with writeEnable().
+ * - expected: 00000000 -> 00000010
+ * - actual: 00000000 -> 00000010
+ *
+ * DONE writeDisable()
+ * (tested after writeEnable)
+ * - expected: 00000010 -> 00000000
+ * - actual: 00000010 -> 00000000
+*/
+
+//accessory fxn for testing
+void printBinary(uint8_t byte) {
+  for (int i = 7; i >= 0; i--) {
+    printMsg("%c", (byte & (1 << i)) ? '1' : '0');
+  }
+  printMsg("\n\r");
+}
+
+void test_writePage() {
+	uint16_t page = 10000;
+
+	//let's check the contents of the page before writing to it
+	uint8_t verification_buffer[256] = { 0 };
+	printMsg("\n\n\r");
+	printMsg("This is the empty buffer we're going to use to read the page first.\n\r");
+	printMsg("We will be reading page ");
+	printMsg("%u", page);
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_buffer[i]);
+		printMsg(" ");
+	}
+	flash_readPage(page, verification_buffer);
+	printMsg("\n\n\r");
+	printMsg("This is the contents of that page.");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_buffer[i]);
+		printMsg(" ");
+	}
+
+	//set new buffer to random nonzero shit (alternating 4's and 5's, starting with 5
+	uint8_t writing_buffer[256] = { 0 };
+	for (int i = 0; i < 256; i++) {
+		if ( (i % 2) == 0) {
+			writing_buffer[i] = 0;
+		}
+		else {
+			writing_buffer[i] = 1;
+		}
+	}
+	printMsg("\n\n\r");
+	printMsg("This is what we're going to be writing to it now:");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)writing_buffer[i]);
+		printMsg(" ");
+	}
+
+	//write it
+	flash_writePage(page, writing_buffer);
+
+	//DEV NOTES
+	//MAKE SYSTEM WAIT UNTIL WRITE IS COMPLETE BEFORE READING. CURRENTLY READS CONCURRENTLY TO WRITING
+
+	uint8_t verification_2[256] = { 0 };
+	printMsg("\n\n\r");
+	printMsg("This is the empty buffer we're going to use to read the page after writing.\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_2[i]);
+		printMsg(" ");
+	}
+	flash_readPage(page, verification_2);
+	printMsg("\n\n\r");
+	printMsg("This is the contents of the page we wrote to.");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_2[i]);
+		printMsg(" ");
+	}
+
+}
+
+void test_eraseSector() {
+	uint8_t page = 3;
+	uint8_t verification_buffer[256] = { 0 };
+	printMsg("\n\n\r");
+	printMsg("This is the empty buffer we're going to use to read a page first.\n\r");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_buffer[i]);
+		printMsg(" ");
+	}
+	flash_readPage(page, verification_buffer);
+	printMsg("\n\n\r");
+	printMsg("This is the contents of that page.");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_buffer[i]);
+		printMsg(" ");
+	}
+
+	printMsg("\n\r");
+	printMsg("Erasing sector 1.");
+	printMsg("\n\n\r");
+	flash_eraseSector(1);
+
+	uint8_t verification_bufferTwo[256] = { 0 };
+	printMsg("\n\n\r");
+	printMsg("This is the empty buffer we're going to use to read a page after the sector erase.\n\r");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_bufferTwo[i]);
+		printMsg(" ");
+	}
+	flash_readPage(page, verification_bufferTwo);
+	printMsg("\n\n\r");
+	printMsg("This is the contents of that same page.");
+	printMsg("\n\r");
+	for (int i = 0; i < 256; i++) {
+		printMsg("%u", (unsigned int)verification_bufferTwo[i]);
+		printMsg(" ");
+	}
+}
+
+//accessory for testing quadEnable. not sure if should integrate into primary Whatever.c
+//wtf? not working
+bool flash_quadDisable() {
+	if (qspi_getStatus() == QSPI_BUSY) {
+	    return false;
+	  }
+
+	  uint8_t register_two;
+	  flash_readRegisterTwo(&register_two);
+
+	  if ( (register_two & QSPI_QUAD_REGISTER) == 0b00000000) {
+	    return 0;
+	  }
+
+	  register_two &= ~(1 << 1);
+
+	  qspi_setCommand(
+	      QSPI_FMODE_INDIRECT_WRITE,
+	      QSPI_1_WIRE,
+	      QSPI_UNUSED,
+	      QSPI_UNUSED,
+	      0,
+	      QSPI_1_WIRE,
+	      false
+	  );
+	  qspi_sendCommand(
+	      QSPI_WRITE_REGISTER_TWO,
+	      0,
+	      1,
+	      &register_two,
+	      1,
+	      QSPI_TIMEOUT_PERIOD
+	  );
+
+	  while (qspi_getStatus() == QSPI_BUSY);
+
+	  return 0;
+}
+
+//currently not working.
+//quadDisable seems to be faulty, but am not sure. since I cannot see if quadEnable is working
+void test_quadToggle() {
+
+  uint8_t register_two;
+
+  printMsg("\n\n\r");
+  printMsg("Qinit:");
+  flash_readRegisterTwo(&register_two);
+  printBinary(register_two);
+
+  flash_quadDisable();
+  printMsg("\n\r");
+  printMsg("QDisable:");
+  flash_readRegisterTwo(&register_two);
+  printBinary(register_two);
+
+  flash_quadEnable();
+  printMsg("\n\r");
+  printMsg("QEnable:");
+  flash_readRegisterTwo(&register_two);
+  printBinary(register_two);
+
+  flash_quadDisable();
+  printMsg("\n\r");
+  printMsg("QDisable:");
+  flash_readRegisterTwo(&register_two);
+  printBinary(register_two);
+  printMsg("\n\r");
+
+}
+
+//DONE
+void flash_readRegisterOne(uint8_t* register_one) {
+  if (qspi_getStatus() == QSPI_BUSY) {
+    printMsg("busy!\n\r");
+  }
+  qspi_setCommand(
+      QSPI_FMODE_INDIRECT_READ,
+      QSPI_1_WIRE,
+      QSPI_UNUSED,
+      QSPI_UNUSED,
+      0,
+      1,
+      false
+  );
+  qspi_sendCommand(
+      0x05, //read register 1
+      QSPI_UNUSED,
+      1,
+      register_one,
+      QSPI_READ,
+      QSPI_TIMEOUT_PERIOD
+  );
+}
+
+//DONE
+void read_jedecID() {
+  uint8_t id_receiver[3] = { 0 };
+
+  //formatting + init case
+  printMsg("init id_receiver var: \n\r");
+  for (int i = 0; i < 3; i++) {
+	  printMsg("%02x", (unsigned int)id_receiver[i]);
+	  printMsg(" ");
+  }
+  printMsg("\n\r");
+
+  qspi_setCommand(
+      QSPI_FMODE_INDIRECT_READ, //read
+      QSPI_1_WIRE, //1 wire for instruction
+      QSPI_UNUSED, //no wire for address
+      QSPI_UNUSED, //no wire for alt bytes
+      0, //0 dummy cycles for JEDEC
+      1, //1 wire for data
+      false //no DMA
+  );
+  qspi_sendCommand(
+      0x9F, //JEDEC ID
+      QSPI_UNUSED, //no address
+      3, //3 bytes data
+      id_receiver, //where data goes
+      QSPI_READ,
+      QSPI_TIMEOUT_PERIOD
+  );
+
+  //formatting + test case
+  printMsg("final id_receiver var: \n\r");
+  for (int i = 0; i < 3; i++) {
+ 	  printMsg("%02x", (unsigned int)id_receiver[i]);
+ 	  printMsg(" ");
+  }
+  printMsg("\n\r");
+}
+
+//DONE
+void test_writeEnable() {
+  uint8_t register_one = 0;
+  //flash_writeDisable();
+
+  flash_readRegisterOne(&register_one);
+  printMsg("\n\r");
+  printMsg("init register one:");
+  printBinary(register_one);
+  printMsg("\n\r");
+
+  flash_writeEnable();
+
+  flash_readRegisterOne(&register_one);
+  printMsg("\n\r");
+  printMsg("final register one:");
+  printBinary(register_one);
+  printMsg("n\r");
+}
+
+//DONE
+void test_readRegisterOne() {
+	uint8_t register_one = 0;
+	printMsg("\n\r");
+	printMsg("init register one:");
+	printBinary(register_one);
+
+	flash_readRegisterOne(&register_one);
+	printMsg("\n\r");
+	printMsg("final register one:");
+	printBinary(register_one);
+}
+
+void test_readRegisterTwo() {
+	uint8_t register_two = 0;
+	printMsg("\n\r");
+	printMsg("init register two:");
+	printMsg("%u\n\r", register_two);
+
+	flash_readRegisterOne(&register_two);
+	printMsg("\n\r");
+	printMsg("final register one:");
+	printMsg("\n\r");
+	printMsg("%u\n\r", register_two);
+}
+
+int main() {
+	init_platform();
+	qspi_config(23, 2, 0); //temporary solution
+
+	test_writePage();
+}

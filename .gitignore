@@ -58,3 +58,5 @@ release
 
 # Launch file
 *.launch
+
+**/.DS_Store
