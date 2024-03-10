@@ -10,19 +10,23 @@
 void branch_main(){
 	//test ADC
 	adc_init();
-	printMsg("Initializing ADC\n");
+	printMsg("Initializing ADC\r\n");
 
 	adc_enable();
-	printMsg("Enabling ADC\n");
+	printMsg("Enabling ADC\r\n");
 
 	adc_configGPIO();
-	printMsg("Configuring GPIO Pin A0 for ADC\n");
+	printMsg("Configuring GPIO Pin C0 for ADC\r\n");
+
+	adc_setConstantGPIOValue();
 
 	adc_setChannel();
-	printMsg("ADC1 channel 5, GPIO Pin A0 set\n Beginning to read values\n");
+	printMsg("ADC1 channel 1, GPIO Pin C0 set\r\nBeginning to read values\r\n");
 
 	while(1){
-		printMsg("ADC value: %d", adc_singleConversion());
+		printMsg("ADC value: %d \r\n", adc_singleConversion());
+
+		nop(1000000);
 	}
 }
 

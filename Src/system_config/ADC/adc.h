@@ -8,6 +8,8 @@
 #ifndef SYSTEM_CONFIG_ADC_ADC_H_
 #define SYSTEM_CONFIG_ADC_ADC_H_
 #include "stm32l476xx.h"
+#include "../../globals.h"
+#include "../GPIO/gpio.h"
 
 //CALL THESE IN ORDER
 
@@ -22,6 +24,9 @@ void adc_configGPIO();
 
 //Configures the channel to set it to pin A0, and sets sampling time to 640.5 cycles per sample
 void adc_setChannel();
+
+//Test function
+void adc_setConstantGPIOValue();
 
 /* Gets a value from the ADC
  * @returns: The value from the ADC
