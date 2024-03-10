@@ -12,7 +12,7 @@
  */
 
 #include "timers.h"
-#include "../../globals.h"
+#include <globals.h>
 
 // Global (external) variables and functions
 extern int core_MHz;	// from core_config.h

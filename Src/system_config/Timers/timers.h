@@ -6,9 +6,10 @@
 #define REALOP1_TIMERS_H_
 
 #include "stm32l476xx.h"
-#include "../../globals.h"
+#include <globals.h>
 
-//-----------------------------------------------------------------------------
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 #if OP_REV == 1
 
@@ -23,13 +24,6 @@
 #define	PWMTimer_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
 
 #endif
-
-#define ExpLogTimer      				TIM6
-#define ExpLogTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM6EN
-#define ExpLogTimer_ClockDisable() 		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM6EN
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 #define PWM_TIMER_ON()  PWMTimer->CR1 |=  TIM_CR1_CEN;
 #define PWM_TIMER_OFF() PWMTimer->CR1 &= ~TIM_CR1_CEN;
@@ -61,6 +55,10 @@ void systick_init();
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
+#define ExpLogTimer      				TIM6
+#define ExpLogTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM6EN
+#define ExpLogTimer_ClockDisable() 		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM6EN
+
 #define logger_expTimerOn()  ExpLogTimer->CR1 |=  TIM_CR1_CEN;
 #define logger_expTimerOff() ExpLogTimer->CR1 &= ~TIM_CR1_CEN;
 
@@ -71,6 +69,21 @@ void systick_init();
  * @returns Boolean to indicate if the initialization was successful
  */
 bool logger_initExpTimer();
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+#define StartupTimer					TIM5
+#define StartupTimer_ClockEnable()		RCC->APB1ENR1 |=  RCC_APB1ENR_TIM5EN
+#define StartupTimer_ClockDisable()		RCC->APB1ENR1 &= ~RCC_APB1ENR_TIM5EN
+
+/**
+ * Configures the Startup Timer registers to generate
+ * an interrupt in 30 minutes
+ *
+ * @returns Boolean to indicate if the initialization was successful
+ */
+bool timer_waitStartupTime();
 
 
 #endif	// REALOP1_TIMERS_H_

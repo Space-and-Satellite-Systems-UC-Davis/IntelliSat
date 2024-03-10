@@ -1,5 +1,6 @@
 #include "timers.h"
-#include "../../globals.h"
+#include <globals.h>
+#include <print_scan.h>
 
 
 void delay_ms(uint32_t ms) {
@@ -7,13 +8,13 @@ void delay_ms(uint32_t ms) {
 	while (getSysTime() < (curr_time + ms));
 }
 
-void branch_main()
-{
+void branch_main() {
 	logger_initExpTimer();
-	logger_expTimerOn();
-	delay_ms(1000);
-	logger_expTimerOff();
-	while (1) {
 
+	while (1) {
+		logger_expTimerOn();
+		delay_ms(1000);
+		logger_expTimerOff();
+		printMsg("\r\n");
 	}
 }
