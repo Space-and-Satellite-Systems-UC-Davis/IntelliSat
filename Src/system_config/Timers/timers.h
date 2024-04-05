@@ -74,8 +74,8 @@ bool logger_initExpTimer();
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 #define StartupTimer					TIM5
-#define StartupTimer_ClockEnable()		RCC->APB1ENR1 |=  RCC_APB1ENR_TIM5EN
-#define StartupTimer_ClockDisable()		RCC->APB1ENR1 &= ~RCC_APB1ENR_TIM5EN
+#define StartupTimer_ClockEnable()		RCC->APB1ENR1 |=  RCC_APB1ENR1_TIM5EN
+#define StartupTimer_ClockDisable()		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM5EN
 
 /**
  * Configures the Startup Timer registers to generate
