@@ -70,6 +70,17 @@ void systick_init();
  */
 bool logger_initExpTimer();
 
+/*
+ * Binds a function to the log timer's interrupt handler.
+ * Essentially lets the user decide which function to run when the log timer
+ * interrupts.
+ *
+ * @param   A pointer to the interrupt handler function. The function must be
+ *          void and take no inputs
+ * @returns none
+ */
+void logger_registerLogFunction(void (*func)());
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 

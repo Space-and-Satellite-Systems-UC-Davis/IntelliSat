@@ -8,8 +8,12 @@ void delay_ms(uint32_t ms) {
 	while (getSysTime() < (curr_time + ms));
 }
 
+void printer() {
+	printMsg("1");
+}
 void branch_main() {
 	logger_initExpTimer();
+//	logger_registerLogFunction(printer);
 
 	while (1) {
 		logger_expTimerOn();

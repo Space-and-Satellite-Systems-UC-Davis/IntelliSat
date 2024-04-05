@@ -9,6 +9,8 @@
 
 #include "timers.h"
 
+void (*logTimerHandler)() = NULL;
+
 /**
  * Configures the Experiment Logger timer registers to generate
  * an interrupt every 100 ms.
@@ -44,10 +46,15 @@ bool logger_initExpTimer() {
 	return true;
 }
 
+void logger_registerLogFunction(void (*func)()) {
+	logTimerHandler = func;
+}
 
 void TIM6_DACUNDER_IRQHandler() {
 	if(TIM6->SR & TIM_SR_UIF) {
 		TIM6->SR &= ~TIM_SR_UIF;
-		printMsg("1");
+		if (logTimerHandler != NULL) {
+			logTimerHandler();
+		}
 	}
 }
