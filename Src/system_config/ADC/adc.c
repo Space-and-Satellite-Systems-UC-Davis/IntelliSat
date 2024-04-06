@@ -19,13 +19,16 @@ void adc_init(){
 	//Test what happens if voltage regulator is gone
 	nop(10000); //waits a bit
 	ADC1->CR &= ~(ADC_CR_ADCALDIF); //Sets it to single ended mode
-	//ADC1->CR |= ADC_CR_ADCAL; //Calibrates ADC
-	//while ((ADC1->CR & ADC_CR_ADCAL) != 0) { } //Waits until ADC is calibrated
+	ADC1->CR |= ADC_CR_ADCAL; //Calibrates ADC
+	while ((ADC1->CR & ADC_CR_ADCAL) != 0) { } //Waits until ADC is calibrated
+
+	//Try changing ADC CCR prescalar
+	//Try changing VREFBUF CSR register to enable vrefint since vref+ is decoupled
 
 }
 
 void adc_enable(){
-	ADC1->ISR |= ADC_ISR_ADRDY; // Checks if it is ready
+	ADC1->ISR |= ADC_ISR_ADRDY; // Set before enabling ADC
 	ADC1->CR |= ADC_CR_ADEN; //Enables ADC
 	while ((ADC1->ISR & ADC_ISR_ADRDY) == 0) { } //Waits until ADRDY is reset
 }
@@ -37,9 +40,10 @@ void adc_configGPIO(){
 	GPIOC->PUPDR        &= ~( GPIO_OSPEEDR_OSPEED0 ); //Reset C0 pin
 	GPIOC->OSPEEDR      &= ~( GPIO_PUPDR_PUPD0 ); //Reset C0 pin
 	GPIOC->MODER        &= ~( GPIO_MODER_MODE0 ); //Reset C0 pin
+	//GPIOC->MODER        |= ( GPIO_MODER_MODE0_0 ); //Sets C0 pin to output mode (KEEP COMMENTED)
 	GPIOC->ASCR 		|=  ( GPIO_ASCR_ASC0 ); //Connects analog switch to ADC channel for C0
 	GPIOC->MODER        |=  ( 0x3 << GPIO_MODER_MODE0_Pos ); //Sets mode to analog
-
+	//gpio_set(GPIOC, 0,0); //Testing where C0 pin was (KEEP COMMENTED)
 }
 
 void adc_setConstantGPIOValue(){

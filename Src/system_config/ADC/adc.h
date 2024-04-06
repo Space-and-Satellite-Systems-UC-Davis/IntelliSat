@@ -8,8 +8,8 @@
 #ifndef SYSTEM_CONFIG_ADC_ADC_H_
 #define SYSTEM_CONFIG_ADC_ADC_H_
 #include "stm32l476xx.h"
-#include "../../globals.h"
-#include "../GPIO/gpio.h"
+#include <globals.h>
+#include <GPIO/gpio.h>
 
 //CALL THESE IN ORDER
 
