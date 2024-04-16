@@ -36,7 +36,14 @@
 
 #define IMU_RESET_CMD  0x01
 
+/****************************** IMU Properties ****************************/
+
+int imu_acelFullScale = 0;
+int imu_gyroFullScale = 0;
+
 /*************************** IMU Helper Functions *************************/
+
+#define ScaledData(data, scale) ((data * scale) / (uint16_t)(-1))
 
 void imu_spiWriteReg(void *address, uint8_t data) {
 	uint8_t spiDATA[2];
@@ -87,6 +94,22 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 	imu_spiWriteReg(ACCEL_RATE_REG, data);
 
 #endif
+
+    switch (acel_scale) {
+        case IMU_FS_2_g:
+            imu_acelFullScale = 2;
+            break;
+        case IMU_FS_4_g:
+            imu_acelFullScale = 4;
+            break;
+        case IMU_FS_8_g:
+            imu_acelFullScale = 8;
+            break;
+        case IMU_FS_16_g:
+            imu_acelFullScale = 16;
+            break;
+    }
+
 }
 
 /**
@@ -113,6 +136,27 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 	imu_spiWriteReg(GYRO_CTRL_REG, data);
 
 #endif
+
+    switch (gyro_scale) {
+        case IMU_FS_125_dps:
+            imu_gyroFullScale = 125;
+            break;
+        case IMU_FS_250_dps:
+            imu_gyroFullScale = 250;
+            break;
+        case IMU_FS_500_dps:
+            imu_gyroFullScale = 500;
+            break;
+        case IMU_FS_1000_dps:
+            imu_gyroFullScale = 1000;
+            break;
+        case IMU_FS_2000_dps:
+            imu_gyroFullScale = 2000;
+            break;
+        case IMU_FS_4000_dps:
+            imu_gyroFullScale = 4000;
+            break;
+    }
 }
 
 /*************************** IMU Interface Functions *************************/
@@ -141,15 +185,20 @@ int16_t imu_readAcel_X() {
 	uint8_t instructionHi = 0x29 | 0x80 ;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x28 | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 #if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x28);
+	data =  imu_spiReadHighLow(0x28);
 
 #endif
+
+    return ScaledData(data, imu_acelFullScale);
+
 }
 
 int16_t imu_readAcel_Y() {
@@ -157,15 +206,20 @@ int16_t imu_readAcel_Y() {
 	uint8_t instructionHi = 0x2B | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x2A | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 #if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x2A);
+	data = imu_spiReadHighLow(0x2A);
 
 #endif
+
+    return ScaledData(data, imu_acelFullScale);
+
 }
 
 int16_t imu_readAcel_Z() {
@@ -173,15 +227,19 @@ int16_t imu_readAcel_Z() {
 	uint8_t instructionHi = 0x2D | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x2C | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 #if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x2C);
+	data = imu_spiReadHighLow(0x2C);
 
 #endif
+
+    return ScaledData(data, imu_acelFullScale);
 }
 
 int16_t imu_readGyro_X() {
@@ -189,15 +247,19 @@ int16_t imu_readGyro_X() {
 	uint8_t instructionHi = 0x23 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x22 | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 	#if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x22);
+	data = imu_spiReadHighLow(0x22);
 
 #endif
+
+    return ScaledData(data, imu_gyroFullScale);
 }
 
 int16_t imu_readGyro_Y() {
@@ -205,30 +267,38 @@ int16_t imu_readGyro_Y() {
 	uint8_t instructionHi = 0x25 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x24 | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 #if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x24);
+	data = imu_spiReadHighLow(0x24);
 
 #endif
+
+    return ScaledData(data, imu_gyroFullScale);
 }
 
 int16_t imu_readGyro_Z() {
 	uint8_t instructionHi = 0x27 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x26 | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 #if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x26);
+	data = imu_spiReadHighLow(0x26);
 
 #endif
+
+    return ScaledData(data, imu_gyroFullScale);
 }
 
 int16_t imu_readTemp() {
@@ -236,13 +306,17 @@ int16_t imu_readTemp() {
 	uint8_t instructionHi = 0x21 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x20 | 0x80;	//Where we send Low instruction
 
+    int16_t data = 0;
+
 #if OP_REV == 1
 
-	return softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
-	return imu_spiReadHighLow(0x20);
+	data = imu_spiReadHighLow(0x20);
 
 #endif
+
+    return data;
 }
