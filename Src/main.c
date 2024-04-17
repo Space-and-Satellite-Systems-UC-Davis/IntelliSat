@@ -24,8 +24,11 @@ void branch_main(){
 	printMsg("ADC1 channel 1, GPIO Pin C0 set\r\nBeginning to read values\r\n");
 
 	while(1){
-		printMsg("ADC value: %d \r\n", adc_singleConversion());
-
+		uint16_t adcVal = adc_singleConversion();
+		printMsg("ADC value: %d", adcVal);
+		printMsg(". Volt value: ");
+		adc_printVolt(adc_adcToVolt2(adcVal));
+		printMsg("\r\n");
 		nop(1000000);
 	}
 }

@@ -22,6 +22,13 @@ void adc_init(){
 	ADC1->CR |= ADC_CR_ADCAL; //Calibrates ADC
 	while ((ADC1->CR & ADC_CR_ADCAL) != 0) { } //Waits until ADC is calibrated
 
+	VREFBUF->CSR |= VREFBUF_CSR_ENVR; //Enables internal reference buffer
+	VREFBUF->CSR &= ~(VREFBUF_CSR_HIZ); //IDK If this is needed or not
+
+	while((VREFBUF->CSR & VREFBUF_CSR_VRR) != 0){} //Waits until voltage reference value reaches expected output
+
+	VREFBUF->CSR |= VREFBUF_CSR_VRS; //Sets internal reference buffer to around 2.5V
+
 	//Try changing ADC CCR prescalar
 	//Try changing VREFBUF CSR register to enable vrefint since vref+ is decoupled
 
@@ -63,9 +70,9 @@ void adc_setConstantGPIOValue(){
 		| GPIO_MODER_MODE6_0;	// B6 Sets to output mode
 
 	gpio_set(GPIOB, 3, 0); //3-3
-	gpio_set(GPIOB, 4, 0); //3-2
+	gpio_set(GPIOB, 4, 1); //3-2
 	gpio_set(GPIOB, 5, 1); //2-2
-	gpio_set(GPIOB, 6, 1); //1-3
+	gpio_set(GPIOB, 6, 0); //1-3
 }
 
 void adc_setChannel(){
@@ -91,4 +98,18 @@ uint16_t adc_singleConversion() {
   ADC1->ISR |=  ( ADC_ISR_EOS );
   // Return the ADC value.
   return adc_val;
+}
+
+uint16_t adc_adcToVolt1(uint16_t adcVal){
+	return (adcVal * 2062) / 4095; //Uses 2.048 volt reference (VREFBUF->CSR VRS bit is 0)
+}
+
+uint16_t adc_adcToVolt2(uint16_t adcVal){
+	return (adcVal * 2532) / 4095; //Uses 2.048 volt reference (VREFBUF->CSR VRS bit is 0)
+}
+
+void adc_printVolt(uint16_t volt){
+	printMsg("%d", volt / 1000);
+	printMsg(".");
+	printMsg("%d", volt % 1000);
 }

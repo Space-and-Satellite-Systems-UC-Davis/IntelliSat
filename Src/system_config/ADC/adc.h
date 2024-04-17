@@ -10,6 +10,7 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 #include <GPIO/gpio.h>
+#include "../../tools/print_scan.h"
 
 //CALL THESE IN ORDER
 
@@ -34,5 +35,20 @@ void adc_setConstantGPIOValue();
  * 		symbolizes 0.0V to 3.3V
  */
 uint16_t adc_singleConversion();
+
+/* Converts the adcVal to a milivolt value using 2.048 VREFINT (VREFBUF->CSR VRS bit is 0)
+ * @returns: the milivolt value of an int
+ */
+uint16_t adc_adcToVolt1(uint16_t adcVal);
+
+/* Converts the adcVal to a milivolt value using 2.5 VREFINT (VREFBUF->CSR VRS bit is 1)
+ * @returns: the milivolt value of an int
+ */
+uint16_t adc_adcToVolt2(uint16_t adcVal);
+
+/* Prints the millivolt value in a volt fashion
+ *  @returns: none
+ */
+void adc_printVolt(uint16_t volt);
 
 #endif /* SYSTEM_CONFIG_ADC_ADC_H_ */
