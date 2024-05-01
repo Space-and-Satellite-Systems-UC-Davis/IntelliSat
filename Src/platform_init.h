@@ -28,6 +28,35 @@
 #include <MAG/QMC5883L.h>
 #include <print_scan.h>
 
+
+/**
+ * Configures only what is necessary to boot.
+ *
+ * @param   None
+ * @returns None
+ */
+void init_init() {
+	init_coreClocks();
+	rtc_config(LSI, 0);
+    //TODO: retrieve RTC vars
+    //   and set scheduler flags?
+}
+
+
+/**
+ * Performs first-time-startup behaviors.
+ *
+ * @param   None
+ * @returns None
+ */
+void init_first_time() {
+    timer_waitStartupTime();
+    //TODO: open antenna via burnwire.
+    //TODO: initialize flash headers.
+    //TODO: set first_time flag to on.
+}
+
+
 /**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
@@ -36,16 +65,18 @@
  * @returns None
  */
 void init_platform() {
-	init_coreClocks();
+	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
+    //TODO: hdd_init().
+    //TODO: initialize intercomm.
+    //TODO: fetch flash header.
+    //TODO: increment boot counter.
+
+    //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
 	led_init();
 	buttons_init();
-
-	rtc_config(LSI, 0);
-	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
-	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
-
 	printer_init();
 	systick_init();
 }
