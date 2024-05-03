@@ -24,7 +24,21 @@
  * (tested after writeEnable)
  * - expected: 00000010 -> 00000000
  * - actual: 00000010 -> 00000000
-*/
+ *
+ * DONE readPage()
+ * (tested with writePage)
+ * - expected: all 0xFF in random location. all alternating 0's and 1's where written to
+ * - actual: matches
+ *
+ * DONE writePage()
+ * - expected: all alternating 0's and 1's in location written to
+ * - actual: matches
+ *
+ * DONE sectorRead()
+ * - expected: pageRead matches sectorRead output
+ * - actual: true
+ */
+
 
 //accessory fxn for testing
 void printBinary(uint8_t byte) {
@@ -34,11 +48,15 @@ void printBinary(uint8_t byte) {
   printMsg("\n\r");
 }
 
+//DONE
 void test_writePage() {
-	uint16_t page = 10000;
+	uint16_t page = 900;
 
 	//let's check the contents of the page before writing to it
-	uint8_t verification_buffer[256] = { 0 };
+	uint8_t verification_buffer[256];
+	for (int i = 0; i < 256; i++) {
+		verification_buffer[i] = 0;
+	}
 	printMsg("\n\n\r");
 	printMsg("This is the empty buffer we're going to use to read the page first.\n\r");
 	printMsg("We will be reading page ");
@@ -97,48 +115,6 @@ void test_writePage() {
 		printMsg(" ");
 	}
 
-}
-
-void test_eraseSector() {
-	uint8_t page = 3;
-	uint8_t verification_buffer[256] = { 0 };
-	printMsg("\n\n\r");
-	printMsg("This is the empty buffer we're going to use to read a page first.\n\r");
-	printMsg("\n\r");
-	for (int i = 0; i < 256; i++) {
-		printMsg("%u", (unsigned int)verification_buffer[i]);
-		printMsg(" ");
-	}
-	flash_readPage(page, verification_buffer);
-	printMsg("\n\n\r");
-	printMsg("This is the contents of that page.");
-	printMsg("\n\r");
-	for (int i = 0; i < 256; i++) {
-		printMsg("%u", (unsigned int)verification_buffer[i]);
-		printMsg(" ");
-	}
-
-	printMsg("\n\r");
-	printMsg("Erasing sector 1.");
-	printMsg("\n\n\r");
-	flash_eraseSector(1);
-
-	uint8_t verification_bufferTwo[256] = { 0 };
-	printMsg("\n\n\r");
-	printMsg("This is the empty buffer we're going to use to read a page after the sector erase.\n\r");
-	printMsg("\n\r");
-	for (int i = 0; i < 256; i++) {
-		printMsg("%u", (unsigned int)verification_bufferTwo[i]);
-		printMsg(" ");
-	}
-	flash_readPage(page, verification_bufferTwo);
-	printMsg("\n\n\r");
-	printMsg("This is the contents of that same page.");
-	printMsg("\n\r");
-	for (int i = 0; i < 256; i++) {
-		printMsg("%u", (unsigned int)verification_bufferTwo[i]);
-		printMsg(" ");
-	}
 }
 
 //accessory for testing quadEnable. not sure if should integrate into primary Whatever.c
@@ -321,9 +297,50 @@ void test_readRegisterTwo() {
 	printMsg("%u\n\r", register_two);
 }
 
+bool test_readSector(uint32_t sector) {
+	//read sector with readSector
+	uint8_t sectorBuffer[4096] = { 0 };
+	flash_readSector(sector, sectorBuffer);
+
+	//read sector with readPage and compare it to sectorBuffer
+	uint8_t pageBuffer[256] = { 0 };
+	uint32_t page = sector * 16;
+
+	//for comparison purposes
+	uint8_t* ptr_sectorBuffer = sectorBuffer;
+
+	for (int i = 0; i < 16; i++, page++) {
+	  flash_readPage(page, pageBuffer);
+	  for (int i = 0; i < 256; i++, ptr_sectorBuffer++) {
+	    if (*ptr_sectorBuffer != pageBuffer[i]) {
+	      return false;
+	    }
+	  }
+	}
+	return true;
+}
+
+bool test_writeSector(uint32_t sector) {
+  //fill a 4096-byte buffer with alternating 4's and 5's
+  uint8_t bufferOut[4096] = { 0 };
+  for (int i = 0; i < 4096; i++) {
+    bufferOut[i] = 4;
+  }
+  flash_writeSector(2000, bufferOut);
+
+  uint8_t bufferIn[4096] = { 0 };
+  flash_readSector(2000, bufferIn);
+
+  for (int i = 0; i < 4096; i++) {
+    if bufferIn[i] != 4 {
+      return false;
+    }
+  }
+  return true;
+}
+
 int main() {
 	init_platform();
 	qspi_config(23, 2, 0); //temporary solution
 
-	test_writePage();
 }
