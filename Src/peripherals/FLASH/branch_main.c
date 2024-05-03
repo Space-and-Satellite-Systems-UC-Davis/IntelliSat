@@ -381,5 +381,7 @@ bool test_writeSector(uint32_t sector) {
 void branch_main() {
 	qspi_config(23, 2, 0); //temporary solution
 
-	test_writeSector(1000);
+//	test_writeSector(1000);
+
+	read_jedecID();
 }
