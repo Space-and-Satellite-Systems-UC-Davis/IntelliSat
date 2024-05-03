@@ -1,6 +1,6 @@
-#include "platform_init.h"
-#include "tools/print_scan.h"
-#include "peripherals/FLASH/W25Q128JV.h"
+#include "../../platform_init.h"
+#include "print_scan.h"
+#include "FLASH/W25Q128JV.h"
 
 /*
  * For now this won't be implemented on the main branch
@@ -321,21 +321,61 @@ bool test_readSector(uint32_t sector) {
 }
 
 bool test_writeSector(uint32_t sector) {
-  //fill a 4096-byte buffer with alternating 4's and 5's
-  uint8_t bufferOut[4096] = { 0 };
-  for (int i = 0; i < 4096; i++) {
-    bufferOut[i] = 4;
+  //fill a 4096-byte buffer with alternating 4's and 5's, and a 256 buffer with 1's and 2's
+  uint8_t pageOut[256];
+  uint8_t sectorOut[4096];
+  for (int i = 0; i < 256; i++) {
+	  if (i % 2 == 0) {
+		  pageOut[i] = 2;
+	  }
+	  else {
+		  pageOut[i] = 1;
+	  }
   }
-  flash_writeSector(2000, bufferOut);
-
-  uint8_t bufferIn[4096] = { 0 };
-  flash_readSector(2000, bufferIn);
-
   for (int i = 0; i < 4096; i++) {
-    if bufferIn[i] != 4 {
-      return false;
-    }
+	  if (i % 2 == 0) {
+		  sectorOut[i] = 4;
+	  }
+	  else {
+		  sectorOut[i] = 5;
+	  }
   }
+
+  uint8_t sectorIn[4096];
+
+  flash_writeSector(sector, sectorOut);
+  flash_readSector(sector, sectorIn);
+
+  printMsg("\n\r");
+  for (int i = 0; i < 4096; i++) {
+	  if (i % 256 == 0) {
+		  printMsg("\n\r");
+		  printMsg("Page #");
+		  printMsg("%u", i / 256);
+		  printMsg("\n\r");
+	  }
+	  printMsg("%u", sectorIn[i]);
+	  printMsg(" ");
+  }
+
+  uint8_t pageIn[256];
+  uint32_t page = sector * 16;
+
+  for (int i = 0; i < 16; i++) {
+	  flash_writePage(page + i, pageOut);
+  }
+  for (int i = 0; i < 16; i++) {
+	  flash_readPage(page + i, pageIn);
+	  printMsg("\n\r");
+	  printMsg("Page #");
+	  printMsg("%u", i);
+	  printMsg("\n\r");
+	  for (int j = 0; j < 256; j++) {
+		  printMsg("%u", pageIn[i]);
+		  printMsg(" ");
+	  }
+  }
+
   return true;
 }
 
@@ -343,4 +383,5 @@ int main() {
 	init_platform();
 	qspi_config(23, 2, 0); //temporary solution
 
+	test_writeSector(1000);
 }
