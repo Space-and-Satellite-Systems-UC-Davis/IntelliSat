@@ -258,24 +258,24 @@ bool flash_writeEnable() {
       QSPI_TIMEOUT_PERIOD
   );
 
-  qspi_setCommand(
-      QSPI_FMODE_AUTOMATIC_POLLING,
-      QSPI_1_WIRE,
-      QSPI_UNUSED,
-      QSPI_UNUSED,
-      0,
-      QSPI_UNUSED,
-      false
-  );
-  /*
-  qspi_statusPoll(
-      0,
-      0x05,
-      QSPI_WRITE_REGISTER,
-      QSPI_WRITE_REGISTER,
-      QSPI_TIMEOUT_PERIOD
-  );
-  */
+//  qspi_setCommand(
+//      QSPI_FMODE_AUTOMATIC_POLLING,
+//      QSPI_1_WIRE,
+//      QSPI_UNUSED,
+//      QSPI_UNUSED,
+//      0,
+//      QSPI_UNUSED,
+//      false
+//  );
+//
+//  qspi_statusPoll(
+//      0,
+//      0x05,
+//      QSPI_WRITE_REGISTER,
+//      QSPI_WRITE_REGISTER,
+//      QSPI_TIMEOUT_PERIOD
+//  );
+
   while (qspi_getStatus() == QSPI_BUSY);
   return 0;
 }
