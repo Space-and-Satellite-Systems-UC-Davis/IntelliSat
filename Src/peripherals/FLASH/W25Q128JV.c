@@ -34,7 +34,7 @@ bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
   if (sector > MAX_SECTOR) {
     return 0;
   }
-  sector *= SECTOR_SIZE; //convert to pages
+  sector *= PAGES_PER_SECTOR; //convert to pages
 
   for (int i = 0; i < 16; i++, sector++) {
     flash_writeEnable();
@@ -52,11 +52,10 @@ bool flash_readSector(uint16_t sector, uint8_t* buffer) {
   if (sector > MAX_SECTOR) {
     return 0;
   }
-  sector *= SECTOR_SIZE;
+  sector *= PAGES_PER_SECTOR;
 
   for (int i = 0; i < 16; i++, sector++) {
-    flash_writeEnable();
-    flash_writePage(sector, buffer);
+    flash_readPage(sector, buffer);
     sector++;
     buffer += 256;
   }
@@ -147,7 +146,7 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
     false
   );
   qspi_sendCommand(
-    0x03,
+    QSPI_READ_DATA,
     address,
     256,
     buffer,
@@ -263,7 +262,7 @@ bool flash_writeEnable() {
       QSPI_UNUSED,
       false
   );
-  /*
+
   qspi_statusPoll(
       0,
       0x05,
@@ -271,7 +270,7 @@ bool flash_writeEnable() {
       QSPI_WRITE_REGISTER,
       QSPI_TIMEOUT_PERIOD
   );
-  */
+
   while (qspi_getStatus() == QSPI_BUSY);
   return 0;
 }
