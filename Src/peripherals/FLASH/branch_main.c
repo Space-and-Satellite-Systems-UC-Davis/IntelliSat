@@ -1,4 +1,3 @@
-#include "../../platform_init.h"
 #include "print_scan.h"
 #include "FLASH/W25Q128JV.h"
 
@@ -343,9 +342,9 @@ bool test_writeSector(uint32_t sector) {
 
   uint8_t sectorIn[4096];
 
-  flash_writeSector(sector, sectorOut);
-  flash_readSector(sector, sectorIn);
-
+  // flash_writeSector(sector, sectorOut);
+  //flash_readSector(sector, sectorIn);
+/*
   printMsg("\n\r");
   for (int i = 0; i < 4096; i++) {
 	  if (i % 256 == 0) {
@@ -357,7 +356,7 @@ bool test_writeSector(uint32_t sector) {
 	  printMsg("%u", sectorIn[i]);
 	  printMsg(" ");
   }
-
+*/
   uint8_t pageIn[256];
   uint32_t page = sector * 16;
 
@@ -379,8 +378,7 @@ bool test_writeSector(uint32_t sector) {
   return true;
 }
 
-int main() {
-	init_platform();
+void branch_main() {
 	qspi_config(23, 2, 0); //temporary solution
 
 	test_writeSector(1000);
