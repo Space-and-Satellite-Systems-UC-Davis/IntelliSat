@@ -24,13 +24,9 @@ void radio_sendByte(uint8_t data) {
 
 }
 
+
 void radio_sendByteStream(int numberOfBytes, uint8_t buffer[]) {
 	uint64_t startingStreamTime = getSysTime();
-	int bufferAllocatedSize = sizeof(buffer) / sizeof(buffer[0]);
-
-	if (bufferAllocatedSize < numberOfBytes) {
-		return;
-	}
 
 	for (int i = 0; i < numberOfBytes; i++) {
 		//If byte per second past threshold then halt byte sending
@@ -38,6 +34,7 @@ void radio_sendByteStream(int numberOfBytes, uint8_t buffer[]) {
 			i--;
 		} else {
 			radio_sendByte(buffer[i]);
+			printMsg("%d\r\n", buffer[i]);
 		}
 	}
 }

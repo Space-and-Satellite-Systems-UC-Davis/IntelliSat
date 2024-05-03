@@ -25,10 +25,14 @@ void branch_main() {
 
 	// infinite loop
 	uint8_t buffer[10];
-	radio_readBytes(buffer, 10);
+	for (int i = 0; i < 10; i++) {
+		buffer[i] = i + 3;
+	}
+
+//	radio_sendByteStream(10, buffer);
 //	int byteReceived = radio_readOneByte();
 	while (1) {
-
+		radio_sendByteStream(10, buffer);
 //		radio_readBytes(buffer, 10);
 //		printMsg("%d\r\n", byteReceived);
 //		radio_sendMsg("Msg\r\n");
