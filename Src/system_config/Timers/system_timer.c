@@ -20,6 +20,11 @@ extern int core_MHz;	// from core_config.h
 
 uint64_t systick_time = 0;
 
+void delay_ms(uint64_t ms) {
+	uint64_t start_time = systick_time;
+	while (systick_time - start_time < ms);
+}
+
 uint64_t getSysTime() {
 	return systick_time;
 }
