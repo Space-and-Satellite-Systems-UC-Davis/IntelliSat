@@ -32,18 +32,17 @@ void branch_main() {
 //	radio_sendByteStream(10, buffer);
 //	int byteReceived = radio_readOneByte();
 	while (1) {
-		radio_sendByteStream(10, buffer);
-//		radio_readBytes(buffer, 10);
-//		printMsg("%d\r\n", byteReceived);
-//		radio_sendMsg("Msg\r\n");
-//		printMsg("%d\r\n", byteReceived);
-//		changeInTime = getSysTime() - initTime;
-//		if (changeInTime > 1000) {
-////		radio_sendByte(10);
-//			radio_sendMsg("Data\r\n");
-//			changeInTime = 0;
-//			initTime = getSysTime();
-//		}
+
+//		char readState = radio_receiveStateRequest();
+//		printMsg("Reading data %c\r\n", readState);
+
+		changeInTime = getSysTime() - initTime;
+		if (changeInTime > 0) {
+			char readState = radio_receiveStateRequest();
+			printMsg("Reading data %c\r\n", readState);
+			changeInTime = 0;
+			initTime = getSysTime();
+		}
 
 
 	}

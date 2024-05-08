@@ -20,15 +20,18 @@
 #define RADIO_BAUDRATE 9600
 #define RADIO_MAX_STATE_CHANGE_TIME_LIMIT 10
 #define BYTE_PER_SECOND_LIMIT 1000
+#define RADIO_ACKNOWLEDGEMENT_TIMEOUT 10
 
-enum RadioState { RADIO_STANDBY, RADIO_TX_ACTIVE, RADIO_RX_ACTIVE};
+enum RadioState { RADIO_OFF, RADIO_TX_ACTIVE, RADIO_RX_ACTIVE};
 
 void radio_sendMsg(char* message, ...);
 int radio_readOneByte();
 void radio_readBytes();
 void radio_init();
-void radio_sendByte(uint8_t value);
+bool radio_sendByteStreamToMemRequest(int numBytes, uint8_t buffer[]); //TODO: Test
 void radio_sendState(enum RadioState state);
+bool radio_sendTransferToMemRequest(int numBytes); //TODO: Test
+char radio_receiveStateRequest(void);
 
 
 #endif /* PERIPHERALS_RADIO_RADIO_H_ */

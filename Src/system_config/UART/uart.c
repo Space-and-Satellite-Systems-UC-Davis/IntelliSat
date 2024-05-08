@@ -338,7 +338,13 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	}
 
 	uint16_t sz = 0;
+	uint64_t initTime  = getSysTime();
 	while (sz < size) {
+
+		if (getSysTime() - initTime > 10) {
+			break;
+		}
+
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
@@ -349,6 +355,7 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 			break;
 		}
 	}
+//	printMsg("Time it took: %d\r\n", getSysTime() - initTime);
 
 	return sz;
 }
