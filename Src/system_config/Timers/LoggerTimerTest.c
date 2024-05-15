@@ -37,9 +37,10 @@ void branch_main() {
 //		printMsg("Reading data %c\r\n", readState);
 
 		changeInTime = getSysTime() - initTime;
-		if (changeInTime > 0) {
-			char readState = radio_receiveStateRequest();
-			printMsg("Reading data %c\r\n", readState);
+		if (changeInTime > 10) {
+			printMsg("%d\r\n", radio_transferToGroundStationRequest(11, 10));
+//			printMsg("%d\r\n", radio_readOneByte());
+//			printMsg("%c\r\n", radio_receiveStateRequest());
 			changeInTime = 0;
 			initTime = getSysTime();
 		}

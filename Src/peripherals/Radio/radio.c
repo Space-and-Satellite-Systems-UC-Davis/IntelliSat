@@ -15,9 +15,9 @@ void radio_init() {
 	lastStateChange = getSysTime();
 }
 
-bool radio_waitForAcknowledgement(uint64_t initialTime) { //TODO: test
-	while (radio_readOneByte != 'A') {
-		if (getSysTime() - initialTime) {
+bool radio_waitForAcknowledgement(uint64_t initialTime) {
+	while (radio_readOneByte() != 'A') {
+		if (getSysTime() - initialTime > RADIO_ACKNOWLEDGEMENT_TIMEOUT) {
 			return false;
 		}
 	}
@@ -39,10 +39,11 @@ bool radio_sendTransferToMemRequest(int numBytes) { //TODO: test
 
 }
 
-bool radio_transferToGroundStationRequest(uint8_t numBytesToSend, int numTimesToSend) { //TODO: test
-	radio_sendState(RADIO_TX_ACTIVE);
+bool radio_transferToGroundStationRequest(uint8_t numBytesToSend, int numTimesToSend) {
+	radio_sendByte('t');
 	radio_sendByte(numBytesToSend);
 	radio_sendByte(numTimesToSend);
+
 	return radio_waitForAcknowledgement(getSysTime());
 }
 
@@ -72,6 +73,18 @@ char radio_receiveStateRequest(void){
 	return byteRead;
 }
 
+void radio_sendByteStream(int numberOfBytes, uint8_t buffer[]) {
+	uint64_t startingStreamTime = getSysTime();
+	for (int i = 0; i < numberOfBytes; i++) {
+			//If byte per second past threshold then halt byte sending
+			if (i / ((startingStreamTime - getSysTime()) / 1000) > BYTE_PER_SECOND_LIMIT) {
+				i--;
+			} else {
+				radio_sendByte(buffer[i]);
+			}
+	}
+}
+
 
 /**
  * Sends a stream of bytes
@@ -86,15 +99,7 @@ bool radio_sendByteStreamToMemRequest(int numberOfBytes, uint8_t buffer[]) { //T
 	if (!radio_sendTransferToMemRequest(numberOfBytes)) {
 		return false;
 	}
-	for (int i = 0; i < numberOfBytes; i++) {
-		//If byte per second past threshold then halt byte sending
-		if (i / ((startingStreamTime - getSysTime()) / 1000) > BYTE_PER_SECOND_LIMIT) {
-			i--;
-		} else {
-			radio_sendByte(buffer[i]);
-			printMsg("%d\r\n", buffer[i]);
-		}
-	}
+	radio_sendByteStream(numberOfBytes, buffer);
 	return true;
 }
 
