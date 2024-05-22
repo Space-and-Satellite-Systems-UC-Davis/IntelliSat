@@ -24,9 +24,9 @@ void branch_main() {
 //	led_d1(true);
 
 	// infinite loop
-	uint8_t buffer[10];
-	for (int i = 0; i < 10; i++) {
-		buffer[i] = i + 3;
+	uint8_t buffer[255];
+	for (int i = 0; i < 255; i++) {
+		buffer[i] = i;
 	}
 
 //	radio_sendByteStream(10, buffer);
@@ -37,8 +37,8 @@ void branch_main() {
 //		printMsg("Reading data %c\r\n", readState);
 
 		changeInTime = getSysTime() - initTime;
-		if (changeInTime > 10) {
-			printMsg("%d\r\n", radio_transferToGroundStationRequest(11, 10));
+		if (changeInTime > 10000) {
+			radio_sendByteStreamToMemRequest(255, buffer);
 //			printMsg("%d\r\n", radio_readOneByte());
 //			printMsg("%c\r\n", radio_receiveStateRequest());
 			changeInTime = 0;

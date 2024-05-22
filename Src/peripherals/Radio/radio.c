@@ -10,11 +10,19 @@
 
 uint64_t lastStateChange = 0;
 
+/**
+ * Initialize radio
+ */
 void radio_init() {
 	usart_init(RADIO_USART, RADIO_BAUDRATE);
 	lastStateChange = getSysTime();
 }
 
+/**
+ * Pauses the system to wait for acknowledgement byte from other device
+ *
+ * @return false if time out, true if didn't received acknowledgement
+ */
 bool radio_waitForAcknowledgement(uint64_t initialTime) {
 	while (radio_readOneByte() != 'A') {
 		if (getSysTime() - initialTime > RADIO_ACKNOWLEDGEMENT_TIMEOUT) {
@@ -24,21 +32,42 @@ bool radio_waitForAcknowledgement(uint64_t initialTime) {
 	return true;
 }
 
+/**
+ * Generic function to send a string over RADIO_USART
+ */
 void radio_sendMsg(char* message, ...) {
 	usart_transmitBytes(RADIO_USART, message);
 }
 
+/**
+ * Sends 1 byte over RADIO_USART
+ */
 void radio_sendByte(uint8_t data) {
 	usart_transmitChar(RADIO_USART, data);
 }
 
-bool radio_sendTransferToMemRequest(int numBytes) { //TODO: test
+/**
+ * Send a request to transfer to the radio's memory with the number of bytes it will be sending
+ *
+ * @param numBytes: The number of bytes that the request will send
+ *
+ * @return true if it succeeded false if it didn't
+ */
+bool radio_sendTransferToMemRequest(int numBytes) {
 	radio_sendByte('T');
 	radio_sendByte(numBytes);
 	return radio_waitForAcknowledgement(getSysTime());
 
 }
 
+/**
+ * Send a request to transfer data to the ground station
+ *
+ * @param numBytesToSend: The number of bytes to send to the ground station
+ * @param numTimesToSend: Number of times to resend the data to ground station
+ *
+ * @return true if it succeeded and false if it failed
+ */
 bool radio_transferToGroundStationRequest(uint8_t numBytesToSend, int numTimesToSend) {
 	radio_sendByte('t');
 	radio_sendByte(numBytesToSend);
@@ -73,6 +102,13 @@ char radio_receiveStateRequest(void){
 	return byteRead;
 }
 
+/**
+ * Send a stream of bytes
+ *
+ * @param numberOfBytes: Number of bytes that is being sent in the buffer
+ * @param buffer: the data to send
+ *
+ */
 void radio_sendByteStream(int numberOfBytes, uint8_t buffer[]) {
 	uint64_t startingStreamTime = getSysTime();
 	for (int i = 0; i < numberOfBytes; i++) {
@@ -94,7 +130,7 @@ void radio_sendByteStream(int numberOfBytes, uint8_t buffer[]) {
  *
  * @return False if sending failed and true otherwise
  */
-bool radio_sendByteStreamToMemRequest(int numberOfBytes, uint8_t buffer[]) { //TODO: test
+bool radio_sendByteStreamToMemRequest(int numberOfBytes, uint8_t buffer[]) {
 	uint64_t startingStreamTime = getSysTime();
 	if (!radio_sendTransferToMemRequest(numberOfBytes)) {
 		return false;
