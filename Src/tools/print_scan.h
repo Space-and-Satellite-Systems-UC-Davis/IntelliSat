@@ -25,6 +25,6 @@ void printer_init();
  *
  * @returns None
  */
-void printMsg(char *message, ...);
+int printMsg(const char *message, ...);
 
 #endif // REALOP1_PRINT_SCAN_H_
