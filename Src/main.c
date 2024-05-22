@@ -26,8 +26,10 @@ void branch_main(){
 	while(1){
 		uint16_t adcVal = adc_singleConversion();
 		printMsg("ADC value: %d", adcVal);
-		printMsg(". Volt value: ");
-		adc_printVolt(adc_adcToVolt2(adcVal));
+		printMsg(". Battery milliVolt value: ");
+
+		//adc_printVolt(adc_adcToVolt2(adcVal));
+		adc_printMilliVolt(adc_adcToBatVolt(adcVal));
 		printMsg("\r\n");
 		nop(1000000);
 	}

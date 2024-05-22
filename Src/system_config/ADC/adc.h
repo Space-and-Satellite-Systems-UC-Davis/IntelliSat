@@ -20,10 +20,10 @@ void adc_init();
 //Enables the ADC
 void adc_enable();
 
-//Configures the GPIO pin A0 for the ADC
+//Configures the GPIO pin C0 for the ADC
 void adc_configGPIO();
 
-//Configures the channel to set it to pin A0, and sets sampling time to 640.5 cycles per sample
+//Configures the channel to set it to pin C0, and sets sampling time to 640.5 cycles per sample
 void adc_setChannel();
 
 //Test function
@@ -46,9 +46,16 @@ uint16_t adc_adcToVolt1(uint16_t adcVal);
  */
 uint16_t adc_adcToVolt2(uint16_t adcVal);
 
+/* Converts the adcVal to a milivolt value using the battery internal reference (idk why its different)
+ * @returns: the milivolt value of an int
+ */
+uint16_t adc_adcToBatVolt(uint16_t adcVal);
+
 /* Prints the millivolt value in a volt fashion
  *  @returns: none
  */
 void adc_printVolt(uint16_t volt);
+
+void adc_printMilliVolt(uint16_t volt);
 
 #endif /* SYSTEM_CONFIG_ADC_ADC_H_ */

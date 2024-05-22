@@ -70,18 +70,19 @@ void adc_setConstantGPIOValue(){
 		| GPIO_MODER_MODE6_0;	// B6 Sets to output mode
 
 	gpio_set(GPIOB, 3, 0); //3-3
-	gpio_set(GPIOB, 4, 1); //3-2
+	gpio_set(GPIOB, 4, 0); //3-2
 	gpio_set(GPIOB, 5, 1); //2-2
-	gpio_set(GPIOB, 6, 0); //1-3
+	gpio_set(GPIOB, 6, 1); //1-3
 }
 
 void adc_setChannel(){
 	//leave sampling time at default
+	ADC123_COMMON->CCR |= (ADC_CCR_VBATEN);
 	ADC1->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
 	ADC1->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
-	ADC1->SQR1 |= (1 << ADC_SQR1_SQ1_Pos); //Sets the sequence to just channel 1 (PIN C0)
-	ADC1->SMPR1 &= ~( ADC_SMPR1_SMP1 ); //Resets the sampling time of channel 1
-	ADC1->SMPR1 |=  ( 0x7 << ADC_SMPR1_SMP1_Pos ); //Sets the sampling time to max: 640.5 cycles per sample
+	ADC1->SQR1 |= (18 << ADC_SQR1_SQ1_Pos); //Sets the sequence to just channel 1 (PIN C0)
+	ADC1->SMPR2 &= ~( ADC_SMPR2_SMP18 ); //Resets the sampling time of channel 18
+	ADC1->SMPR2 |=  ( 0x7 << ADC_SMPR2_SMP18_Pos ); //Sets the sampling time to max: 640.5 cycles per sample
 }
 
 // Perform a single ADC conversion.
@@ -108,8 +109,16 @@ uint16_t adc_adcToVolt2(uint16_t adcVal){
 	return (adcVal * 2532) / 4095; //Uses 2.048 volt reference (VREFBUF->CSR VRS bit is 0)
 }
 
+uint16_t adc_adcToBatVolt(uint16_t adcVal){
+	return (adcVal * 1757) / 200; //Uses whatever im testing as a basis
+}
+
 void adc_printVolt(uint16_t volt){
 	printMsg("%d", volt / 1000);
 	printMsg(".");
 	printMsg("%d", volt % 1000);
+}
+
+void adc_printMilliVolt(uint16_t volt){
+	printMsg("%d", volt);
 }
