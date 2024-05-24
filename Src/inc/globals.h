@@ -4,7 +4,7 @@
 #include "stm32l476xx.h"
 
 
-#define OP_REV 2
+#define OP_REV 1
 
 #if OP_REV == 1 || OP_REV == 2
 #define UNUSED_GPIO             GPIOG, 1

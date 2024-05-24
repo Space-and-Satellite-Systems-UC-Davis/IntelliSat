@@ -12,7 +12,8 @@
 #define timer_startupTimerOff()	StartupTimer->CR1 &= ~TIM_CR1_CEN;
 
 
-#define MAX_STARTUP_COUNT (30 * 60)		// 30 minutes * 60 seconds per minute
+//#define MAX_STARTUP_COUNT (30 * 60)		// 30 minutes * 60 seconds per minute
+# define MAX_STARTUP_COUNT (3)
 
 int startup_count = 0;
 

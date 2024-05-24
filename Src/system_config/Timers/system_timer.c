@@ -13,6 +13,7 @@
 #include <globals.h>
 #include "timers.h"
 #include <LED/led.h>
+#include "../../scheduler/scheduler.h"
 
 
 // Global (external) variables and functions
@@ -48,6 +49,7 @@ void systick_init() {
 	NVIC_EnableIRQ(SysTick_IRQn);
 }
 
+bool block_scheduler = true;
 
 /**
  * Interrupt handler for the SysTick timer.
@@ -60,6 +62,10 @@ void systick_init() {
 void SysTick_Handler() {
 	systick_time++;
 	blinky();
-	// scheduler();
+	if (!block_scheduler) {
+		//block_scheduler = true;
+		scheduler();
+		//block_scheduler = false:
+	}
 }
 
