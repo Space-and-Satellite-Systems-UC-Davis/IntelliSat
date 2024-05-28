@@ -14,7 +14,7 @@ int main() {
     
     //TODO: use RTC first_time flag.
     //if (first_time) {
-        init_first_time()
+    //  init_first_time()
     //}
 
 	init_platform();
