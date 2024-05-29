@@ -41,6 +41,19 @@ void adc_enable(){
 }
 void adc_configGPIO(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN; //enables GPIO C
+	while (GPIOA->OTYPER == 0xFFFFFFFF); //Waits until its done enabling
+
+	GPIOA->OTYPER       &= ~( GPIO_OTYPER_OT2 ); //Reset C0 pin
+	GPIOA->PUPDR        &= ~( GPIO_OSPEEDR_OSPEED2 ); //Reset C0 pin
+	GPIOA->OSPEEDR      &= ~( GPIO_PUPDR_PUPD2 ); //Reset C0 pin
+	GPIOA->MODER        &= ~( GPIO_MODER_MODE2 ); //Reset C0 pin
+	//GPIOC->MODER        |= ( GPIO_MODER_MODE0_0 ); //Sets C0 pin to output mode (KEEP COMMENTED)
+	GPIOA->ASCR 		|=  ( GPIO_ASCR_ASC2 ); //Connects analog switch to ADC channel for C0
+	GPIOA->MODER        |=  ( 0x3 << GPIO_MODER_MODE2_Pos ); //Sets mode to analog
+	//gpio_set(GPIOC, 0,0); //Testing where C0 pin was (KEEP COMMENTED)
+}
+void adc_configTestGPIO(){
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN; //enables GPIO C
 	while (GPIOC->OTYPER == 0xFFFFFFFF); //Waits until its done enabling
 
 	GPIOC->OTYPER       &= ~( GPIO_OTYPER_OT0 ); //Reset C0 pin
@@ -52,7 +65,6 @@ void adc_configGPIO(){
 	GPIOC->MODER        |=  ( 0x3 << GPIO_MODER_MODE0_Pos ); //Sets mode to analog
 	//gpio_set(GPIOC, 0,0); //Testing where C0 pin was (KEEP COMMENTED)
 }
-
 void adc_setConstantGPIOValue(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN; //enables GPIO B
 	while (GPIOB->OTYPER == 0xFFFFFFFF); //Waits until its done enabling
@@ -76,6 +88,15 @@ void adc_setConstantGPIOValue(){
 }
 
 void adc_setChannel(){
+	//leave sampling time at default
+	ADC1->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
+	ADC1->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
+	ADC1->SQR1 |= (7 << ADC_SQR1_SQ1_Pos); //Sets the sequence to just channel 7 (PIN A2)
+	ADC1->SMPR1 &= ~( ADC_SMPR1_SMP7 ); //Resets the sampling time of channel 7
+	ADC1->SMPR1 |=  ( 0x7 << ADC_SMPR1_SMP7_Pos ); //Sets the sampling time to max: 640.5 cycles per sample
+}
+
+void adc_setTestChannel(){
 	//leave sampling time at default
 	ADC1->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
 	ADC1->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
@@ -112,4 +133,8 @@ void adc_printVolt(uint16_t volt){
 	printMsg("%d", volt / 1000);
 	printMsg(".");
 	printMsg("%d", volt % 1000);
+}
+
+void adc_printMilliVolt(uint16_t volt){
+	printMsg("%d", volt);
 }

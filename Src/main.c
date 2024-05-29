@@ -16,18 +16,20 @@ void branch_main(){
 	printMsg("Enabling ADC\r\n");
 
 	adc_configGPIO();
-	printMsg("Configuring GPIO Pin C0 for ADC\r\n");
+	printMsg("Configuring GPIO Pin A2 for ADC\r\n");
 
 	adc_setConstantGPIOValue();
 
+	//Right now it sets it pin A2, which is photodiode/sunsensor 0 (SOL-0)
+	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
 	adc_setChannel();
-	printMsg("ADC1 channel 1, GPIO Pin C0 set\r\nBeginning to read values\r\n");
+	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
 
 	while(1){
 		uint16_t adcVal = adc_singleConversion();
 		printMsg("ADC value: %d", adcVal);
-		printMsg(". Volt value: ");
-		adc_printVolt(adc_adcToVolt2(adcVal));
+		printMsg(". MilliVolt value: ");
+		adc_printMilliVolt(adc_adcToVolt2(adcVal));
 		printMsg("\r\n");
 		nop(1000000);
 	}

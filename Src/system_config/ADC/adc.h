@@ -20,11 +20,17 @@ void adc_init();
 //Enables the ADC
 void adc_enable();
 
-//Configures the GPIO pin A0 for the ADC
+//Configures the GPIO pin A2 for the ADC
 void adc_configGPIO();
 
-//Configures the channel to set it to pin A0, and sets sampling time to 640.5 cycles per sample
+//Configures the GPIO pin C0 for the ADC
+void adc_configTestGPIO();
+
+//Configures the channel to set it to pin A2, and sets sampling time to 640.5 cycles per sample
 void adc_setChannel();
+
+//Sets the channel to pin C0 instead
+void adc_setTestChannel();
 
 //Test function
 void adc_setConstantGPIOValue();
@@ -50,5 +56,7 @@ uint16_t adc_adcToVolt2(uint16_t adcVal);
  *  @returns: none
  */
 void adc_printVolt(uint16_t volt);
+
+void adc_printMilliVolt(uint16_t volt);
 
 #endif /* SYSTEM_CONFIG_ADC_ADC_H_ */
