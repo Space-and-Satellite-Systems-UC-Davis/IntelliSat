@@ -65,6 +65,15 @@
  */
 void rtc_config(char clock_source, int forced_config);
 
+/**
+ * Stores 4 bytes into any of the 32 backup registers on the RTC
+ *
+ * @param bits 	The bits to be stored
+ * @param bkp  	The register to store into (an int between 0-31)
+ *
+ */
+void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
+
 /****************************** RTC TIME SETTERS *****************************/
 
 /**

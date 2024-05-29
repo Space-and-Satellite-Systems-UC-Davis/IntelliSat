@@ -16,6 +16,19 @@
 
 #include "stm32l476xx.h"
 
+enum gpio_modes {
+	GPIO_Input,
+	GPIO_Output,
+	GPIO_AlternateFunction,
+	GPIO_Analog
+};
+
+enum gpio_pull_states {
+	GPIO_PullupPulldown,
+	GPIO_Pullup,
+	GPIO_Pulldown,
+};
+
 /**
  * Sets the specified GPIO pin to high.
  *
@@ -56,6 +69,27 @@ void gpio_set(GPIO_TypeDef * port, int pin, int value);
  * @returns The value of the GPIO pin (1 or 0) or -1 if the pin could not be read.
  */
 int gpio_read(GPIO_TypeDef * port, int pin);
+
+/*
+ * Sets the mode of a certain GPIO pin
+ *
+ * @param port        The GPIO port to configure.
+ * @param pin         The pin number of the GPIO pin to configure.
+ * @param mode        The mode for the GPIO pin (check gpio.h for the enum)
+ * @param open_drain  0 for Normal Push-Pull, 1 for Open-Drain
+ * @param speed		  0x3 for very high speed, 0x0 for normal low speed
+ * @param pull		  The state of the GPIO pin (check gpio.h for the enum)
+ */
+void gpio_mode(GPIO_TypeDef * port, int pin, enum gpio_modes mode, int open_drain, int speed, int pull);
+
+/*
+ * Configures a certain GPIO pin for Alternate Function mode
+ *
+ * @param port  The GPIO port to configure.
+ * @param pin   The pin number of the GPIO pin to configure.
+ * @param afn	The Alternate Function number for the GPIO pin
+ */
+void gpio_af(GPIO_TypeDef * port, uint8_t pin, uint8_t afn);
 
 
 #endif /* REALOP1_GPIO_H_ */
