@@ -20,7 +20,7 @@ uint16_t mag_magFullScale = 0;
 
 /*************************** MAG Helper Functions *************************/
 
-#define ScaledData(data, scale) ((float)(data) * (scale) / uint16_t(-1))
+#define ScaledData(data, scale) ((float)(data) * (scale) / (uint16_t)(-1))
 
 /**
  * Configures the control registers of the OP1 magnetometer.
