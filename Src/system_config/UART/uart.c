@@ -247,24 +247,29 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
-			uart_8bit_1stop(USART3, baud_rate, true);
+			uart_8bit_1stop(USART1, baud_rate, true);
+			NVIC_EnableIRQ(USART1_IRQn);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 			usart2_gpio_init();
+			NVIC_EnableIRQ(USART2_IRQn);
 			break;
 		case (int)USART3:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
 			usart3_gpio_init();
 			uart_8bit_1stop(USART3, baud_rate, false);
+			NVIC_EnableIRQ(USART3_IRQn);
 			break;
 		case (int)UART4:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
 			uart4_gpio_init();
+			NVIC_EnableIRQ(UART4_IRQn);
 			break;
 		case (int)UART5:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART5EN;
 			uart4_gpio_init();
+			NVIC_EnableIRQ(UART5_IRQn);
 			break;
 		case (int)LPUART1:
 			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
@@ -333,16 +338,24 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	}
 
 	uint16_t sz = 0;
+	uint64_t initTime  = getSysTime();
 	while (sz < size) {
+
+		if (getSysTime() - initTime > 10) {
+			break;
+		}
+
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
 		}
 
+
 		if (usart_recieverTimedOut(rxbuff)) {
 			break;
 		}
 	}
+//	printMsg("Time it took: %d\r\n", getSysTime() - initTime);
 
 	return sz;
 }
