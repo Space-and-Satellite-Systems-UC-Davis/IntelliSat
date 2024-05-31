@@ -62,4 +62,3 @@ void SysTick_Handler() {
 	blinky();
 	// scheduler();
 }
-

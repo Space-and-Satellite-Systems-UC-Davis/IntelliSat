@@ -1,9 +1,9 @@
 /*
  * spi.c
  *
- *  - Nov 8-9, 2023
- *      Author       : nithinsenthil
- *      Log          : Updated SPI3 GPIO config for OP Rev2
+ *  - October 29, 2023
+ *		Author	: Darsh
+ *		Log		: Generic spi functions.
  *
  * 	- September 22, 2023
  *		Author	: Darsh
@@ -20,12 +20,9 @@
 
 #include "spi.h"
 
-
 /**
  * Configures GPIO for the SPI-2 Peripheral
  */
-
-// Many actions split in two to manage pins in both ports B and G
 void spi3_gpioInit() {
 
 #if OP_REV == 2
@@ -49,11 +46,9 @@ void spi3_gpioInit() {
 		  GPIO_MODER_MODE3_Msk
 		| GPIO_MODER_MODE4_Msk
 		| GPIO_MODER_MODE5_Msk);
-
-	// Mask GPIO out pin separately
 	GPIOG->MODER &= ~(GPIO_MODER_MODE15_Msk);
 
-	// set each pin to Alternate function
+	// set each pin to Alternate function, except CS
 	GPIOB->MODER |=
 		  GPIO_MODER_MODE3_1
 		| GPIO_MODER_MODE4_1
@@ -124,7 +119,7 @@ void spi1_gpioInit() {
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	while(spi->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
 	while(spi->SR & SPI_SR_BSY);	// Wait till last data frame is processed
-	spi_stop_communication(cs_port, cs_pin);
+	spi_stopCommunication(cs_port, cs_pin);
 	spi->CR1 &= ~SPI_CR1_SPE;		// Disable SPI2
 
 	uint8_t temp;
@@ -135,8 +130,7 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 }
 
 void spi1_config() {
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// Clock
-
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// GPIO
 	spi1_gpioInit();
 
 	spi_disable(SPI1, SPI1_CS);
@@ -152,15 +146,14 @@ void spi1_config() {
 
 void spi2_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Clock
-
-	spi2_gpioInit();
+	spi2_gpioInit();						// GPIO
 
 	spi_disable(SPI2, SPI2_CS);
 
 	SPI2->CR1 = 0;
 	SPI2->CR2 = 0;
 	SPI2->CR1 |=
-		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64`
+		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR;
@@ -173,24 +166,24 @@ void spi2_config() {
 
 void spi3_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// Clock
-
-	spi3_gpioInit();
+    spi3_gpioInit();						// GPIO
 
 	spi_disable(SPI3, SPI3_CS);
 
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;
-	SPI2->CR1 |=
-		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64`
+	SPI3->CR1 |=
+		  0U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
-		| SPI_CR1_MSTR;
-	SPI2->CR2 |=
+		| SPI_CR1_MSTR
+		| SPI_CR1_CPOL				// Clock line will be HIGH when IDLE
+		| SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
+	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
 
 	spi_enable(SPI3);
-
 }
 
 void spi_config(SPI_TypeDef *spi) {
@@ -208,31 +201,36 @@ void spi_config(SPI_TypeDef *spi) {
 }
 
 /***************************** SPI COMMUNICATION *****************************/
-
 void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
-	gpio_low(cs_port, cs_pin);
-}
 
-void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
+	gpio_low(cs_port, cs_pin);
+}void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
-bool spi_transmitRecieve(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
-	while(size-- > 1) {
-		while(!(spi->SR & SPI_SR_TXE));			// wait for TXFIFO to be empty
+bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
+	while (size-- >= 1) {
+		// wait for TXFIFO to be empty
+		while(!(spi->SR & SPI_SR_TXE));	// TXE = TX Empty
 		if (transmission == NULL) {
-			spi->DR = SPI_DUMMY_BYTE;           // send a dummy byte to trigger the clock
+			// send a dummy byte to trigger the clock pulses
+			*((volatile uint8_t*) &(spi->DR)) = SPI_DUMMY_BYTE;
 		} else {
-			spi->DR = (*transmission)++;		// fill TXFIFO with the instruction
+			// fill TXFIFO with the instruction
+			*((volatile uint8_t*) &(spi->DR)) = *transmission;
+			transmission++;
 		}
+		while(!(spi->SR & SPI_SR_TXE));
 
-		if (reception) {
-			while (spi->SR & SPI_SR_RXNE) {
-				*(reception++) = spi->DR;
+		// read the reception line until it's empty
+		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
+			if (reception == NULL) {
+				spi->DR;
+			} else {
+				*reception = spi->DR;
+				reception++;
 			}
 		}
 	}
-	while((spi->SR & SPI_SR_BSY));				// wait till all the communication is over
-
 	return true;
 }

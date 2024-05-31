@@ -14,7 +14,13 @@
 
 #include "QMC5883L.h"
 
+/*************************** MAG Parameters *************************/
+
+uint16_t mag_magFullScale = 0;
+
 /*************************** MAG Helper Functions *************************/
+
+#define ScaledData(data, scale) ((float)(data) * (scale) / (uint16_t)(-1))
 
 /**
  * Configures the control registers of the OP1 magnetometer.
@@ -31,6 +37,18 @@ void magCtrl(int rate, int scale, int oversample) {
 	} else {
 		softi2c_writeReg(MAG_I2C, MAG_ADDR, 0x09, 0);
 	}
+
+    switch (scale) {
+        case MAG_FS_2_G:
+            mag_magFullScale = 2;
+            break;
+        case MAG_FS_8_G:
+            mag_magFullScale = 8;
+            break;
+        default:
+            mag_magFullScale = 0;
+            break;
+    }
 }
 
 /*************************** MAG Interface Functions *************************/
@@ -47,17 +65,21 @@ void mag_init(int rate, int scale, int oversample) {
 }
 
 int16_t mag_read_X() {
-	return softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x01, 0x00);
+    int16_t x = softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x01, 0x00);
+	return ScaledData(x, mag_magFullScale);
 }
 
 int16_t mag_read_Y() {
-	return softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x03, 0x02);
+    int16_t y = softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x03, 0x02);
+    return ScaledData(y, mag_magFullScale);
 }
 
 int16_t mag_read_Z() {
-	return softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x05, 0x04);
+    int16_t z = softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x05, 0x04);
+    return ScaledData(z, mag_magFullScale);
 }
 
 int16_t mag_readTemp() {
-	return softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x08, 0x07);
+    int16_t temp = softi2c_readRegHighLow(MAG_I2C, MAG_ADDR, 0x07, 0x06);
+	return temp;
 }
