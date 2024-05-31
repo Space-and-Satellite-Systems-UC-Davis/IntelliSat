@@ -57,7 +57,7 @@ void imu_spiWriteReg(void *address, uint8_t data) {
 
 int16_t imu_spiReadHighLow(void *low_address) {
 	uint8_t instruction = (uint8_t)low_address | 0x80;
-	int datah, datal;
+	uint8_t datah, datal;
 
 	spi_startCommunication(IMU_SPI_CS);
 	spi_transmitReceive(IMU_SPI, &instruction, NULL, 1, false);
@@ -193,7 +193,7 @@ int16_t imu_readAcel_X() {
 
 #elif OP_REV == 2
 
-	data =  imu_spiReadHighLow(0x28);
+	data =  imu_spiReadHighLow((uint8_t*)0x28);
 
 #endif
 
@@ -214,7 +214,7 @@ int16_t imu_readAcel_Y() {
 
 #elif OP_REV == 2
 
-	data = imu_spiReadHighLow(0x2A);
+	data = imu_spiReadHighLow((uint8_t*)0x2A);
 
 #endif
 
@@ -235,7 +235,7 @@ int16_t imu_readAcel_Z() {
 
 #elif OP_REV == 2
 
-	data = imu_spiReadHighLow(0x2C);
+	data = imu_spiReadHighLow((uint8_t*)0x2C);
 
 #endif
 
@@ -255,7 +255,7 @@ int16_t imu_readGyro_X() {
 
 #elif OP_REV == 2
 
-	data = imu_spiReadHighLow(0x22);
+	data = imu_spiReadHighLow((uint8_t*)0x22);
 
 #endif
 
@@ -275,7 +275,7 @@ int16_t imu_readGyro_Y() {
 
 #elif OP_REV == 2
 
-	data = imu_spiReadHighLow(0x24);
+	data = imu_spiReadHighLow((uint8_t*)0x24);
 
 #endif
 
@@ -294,7 +294,7 @@ int16_t imu_readGyro_Z() {
 
 #elif OP_REV == 2
 
-	data = imu_spiReadHighLow(0x26);
+	data = imu_spiReadHighLow((uint8_t*)0x26);
 
 #endif
 
@@ -314,7 +314,7 @@ int16_t imu_readTemp() {
 
 #elif OP_REV == 2
 
-	data = imu_spiReadHighLow(0x20);
+	data = imu_spiReadHighLow((uint8_t*)0x20);
 
 #endif
 

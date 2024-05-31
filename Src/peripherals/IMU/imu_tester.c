@@ -3,6 +3,9 @@
 #include <print_scan.h>
 #include <Buttons/buttons.h>
 
+
+#ifdef BUILD_TEST
+
 //void branch_main() {
 //	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
 //
@@ -25,3 +28,5 @@
 //		}
 //	}
 //}
+
+#endif

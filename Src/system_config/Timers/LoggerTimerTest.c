@@ -2,9 +2,8 @@
 #include <globals.h>
 #include <print_scan.h>
 
-//void printer() {
-//	printMsg("1");
-//}
+#ifdef BUILD_TEST
+
 //void branch_main() {
 //	logger_initExpTimer();
 ////	logger_registerLogFunction(printer);
@@ -16,3 +15,5 @@
 //		printMsg("\r\n");
 //	}
 //}
+
+#endif
