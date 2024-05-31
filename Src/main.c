@@ -1,5 +1,5 @@
-#include "platform_init.h"
 #include <print_scan.h>
+#include "platform_init.h"
 
 /*
  * For now this won't be implemented on the main branch
@@ -10,6 +10,13 @@
 void branch_main();
 
 int main() {
+    init_init();
+    
+    //TODO: use RTC first_time flag.
+    //if (first_time) {
+    //  init_first_time()
+    //}
+
 	init_platform();
 	branch_main();
 }

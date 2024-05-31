@@ -94,7 +94,7 @@ void logger_registerLogFunction(void (*func)());
  *
  * @returns Boolean to indicate if the initialization was successful
  */
-bool timer_waitStartupTime();
+void timer_waitStartupTime();
 
 
 #endif	// REALOP1_TIMERS_H_

@@ -17,7 +17,7 @@
 int startup_count = 0;
 
 
-bool timer_initStartupTimer() {
+void timer_initStartupTimer() {
 	// R = F / [(ARR+1)(PSC+1)(RCR+1)]
 	// https://docs.google.com/document/d/1TprKrSQ9GlH2M5u8z4JouCm3d4kw6UXFi6ckE5Hslgk/edit?usp=sharing
 	// 		F   =  5 * 10^6
@@ -42,8 +42,6 @@ bool timer_initStartupTimer() {
 	StartupTimer->DIER |= TIM_DIER_UIE;
 	// Enable TIM6 interrupt
 	NVIC_EnableIRQ(TIM5_IRQn);
-
-	return true;
 }
 
 
@@ -53,7 +51,7 @@ bool timer_initStartupTimer() {
  *
  * @returns Boolean to indicate if the initialization was successful
  */
-bool timer_waitStartupTime() {
+void timer_waitStartupTime() {
 	timer_initStartupTimer();
 
 	timer_startupTimerOn();
