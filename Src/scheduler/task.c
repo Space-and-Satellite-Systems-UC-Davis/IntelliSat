@@ -117,7 +117,8 @@ void comms() {
     // printMsg("Run 'comms'\n");
 
     led_dx(2, 1);
-    delay_ms( ((rand() % 11) * 100) + 10 );
+//    delay_ms( ((rand() % 11) * 100) + 10 );
+    delay_ms(100);
 }
 void experiment() {
     // Run method for experiment

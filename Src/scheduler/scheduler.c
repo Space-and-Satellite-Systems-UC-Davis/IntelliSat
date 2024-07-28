@@ -22,8 +22,8 @@
 // RS - system, Hamming codes on Idle
 struct Task taskTable[] = {
 	{LOWPWR, 10000, configLowPwr, lowPwr, cleanLowPwr, 0},                  // Func1 - N/A
-	{DETUMBLE,10000, configDetumble, detumble, cleanDetumble, 0},           // Func1 - N/A
-	{COMMS, 500, configComms, comms, cleanComms, 0},                        // Func1 - N/A
+	{DETUMBLE, 5, configDetumble, detumble, cleanDetumble, 0},           // Func1 - N/A
+	{COMMS, 5, configComms, comms, cleanComms, 0},                        // Func1 - N/A
     {ECC, 200, configEcc, ecc, cleanEcc, 0},                                // Func1 - N/A
     {EXPERIMENT, 200, configExperiment, experiment, cleanExperiment, 0},    // Func1 - Experiment ID (0 for none)
     {IDLE, 200, configIdle, idle, cleanIdle, 0}                             // Func1 - N/A
@@ -198,7 +198,8 @@ void cleanup_handler(int8_t field, uint8_t old_task_id) {
     // b1 - success log
 
     if (IS_BIT_SET(field, 0)) {
-        CLR_BIT(flagBits.modeBits, currTask.task_id);
+        CLR_BIT(flagBits.modeBits, taskTable[old_task_id].task_id);
+        modeSelect();
     }
     if (IS_BIT_SET(field, 1)) {
         // printMsg("Task ID: %d has been logged\n", currTask.task_id);
@@ -206,6 +207,18 @@ void cleanup_handler(int8_t field, uint8_t old_task_id) {
 
     // currTask.cleanPtr();
     taskTable[old_task_id].cleanPtr();
+}
+
+void rollback(void) {
+    asm volatile (
+        "LDR R0, =main_stack_frame\n"
+        "LDMIA R0!, {R4-R11}\n"      // Restore main function context
+        "LDMIA R0, {R0-R3, R12, LR}\n"
+        "MOV SP, R0\n"
+    );
+    asm volatile (
+            "BX LR\n"
+    );
 }
 
 /**
@@ -249,6 +262,19 @@ void scheduler() {
             // Jmp using flagBits
             //unblock_signal();
 //            siglongjmp(*toModeSelect, 1); // PROTOTYPE
+
+             asm volatile(
+				"CPSID i\n"                   // Disable interrupts
+				"PUSH {R4-R11}\n"             // Save the context of current function
+				"LDR R0, =main_stack_frame\n"
+				"STMIA R0!, {R4-R11}\n"       // Save the context of main function
+				"MRS R0, MSP\n"
+				"STMIA R0, {R0-R3, R12, LR}\n"
+				"BL rollback\n"
+             );
+             asm volatile (
+            		 "CPSIE i\n"
+            		 );
              longjmp(to_mode_select, 1); // SWITCH FOR HARDWARE INTEGRATION
         }
         scheduler_counter = 0;
@@ -263,7 +289,18 @@ void scheduler() {
 
         task_counter = 0;
         //kill
-        cleanup_handler(0b10, currTask.task_id);
+        cleanup_handler(0b01, currTask.task_id);
+        asm volatile(
+        				"CPSID i\n"                   // Disable interrupts
+        				"PUSH {R4-R11}\n"             // Save the context of current function
+        				"LDR R0, =main_stack_frame\n"
+        				"STMIA R0!, {R4-R11}\n"       // Save the context of main function
+        				"MRS R0, MSP\n"
+        				"STMIA R0, {R0-R3, R12, LR}\n"
+        				"BL rollback\n"
+        				"CPSIE i\n"                   // Enable interrupts
+                     );
+        longjmp(to_mode_select, 1);
 
         //unblock_signal();
     }

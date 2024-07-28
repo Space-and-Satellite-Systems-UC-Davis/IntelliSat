@@ -40,6 +40,8 @@ int is_unlimited_tick;
 struct sigaction sysTick;
 struct itimerval sysTick_timer;
 
+uint32_t main_stack_frame[16];
+
 /* Prototypes */
 void sysTickHandler(int signal);
 //jmp_buf to_mode_select;
@@ -154,7 +156,7 @@ int branch_main() {
 	srand(2);
     #endif
 //	delay_ms(1000000);
-	printMsg("hey");
+	printMsg("hey\r\n");
 
     /* Run initial mode decision */
     systemsCheck(); // All other mode decisions done via task ISR
@@ -166,11 +168,22 @@ int branch_main() {
     /* Start sys timer */
     setitimer(ITIMER_REAL, &sysTick_timer, NULL);
     #else
+    asm volatile(
+		"CPSID i\n"                   // Disable interrupts
+		"MRS R0, MSP\n"
+		"STMIA R0, {R0-R3, R12, LR}\n"
+		"LDR R0, =main_stack_frame\n"
+		"STMIA R0!, {R4-R11}\n"
+		"CPSIE i\n"                   // Enable interrupts
+    );
     setjmp(to_mode_select); // SWITCH FOR Hardware Intellisat
     //TODO: Start hardware timer
     #endif
 
     block_scheduler = false;
+
+//    NVIC_EnableIRQ(SysTick_IRQn);
+//    SysTick->CTRL |= SysTick_CTRL_ENABLE_Pos;
 
     /* Run superloop */
     while (1) {
@@ -191,7 +204,7 @@ int branch_main() {
         // Cycle limiter for testing
         //printMsg("systickHandlerCount: %d\n", max_handler_count - systick_handler_count);
         if (!is_unlimited_tick && systick_handler_count <= 0) {
-            printMsg("Terminating Kernel\n");
+            printMsg("Terminating Kernel\r\n");
             return 0;
         }
     }
