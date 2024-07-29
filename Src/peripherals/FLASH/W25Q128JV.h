@@ -4,7 +4,7 @@
  * - December 3, 2023
  *    Author: Anthony Surkov
  *
- * Most recently updated 07-15-24 for reorganization
+ * Most recently updated 07-18-24 for reorganization
  */
 
 #ifndef REALOP1_PERIPHERALS_FLASH_H_
