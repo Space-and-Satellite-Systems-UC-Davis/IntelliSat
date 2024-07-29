@@ -2,42 +2,13 @@
 #include "FLASH/W25Q128JV.h"
 
 /*
- * For now this won't be implemented on the main branch
- * Therefore, the main branch cannot be built.
- * Each development / feature branch has it's own implementation
- * which is used for testing specific features.
+ * branch_main .c (FLASH testing)
+ *
+ * - July 29, 2024
+ * - Author: Anthony Surkov
+ *
+ * - Last updated: 07-29-24
  */
-
-/*
- * FUNCTIONS TESTED SO FAR
- * DONE readJedecID()
- * - expected: 00 00 00 -> EF 17 9F
- * - actual: 00 00 00 -> EF 17 9F
- *
- * DONE readRegisterOne(), writeEnable()
- * - is able to read registerOne. verified concurrently with writeEnable().
- * - expected: 00000000 -> 00000010
- * - actual: 00000000 -> 00000010
- *
- * DONE writeDisable()
- * (tested after writeEnable)
- * - expected: 00000010 -> 00000000
- * - actual: 00000010 -> 00000000
- *
- * DONE readPage()
- * (tested with writePage)
- * - expected: all 0xFF in random location. all alternating 0's and 1's where written to
- * - actual: matches
- *
- * DONE writePage()
- * - expected: all alternating 0's and 1's in location written to
- * - actual: matches
- *
- * DONE sectorRead()
- * - expected: pageRead matches sectorRead output
- * - actual: true
- */
-
 
 //General helper functions
 void printBinary(uint8_t byte) {
@@ -74,9 +45,10 @@ void clearBuf(uint8_t buf[], int size) {
 	}
 }
 
-//////////////////////////////////////////
-
-//
+// DONE readJedecID()
+// Goal: Basic verification of communication: retrieving manufacturer ID.
+// * expected: 00 00 00 -> EF 17 9F
+// * actual: 00 00 00 -> EF 17 9F
 void test_readJedecID() {
 	uint8_t id_receiver[3];
 
@@ -159,7 +131,7 @@ void flash_readRegisterOne(uint8_t* register_one) {
   );
 }
 
-//DONE
+//See below
 void test_readRegisterOne() {
 	uint8_t register_one = 0;
 	printIndented("Empty register one:");
@@ -170,7 +142,10 @@ void test_readRegisterOne() {
 	printBinary(register_one);
 }
 
-//
+// DONE readRegisterOne(), writeEnable()
+// Goal: read registerOne. Verify writeEnable() functionality for page tests.
+// * expected: 00000000 -> 00000010
+// * actual: 00000000 -> 00000010
 void test_writeEnable() {
 	uint8_t register_one = 0;
 
