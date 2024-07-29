@@ -10,7 +10,7 @@
 
 #include "W25Q128JV.h"
 
-void* flash_findPage(uint32_t page) {
+	void* flash_findPage(uint32_t page) {
 	uint8_t block = page / FLASH_PAGES_PER_BLOCK;
 	page = page % FLASH_PAGES_PER_BLOCK;
 	uint8_t sector = page / FLASH_PAGES_PER_SECTOR;
