@@ -10,7 +10,7 @@
  * - Last updated: 07-29-24
  */
 
-//General helper functions
+// General helper functions
 void printBinary(uint8_t byte) {
 	for (int i = 7; i >= 0; i--) {
 		printMsg("%c", (byte & (1 << i)) ? '1' : '0');
@@ -29,13 +29,23 @@ void printBuf(uint8_t buf[], int size) {
 
 void printIndented(char* printme) {
 	printMsg("\n\r");
-	printMsg("%u", printme);
+	printMsg(printme);
 	printMsg("\n\r");
 }
 
 void fillBuf(uint8_t buf[], int size, int x) {
 	for (int i = 0; i < size; i++) {
 		buf[i] = x;
+	}
+}
+
+// fillBuf above only has one number, so it's not possible to see where pages break off.
+// Here, each page will be different. Used only for sector-sized buffers.
+void fillBuf_increment(uint8_t buf[]) {
+	for (int i = 0; i < 16; i++) {
+		for (int j = 0; j < 256; j++) {
+			buf[ (i * 256) + j] = i;
+		}
 	}
 }
 
@@ -85,7 +95,10 @@ void test_readJedecID() {
 	printMsg("\n\r");
 }
 
-//
+// DONE writePage()
+// Goal: Simultaneous verification of writePage(), readPage(). Difficult to do separately.
+// * Expected: first read -> full buffer of 256's (empty), second read -> full buffer of 5's
+// * Actual: matches
 void test_writePage(uint16_t page) {
 	uint8_t bufferWrite[FLASH_PAGE_SIZE];
 	uint8_t bufferRead_Before[FLASH_PAGE_SIZE];
@@ -107,7 +120,7 @@ void test_writePage(uint16_t page) {
 //
 void test_quadToggle() { }
 
-//Helper function to verifying flash_writeEnable()
+// Helper function to verifying flash_writeEnable()
 void flash_readRegisterOne(uint8_t* register_one) {
 	if (qspi_getStatus() == QSPI_BUSY) {
 		printMsg("BUSY");
@@ -131,7 +144,7 @@ void flash_readRegisterOne(uint8_t* register_one) {
   );
 }
 
-//See below
+// See below
 void test_readRegisterOne() {
 	uint8_t register_one = 0;
 	printIndented("Empty register one:");
@@ -173,8 +186,8 @@ void test_readRegisterTwo() {
 	printBinary(register_two);
 }
 
-//Helper function to test_readSector. Fills a sector incrementally.
-void testing_fillSector(uint16_t sector) {
+// Helper function to sector tests. Fills a sector incrementally.
+void fillSector(uint16_t sector) {
 	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
 
 	for (int i = 0; i < 16; i++) {
@@ -185,55 +198,24 @@ void testing_fillSector(uint16_t sector) {
 	}
 }
 
-//
-bool test_readSector(uint16_t sector) {
-	flash_eraseSector(sector);
-	testing_fillSector(sector);
-
-	uint8_t sectorBuffer[FLASH_SECTOR_SIZE];
-	flash_readSector(sector, sectorBuffer);
-
-	uint8_t pageBuffer[FLASH_PAGE_SIZE];
-	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
-
-	for (int i = 0; i < FLASH_PAGES_PER_SECTOR; i++, page++) {
-		flash_readPage(page, pageBuffer);
-		for (int j = 0; j < FLASH_PAGE_SIZE; j++) {
-			if ( pageBuffer[j] != sectorBuffer[i*FLASH_PAGE_SIZE+j] ) {
-				return false;
-			}
-		}
+// Goal: Validation of fillSector()
+// Expected: 16 pages printed; page 0: 00...0, page 1: 11...1, ..., page 15: 15 15... 15
+// Actual: matches
+void test_fillSector() {
+	flash_eraseSector(0);
+	fillSector(0);
+	uint8_t bufferMiso[256];
+	uint32_t page = 0;
+	for (int i = 0; i < 16; i++) {
+		flash_readPage(page+i, bufferMiso);
+		printBuf(bufferMiso, 256);
 	}
-	printBuf(sectorBuffer, FLASH_SECTOR_SIZE);
-	return true;
 }
 
-//
-bool test_writeSector(uint32_t sector) {
-  uint8_t bufferWrite_Sector[FLASH_SECTOR_SIZE];
-  uint8_t bufferRead_Sector_A[FLASH_SECTOR_SIZE];
-  uint8_t bufferRead_Sector_B[FLASH_SECTOR_SIZE];
-
-  flash_eraseSector(sector);
-  testing_fillSector(sector);
-  flash_readSector(sector, bufferRead_Sector_A);
-
-  fillBuf(bufferWrite_Sector, FLASH_SECTOR_SIZE, 6);
-  flash_eraseSector(sector);
-  flash_writeSector(sector, bufferWrite_Sector);
-  flash_readSector(sector, bufferRead_Sector_B);
-
-  for (int i = 0; i < FLASH_SECTOR_SIZE; i++) {
-	  if ( bufferRead_Sector_A[i] != bufferRead_Sector_B[i] ) {
-		  return false;
-	  }
-  }
-  printBuf(bufferRead_Sector_A, FLASH_SECTOR_SIZE);
-
-  return true;
-}
-
-//
+// DONE eraseSector()
+// Goal: Read a page, erase the sector, write a page, read that page.
+// Expected: All 3's on a freshly-written page, then all 256's (empty) after erase
+// Actual: matches
 bool test_eraseSector(uint16_t sector) {
 
 	uint8_t bufferWrite[FLASH_PAGE_SIZE];
@@ -255,6 +237,82 @@ bool test_eraseSector(uint16_t sector) {
 	printBuf(bufferRead_B, FLASH_PAGE_SIZE);
 
 	return true;
+}
+
+// DONE readSector()
+// Goal: Fill a sector, read it with readSector() and incrementally with pageRead().
+//       Compare each element of both. Print true if identical (more visible than returning it)
+//
+// Expected: "true" printed. (will print "false" on loop otherwise);
+//
+// Actual: printed "true"
+//
+bool test_readSector(uint16_t sector) {
+	flash_eraseSector(sector);
+	fillSector(sector);
+
+	uint8_t sectorBuffer[FLASH_SECTOR_SIZE];
+	flash_readSector(sector, sectorBuffer);
+
+	uint8_t pageBuffer[FLASH_PAGE_SIZE];
+	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
+
+	for (int i = 0; i < FLASH_PAGES_PER_SECTOR; i++) {
+		flash_readPage(page+i, pageBuffer);
+		for (int j = 0; j < FLASH_PAGE_SIZE; j++) {
+			if ( pageBuffer[j] != sectorBuffer[( i * FLASH_PAGE_SIZE) + j] ) {
+				printIndented("false");
+				return false;
+			}
+		}
+	}
+
+	printIndented("true");
+	return true;
+}
+
+//
+// Goal: Erase a sector, read it. Write a filled buffer to it, read it again.
+//		 Validate that the first read is empty. Validate that the second read is all filled.
+// Expected: First sector all 256's. Second sector all 6's.
+// Actual: Matches. Also, looks perfect on print. See "optional validation" below.
+//
+bool test_writeSector(uint32_t sector) {
+  uint8_t bufferWrite[FLASH_SECTOR_SIZE];
+  uint8_t bufferRead_A[FLASH_SECTOR_SIZE];
+  uint8_t bufferRead_B[FLASH_SECTOR_SIZE];
+
+  // Erase the sector, read it, write to it, read it again
+  flash_eraseSector(sector);
+  flash_readSector(sector, bufferRead_A);
+  fillBuf_increment(bufferWrite); // See notes on this function in helper function section
+  flash_writeSector(sector, bufferWrite);
+  flash_readSector(sector, bufferRead_B);
+
+  for (int i = 0; i < 4096; i++) {
+	  /* Optional verbose validation
+	  printMsg("%u", i);
+	  printMsg(" ");
+	  printMsg("%u", bufferRead_B[i]);
+	  printMsg(" ");
+	  printMsg("%u", bufferRead_A[i]);
+	  printMsg(" ");
+	  printMsg("\n\r");
+	  */
+	  if (bufferRead_A[i] != 255) { //0xFF
+		  printIndented("false");
+		  printMsg("\n\r");
+		  return false;
+	  }
+	  if (bufferRead_B[i] != (i / 256) ) { //written value
+		  printIndented("false");
+		  printMsg("\n\r");
+		  return false;
+	  }
+  }
+
+  printIndented("true");
+  return true;
 }
 
 void branch_main() {

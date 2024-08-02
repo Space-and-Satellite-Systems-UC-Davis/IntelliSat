@@ -34,10 +34,9 @@ bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
 	}
 	sector *= FLASH_SECTOR_SIZE; //convert to pages
 
-	for (int i = 0; i < 16; i++, sector++) {
+	for (int i = 0; i < 16; i++) {
 		flash_writeEnable();
-		flash_writePage(sector, buffer);
-		sector++;
+		flash_writePage(sector+i, buffer);
 		buffer += 256;
 	}
 
