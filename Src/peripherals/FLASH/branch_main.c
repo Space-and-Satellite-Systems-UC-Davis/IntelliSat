@@ -271,50 +271,76 @@ bool test_readSector(uint16_t sector) {
 	return true;
 }
 
-//
+// DONE writeSector()
 // Goal: Erase a sector, read it. Write a filled buffer to it, read it again.
 //		 Validate that the first read is empty. Validate that the second read is all filled.
 // Expected: First sector all 256's. Second sector all 6's.
 // Actual: Matches. Also, looks perfect on print. See "optional validation" below.
 //
 bool test_writeSector(uint32_t sector) {
-  uint8_t bufferWrite[FLASH_SECTOR_SIZE];
-  uint8_t bufferRead_A[FLASH_SECTOR_SIZE];
-  uint8_t bufferRead_B[FLASH_SECTOR_SIZE];
+	uint8_t bufferWrite[FLASH_SECTOR_SIZE];
+	uint8_t bufferRead_A[FLASH_SECTOR_SIZE];
+	uint8_t bufferRead_B[FLASH_SECTOR_SIZE];
 
-  // Erase the sector, read it, write to it, read it again
-  flash_eraseSector(sector);
-  flash_readSector(sector, bufferRead_A);
-  fillBuf_increment(bufferWrite); // See notes on this function in helper function section
-  flash_writeSector(sector, bufferWrite);
-  flash_readSector(sector, bufferRead_B);
+	// Erase the sector, read it, write to it, read it again
+	flash_eraseSector(sector);
+	flash_readSector(sector, bufferRead_A);
+	fillBuf_increment(bufferWrite); // See notes on this function in helper function section
+	flash_writeSector(sector, bufferWrite);
+	flash_readSector(sector, bufferRead_B);
 
-  for (int i = 0; i < 4096; i++) {
-	  /* Optional verbose validation
-	  printMsg("%u", i);
-	  printMsg(" ");
-	  printMsg("%u", bufferRead_B[i]);
-	  printMsg(" ");
-	  printMsg("%u", bufferRead_A[i]);
-	  printMsg(" ");
-	  printMsg("\n\r");
-	  */
-	  if (bufferRead_A[i] != 255) { //0xFF
-		  printIndented("false");
-		  printMsg("\n\r");
-		  return false;
-	  }
-	  if (bufferRead_B[i] != (i / 256) ) { //written value
-		  printIndented("false");
-		  printMsg("\n\r");
-		  return false;
-	  }
-  }
+	for (int i = 0; i < 4096; i++) {
+	/* Optional verbose validation
+	  	printMsg("%u", i);
+	 	printMsg(" ");
+	  	printMsg("%u", bufferRead_B[i]);
+	  	printMsg(" ");
+	  	printMsg("%u", bufferRead_A[i]);
+	  	printMsg(" ");
+	  	printMsg("\n\r");
+	*/
+		if (bufferRead_A[i] != 255) { //0xFF
+			printIndented("false");
+			printMsg("\n\r");
+			return false;
+		}
+		if (bufferRead_B[i] != (i / 256) ) { //written value
+			printIndented("false");
+			printMsg("\n\r");
+			return false;
+		}
+  	}
+	printIndented("true");
+	return true;
+}
 
-  printIndented("true");
-  return true;
+// DONE readCustom()
+// Goal: Erase a sector, write to it, read some random amount of bytes from it. Chose 1293 for this test.
+//       Compare output to readSector(). Return true if all elements match.
+// Expected: true
+// Actual: true
+bool test_readCustom(uint16_t size, uint16_t sector) {
+	uint8_t buffer_randomSize[size];
+	uint8_t buffer_sectorRead[4096];
+	uint8_t buffer_sectorWrite[4096];
+	fillBuf_increment(buffer_sectorWrite);
+
+	flash_eraseSector(sector);
+	flash_writeSector(sector, buffer_sectorWrite);
+	flash_readCustom(size, sector, buffer_randomSize);
+	flash_readSector(sector, buffer_sectorRead);
+
+	for (int i = 0; i < size; i++) {
+		if ( buffer_randomSize[i] != buffer_sectorRead[i] ) {
+			printIndented("false");
+			return false;
+		}
+	}
+	return true;
 }
 
 void branch_main() {
-
+	if ( test_readCustom(1293, 0) ) {
+		printIndented("true!");
+	}
 }

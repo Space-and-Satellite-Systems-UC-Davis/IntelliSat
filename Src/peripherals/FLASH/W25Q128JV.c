@@ -35,7 +35,6 @@ bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
 	sector *= FLASH_SECTOR_SIZE; //convert to pages
 
 	for (int i = 0; i < 16; i++) {
-		flash_writeEnable();
 		flash_writePage(sector+i, buffer);
 		buffer += 256;
 	}
@@ -167,10 +166,12 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 	flash_wait();
 	return true;
 }
-/*bool flash_readCustom(uint16_t size, uint16_t page, uint8_t* buffer) {
+
+bool flash_readCustom(uint16_t size, uint32_t page, uint8_t* buffer) {
 	if (qspi_getStatus() == QSPI_BUSY) {
-    	return 1;
+    	return false;
   	}
+
   	qspi_setCommand(
       	QSPI_FMODE_INDIRECT_READ,
       	QSPI_1_WIRE,
@@ -188,34 +189,37 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
       	0,
       	QSPI_TIMEOUT_PERIOD
   	);
-  //INCOMPLETE (?)
-  	return 1;
-}*/
 
-//terrible
-bool flash_writeCustom(uint16_t size, uint32_t page, uint8_t* buffer) {
+  	flash_wait();
+  	return true;
+}
+
+//another 2 AM banger
+bool flash_writeCustom(uint16_t size, uint32_t page, uint8_t* userBuffer) {
 	if (qspi_getStatus() == QSPI_BUSY) {
 		return false;
 	}
-	if (size > 256) {
-		uint8_t full_pages = size / 256;
-		for (; full_pages > 0; full_pages--) {
-			flash_writeEnable();
-			flash_writePage(page, buffer);
-			page++;
-			buffer += 256;
-		}
-		size = size % 256;
-		if (size == 0) { return 1; }
+	uint8_t i = 0;
+	for (; i < ( size / 256 ); i++) {
+		flash_writePage(page + i, userBuffer);
+		userBuffer += 256;
 	}
-	uint8_t temp_page[256] = { 0 };
-	for (int i = 0; size > 0; size--, buffer++, i++) {
-		temp_page[i] = *buffer;
+	if ( size % 256 != 0 ) {
+		uint8_t tailBuffer[256];
+		uint16_t index = ( (size / 256) * 256 );
+		for (uint8_t i = 0; i < 256; i++) {
+			if ( i <= ( size % 256) ) {
+				tailBuffer[i] = userBuffer[index + i];
+			}
+			else {
+				tailBuffer[i] = 255; //0xFF
+			}
+ 		}
+		flash_writePage(page + i + 1, tailBuffer);
 	}
-	flash_writeEnable();
-	flash_writePage(page, temp_page);
 
-	return 1;
+	flash_wait();
+	return true;
 }
 
 bool flash_writeEnable() {
