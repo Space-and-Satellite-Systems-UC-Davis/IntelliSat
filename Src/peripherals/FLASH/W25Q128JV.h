@@ -112,7 +112,7 @@ bool flash_eraseSector(uint16_t sector);
  *
  * @returns Whether read was successfully completed.
  */
-bool flash_readCustom(uint16_t size, uint32_t page, uint8_t* buffer);
+bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size);
 
 
 /**
@@ -123,7 +123,7 @@ bool flash_readCustom(uint16_t size, uint32_t page, uint8_t* buffer);
  * @param page     Page to start writing from. Do not use address.
  * @param buffer   Buffer to take data from. Ensure appropriate size (variable).
  */
-bool flash_writeCustom(uint16_t size, uint32_t page, uint8_t* buffer);
+bool flash_writeCustom(uint32_t page, uint8_t* buffer, uint16_t size);
 
 
 /**

@@ -18,18 +18,21 @@ void printBinary(uint8_t byte) {
 	printMsg("\n\r");
 }
 
-void printBuf(uint8_t buf[], int size) {
-	printMsg("\n\r");
-	for (int i = 0; i < size; i++) {
-		printMsg("%u", (unsigned int)buf[i]);
-		printMsg(" ");
-	}
-	printMsg("\n\r");
-}
-
 void printIndented(char* printme) {
 	printMsg("\n\r");
 	printMsg(printme);
+	printMsg("\n\r");
+}
+
+void printBuf(uint8_t buf[], int size) {
+	printMsg("\n\r");
+	for (int i = 0; i < size; i++) {
+		if (i % 256 == 0) {
+			printIndented("page break");
+		}
+		printMsg("%u", (unsigned int)buf[i]);
+		printMsg(" ");
+	}
 	printMsg("\n\r");
 }
 
@@ -319,6 +322,7 @@ bool test_writeSector(uint32_t sector) {
 //       Compare output to readSector(). Return true if all elements match.
 // Expected: true
 // Actual: true
+//
 bool test_readCustom(uint16_t size, uint16_t sector) {
 	uint8_t buffer_randomSize[size];
 	uint8_t buffer_sectorRead[4096];
@@ -327,7 +331,7 @@ bool test_readCustom(uint16_t size, uint16_t sector) {
 
 	flash_eraseSector(sector);
 	flash_writeSector(sector, buffer_sectorWrite);
-	flash_readCustom(size, sector, buffer_randomSize);
+	flash_readCustom(sector, buffer_randomSize, size);
 	flash_readSector(sector, buffer_sectorRead);
 
 	for (int i = 0; i < size; i++) {
@@ -339,8 +343,40 @@ bool test_readCustom(uint16_t size, uint16_t sector) {
 	return true;
 }
 
-void branch_main() {
-	if ( test_readCustom(1293, 0) ) {
-		printIndented("true!");
+// DONE writeCustom()
+// Goal: Erase a sector, write a variable amount of bytes to it. The buffer should have different
+//       values across pages to check that elements are correctly preserved across page breaks.
+//       A variety of buffer sizes should be tested.
+// Expected: If size < 256, should just partially write one page (remainder is FFh).
+//           If size > 256, should fill first page (4), then write second page with different values (5).
+//           If buffer is larger than size to be written, should write buffer partially.
+// Actual: All matches. Buffers of size 5 and 260 used. Buffer of size 1000, with 512 bytes written, used.
+//
+bool test_writeCustom(uint32_t page, uint32_t size) {
+	uint8_t bufferWrite_custom[size];
+	uint8_t bufferRead_sector[4096];
+
+	//custom fillBuf. I want to see if values in the tail are preserved
+	for (uint32_t i = 0; i < size; i++) {
+		if (i >= 256) {
+			bufferWrite_custom[i] = 5;
+		}
+		else {
+			bufferWrite_custom[i] = 4;
+		}
 	}
+	printBuf(bufferWrite_custom, size);
+
+	uint16_t sector = page / 16;
+	flash_eraseSector(sector);
+	flash_writeCustom(page, bufferWrite_custom, size);
+	flash_readSector(sector, bufferRead_sector);
+
+	printBuf(bufferRead_sector, 4096);
+
+	return true;
+}
+
+void branch_main() {
+// (your test here)
 }

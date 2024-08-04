@@ -34,7 +34,7 @@ bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
 	}
 	sector *= FLASH_SECTOR_SIZE; //convert to pages
 
-	for (int i = 0; i < 16; i++) {
+	for (uint8_t i = 0; i < 16; i++) {
 		flash_writePage(sector+i, buffer);
 		buffer += 256;
 	}
@@ -167,7 +167,7 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 	return true;
 }
 
-bool flash_readCustom(uint16_t size, uint32_t page, uint8_t* buffer) {
+bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
 	if (qspi_getStatus() == QSPI_BUSY) {
     	return false;
   	}
@@ -194,30 +194,30 @@ bool flash_readCustom(uint16_t size, uint32_t page, uint8_t* buffer) {
   	return true;
 }
 
-//another 2 AM banger
-bool flash_writeCustom(uint16_t size, uint32_t page, uint8_t* userBuffer) {
+bool flash_writeCustom(uint32_t page, uint8_t* userBuffer, uint16_t size) {
 	if (qspi_getStatus() == QSPI_BUSY) {
 		return false;
 	}
-	uint8_t i = 0;
-	for (; i < ( size / 256 ); i++) {
+	uint16_t pagesToWrite = size / 256;
+	uint16_t remainingBytes = size % 256;
+
+	for (uint16_t i = 0; i < pagesToWrite; i++) {
 		flash_writePage(page + i, userBuffer);
 		userBuffer += 256;
 	}
-	if ( size % 256 != 0 ) {
-		uint8_t tailBuffer[256];
-		uint16_t index = ( (size / 256) * 256 );
-		for (uint8_t i = 0; i < 256; i++) {
-			if ( i <= ( size % 256) ) {
-				tailBuffer[i] = userBuffer[index + i];
+
+	if ( remainingBytes > 0 ) {
+		uint8_t userBuffer_tail[256];
+		for (uint16_t j = 0; j < 256; j++) {
+			if ( j < remainingBytes ) {
+				userBuffer_tail[j] = userBuffer[j];
 			}
 			else {
-				tailBuffer[i] = 255; //0xFF
+				userBuffer_tail[j] = 0xFF;
 			}
- 		}
-		flash_writePage(page + i + 1, tailBuffer);
+		}
+		flash_writePage(page + pagesToWrite, userBuffer_tail);
 	}
-
 	flash_wait();
 	return true;
 }
