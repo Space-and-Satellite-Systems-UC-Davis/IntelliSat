@@ -117,7 +117,11 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size);
 
 /**
  * Writes a variable number of bytes.
+ * Note that it is possible to partially write a buffer with this function. e.g. writing 256 bytes of
+ * a 512-byte buffer.
  * WARNING - uses large amount of memory to execute. Max 256 bytes of RAM.
+ * Note that writing a multiple of 256 will not use extra internal memory (e.g. writing from a 512-byte
+ * buffer).
  *
  * @param size     # of bytes to write.
  * @param page     Page to start writing from. Do not use address.
