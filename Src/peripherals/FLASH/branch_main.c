@@ -7,10 +7,13 @@
  * - July 29, 2024
  * - Author: Anthony Surkov
  *
- * - Last updated: 07-29-24
+ * - Last updated: 08-04-2024
+ *
+ * This document is testing and documentation for the W25Q128JV FLASH memory interface.
  */
 
-// General helper functions
+// Below are general helper functions, for readability.
+// Print a byte in binary. Useful for visualizing status registers.
 void printBinary(uint8_t byte) {
 	for (int i = 7; i >= 0; i--) {
 		printMsg("%c", (byte & (1 << i)) ? '1' : '0');
@@ -18,12 +21,14 @@ void printBinary(uint8_t byte) {
 	printMsg("\n\r");
 }
 
+// Print some string, sandwiched between line indents.
 void printIndented(char* printme) {
 	printMsg("\n\r");
 	printMsg(printme);
 	printMsg("\n\r");
 }
 
+// Print an array with spaces between elements, marking every 256 bytes (pages).
 void printBuf(uint8_t buf[], int size) {
 	printMsg("\n\r");
 	for (int i = 0; i < size; i++) {
@@ -36,14 +41,15 @@ void printBuf(uint8_t buf[], int size) {
 	printMsg("\n\r");
 }
 
+// Fill an array with some integer x.
 void fillBuf(uint8_t buf[], int size, int x) {
 	for (int i = 0; i < size; i++) {
 		buf[i] = x;
 	}
 }
 
-// fillBuf above only has one number, so it's not possible to see where pages break off.
-// Here, each page will be different. Used only for sector-sized buffers.
+// fillBuf only uses one integer, so it's hard to tell where pages break off.
+// fillBuf_increment fills a sector-sized array with a page of 0's, 1's, 2's, ..., 15's.
 void fillBuf_increment(uint8_t buf[]) {
 	for (int i = 0; i < 16; i++) {
 		for (int j = 0; j < 256; j++) {
@@ -52,16 +58,18 @@ void fillBuf_increment(uint8_t buf[]) {
 	}
 }
 
+// clearBuf fills an array with FFh.
 void clearBuf(uint8_t buf[], int size) {
 	for (int i = 0; i < size; i++) {
-		buf[i] = 0;
+		buf[i] = 0xFF;
 	}
 }
 
-// DONE readJedecID()
+// DONE readJedecID(), rewritten 07.29.2024
 // Goal: Basic verification of communication: retrieving manufacturer ID.
-// * expected: 00 00 00 -> EF 17 9F
-// * actual: 00 00 00 -> EF 17 9F
+// * Expected: 00 00 00 -> EF 17 9F
+// * Actual: 00 00 00 -> EF 17 9F
+//
 void test_readJedecID() {
 	uint8_t id_receiver[3];
 
@@ -98,10 +106,11 @@ void test_readJedecID() {
 	printMsg("\n\r");
 }
 
-// DONE writePage()
+// DONE writePage(), rewritten 07.29.2024
 // Goal: Simultaneous verification of writePage(), readPage(). Difficult to do separately.
-// * Expected: first read -> full buffer of 256's (empty), second read -> full buffer of 5's
-// * Actual: matches
+// * Expected: First read, full read buffer of 0xFF (empty. Second read, full buffer of 5's.
+// * Actual: Matches.
+//
 void test_writePage(uint16_t page) {
 	uint8_t bufferWrite[FLASH_PAGE_SIZE];
 	uint8_t bufferRead_Before[FLASH_PAGE_SIZE];
@@ -120,10 +129,7 @@ void test_writePage(uint16_t page) {
 	printBuf(bufferRead_After, FLASH_PAGE_SIZE);
 }
 
-//
-void test_quadToggle() { }
-
-// Helper function to verifying flash_writeEnable()
+// Helper function for flash_writeEnable()
 void flash_readRegisterOne(uint8_t* register_one) {
 	if (qspi_getStatus() == QSPI_BUSY) {
 		printMsg("BUSY");
@@ -158,10 +164,11 @@ void test_readRegisterOne() {
 	printBinary(register_one);
 }
 
-// DONE readRegisterOne(), writeEnable()
-// Goal: read registerOne. Verify writeEnable() functionality for page tests.
-// * expected: 00000000 -> 00000010
-// * actual: 00000000 -> 00000010
+// DONE readRegisterOne(), writeEnable(). Rewritten 07.29.2024
+// Goal: Enable write. Read status register one.
+// * Expected: 00000000 -> 00000010
+// * Actual: 00000000 -> 00000010
+//
 void test_writeEnable() {
 	uint8_t register_one = 0;
 
@@ -176,16 +183,21 @@ void test_writeEnable() {
     printBinary(register_one);
 }
 
+// DONE readRegisterTwo(), quadEnable(), 08.04.2024
+// Goal: Enable quadSPI. Read status register two.
+// * Expected: 00000000 -> 00000010
+// * Actual: 00000000 -> 00000010
 //
-void test_readRegisterTwo() {
+void test_quadEnable() {
 	uint8_t register_two = 0;
 
-	printIndented("Empty register two:");
+	printIndented("Empty register_two variable:");
 	printBinary(register_two);
 
-	flash_readRegisterOne(&register_two);
+	flash_quadEnable();
+	flash_readRegisterTwo(&register_two);
 
-	printIndented("Full register two:");
+	printIndented("Read register two:");
 	printBinary(register_two);
 }
 
@@ -201,9 +213,11 @@ void fillSector(uint16_t sector) {
 	}
 }
 
-// Goal: Validation of fillSector()
-// Expected: 16 pages printed; page 0: 00...0, page 1: 11...1, ..., page 15: 15 15... 15
-// Actual: matches
+// DONE fillSector(), 08.01.2024
+// Goal: Validation of fillSector().
+// * expected: 16 pages printed; page 0: 00...0, page 1: 11...1, ..., page 15: 15 15... 15
+// * actual: matches
+//
 void test_fillSector() {
 	flash_eraseSector(0);
 	fillSector(0);
@@ -215,10 +229,11 @@ void test_fillSector() {
 	}
 }
 
-// DONE eraseSector()
+// DONE eraseSector() 08.01.2024
 // Goal: Read a page, erase the sector, write a page, read that page.
-// Expected: All 3's on a freshly-written page, then all 256's (empty) after erase
-// Actual: matches
+// * expected: All 3's on a freshly-written page, then all 256's (empty) after erase
+// * actual: matches
+//
 bool test_eraseSector(uint16_t sector) {
 
 	uint8_t bufferWrite[FLASH_PAGE_SIZE];
@@ -242,13 +257,12 @@ bool test_eraseSector(uint16_t sector) {
 	return true;
 }
 
-// DONE readSector()
+// DONE readSector(), 08.02.2024
 // Goal: Fill a sector, read it with readSector() and incrementally with pageRead().
 //       Compare each element of both. Print true if identical (more visible than returning it)
 //
-// Expected: "true" printed. (will print "false" on loop otherwise);
-//
-// Actual: printed "true"
+// * expected: "true" printed. (will print "false" on loop otherwise);
+// * actual: printed "true"
 //
 bool test_readSector(uint16_t sector) {
 	flash_eraseSector(sector);
@@ -274,11 +288,11 @@ bool test_readSector(uint16_t sector) {
 	return true;
 }
 
-// DONE writeSector()
+// DONE writeSector(), 08.03.2024
 // Goal: Erase a sector, read it. Write a filled buffer to it, read it again.
 //		 Validate that the first read is empty. Validate that the second read is all filled.
-// Expected: First sector all 256's. Second sector all 6's.
-// Actual: Matches. Also, looks perfect on print. See "optional validation" below.
+// * expected: First sector all 256's. Second sector all 6's.
+// * actual: Matches. Also, looks perfect on print. See "optional validation" below.
 //
 bool test_writeSector(uint32_t sector) {
 	uint8_t bufferWrite[FLASH_SECTOR_SIZE];
@@ -317,11 +331,11 @@ bool test_writeSector(uint32_t sector) {
 	return true;
 }
 
-// DONE readCustom()
-// Goal: Erase a sector, write to it, read some random amount of bytes from it. Chose 1293 for this test.
+// DONE readCustom(), 08.03.2024
+// Goal: Erase a sector, write to it, read some random amount of bytes from it.
 //       Compare output to readSector(). Return true if all elements match.
-// Expected: true
-// Actual: true
+// * expected: true
+// * actual: true
 //
 bool test_readCustom(uint16_t size, uint16_t sector) {
 	uint8_t buffer_randomSize[size];
@@ -343,7 +357,7 @@ bool test_readCustom(uint16_t size, uint16_t sector) {
 	return true;
 }
 
-// DONE writeCustom()
+// DONE writeCustom(), 08.04.2024
 // Goal: Erase a sector, write a variable amount of bytes to it. The buffer should have different
 //       values across pages to check that elements are correctly preserved across page breaks.
 //       A variety of buffer sizes should be tested.
@@ -377,6 +391,13 @@ bool test_writeCustom(uint32_t page, uint32_t size) {
 	return true;
 }
 
+// Note (08.04.2024): flash_wait() does not really need its own testing function. We know it works by
+//       judging the behavior of functions that rely on it. Prior to 07.28.2024, all functions were
+//       broken due to a mistaken reliance on qspi_wait() for timing; flash commands would overlap and
+//       return nonsense, since functions did not wait for system readiness before trying to write/read
+//       more. After flash_wait() was successfully implemented, successive reads and writes started
+//       working. So, flash_wait() must work.
+
 void branch_main() {
-// (your test here)
+	//your test function here
 }
