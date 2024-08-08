@@ -1,6 +1,3 @@
-#include "print_scan.h"
-#include "FLASH/W25Q128JV.h"
-
 /*
  * branch_main .c (FLASH testing)
  *
@@ -12,7 +9,14 @@
  * This document is testing and documentation for the W25Q128JV FLASH memory interface.
  */
 
-// Below are general helper functions, for readability.
+#include <stdio.h>
+#include <math.h>
+
+#include "FLASH/W25Q128JV.h"
+#include "print_scan.h"
+
+// General helper functions:
+
 // Print a byte in binary. Useful for visualizing status registers.
 void printBinary(uint8_t byte) {
 	for (int i = 7; i >= 0; i--) {
@@ -64,6 +68,29 @@ void clearBuf(uint8_t buf[], int size) {
 		buf[i] = 0xFF;
 	}
 }
+
+uint64_t getMean(uint64_t* data, uint16_t size) {
+	uint64_t mean = 0;
+	for (uint16_t i = 0; i < size; i++) {
+		mean += data[i];
+	}
+	return (mean / size);
+}
+
+uint64_t getVariance(uint64_t* data, uint16_t size, uint64_t mean) {
+    uint64_t variance = 0;
+    for (uint16_t i = 0; i < size; i++) {
+        uint64_t diff = data[i] - mean;
+        variance += diff * diff;
+    }
+    return variance / size;
+}
+
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+/*                              FUNCTION TESTS                               */
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
 
 // DONE readJedecID(), rewritten 07.29.2024
 // Goal: Basic verification of communication: retrieving manufacturer ID.
@@ -398,6 +425,37 @@ bool test_writeCustom(uint32_t page, uint32_t size) {
 //       more. After flash_wait() was successfully implemented, successive reads and writes started
 //       working. So, flash_wait() must work.
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+/*                              TIMING TESTS                                 */
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+// Timing tests were complete by either tracking getSysTime() for larger functions, or by manually
+// recording values from Logic2 software. In the latter case, this was done to achieve higher
+// fidelity where necessary, since getSysTime() only has millisecond precision, and many commands are
+// complete in <2 ms.
+// Note that the value of flash_wait() following each command's conclusion IS included in their
+// respective values.
+// Means and standard deviations were calculated for each data set.
+
+
+// DONE flash_writePage() - 15 data points manually recorded. 08.07.2024
+// MEAN:  2.2091 ms
+// STDEV: 0.00064 ms
+
+void time_writePage() {
+	uint8_t writeBuffer[256];
+	fillBuf(writeBuffer, 256, 1);
+
+	flash_eraseSector(20); flash_eraseSector(21);
+	printMsg("start"); //asynch serial helps demarcate commands
+
+	for (int i = 0; i < 30; i++) {
+		flash_writePage(i, writeBuffer);
+		printMsg(" ");
+	}
+}
+
 void branch_main() {
-	//your test function here
+	time_writePage();
 }
