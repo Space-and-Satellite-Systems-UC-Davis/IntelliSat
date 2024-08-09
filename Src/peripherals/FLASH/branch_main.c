@@ -432,17 +432,16 @@ bool test_writeCustom(uint32_t page, uint32_t size) {
 
 // Timing tests were complete by either tracking getSysTime() for larger functions, or by manually
 // recording values from Logic2 software. In the latter case, this was done to achieve higher
-// fidelity where necessary, since getSysTime() only has millisecond precision, and many commands are
-// complete in <2 ms.
-// Note that the value of flash_wait() following each command's conclusion IS included in their
-// respective values.
+// fidelity where necessary, since getSysTime() only has millisecond precision, and some commands are
+// complete in ~2 ms. Raw data is available as Sheets documentation.
+// Note that flash_wait(), writeEnable() are included in these timings.
 // Means and standard deviations were calculated for each data set.
 
 
 // DONE flash_writePage() - 15 data points manually recorded. 08.07.2024
 // MEAN:  2.2091 ms
 // STDEV: 0.00064 ms
-
+//
 void time_writePage() {
 	uint8_t writeBuffer[256];
 	fillBuf(writeBuffer, 256, 1);
@@ -450,12 +449,74 @@ void time_writePage() {
 	flash_eraseSector(20); flash_eraseSector(21);
 	printMsg("start"); //asynch serial helps demarcate commands
 
-	for (int i = 0; i < 30; i++) {
+	for (int i = 0; i < 15; i++) {
 		flash_writePage(i, writeBuffer);
 		printMsg(" ");
 	}
 }
 
+// DONE flash_readPage - 15 data points manually recorded. 08.08.2024
+// MEAN: 2.1041 ms
+// STDEV: 0.00078 ms
+//
+void time_readPage() {
+	uint8_t readBuffer[256];
+
+	printMsg("start");
+
+	for (int i = 0; i < 30; i++) {
+		flash_readPage(i, readBuffer);
+		printMsg(" ");
+	}
+}
+
+// DONE flash_readSector - 30 data points. 08.09.2024
+// MEAN: 32 ms
+// STDEV: 0 ms
+//
+void time_readSector() {
+	uint8_t readBuffer[4096];
+	uint64_t netTimes[30];
+
+	for (int i = 0; i < 30; i++) {
+		uint64_t timeOne = getSysTime();
+		flash_readSector(i, readBuffer);
+		uint64_t timeTwo = getSysTime();
+		netTimes[i] = timeTwo - timeOne;
+	}
+
+	uint64_t mean = getMean(netTimes, 30);
+	uint64_t variance = getVariance(netTimes, 30, mean);
+
+	printMsg("%lu\n", (unsigned long)mean);
+	printMsg("%lu\n", (unsigned long)variance);
+}
+
+// DONE flash_writeSector - 30 data points. 08.09.2024
+// MEAN: 37 ms
+// STDEV: 1.73 ms (variance 3 ms)
+//
+void time_writeSector() {
+	uint8_t writeBuffer[4096];
+	uint64_t netTimes[30];
+	fillBuf(writeBuffer, 4096, 1);
+	flash_eraseSector(0); flash_eraseSector(1);
+
+	for (int i = 0; i < 30; i++) {
+		uint64_t timeOne = getSysTime();
+		flash_writeSector(i, writeBuffer);
+		uint64_t timeTwo = getSysTime();
+		netTimes[i] = timeTwo - timeOne;
+	}
+
+	uint64_t mean = getMean(netTimes, 30);
+	uint64_t variance = getVariance(netTimes, 30, mean);
+
+	printMsg("%lu\n", (unsigned long)mean);
+	printMsg("%lu\n", (unsigned long)variance);
+}
+
+
 void branch_main() {
-	time_writePage();
+	//your function here
 }
