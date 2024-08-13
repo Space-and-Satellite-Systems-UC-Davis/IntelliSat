@@ -1,21 +1,18 @@
 /*
- * branch_main .c (FLASH testing)
+ * branch_main.c (FLASH testing)
  *
  * - July 29, 2024
  * - Author: Anthony Surkov
  *
- * - Last updated: 08-04-2024
+ * - Last updated: 08-09-24
  *
  * This document is testing and documentation for the W25Q128JV FLASH memory interface.
  */
 
-#include <stdio.h>
-#include <math.h>
-
 #include "FLASH/W25Q128JV.h"
 #include "print_scan.h"
 
-// General helper functions:
+// ***************** General helper functions. *****************//
 
 // Print a byte in binary. Useful for visualizing status registers.
 void printBinary(uint8_t byte) {
