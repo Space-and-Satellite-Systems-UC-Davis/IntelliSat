@@ -1,10 +1,10 @@
 /*
  * W25Q128JV.h (FLASH interface)
  *
- * - December 3, 2023
- *    Author: Anthony Surkov
+ * December 3, 2023
+ *   Author: Anthony Surkov
  *
- * Most recently updated 07-18-24 for reorganization
+ * Last updated: 07-18-24
  */
 
 #ifndef REALOP1_PERIPHERALS_FLASH_H_

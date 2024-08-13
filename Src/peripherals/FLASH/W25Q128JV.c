@@ -1,11 +1,10 @@
 /*
  * W25Q128JV.c (FLASH interface)
  *
- * - December 3, 2023
- * - Author: Anthony Surkov
+ * December 3, 2023
+ *   Author: Anthony Surkov
  *
- * - Last updated: 07-28-24
- * SUBJECT TO CHANGE; WIP
+ * Last updated: 07-28-24
  */
 
 #include "W25Q128JV.h"
