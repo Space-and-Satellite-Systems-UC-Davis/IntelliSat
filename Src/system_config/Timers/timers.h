@@ -49,8 +49,12 @@ void pwm_setDutyCycle(uint8_t percent);
 /**
  * Initializes the Heartbeat LED Timer (the Systck). 
  * Configures it to tick every ms.
+ *
+ * @param run_scheduler If set to true, the IntelliSat Scheduler will be
+ *        call by the Systick
+ * @returns none
 */
-void systick_init();
+void systick_init(bool run_scheduler);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
