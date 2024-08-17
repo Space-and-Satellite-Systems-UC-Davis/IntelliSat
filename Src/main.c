@@ -1,26 +1,33 @@
 #include <print_scan.h>
 #include "platform_init.h"
 
-#ifdef BUILD_TEST
-	void branch_main();
-#endif
+#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
+
+#include <TestDefinition.h>
 
 int main() {
     init_init();
-    
-    //TODO: use RTC first_time flag.
-    //if (first_time) {
-    //  init_first_time()
-    //}
+    init_platform(!RUN_TEST);
+    // ^ don't want to run the Scheduler in case we are running other tests
 
-	init_platform();
+#if (RUN_TEST==1) && (TEST_ID != 0)
 
-#ifdef BUILD_TEST
-	branch_main();
-#else
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
+
+    #else
+
+	//TODO: use RTC first_time flag.
+	//if (first_time) {
+	//  init_first_time()
+	//}
+
 	while (1) {
 		continue;
 	}
+
 #endif
 
 }

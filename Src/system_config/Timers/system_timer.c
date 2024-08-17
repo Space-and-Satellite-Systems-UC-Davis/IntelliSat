@@ -33,19 +33,16 @@ uint64_t getSysTime() {
 /*                                 SYSTICK                                   */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-/**
- * Starts the Systick, responsible for the global timer & the the blinking
- * of the status LEDs.
- *
- * @param   None
- * @returns None
- */
-void systick_init() {
+bool _run_scheduler;
+
+void systick_init(bool run_scheduler) {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
 	SysTick->CTRL = 0x3;
 	NVIC_EnableIRQ(SysTick_IRQn);
+
+	_run_scheduler = run_scheduler;
 }
 
 
@@ -60,5 +57,7 @@ void systick_init() {
 void SysTick_Handler() {
 	systick_time++;
 	blinky();
-	// scheduler();
+	if (_run_scheduler == true) {
+		// scheduler();
+	}
 }
