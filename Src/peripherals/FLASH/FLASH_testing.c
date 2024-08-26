@@ -97,13 +97,6 @@ uint64_t getVariance(uint64_t* data, uint16_t size, uint64_t mean) {
 void test_readJedecID() {
 	uint8_t id_receiver[3];
 
-	printMsg("Empty ID receiver: \n\r");
-	for (int i = 0; i < 3; i++) {
-		printMsg("%02x", (unsigned int)id_receiver[i]);
-		printMsg(" ");
-	}
-	printMsg("\n\r");
-
 	qspi_setCommand(
 	    QSPI_FMODE_INDIRECT_READ, //read
 	    QSPI_1_WIRE, //1 wire for instruction
@@ -122,12 +115,7 @@ void test_readJedecID() {
 	    QSPI_TIMEOUT_PERIOD
 	);
 
-	printMsg("Full ID receiver: \n\r");
-	for (int i = 0; i < 3; i++) {
-	 	printMsg("%02x", (unsigned int)id_receiver[i]);
-	 	printMsg(" ");
-	}
-	printMsg("\n\r");
+  return (id_receiver == 0xEF4018);
 }
 
 // DONE writePage(), rewritten 07.29.2024
@@ -435,6 +423,22 @@ bool test_writeCustom(uint32_t page, uint32_t size) {
 // Means and standard deviations were calculated for each data set.
 
 
+// DONE flash_readPage - 15 data points manually recorded. 08.08.2024
+// MEAN: 2.1041 ms
+// STDEV: 0.00078 ms
+//
+void time_readPage() {
+	uint8_t readBuffer[256];
+
+	printMsg("start");
+
+	for (int i = 0; i < 30; i++) {
+		flash_readPage(i, readBuffer);
+		printMsg(" ");
+	}
+}
+
+
 // DONE flash_writePage() - 15 data points manually recorded. 08.07.2024
 // MEAN:  2.2091 ms
 // STDEV: 0.00064 ms
@@ -452,20 +456,6 @@ void time_writePage() {
 	}
 }
 
-// DONE flash_readPage - 15 data points manually recorded. 08.08.2024
-// MEAN: 2.1041 ms
-// STDEV: 0.00078 ms
-//
-void time_readPage() {
-	uint8_t readBuffer[256];
-
-	printMsg("start");
-
-	for (int i = 0; i < 30; i++) {
-		flash_readPage(i, readBuffer);
-		printMsg(" ");
-	}
-}
 
 // DONE flash_readSector - 30 data points. 08.09.2024
 // MEAN: 32 ms
@@ -513,7 +503,30 @@ void time_writeSector() {
 	printMsg("%lu\n", (unsigned long)variance);
 }
 
+void testFunction_FLASH() {
+  const int num_tests = 10;
+  bool test_results[num_tests];
 
-void branch_main() {
-	//your function here
+  const char *test_names[] = { "Test: readJedecID()", "Test: writeEnable()",
+                               "Test: readRegisterOne()", "Test: quadEnable()",
+                               "Test: eraseSector()", "Test: writePage()",
+                               "Test: readSector()", "Test: writeSector()",
+                               "Test: readCustom()", "Test: writeCustom()" }
+
+  test_results[0] = test_readJedecID();
+  test_results[1] = test_writeEnable();
+  test_results[2] = test_readRegisterOne();
+  test_results[3] = test_quadEnable();
+  test_results[4] = test_eraseSector();
+  test_results[5] = test_writePage();
+  test_results[6] = test_readSector();
+  test_results[7] = test_writeSector();
+  test_results[8] = test_readCustom();
+  test_results[9] = test_writeCustom();
+
+  printIndented("FLASH Core Tests");
+  for (int i = 0; i < 10; i++) {
+      printMsg("%s: %s\n", test_names[i], test_results[i] ? "GOOD" : "FAIL");
+  }
 }
+
