@@ -11,7 +11,8 @@
  */
 
 #include "FLASH/W25Q128JV.h"
-#include "print_scan.h"
+#include <globals.h>
+#include <print_scan.h>
 
 // Defines for test parameters.
 #define FLASH_NUM_TESTS     9
