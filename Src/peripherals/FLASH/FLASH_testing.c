@@ -146,8 +146,8 @@ bool page_isClear(uint32_t page) {
 
 // DONE readJedecID(). Updated 08.31.24
 // Goal: Basic verification of communication: retrieving manufacturer ID.
-// * Expected: 00 00 00 -> EF 17 9F
-// * Actual: 00 00 00 -> EF 17 9F
+// * Expected: 00 00 00 -> EF 40 18
+// * Actual: 00 00 00 -> EF 40 18
 //
 bool test_readJedecID() {
 	uint8_t id_receiver[3];
@@ -585,7 +585,7 @@ void testFunction_FLASH() {
 /*                               DEPRECATED                                  */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-// DONE fillSector(), 08.01.2024
+// DONE fillSector(). Updated 08.01.24
 // Goal: Validation of fillSector(). Deprecated. Not part of testFunction_FLASH().
 // * expected: 16 pages printed; page 0: 00...0, page 1: 11...1, ..., page 15: 15 15... 15
 // * actual: matches
