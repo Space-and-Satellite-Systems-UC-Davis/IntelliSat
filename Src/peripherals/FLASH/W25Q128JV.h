@@ -42,12 +42,11 @@
 
 /**
  * Converts a page number (0 ~ 65535) to its memory address in the FLASH.
- * Specifying a page greater than 65535 will override page 65535.
- * Specifying a page less than 0 will override page 0.
+ * Specifying a page greater than 65535 or less than 0 will return nullptr.
  *
  * @returns Void pointer to the address.
  */
-void* flash_findPage(uint32_t page);
+uint32_t flash_getPageAddr(uint32_t page);
 
 
 /**
