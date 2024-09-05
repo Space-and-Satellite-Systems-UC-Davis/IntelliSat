@@ -9,19 +9,11 @@
 
 #include "W25Q128JV.h"
 
-	void* flash_findPage(uint32_t page) {
-	uint8_t block = page / FLASH_PAGES_PER_BLOCK;
-	page = page % FLASH_PAGES_PER_BLOCK;
-	uint8_t sector = page / FLASH_PAGES_PER_SECTOR;
-	page = page % FLASH_PAGES_PER_SECTOR;
-
-	void* memPtr = (uint32_t*) (
-			(block * FLASH_BLOCK_SIZE) +
-			(sector * FLASH_SECTOR_SIZE) +
-			(page * FLASH_PAGE_SIZE)
-	);
-
-	return memPtr;
+uint32_t flash_getPageAddr(uint32_t page) {
+  if (page > FLASH_MAX_PAGE) { //MIN check not needed. Not possible with uint32_t
+    return NULL;
+  }
+  return (uint32_t) (page * FLASH_PAGE_SIZE);
 }
 
 bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
@@ -48,7 +40,10 @@ bool flash_readSector(uint16_t sector, uint8_t* buffer) {
 	}
 
 	uint32_t page = sector * FLASH_PAGES_PER_SECTOR; //convert sector to pages
-	uint32_t address = (uint32_t)flash_findPage(page);
+	uint32_t address = flash_getPageAddr(page);
+	if (address == NULL) {
+		return false;
+	}
 
 	qspi_setCommand(
 		QSPI_FMODE_INDIRECT_READ, //Instruction type
@@ -79,8 +74,11 @@ bool flash_eraseSector(uint16_t sector) {
 	if (sector > FLASH_MAX_SECTOR) {
 		return false;
 	}
-	sector *= FLASH_PAGES_PER_SECTOR;
-	uint32_t address = (uint32_t)flash_findPage(sector);
+	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
+	uint32_t address = flash_getPageAddr(page);
+	if (address == NULL) {
+		return false;
+	}
 
 	flash_writeEnable();
 
@@ -111,7 +109,10 @@ bool flash_writePage(uint16_t page, uint8_t* buffer) {
 		return false;
 	}
 
-	uint32_t address = (uint32_t)flash_findPage(page);
+	uint32_t address = flash_getPageAddr(page);
+	if (address == NULL) {
+		return false;
+	}
 
 	flash_writeEnable();
 
@@ -142,7 +143,10 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 		return false;
 	}
 
-	uint32_t address = (uint32_t)flash_findPage(page);
+	uint32_t address = flash_getPageAddr(page);
+	if (address == NULL) {
+		return false;
+	}
 
 	qspi_setCommand(
 		QSPI_FMODE_INDIRECT_READ,
@@ -171,6 +175,11 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
     	return false;
   	}
 
+	uint32_t address = flash_getPageAddr(page);
+	if (address == NULL) {
+		return false;
+	}
+
   	qspi_setCommand(
       	QSPI_FMODE_INDIRECT_READ,
       	QSPI_1_WIRE,
@@ -182,7 +191,7 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
   	);
   	qspi_sendCommand(
       	QSPI_READ_DATA,
-      	(uint32_t)flash_findPage(page),
+      	address,
       	size,
       	buffer,
       	0,
