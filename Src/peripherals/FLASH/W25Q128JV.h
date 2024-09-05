@@ -18,6 +18,7 @@
 #define QSPI_WRITE_REGISTER_TWO   0x31
 #define QSPI_QUAD_REGISTER        0b00000010
 #define QSPI_WRITE_ENABLE         0x06
+#define QSPI_WRITE_DISABLE        0x04
 #define QSPI_WRITE_REGISTER       0b00000010
 #define QSPI_READ_DATA            0x03
 #define QSPI_PAGE                 0x02
@@ -119,7 +120,7 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size);
  * Writes a variable number of bytes.
  * Note that it is possible to partially write a buffer with this function. e.g. writing 256 bytes of
  * a 512-byte buffer.
- * WARNING - uses large amount of memory to execute. Max 256 bytes of RAM.
+ * WARNING - may use a large amount of memory to execute. Max 256 bytes of RAM.
  * Note that writing a multiple of 256 will not use extra internal memory (e.g. writing from a 512-byte
  * buffer).
  *
@@ -132,7 +133,7 @@ bool flash_writeCustom(uint32_t page, uint8_t* buffer, uint16_t size);
 
 /**
  * Writes '1' to write_enable bit on register one. i.e. enables write functionality.
- * Is already built into functions that need it. Generally, do not use.
+ * Is already built into functions that need it. Generally, do not use manually.
  *
  * @returns whether write was successfully enabled.
  */
@@ -140,8 +141,15 @@ bool flash_writeEnable();
 
 
 /**
+ * Writes '0' to write_enable bit on register one. i.e. disables write functionality.
+ *
+ * @returns whether write was successfully disabled.
+ */
+bool flash_writeDisable();
+
+/**
  * Writes '1' to quad_enable bit on register two. i.e. enables QSPI functionality.
- * Is mostly unnecessary for currently written functions (07-28-24).
+ * Is mostly unnecessary for currently written functions (2024-09-04).
  *
  * @returns whether QSPI was successfully enabled.
  */
