@@ -16,8 +16,8 @@
 
 // Defines for test parameters.
 #define FLASH_NUM_TESTS     9
-#define FLASH_TEST_PAGE     0
-#define FLASH_TEST_SECTOR   0
+#define FLASH_TEST_PAGE     385 // Only change me!
+#define FLASH_TEST_SECTOR   (FLASH_TEST_PAGE / 16)
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                            HELPER FUNCTIONS                               */
@@ -117,8 +117,9 @@ void flash_readRegisterOne(uint8_t* register_one) {
 }
 
 // Helper function to sector tests. Fills a sector incrementally.
-void fillSector(uint16_t sector) {
-	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
+void fillTestSector() {
+	uint16_t sector = FLASH_TEST_SECTOR;
+	uint32_t page = sector * 16;
 
 	for (int i = 0; i < 16; i++) {
 		uint8_t bufferWrite[FLASH_PAGE_SIZE];
@@ -194,8 +195,10 @@ bool test_writeEnable() {
 
 	flash_readRegisterOne(&register_one);
 	if ((register_one >> 1) & 1) {
-		printMsg("writeEnable: register already set to 1\n\r");
-		return false;
+		printMsg("writeEnable: register already set to 1. Trying writeDisable()\n\r");
+		if (flash_writeDisable()) {
+			printMsg("writeEnable: writeDisable OK\n\r");
+		}
 	}
 
 	flash_writeEnable();
@@ -264,7 +267,7 @@ bool test_writePage() {
 //
 bool test_eraseSector() {
 	uint16_t sector = FLASH_TEST_SECTOR;
-	uint32_t page = sector / 16;
+	uint32_t page = sector * 16;
 
 	bool allPagesClear = true;
 	for (int i = 0; i < 16; i++) {
@@ -310,20 +313,20 @@ bool test_eraseSector() {
 //
 bool test_readSector() {
 	uint16_t sector = FLASH_TEST_SECTOR;
-	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
+	uint32_t page = sector * 16;
 
 	uint8_t sectorBuffer[FLASH_SECTOR_SIZE];
 	uint8_t pageBuffer[FLASH_PAGE_SIZE];
 
 	flash_eraseSector(sector);
-	fillSector(sector);
+	fillTestSector();
 	flash_readSector(sector, sectorBuffer);
 
 	for (uint8_t i = 0; i < FLASH_PAGES_PER_SECTOR; i++) {
 		flash_readPage(page+i, pageBuffer);
 		for (uint16_t j = 0; j < FLASH_PAGE_SIZE; j++) {
 			if ( pageBuffer[j] != sectorBuffer[( i * FLASH_PAGE_SIZE) + j] ) {
-				printMsg("fatal: readSector output does not match readPage output\n\r");
+				printMsg("fatal: readSector output does not match readPage output on page %u, byte %u\n\r", i, j);
 				return false;
 			}
 		}
@@ -371,7 +374,7 @@ bool test_writeSector() {
 //
 bool test_readCustom() {
 	uint16_t sector = FLASH_TEST_SECTOR;
-	uint32_t page = sector / 16;
+	uint32_t page = sector * 16;
 
 	uint8_t buffer_customSize[500]; //arbitrary size
 	uint8_t buffer_sectorRead[FLASH_SECTOR_SIZE];
@@ -389,12 +392,12 @@ bool test_readCustom() {
 	}
 
 	flash_writeSector(sector, buffer_sectorWrite);
-	flash_readCustom(sector, buffer_customSize, 500);
+	flash_readCustom(page, buffer_customSize, 500);
 	flash_readSector(sector, buffer_sectorRead);
 
 	for (uint32_t i = 0; i < 500; i++) {
 		if ( buffer_customSize[i] != buffer_sectorRead[i] ) {
-			printMsg("fatal: custom read output does not match readSector output\n\r");
+			printMsg("fatal: readCustom != readSector output on byte %u\n\r", i);
 			return false;
 		}
 	}
@@ -414,7 +417,7 @@ bool test_readCustom() {
 //dev note: replace architecture to not need size, sector fxn arguments
 bool test_writeCustom() {
 	uint16_t sector = FLASH_TEST_SECTOR;
-	uint32_t page = sector / 16;
+	uint32_t page = sector * 16;
 
 	uint8_t buffer_customWrite[500]; //arbitrary size
 	uint8_t buffer_sectorRead[FLASH_SECTOR_SIZE];
@@ -436,13 +439,13 @@ bool test_writeCustom() {
 	for (uint32_t i = 0; i < FLASH_SECTOR_SIZE; i++) {
 		if (i < 500) {
 			if (buffer_sectorRead[i] != buffer_customWrite[i]) {
-				printMsg("fatal: custom write page does not match sector read output");
+				printMsg("fatal: custom write page does not match sector read output\n\r");
 				return false;
 			}
 		}
 		if (i >= 500) {
 			if (buffer_sectorRead[i] != 0xFF) {
-				printMsg("unexpected: unwritten remainder of sector returned nonzero value");
+				printMsg("unexpected: unwritten remainder of sector returned nonzero value\n\r");
 				return false;
 			}
 		}
@@ -571,6 +574,7 @@ void testFunction_FLASH() {
 
   printMsg("\n\r");
   printIndented("FLASH Core Tests");
+  printMsg("Page is %u and sector is %u\n\r", FLASH_TEST_PAGE, FLASH_TEST_SECTOR);
   printMsg("\n\r");
 
   for (uint8_t i = 0; i < FLASH_NUM_TESTS; i++) {
@@ -611,6 +615,33 @@ bool test_readRegisterOne() {
 
 	printIndented("Full register one:");
 	printBinary(register_one);
+
+	return true;
+}
+
+
+// DONE writeDisable(). 09.04.24
+// Goal: Disable write. Deprecated. Function not used outside of test_writeEnable().
+// * Expected: 00000010 -> 00000000
+// * Actual: 00000000 -> 00000000
+bool test_writeDisable() {
+	uint8_t register_one = 0;
+
+	flash_readRegisterOne(&register_one);
+	if (!((register_one >> 1) & 1)) {
+		printMsg("test_writeDisable: write is not enabled");
+		if ( flash_writeEnable() ) {
+			printMsg("test_writeDisable: flash_writeEnable OK\n\r");
+		}
+	}
+
+	flash_writeDisable();
+
+	flash_readRegisterOne(&register_one);
+	if ((register_one >> 1) & 1) {
+		printMsg("test_writeDisable: flash_writeDisable did not set register one to xxxxxx0x\n\r");
+		return false;
+	}
 
 	return true;
 }
