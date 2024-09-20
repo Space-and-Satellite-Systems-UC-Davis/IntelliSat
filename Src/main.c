@@ -40,7 +40,9 @@ int is_unlimited_tick;
 struct sigaction sysTick;
 struct itimerval sysTick_timer;
 
-uint32_t main_stack_frame[16];
+uint32_t main_stack_frame[32];
+volatile uint32_t main_PC;
+
 
 /* Prototypes */
 void sysTickHandler(int signal);
@@ -168,14 +170,36 @@ int branch_main() {
     /* Start sys timer */
     setitimer(ITIMER_REAL, &sysTick_timer, NULL);
     #else
+//    asm volatile(
+//		"CPSID i\n"                   // Disable interrupts
+//		"MRS R0, MSP\n"
+//		"STMIA R0, {R0-R3, R12, LR}\n"
+//		"LDR R0, =main_stack_frame\n"
+//		"STMIA R0!, {R4-R11}\n"
+//		"CPSIE i\n"                   // Enable interrupts
+//    );
+//    asm volatile(
+////        "CPSID i\n"                   // Disable interrupts
+//        "MRS R0, MSP\n"               // Get the Main Stack Pointer (MSP)
+//        "STMIA R0, {R0-R3, R12, LR}\n"// Save registers R0-R3, R12, LR to the stack
+//        "LDR R1, =main_stack_frame\n" // Load the address of the main stack frame
+//        "STMIA R1!, {R4-R11}\n"       // Save registers R4-R11 to the main stack frame
+//        "MOV R1, LR\n"                // Move the value of LR (which may be an exception return value) to R1
+//        "STMIA R0!, {R1}\n"           // Store the LR value in the place where PC would be restored from
+////        "CPSIE i\n"                   // Enable interrupts
+//    );
     asm volatile(
-		"CPSID i\n"                   // Disable interrupts
-		"MRS R0, MSP\n"
-		"STMIA R0, {R0-R3, R12, LR}\n"
-		"LDR R0, =main_stack_frame\n"
-		"STMIA R0!, {R4-R11}\n"
-		"CPSIE i\n"                   // Enable interrupts
+        "CPSID i\n"                    // Disable interrupts
+        "MRS R0, MSP\n"                // Get the Main Stack Pointer (MSP)
+        "STMIA R0, {R0-R3, R12, LR}\n" // Save registers R0-R3, R12, LR to the stack
+        "LDR R1, =main_stack_frame\n"  // Load the address of the main stack frame
+        "STMIA R1!, {R4-R11}\n"        // Save registers R4-R11 to the main stack frame
+        "MOV R1, LR\n"                 // Move the value of LR to R1
+        "LDR R2, =main_PC\n"           // Load the address of main_PC
+        "STR R1, [R2]\n"               // Store the value of LR into main_PC
+        "CPSIE i\n"                    // Enable interrupts
     );
+
     setjmp(to_mode_select); // SWITCH FOR Hardware Intellisat
     //TODO: Start hardware timer
     #endif
@@ -196,7 +220,8 @@ int branch_main() {
 
         currTask.configPtr();
         currTask.runPtr();  // delay_ms(rand) done here
-	    CLR_BIT(flagBits.modeBits, currTask.task_id);
+        
+	    CLR_BIT(flagBits.modeBits, currTask.task_id); // Remove once implemented in cleanup
 
         //printMsg("Task %d is successful.\n", currTask.task_id);
 

@@ -47,7 +47,7 @@ bool eccTime() {
 /* Scheduling methods */
 bool lowPwrTime() {
     // return !(rand() % 101);
-    return false;
+    return true;
 }
 bool detumbleTime() {
     // return !(rand() % 4);
@@ -63,8 +63,8 @@ bool commsTime() {
 // }
 int experimentTime() {
     // return !(rand() % 4);
-    return ADCS_recommend_mode();
-    // return 0;
+//    return ADCS_recommend_mode();
+     return 0;
 }
 bool eccTime() {
     // return !(rand() % 4);
@@ -102,7 +102,8 @@ void lowPwr() {
     // printMsg("Run 'charging'\n");
 
     led_dx(0, 1);
-    delay_ms( ((rand() % 11) * 100) + 10 );
+//    delay_ms( ((rand() % 11) * 100) + 10 );
+    delay_ms(1000);
 }
     // Run method for detumble
 void detumble() {
@@ -110,7 +111,8 @@ void detumble() {
     // printMsg("Run 'detumble'\n");
 
     led_dx(1, 1);
-    delay_ms( ((rand() % 11) * 100) + 10 );
+//    delay_ms( ((rand() % 11) * 100) + 10 );
+    delay_ms(1000);
 }
 void comms() {
     // Run method for comms
@@ -118,23 +120,25 @@ void comms() {
 
     led_dx(2, 1);
 //    delay_ms( ((rand() % 11) * 100) + 10 );
-    delay_ms(100);
+    delay_ms(1000);
 }
 void experiment() {
     // Run method for experiment
     // printMsg("Run 'experiment'\n");
 
     led_dx(3, 1);
-    ADCS_MAIN(taskTable[4].func1);
+//    ADCS_MAIN(taskTable[4].func1);
 
-    delay_ms( ((rand() % 11) * 100) + 10 );
+//    delay_ms( ((rand() % 11) * 100) + 10 );
+    delay_ms(1000);
 }
 void ecc() {
     // Run method for ecc
     // printMsg("Run 'ecc'\n");
 
     led_dx(4, 1);
-    delay_ms( ((rand() % 11) * 100) + 10 );
+//    delay_ms( ((rand() % 11) * 100) + 10 );
+    delay_ms(1000);
 }
 void idle() {
     // printMsg("Run Idle\n");

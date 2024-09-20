@@ -21,12 +21,12 @@
 // TODO: update ECC mode based on discussions with ELEC
 // RS - system, Hamming codes on Idle
 struct Task taskTable[] = {
-	{LOWPWR, 10000, configLowPwr, lowPwr, cleanLowPwr, 0},                  // Func1 - N/A
-	{DETUMBLE, 5, configDetumble, detumble, cleanDetumble, 0},           // Func1 - N/A
-	{COMMS, 5, configComms, comms, cleanComms, 0},                        // Func1 - N/A
-    {ECC, 200, configEcc, ecc, cleanEcc, 0},                                // Func1 - N/A
-    {EXPERIMENT, 200, configExperiment, experiment, cleanExperiment, 0},    // Func1 - Experiment ID (0 for none)
-    {IDLE, 200, configIdle, idle, cleanIdle, 0}                             // Func1 - N/A
+	{LOWPWR, 6, configLowPwr, lowPwr, cleanLowPwr, 0},                  // Func1 - N/A
+	{DETUMBLE, 6, configDetumble, detumble, cleanDetumble, 0},           // Func1 - N/A
+	{COMMS, 6, configComms, comms, cleanComms, 0},                        // Func1 - N/A
+    {ECC, 6, configEcc, ecc, cleanEcc, 0},                                // Func1 - N/A
+    {EXPERIMENT, 6, configExperiment, experiment, cleanExperiment, 0},    // Func1 - Experiment ID (0 for none)
+    {IDLE, 6, configIdle, idle, cleanIdle, 0}                             // Func1 - N/A
 };
 
 volatile struct Task currTask;
@@ -215,10 +215,9 @@ void rollback(void) {
         "LDMIA R0!, {R4-R11}\n"      // Restore main function context
         "LDMIA R0, {R0-R3, R12, LR}\n"
         "MOV SP, R0\n"
+    	"BX LR\n"
     );
-    asm volatile (
-            "BX LR\n"
-    );
+
 }
 
 /**
@@ -271,13 +270,11 @@ void scheduler() {
 				"MRS R0, MSP\n"
 				"STMIA R0, {R0-R3, R12, LR}\n"
 				"BL rollback\n"
+                "CPSIE i\n"
              );
-             asm volatile (
-            		 "CPSIE i\n"
-            		 );
+             
              longjmp(to_mode_select, 1); // SWITCH FOR HARDWARE INTEGRATION
         }
-        scheduler_counter = 0;
 
         //unblock_signal();
     }
@@ -290,16 +287,39 @@ void scheduler() {
         task_counter = 0;
         //kill
         cleanup_handler(0b01, currTask.task_id);
-        asm volatile(
-        				"CPSID i\n"                   // Disable interrupts
-        				"PUSH {R4-R11}\n"             // Save the context of current function
-        				"LDR R0, =main_stack_frame\n"
-        				"STMIA R0!, {R4-R11}\n"       // Save the context of main function
-        				"MRS R0, MSP\n"
-        				"STMIA R0, {R0-R3, R12, LR}\n"
-        				"BL rollback\n"
-        				"CPSIE i\n"                   // Enable interrupts
-                     );
+//        asm volatile(
+//        				"CPSID i\n"                   // Disable interrupts
+//        				"PUSH {R4-R11}\n"             // Save the context of current function
+//        				"LDR R0, =main_stack_frame\n"
+//        				"STMIA R0!, {R4-R11}\n"       // Save the context of main function
+//        				"MRS R0, MSP\n"
+//        				"STMIA R0, {R0-R3, R12, LR}\n"
+//        				"BL rollback\n"
+//        				"CPSIE i\n"                   // Enable interrupts
+//                     );
+
+
+        asm volatile (
+        	"CPSID i\n"                   // Disable interrupts
+        );
+        asm volatile (
+			"LDR R0, =main_stack_frame\n"  // Load the address of the main stack frame
+			"LDMIA R0!, {R4-R11}\n"        // Restore registers R4-R11 from the main stack frame
+			"LDMIA R0, {R0-R3, R12, LR}\n" // Restore registers R0-R3, R12, and LR from the stack
+			"MOV SP, R0\n"                 // Restore the Stack Pointer (SP)
+			"LDR R1, =main_PC\n"           // Load the address of main_PC into R1
+			"LDR R1, [R1]\n"               // Load the value of main_PC (the return address) into R1
+			"LDR LR,=0xFFFFFFFD\n"
+        );
+//        SCB->SHCSR
+        asm volatile (
+//                "LDR PC, [R1]\n"              // Load the PC directly from R1 to exit handler mode
+//        	"LDR PC,=0xFFFFFFF9\n"
+			"BX R1\n"                      // Branch to the return address in R1 (exit handler mode if needed)
+        );
+        asm volatile (
+        	"CPSIE i\n"
+        );
         longjmp(to_mode_select, 1);
 
         //unblock_signal();
