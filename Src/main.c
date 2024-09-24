@@ -19,8 +19,13 @@
 
 /* File Includes */
 #include "scheduler/scheduler.h"
-#include "scheduler/task.h"
+#include "scheduler/myTask.h"
 #include "scheduler/status.h"
+
+//#include "../FreeRTOS/Source/include/FreeRTOS.h"
+//#include "../FreeRTOS/Source/include/task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* Macros */
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
@@ -42,6 +47,8 @@ struct itimerval sysTick_timer;
 
 uint32_t main_stack_frame[32];
 volatile uint32_t main_PC;
+
+static bool ledState = 0;
 
 
 /* Prototypes */
@@ -137,6 +144,29 @@ void virtualTesting(int argc, char *argv[]) {
 
 }
 
+static const int led_delay_1 = 1111;
+static const int led_delay_2 = 789;
+
+void toggleLED(int pin) {
+    led_dx(pin, !ledState);
+    ledState = !ledState;
+}
+
+
+/**
+ * 'Blink LED' task.
+ */
+static void led_task(void *args) {
+  int delay_ms = *(int*)args;
+  
+
+  while (1) {
+    // Toggle the LED.
+    toggleLED(0);
+    // Delay for a second-ish.
+    vTaskDelay(pdMS_TO_TICKS(delay_ms));
+  };
+}
 
 /**
  * @brief Superloop
@@ -147,92 +177,11 @@ void virtualTesting(int argc, char *argv[]) {
  */
 int branch_main() {
 
-    #ifdef VIRTUAL
-    // Initial configuration
-    startup();
+    xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-1, NULL);
+    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-1, NULL);
+    while(1) {}
 
-    //  Virtual Intellisat configuration
-    virtualTesting(argc, argv);
-
-    /* Set up rand function for testing */
-	srand(2);
-    #endif
-//	delay_ms(1000000);
-	printMsg("hey\r\n");
-
-    /* Run initial mode decision */
-    systemsCheck(); // All other mode decisions done via task ISR
-    currTask = taskTable[0];
-
-    #ifdef VIRTUAL
-    /* Define jmp point */
-    sigsetjmp(to_mode_select, 1); // PROTOTYPE
-    /* Start sys timer */
-    setitimer(ITIMER_REAL, &sysTick_timer, NULL);
-    #else
-//    asm volatile(
-//		"CPSID i\n"                   // Disable interrupts
-//		"MRS R0, MSP\n"
-//		"STMIA R0, {R0-R3, R12, LR}\n"
-//		"LDR R0, =main_stack_frame\n"
-//		"STMIA R0!, {R4-R11}\n"
-//		"CPSIE i\n"                   // Enable interrupts
-//    );
-//    asm volatile(
-////        "CPSID i\n"                   // Disable interrupts
-//        "MRS R0, MSP\n"               // Get the Main Stack Pointer (MSP)
-//        "STMIA R0, {R0-R3, R12, LR}\n"// Save registers R0-R3, R12, LR to the stack
-//        "LDR R1, =main_stack_frame\n" // Load the address of the main stack frame
-//        "STMIA R1!, {R4-R11}\n"       // Save registers R4-R11 to the main stack frame
-//        "MOV R1, LR\n"                // Move the value of LR (which may be an exception return value) to R1
-//        "STMIA R0!, {R1}\n"           // Store the LR value in the place where PC would be restored from
-////        "CPSIE i\n"                   // Enable interrupts
-//    );
-    asm volatile(
-        "CPSID i\n"                    // Disable interrupts
-        "MRS R0, MSP\n"                // Get the Main Stack Pointer (MSP)
-        "STMIA R0, {R0-R3, R12, LR}\n" // Save registers R0-R3, R12, LR to the stack
-        "LDR R1, =main_stack_frame\n"  // Load the address of the main stack frame
-        "STMIA R1!, {R4-R11}\n"        // Save registers R4-R11 to the main stack frame
-        "MOV R1, LR\n"                 // Move the value of LR to R1
-        "LDR R2, =main_PC\n"           // Load the address of main_PC
-        "STR R1, [R2]\n"               // Store the value of LR into main_PC
-        "CPSIE i\n"                    // Enable interrupts
-    );
-
-    setjmp(to_mode_select); // SWITCH FOR Hardware Intellisat
-    //TODO: Start hardware timer
-    #endif
-
-    block_scheduler = false;
-
-//    NVIC_EnableIRQ(SysTick_IRQn);
-//    SysTick->CTRL |= SysTick_CTRL_ENABLE_Pos;
-
-    /* Run superloop */
-    while (1) {
-        //printMsg("\n");
-
-        modeSelect();
-//        scheduler();
-
-    	//printMsg("ID: %d\n", currTask.task_id);
-
-        currTask.configPtr();
-        currTask.runPtr();  // delay_ms(rand) done here
-        
-	    CLR_BIT(flagBits.modeBits, currTask.task_id); // Remove once implemented in cleanup
-
-        //printMsg("Task %d is successful.\n", currTask.task_id);
-
-
-        // Cycle limiter for testing
-        //printMsg("systickHandlerCount: %d\n", max_handler_count - systick_handler_count);
-        if (!is_unlimited_tick && systick_handler_count <= 0) {
-            printMsg("Terminating Kernel\r\n");
-            return 0;
-        }
-    }
+    return 0;
 
 }
 

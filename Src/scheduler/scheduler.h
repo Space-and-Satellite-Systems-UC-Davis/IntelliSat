@@ -3,7 +3,7 @@
 
 #include "schedulerGlobals.h"
 
-#include "task.h"
+#include "myTask.h"
 #include "status.h"
 
 // extern volatile struct Task currTask;  // volatile: don't cache global var.

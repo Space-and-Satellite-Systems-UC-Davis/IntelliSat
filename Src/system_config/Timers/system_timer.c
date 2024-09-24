@@ -62,10 +62,10 @@ bool block_scheduler = true;
 void SysTick_Handler() {
 	systick_time++;
 	blinky();
-	if (!block_scheduler) {
-		//block_scheduler = true;
-		scheduler();
-		//block_scheduler = false:
-	}
+	// if (!block_scheduler) {
+	// 	//block_scheduler = true;
+	// 	scheduler();
+	// 	//block_scheduler = false:
+	// }
 }
 
