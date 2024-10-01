@@ -119,17 +119,27 @@
 
 
 /* Interrupt nesting behaviour configuration. */
+/* Cortex-M specific definitions. */
+#ifdef __NVIC_PRIO_BITS
+  #define configPRIO_BITS         __NVIC_PRIO_BITS
+#else
+  #define configPRIO_BITS         4
+#endif
+#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY      15
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY 5
 
-#define configKERNEL_INTERRUPT_PRIORITY         [dependent of processor]
+#define configKERNEL_INTERRUPT_PRIORITY   ( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
+/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
+See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY  ( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY    [dependent on processor and application]
 
-#define configMAX_API_CALL_INTERRUPT_PRIORITY   [dependent on processor and application]
+//#define configMAX_API_CALL_INTERRUPT_PRIORITY   [dependent on processor and application]
 
 
 /* Define to trap errors during development. */
 
-#define configASSERT ( x )  if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
+//#define configASSERT ( x )  if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
 
 
 /* FreeRTOS MPU specific definitions. */
