@@ -59,13 +59,13 @@ bool block_scheduler = true;
  * @param None
  * @returns None
  */
-void SysTick_Handler() {
-	systick_time++;
-	blinky();
-	// if (!block_scheduler) {
-	// 	//block_scheduler = true;
-	// 	scheduler();
-	// 	//block_scheduler = false:
-	// }
-}
+//void SysTick_Handler() {
+//	systick_time++;
+//	blinky();
+//	// if (!block_scheduler) {
+//	// 	//block_scheduler = true;
+//	// 	scheduler();
+//	// 	//block_scheduler = false:
+//	// }
+//}
 

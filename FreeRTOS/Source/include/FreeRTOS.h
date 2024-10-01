@@ -61,8 +61,8 @@
 #define TICK_TYPE_WIDTH_64_BITS    2
 
 /* Application specific configuration options. */
-//#include "../../../FreeRTOSConfig.h"
-#include "FreeRTOSConfig.h"
+#include "../../../FreeRTOSConfig.h"
+//#include "FreeRTOSConfig.h"
 
 #if !defined( configUSE_16_BIT_TICKS ) && !defined( configTICK_TYPE_WIDTH_IN_BITS )
     #error Missing definition:  One of configUSE_16_BIT_TICKS and configTICK_TYPE_WIDTH_IN_BITS must be defined in FreeRTOSConfig.h.  See the Configuration section of the FreeRTOS API documentation for details.

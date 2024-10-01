@@ -7,6 +7,8 @@
 
    your application. */
 
+#define configKERNEL_PROVIDED_STATIC_MEMORY							1
+
 
 #define configUSE_PREEMPTION                                        1
 
@@ -73,7 +75,7 @@
 
 #define configAPPLICATION_ALLOCATED_HEAP                            1
 
-#define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP                   1
+#define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP                   0
 
 
 /* Hook function related definitions. */

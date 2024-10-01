@@ -22,10 +22,10 @@
 #include "scheduler/myTask.h"
 #include "scheduler/status.h"
 
-//#include "../FreeRTOS/Source/include/FreeRTOS.h"
-//#include "../FreeRTOS/Source/include/task.h"
-#include "FreeRTOS.h"
-#include "task.h"
+#include "../FreeRTOS/Source/include/FreeRTOS.h"
+#include "../FreeRTOS/Source/include/task.h"
+//#include "FreeRTOS.h"
+//#include "task.h"
 
 /* Macros */
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
@@ -49,6 +49,8 @@ uint32_t main_stack_frame[32];
 volatile uint32_t main_PC;
 
 static bool ledState = 0;
+
+uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
 
 
 /* Prototypes */
@@ -179,6 +181,9 @@ int branch_main() {
 
     xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-1, NULL);
     xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-1, NULL);
+
+    vTaskStartScheduler();
+
     while(1) {}
 
     return 0;
