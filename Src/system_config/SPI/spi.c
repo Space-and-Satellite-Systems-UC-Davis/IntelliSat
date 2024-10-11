@@ -109,6 +109,50 @@ void spi2_gpioInit() {
 void spi1_gpioInit() {
 
 #if OP_REV == 2
+	/* OP R2 GPIO pinout
+	 * 		SPI3 SCK		A5		(Alternate Function, AF6)
+	 * 		SPI3 MISO		A6		(Alternate Function, AF6)
+	 * 		SPI3 MOSI		A7		(Alternate Function, AF6)
+	 * 		SPI3 NCS		A4		(Output)
+	 */
+
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+
+	while (GPIOA->OTYPER == 0xFFFFFFFF);
+
+	GPIOA->PUPDR |= GPIO_PUPDR_PUPD4_0;
+
+	GPIOA->MODER &= ~(
+		   GPIO_MODER_MODE5_Msk
+		 | GPIO_MODER_MODE6_Msk
+		 | GPIO_MODER_MODE7_Msk
+		 | GPIO_MODER_MODE8_Msk);
+
+	GPIOA->MODER |=
+		   GPIO_MODER_MODE4_0
+		 | GPIO_MODER_MODE5_1
+		 | GPIO_MODER_MODE6_1
+		 | GPIO_MODER_MODE7_1;
+
+	GPIOA->PUPDR &= ~(
+	      GPIO_PUPDR_PUPD5_Msk
+	    | GPIO_PUPDR_PUPD6_Msk
+	    | GPIO_PUPDR_PUPD7_Msk);  // Clear current state
+
+	GPIOA->PUPDR |=
+		  GPIO_PUPDR_PUPD5_1// Set pull-down for B3 (CLK)
+		| GPIO_PUPDR_PUPD6_1  // Set pull-down for B4 (MISO)
+		| GPIO_PUPDR_PUPD7_1; // Set pull-down for B5 (MOSI)
+
+	GPIOA->AFR[0] &= ~(
+		   GPIO_AFRL_AFSEL5_Msk
+		 | GPIO_AFRL_AFSEL6_Msk
+		 | GPIO_AFRL_AFSEL7_Msk);
+
+	GPIOA->AFR[0] |=
+		   6U << GPIO_AFRL_AFSEL5_Pos
+		 | 6U << GPIO_AFRL_AFSEL6_Pos
+		 | 6U << GPIO_AFRL_AFSEL7_Pos;
 
 #endif
 
@@ -129,19 +173,24 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	}
 }
 
+// For CR1 check if the default CPOL and CPHA are correct for the FRAM
+
 void spi1_config() {
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// GPIO
 	spi1_gpioInit();
 
 	spi_disable(SPI1, SPI1_CS);
 
-	SPI1->CR1 = 0;
-	SPI1->CR2 = 0;
-	// CR1
-	// CR2
+	SPI1->CR1 |=
+		  0U << SPI_CR1_BR_Pos
+		| SPI_CR1_SSM
+		| SPI_CR1_SSI
+		| SPI_CR1_MSTR;
+	SPI2->CR2 |=
+		  SPI_CR2_FRXTH
+		| 7U << SPI_CR2_DS_Pos;
 
 	spi_enable(SPI1);
-
 }
 
 void spi2_config() {

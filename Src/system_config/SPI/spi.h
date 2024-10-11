@@ -30,7 +30,7 @@
 
 #elif OP_REV == 2
 
-#define SPI1_CS			  GPIOA, 4
+#define SPI1_CS			  GPIOA,4
 #define SPI2_CS			  UNUSED_GPIO
 #define SPI3_CS			  GPIOG,15
 
