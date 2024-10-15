@@ -106,7 +106,7 @@ uint16_t adc_adcToVolt1(uint16_t adcVal){
 }
 
 uint16_t adc_adcToVolt2(uint16_t adcVal){
-	return (adcVal * 2532) / 4095; //Uses 2.048 volt reference (VREFBUF->CSR VRS bit is 0)
+	return (adcVal * 2532) / 4095; //Uses 2.5 volt reference (VREFBUF->CSR VRS bit is 1)
 }
 
 uint16_t adc_adcToBatVolt(uint16_t adcVal){
