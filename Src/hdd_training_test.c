@@ -4,8 +4,9 @@
  *  Created on: Sep 25, 2024
  *      Author: Chandrark Muddana
  */
-#include <timers.h>
-#include <adc.h>
+#include <Timers/timers.h>
+#include <ADC/adc.h>
+#include <LED/led.h>
 
 void testFunction_HDD_Training(){
 	/*
@@ -23,15 +24,16 @@ void testFunction_HDD_Training(){
 	// This is where write your code.
 	// I made some normal code just to generate a PWM signal and check if everything is working.
 	pwm_initTimer(5); //Test if this is milliseconds or seconds
+	pwm_setDutyCycle(16); //20% of the power
+	PWM_TIMER_ON();
 
 	while (1) {
-		 PWM_TIMER_ON();
-		 pwm_setDutyCycle(16); //20% of the power
-		 delay_ms(10000);
-		 PWM_TIMER_OFF();
 		 delay_ms(10000);
 		 printMsg("This should start spamming. \r\n Working Setup! \r\n");
+		 led_d1(true);
 	}
+	delay_ms(10000);
+	PWM_TIMER_OFF();
 	adc_singleConversion();
 }
 
