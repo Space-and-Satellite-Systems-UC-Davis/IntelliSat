@@ -23,7 +23,7 @@ void testFunction_HDD_Training(){
 	 */
 	// This is where write your code.
 	// I made some normal code just to generate a PWM signal and check if everything is working.
-	pwm_initTimer(5000); //This is in microseconds
+	pwm_initTimer(10000); //This is in microseconds
 	pwm_setDutyCycle(16); //20% of the power
 	PWM_TIMER_ON();
 
