@@ -19,7 +19,7 @@ extern int core_MHz;	// from core_config.h
 
 void pwm_timer_gpio() {
 
-#if OP_REV == 2
+#if OP_REV == 2 || OP_REV == 3
 
 	/* OP R2 GPIO pinout
 	 * 		TIM CH1		GPIO A15	AF - 1

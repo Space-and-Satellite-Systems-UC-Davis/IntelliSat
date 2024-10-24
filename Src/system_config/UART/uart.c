@@ -49,7 +49,7 @@ typedef struct _rx_fifo USART_ReceiverBuffer;
 USART_ReceiverBuffer USART1_RxBuffer;
 USART_ReceiverBuffer USART3_RxBuffer;
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 USART_ReceiverBuffer USART1_RxBuffer;
 USART_ReceiverBuffer LPUART1_RxBuffer;
@@ -66,7 +66,7 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 	} else if (bus == USART3) {
 		rxbuff = &USART3_RxBuffer;
 	}
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 	if (bus == USART1) {
 		rxbuff = &USART1_RxBuffer;
 	} else if (bus == LPUART1) {
@@ -182,7 +182,7 @@ void uart5_gpio_init() {
 
 void lpuart_gpio_init() {
 
-#if OP_REV == 2
+// #if OP_REV == 2
 
 	/*
 	 * OP REV 2 GPIO
@@ -190,16 +190,36 @@ void lpuart_gpio_init() {
 	 * 		RX		GPIO C 0		Alternate Function 8
 	 */
 
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
-	while (GPIOC->OTYPER == 0xFFFFFFFF);
+//	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+//	while (GPIOC->OTYPER == 0xFFFFFFFF);
+//
+//	// configure the LPUART Pins to Alternate Function mode
+//	GPIOC->MODER &= ~(GPIO_MODER_MODE0_Msk | GPIO_MODER_MODE1_Msk);
+//	GPIOC->MODER |= (GPIO_MODER_MODE0_1 | GPIO_MODER_MODE1_1);
+//
+//	// configure each pin to AF7
+//	GPIOC->AFR[0] &= ~(GPIO_AFRL_AFSEL0_Msk | GPIO_AFRL_AFSEL1_Msk);
+//	GPIOC->AFR[0] |= (8U << GPIO_AFRL_AFSEL0_Pos) | (8U << GPIO_AFRL_AFSEL1_Pos);
+
+#if OP_REV == 2
+	/*
+	 * OP REV 2 GPIO
+	 * 		TX		GPIO G 7		Alternate Function 8
+	 * 		RX		GPIO G 8		Alternate Function 8
+	 */
+
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
+	while (GPIOG->OTYPER == 0xFFFFFFFF);
 
 	// configure the LPUART Pins to Alternate Function mode
-	GPIOC->MODER &= ~(GPIO_MODER_MODE0_Msk | GPIO_MODER_MODE1_Msk);
-	GPIOC->MODER |= (GPIO_MODER_MODE0_1 | GPIO_MODER_MODE1_1);
+	GPIOG->MODER &= ~(GPIO_MODER_MODE7_Msk | GPIO_MODER_MODE8_Msk);
+	GPIOG->MODER |= (GPIO_MODER_MODE7_1 | GPIO_MODER_MODE8_1);
 
-	// configure each pin to AF7
-	GPIOC->AFR[0] &= ~(GPIO_AFRL_AFSEL0_Msk | GPIO_AFRL_AFSEL1_Msk);
-	GPIOC->AFR[0] |= (8U << GPIO_AFRL_AFSEL0_Pos) | (8U << GPIO_AFRL_AFSEL1_Pos);
+	// configure each pin to AF8
+	GPIOG->AFR[0] &= ~(GPIO_AFRL_AFSEL7_Msk);
+	GPIOG->AFR[1] &= ~(GPIO_AFRH_AFSEL8_Msk);
+	GPIOG->AFR[0] |= (8U << GPIO_AFRL_AFSEL7_Pos);
+	GPIOG->AFR[1] |= (8U << GPIO_AFRH_AFSEL8_Pos);
 
 #endif
 

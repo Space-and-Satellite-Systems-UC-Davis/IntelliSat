@@ -25,7 +25,7 @@
  */
 void spi3_gpioInit() {
 
-#if OP_REV == 2
+#if OP_REV == 2 || OP_REV == 3
 	// GPIO
 	/* OP R2 GPIO pinout
 	 * 		SPI3 SCK		B3		(Alternate Function, AF6)
