@@ -16,8 +16,43 @@
 /***************************** LED INITIALIZERS ******************************/
 
 void led_init() {
+#if OP_REV == 3
+	/*
+	D1 - PE2
+	D2 - PD3
+	D3 - PD1
+	D4 - PD14
+	D5 - PG11
+	*/
 
-# if OP_REV == 2
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
+
+	while (GPIOD->OTYPER == 0xFFFFFFFF);
+	while (GPIOE->OTYPER == 0xFFFFFFFF);
+	while (GPIOG->OTYPER == 0xFFFFFFFF);
+
+	
+	// Configure output mode
+	GPIOD->MODER &= ~(
+		  GPIO_MODER_MODE1_Msk		// D3
+		| GPIO_MODER_MODE3_Msk		// D2
+		| GPIO_MODER_MODE14_Msk);	// D4
+	GPIOD->MODER |= (
+		  GPIO_MODER_MODE1_0
+		| GPIO_MODER_MODE3_0
+		| GPIO_MODER_MODE14_0);
+
+
+	GPIOE->MODER &= ~( GPIO_MODER_MODE2_Msk );	// D1
+	GPIOE->MODER |= ( GPIO_MODER_MODE2_0 );
+
+
+	GPIOG->MODER &= ~( GPIO_MODER_MODE11_Msk );	// D5
+	GPIOG->MODER |= ( GPIO_MODER_MODE11_0 );
+
+# elif OP_REV == 2
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 
@@ -101,6 +136,27 @@ void led_dx(int pin, int value) {
 
 }
 
+
+# elif OP_REV == 3
+void led_d1(bool status) {
+	gpio_set(GPIOE, 2, status);
+}
+
+void led_d2(bool status) {
+	gpio_set(GPIOD, 3, status);
+}
+
+void led_d3(bool status) {
+	gpio_set(GPIOD, 1, status);
+}
+
+void led_d4(bool status) {
+	gpio_set(GPIOD, 14, status);
+}
+
+void led_d5(bool status) {
+	gpio_set(GPIOG, 11, status);
+}
 #endif
 
 void blinky() {
@@ -110,8 +166,8 @@ void blinky() {
 		counter = 0;
 	}
 	if (counter > 900) {
-		led_hb(1);
+		led_d1(1);
 	} else {
-		led_hb(0);
+		led_d1(0);
 	}
 }

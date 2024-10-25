@@ -139,6 +139,53 @@ void led_dx(int pin, int value);
  */
 #define led_d0(b) gpio_set(GPIOE, 6, b);
 
+
+#elif OP_REV == 3
+
+/**
+ * Sets the state of the D1 LED
+ *
+ * @param   value    The value to set the LED to (0 off or 1 on).
+ *
+ * @returns None
+ */
+void led_d1(bool value);
+
+/**
+ * Sets the state of the D2 LED
+ *
+ * @param   value    The value to set the LED to (0 off or 1 on).
+ *
+ * @returns None
+ */
+void led_d2(bool value);
+
+/**
+ * Sets the state of the D3 LED
+ *
+ * @param   value    The value to set the LED to (0 off or 1 on).
+ *
+ * @returns None
+ */
+void led_d3(bool value);
+
+/**
+ * Sets the state of the D4 LED
+ *
+ * @param   value    The value to set the LED to (0 off or 1 on).
+ *
+ * @returns None
+ */
+void led_d4(bool value);
+
+/**
+ * Sets the state of the D5 LED
+ *
+ * @param   value    The value to set the LED to (0 off or 1 on).
+ *
+ * @returns None
+ */
+void led_d5(bool value);
 #endif
 
 /**
