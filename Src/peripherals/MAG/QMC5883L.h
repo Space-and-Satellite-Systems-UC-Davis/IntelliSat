@@ -18,9 +18,17 @@
 #include <I2C/i2c.h>
 
 #if   OP_REV == 1
-#define MAG_I2C GPIOF, 1, GPIOF, 0
+#define MAG_I2C_SCL GPIOF, 1
+#define MAG_I2C_SDA GPIOF, 0
 #elif OP_REV == 2
-#define MAG_I2C GPIOB, 8, GPIOB, 9
+#define MAG_I2C_SCL GPIOB, 8
+#define MAG_I2C_SDA GPIOB, 9
+#elif OP_REV == 3
+#define MAG0_I2C_SCL GPIOB, 8
+#define MAG0_I2C_SDA GPIOB, 9
+#define MAG1_I2C_SCL GPIOF, 0
+#define MAG1_I2C_SDA GPIOF, 1
+
 #endif
 
 //Macros
@@ -36,6 +44,11 @@
 #define MAG_OVERSAMPLE_256 	1
 #define MAG_OVERSAMPLE_128 	2
 #define MAG_OVERSAMPLE_64  	3
+
+typedef enum  {
+    MAG0,
+    MAG1 
+} Mag_Selector;
 
 /**
  * Initializes the magnetometer for operation.
@@ -75,6 +88,13 @@ int16_t mag_read_Z();
  * @returns The temperature value in 16-bit signed integer format.
  */
 int16_t mag_readTemp();
+
+/**
+ * Select between mag0 and mag1
+ * 
+ * @param mag_picker The magnetometer to select
+ */
+void mag_select(Mag_Selector mag_picker);
 
 
 #endif /* REALOP1_PERIPHERALS_MAG_H_ */
