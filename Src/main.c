@@ -51,7 +51,7 @@ volatile uint32_t main_PC;
 static bool ledState = 0;
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
-void SystemClock_Config(void);
+//void SystemClock_Config(void);
 
 
 /* Prototypes */
@@ -165,7 +165,9 @@ static void led_task(void *args) {
 
   while (1) {
     // Toggle the LED.
-    toggleLED(0);
+	  int pin = 0;
+	  led_dx(pin, !ledState);
+	  ledState = !ledState;
     // Delay for a second-ish.
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
   };
