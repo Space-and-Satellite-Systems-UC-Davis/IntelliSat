@@ -20,7 +20,7 @@
 
 #define configSYSTICK_CLOCK_HZ                                      1000
 
-#define configTICK_RATE_HZ                                          250
+#define configTICK_RATE_HZ                                          10
 
 #define configMAX_PRIORITIES                                        5
 
@@ -30,7 +30,7 @@
 
 #define configUSE_16_BIT_TICKS                                      0
 
-#define configIDLE_SHOULD_YIELD                                     1
+#define configIDLE_SHOULD_YIELD                                     0
 
 #define configUSE_TASK_NOTIFICATIONS                                1
 
@@ -44,7 +44,7 @@
 
 #define configUSE_ALTERNATIVE_API                                   0 /* Deprecated! */
 
-#define configQUEUE_REGISTRY_SIZE                                   10
+#define configQUEUE_REGISTRY_SIZE                                   0
 
 #define configUSE_QUEUE_SETS                                        0
 
@@ -67,13 +67,13 @@
 
 /* Memory allocation related definitions. */
 
-#define configSUPPORT_STATIC_ALLOCATION                             1
+#define configSUPPORT_STATIC_ALLOCATION                             0
 
 #define configSUPPORT_DYNAMIC_ALLOCATION                            1
 
 #define configTOTAL_HEAP_SIZE                                       10240
 
-#define configAPPLICATION_ALLOCATED_HEAP                            1
+#define configAPPLICATION_ALLOCATED_HEAP                            0
 
 #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP                   0
 
@@ -111,13 +111,13 @@
 
 /* Software timer related definitions. */
 
-#define configUSE_TIMERS                                    1
+#define configUSE_TIMERS                                    0
 
-#define configTIMER_TASK_PRIORITY                           3
+#define configTIMER_TASK_PRIORITY                           0
 
-#define configTIMER_QUEUE_LENGTH                            10
+#define configTIMER_QUEUE_LENGTH                            0
 
-#define configTIMER_TASK_STACK_DEPTH                        configMINIMAL_STACK_SIZE
+#define configTIMER_TASK_STACK_DEPTH                        0 //configMINIMAL_STACK_SIZE
 
 
 /* Interrupt nesting behaviour configuration. */
@@ -209,7 +209,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 
 /* Redirect FreeRTOS post interrupts. */
-#define vPortSCVHandler                         SVC_handler
+#define vPortSVCHandler                         SVC_Handler
 #define xPortPendSVHandler                      PendSV_Handler
 #define xPortSysTickHandler                     SysTick_Handler
 

@@ -51,6 +51,7 @@ volatile uint32_t main_PC;
 static bool ledState = 0;
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
+void SystemClock_Config(void);
 
 
 /* Prototypes */

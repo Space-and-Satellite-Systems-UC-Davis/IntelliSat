@@ -293,6 +293,8 @@ static void prvPortStartFirstTask( void )
         " cpsie f               \n"
         " dsb                   \n"
         " isb                   \n"
+    );
+    __asm volatile (
         " svc 0                 \n" /* System call to start first task. */
         " nop                   \n"
         " .ltorg                \n"
