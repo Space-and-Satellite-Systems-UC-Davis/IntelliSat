@@ -83,69 +83,6 @@ void startup() {
     }
 }
 
-/**
- * @brief Timer based interrupt handler
- *
- * Handler called when timer interrupt fires
- * and serves primarily as a wrapper for
- * the main scheduling logic.
- *
- * @param signal Corresponding interrupt bit that was triggered
- * @see scheduler() (scheduler.c)
- * @note Will be merged with master sysTickHandler with
- *       other functionality on hardware Intellisat
- */
-void sysTickHandler(int signal) {
-    // // Backup guard from other alarms (Likely can be removed)
-    // if(signal != SIGALRM) {
-    //     return;
-    // }
-
-    systick_handler_count--; // TESTING: remove when done debugging
-    scheduler(signal, &to_mode_select);
-}
-
-/**
- * @brief Virtual Intellisat configuration
- *
- * Limiter on number of cycles before termination.
- * Configures virtual timers.
- *
- * @param argc Number of CLI args
- * @param argv CLI args
- * @note Remove during hardware integration
- */
-void virtualTesting(int argc, char *argv[]) {
-    // Testing limiter
-    if (argc >= 2) {
-        max_handler_count = atoi(argv[1]);
-        is_unlimited_tick = 0;
-    } else {
-        max_handler_count = -1;
-        is_unlimited_tick = 1;
-    }
-
-    if (argc >= 3) {
-        if (atoi(argv[2]) == 1) {
-            SET_BIT(flagBits.statusBits, START);
-        }
-    }
-    systick_handler_count = max_handler_count;
-    //printMsg("Inputted handler count: %d\n", max_handler_count);
-
-
-    /* System handler, timer setup */
-    // Install custom ISR as handler for SIGALRM
-    sysTick.sa_handler = &sysTickHandler;
-    sigaction(SIGALRM, &sysTick, NULL);
-
-    // Configure and start sys timer
-    sysTick_timer.it_value.tv_sec = 0;
-    sysTick_timer.it_value.tv_usec = SYSTICK_DUR_U;
-    sysTick_timer.it_interval.tv_sec = 0;
-    sysTick_timer.it_interval.tv_usec = SYSTICK_DUR_U;
-
-}
 
 static const int led_delay_1 = 1111;
 static const int led_delay_2 = 789;
@@ -193,7 +130,10 @@ int branch_main() {
 
 }
 
+#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
 
+#include <TestDefinition.h>
 
 int main() {
     init_init();
@@ -202,7 +142,9 @@ int main() {
     //if (first_time) {
         init_first_time();
     //}
-
-	init_platform();
-	branch_main();
+    
+    init_platform(!RUN_TEST);
+    // ^ don't want to run the Scheduler in case we are running other tests
+    
+    branch_main();
 }

@@ -61,10 +61,11 @@ void init_first_time() {
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
  *
- * @param   None
+ * @param run_scheduler If set to true, IntelliSat Scheduler will be active
+ *        in the background
  * @returns None
  */
-void init_platform() {
+void init_platform(bool run_scheduler) {
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     //TODO: hdd_init().
@@ -78,7 +79,7 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	printer_init();
-	systick_init();
+	systick_init(run_scheduler);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

@@ -1,25 +1,24 @@
 /*
  * ASM330LHH.h  (IMU interface)
  *
- *	- Jan  6, 2024
- *		Author		 : Darsh
- *		Log			 : Edited function names to follow consistent naming
- *
  *  - Apr 29, 2023 (Creation)
  *      Author       : Tim S.
  *      Contributors : nithinsenthil , Raphael
  *      Log          : IMU Control functions written
  */
+
 #ifndef REALOP1_PERIPHERALS_IMU_H_
 #define REALOP1_PERIPHERALS_IMU_H_
 
 #include <I2C/i2c.h>
+#include <SPI/spi.h>
 
 //Macros
 #if   OP_REV == 1
 #define IMU_I2C GPIOF, 1, GPIOF, 0
-#elif OP_REV == 2
-#define IMU_I2C GPIOF, 1, GPIOF, 0
+#elif OP_REV == 2 || OP_REV == 3 //TODO: Make actual change for Rev3
+#define IMU_SPI    SPI3
+#define IMU_SPI_CS SPI3_CS
 #endif
 
 //Macros
