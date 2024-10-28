@@ -88,7 +88,7 @@ static const int led_delay_1 = 1111;
 static const int led_delay_2 = 789;
 
 void toggleLED(int pin) {
-    led_dx(pin, !ledState);
+    led_d1(!ledState);
     ledState = !ledState;
 }
 
@@ -103,7 +103,7 @@ static void led_task(void *args) {
   while (1) {
     // Toggle the LED.
 	  int pin = 0;
-	  led_dx(pin, !ledState);
+	  led_d1(!ledState);
 	  ledState = !ledState;
     // Delay for a second-ish.
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
