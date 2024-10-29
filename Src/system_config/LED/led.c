@@ -138,7 +138,7 @@ void led_dx(int pin, int value) {
 
 
 # elif OP_REV == 3
-void led_d1(bool status) {
+  void led_d1(bool status) {
 	gpio_set(GPIOE, 2, status);
 }
 
