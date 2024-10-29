@@ -138,7 +138,7 @@ void led_dx(int pin, int value) {
 
 
 # elif OP_REV == 3
-void led_d1(bool status) {
+void led_hb(bool status) {
 	gpio_set(GPIOE, 2, status);
 }
 
@@ -166,8 +166,8 @@ void blinky() {
 		counter = 0;
 	}
 	if (counter > 900) {
-		led_d1(1);
+		led_hb(1);
 	} else {
-		led_d1(0);
+		led_hb(0);
 	}
 }

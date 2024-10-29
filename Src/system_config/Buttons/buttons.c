@@ -12,7 +12,6 @@
 
 
 #include "buttons.h"
-#include "print_scan.h"
 
 // Global variables
 bool button0;
