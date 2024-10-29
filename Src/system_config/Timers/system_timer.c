@@ -13,7 +13,6 @@
 #include <globals.h>
 #include "timers.h"
 #include <LED/led.h>
-#include "../../scheduler/scheduler.h"
 
 
 // Global (external) variables and functions
@@ -46,7 +45,6 @@ void systick_init(bool run_scheduler) {
 	_run_scheduler = run_scheduler;
 }
 
-bool block_scheduler = true;
 
 /**
  * Interrupt handler for the SysTick timer.
@@ -56,10 +54,10 @@ bool block_scheduler = true;
  * @param None
  * @returns None
  */
-// void SysTick_Handler() {
-// 	systick_time++;
-// 	blinky();
-// 	if (_run_scheduler == true) {
-// 		// scheduler();
-// 	}
-// }
+void SysTick_Handler() {
+	systick_time++;
+	blinky();
+	if (_run_scheduler == true) {
+		// scheduler();
+	}
+}
