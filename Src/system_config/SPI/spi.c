@@ -25,7 +25,7 @@
  */
 void spi3_gpioInit() {
 
-#if OP_REV == 2
+#if OP_REV == 2 
 	// GPIO
 	/* OP R2 GPIO pinout
 	 * 		SPI3 SCK		B3		(Alternate Function, AF6)
@@ -66,7 +66,43 @@ void spi3_gpioInit() {
 		  6U << GPIO_AFRL_AFSEL3_Pos
 		| 6U << GPIO_AFRL_AFSEL4_Pos
 		| 6U << GPIO_AFRL_AFSEL5_Pos;
+#elif OP_REV == 3
+// GPIO
+	/* OP R3 GPIO pinout
+	 * 		SPI3 SCK		B3		(Alternate Function, AF6)
+	 * 		SPI3 MISO		B4		(Alternate Function, AF6)
+	 * 		SPI3 MOSI		B5		(Alternate Function, AF6)
+	 * 		SPI3 NCS		B6		(Output)
+	 */
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	while (GPIOB->OTYPER == 0xFFFFFFFF);
 
+	GPIOB->PUPDR |= GPIO_PUPDR_PUPD6_0;
+
+	GPIOB->MODER &= ~(
+		  GPIO_MODER_MODE3_Msk
+		| GPIO_MODER_MODE4_Msk
+		| GPIO_MODER_MODE5_Msk
+		| GPIO_MODER_MODE6_Msk);
+
+	// set each pin to Alternate function, except CS
+	GPIOB->MODER |=
+		  GPIO_MODER_MODE3_1
+		| GPIO_MODER_MODE4_1
+		| GPIO_MODER_MODE5_1;
+	GPIOB->MODER |= GPIO_MODER_MODE6_0;
+
+	// Reset alternate function selection on each SPI-3 pin
+	GPIOB->AFR[0] &= ~(
+		  GPIO_AFRL_AFSEL3_Msk
+		| GPIO_AFRL_AFSEL4_Msk
+		| GPIO_AFRL_AFSEL5_Msk);
+
+	// set each pin to AF6
+	GPIOB->AFR[0] |=
+		  6U << GPIO_AFRL_AFSEL3_Pos
+		| 6U << GPIO_AFRL_AFSEL4_Pos
+		| 6U << GPIO_AFRL_AFSEL5_Pos;
 #endif
 
 }
@@ -74,8 +110,13 @@ void spi3_gpioInit() {
 
 void spi2_gpioInit() {
 
-#if OP_REV == 1
-
+#if OP_REV == 1 || OP_REV == 3
+	/* OP R3 GPIO pinout
+	 * 		SPI2 SCK		B13		(Alternate Function, AF5)
+	 * 		SPI2 MISO		B14		(Alternate Function, AF5)
+	 * 		SPI2 MOSI		B15		(Alternate Function, AF5)
+	 * 		SPI2 NCS		B12		(Output)
+	 */
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	while (GPIOB->OTYPER == 0xFFFFFFFF);
@@ -85,7 +126,7 @@ void spi2_gpioInit() {
 		| GPIO_MODER_MODE13_Msk
 		| GPIO_MODER_MODE14_Msk
 		| GPIO_MODER_MODE15_Msk);
-	// set each pin to Alternate function
+	// set each pin to Alternate function except CS
 	GPIOB->MODER |=
 		  GPIO_MODER_MODE12_0
 		| GPIO_MODER_MODE13_1
@@ -204,7 +245,8 @@ void spi_config(SPI_TypeDef *spi) {
 void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 
 	gpio_low(cs_port, cs_pin);
-}void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
+}
+void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
 }
 
