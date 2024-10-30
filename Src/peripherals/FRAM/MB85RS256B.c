@@ -14,30 +14,11 @@ void printBinary(uint8_t byte) {
 	printMsg("\n\r");
 }
 
-void fram_readDeviceID() {
+void FRAM_read_deviceID(uint8_t* MISO) {
     uint8_t MOSI = FRAM_READ_ID;
-    uint8_t MISO[4];
 
     spi_startCommunication(FRAM_SPI_CS);
     spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
-    spi_transmitReceive(FRAM_SPI, NULL, MISO, 4, false);
+    spi_transmitReceive(FRAM_SPI, NULL, MISO, 5, false);
     spi_stopCommunication(FRAM_SPI_CS);
-
-    printMsg("byte 1: %c\n", MISO[0]);
-    printMsg("byte 2: %c\n", MISO[1]);
-    printMsg("byte 3: %c\n", MISO[2]);
-    printMsg("byte 4: %c\n", MISO[3]);
-
-    /*
-    printMsg("Manufacturer ID:\n");
-    printBinary(MISO[0]);
-
-    printMsg("\nContinuation Code:\n");
-    printBinary(MISO[1]);
-
-    printMsg("\nProduct ID:\n");
-    printBinary(MISO[2]);
-    printBinary(MISO[3]);
-    */
-
 }
