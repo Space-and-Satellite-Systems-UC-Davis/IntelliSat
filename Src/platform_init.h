@@ -80,6 +80,8 @@ void init_platform(bool run_scheduler) {
 	buttons_init();
 	printer_init();
 	systick_init(run_scheduler);
+
+	spi_config(SPI1);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

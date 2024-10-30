@@ -110,9 +110,9 @@ void spi1_gpioInit() {
 
 #if OP_REV == 2
 	/* OP R2 GPIO pinout
-	 * 		SPI3 SCK		A5		(Alternate Function, AF6)
-	 * 		SPI3 MISO		A6		(Alternate Function, AF6)
-	 * 		SPI3 MOSI		A7		(Alternate Function, AF6)
+	 * 		SPI3 SCK		A5		(Alternate Function, AF5)
+	 * 		SPI3 MISO		A6		(Alternate Function, AF5)
+	 * 		SPI3 MOSI		A7		(Alternate Function, AF5)
 	 * 		SPI3 NCS		A4		(Output)
 	 */
 
@@ -123,10 +123,10 @@ void spi1_gpioInit() {
 	GPIOA->PUPDR |= GPIO_PUPDR_PUPD4_0;
 
 	GPIOA->MODER &= ~(
-		   GPIO_MODER_MODE5_Msk
+		   GPIO_MODER_MODE4_Msk
+		 | GPIO_MODER_MODE5_Msk
 		 | GPIO_MODER_MODE6_Msk
-		 | GPIO_MODER_MODE7_Msk
-		 | GPIO_MODER_MODE8_Msk);
+		 | GPIO_MODER_MODE7_Msk);
 
 	GPIOA->MODER |=
 		   GPIO_MODER_MODE4_0
@@ -140,8 +140,8 @@ void spi1_gpioInit() {
 	    | GPIO_PUPDR_PUPD7_Msk);  // Clear current state
 
 	GPIOA->PUPDR |=
-		  GPIO_PUPDR_PUPD5_1// Set pull-down for B3 (CLK)
-		| GPIO_PUPDR_PUPD6_1  // Set pull-down for B4 (MISO)
+		  GPIO_PUPDR_PUPD5_1 // Set pull-down for B3 (CLK)
+		| GPIO_PUPDR_PUPD6_1 // Set pull-down for B4 (MISO)
 		| GPIO_PUPDR_PUPD7_1; // Set pull-down for B5 (MOSI)
 
 	GPIOA->AFR[0] &= ~(
@@ -150,9 +150,9 @@ void spi1_gpioInit() {
 		 | GPIO_AFRL_AFSEL7_Msk);
 
 	GPIOA->AFR[0] |=
-		   6U << GPIO_AFRL_AFSEL5_Pos
-		 | 6U << GPIO_AFRL_AFSEL6_Pos
-		 | 6U << GPIO_AFRL_AFSEL7_Pos;
+		   5U << GPIO_AFRL_AFSEL5_Pos
+		 | 5U << GPIO_AFRL_AFSEL6_Pos
+		 | 5U << GPIO_AFRL_AFSEL7_Pos;
 
 #endif
 
@@ -173,11 +173,9 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	}
 }
 
-// For CR1 check if the default CPOL and CPHA are correct for the FRAM
-
 void spi1_config() {
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// GPIO
-	spi1_gpioInit();
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// Clock
+	spi1_gpioInit();					// GPIO
 
 	spi_disable(SPI1, SPI1_CS);
 
@@ -186,7 +184,12 @@ void spi1_config() {
 		| SPI_CR1_SSM
 		| SPI_CR1_SSI
 		| SPI_CR1_MSTR;
-	SPI2->CR2 |=
+
+	SPI1->CR1 &= ~(
+		  SPI_CR1_CPOL
+		| SPI_CR1_CPHA);
+
+	SPI1->CR2 |=
 		  SPI_CR2_FRXTH
 		| 7U << SPI_CR2_DS_Pos;
 
@@ -251,7 +254,6 @@ void spi_config(SPI_TypeDef *spi) {
 
 /***************************** SPI COMMUNICATION *****************************/
 void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
-
 	gpio_low(cs_port, cs_pin);
 }void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 	gpio_high(cs_port, cs_pin);
