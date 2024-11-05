@@ -66,13 +66,13 @@ void init_first_time() {
  * @returns None
  */
 void init_platform(bool run_scheduler) {
-  SCB->CPACR|= 0x00F00000; // Enable the Floating-Point Unit for full access
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     //TODO: hdd_init().
     //TODO: initialize intercomm.
     //TODO: fetch flash header.
     //TODO: increment boot counter.
+
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 

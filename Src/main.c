@@ -1,6 +1,17 @@
-#include <print_scan.h>
+/**
+ * @file main.c
+ * @brief Entrypoint of kernel systems
+ *
+ * Contains initial setup, and beginning of
+ * main superloop for responsible for uninterrupted
+ * runtime.
+ *
+ * @authors Nithin Senthil, Parteek Singh, Jacob Tkeo
+ * @date 6/../23
+ */
 
 #include "platform_init.h"
+#include <print_scan.h>
 #include "system_config/LED/led.h"
 
 /* Globals */
@@ -97,6 +108,26 @@ static void led_task(void *args) {
     // Delay for a second-ish.
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
   };
+}
+
+/**
+ * @brief Superloop
+ *
+ * Contains initial timer and interrupt handler (TESTING) and
+ * the main superloop. Serves as standard behavior when
+ * there is no scheduler intervention.
+ */
+int branch_main() {
+
+    xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-1, NULL);
+    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-1, NULL);
+
+    vTaskStartScheduler();
+
+    while(1) {}
+
+    return 0;
+
 }
 
 #define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test

@@ -10,8 +10,8 @@
  *  	Log		: Moved all button related code in one place
  */
 
-#include <globals.h>
-#include "stm32l476xx.h"
+// #include <globals.h>
+// #include "stm32l476xx.h"
 
 /*************************** Buttons Initializers ****************************/
 
