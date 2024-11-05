@@ -14,7 +14,6 @@ void testFunction_IMU_AcelGyro_Reads() {
 	float gyro_Z = 0;
 
 	while (1) {
-		printMsg("Can print\r\n");
 		if (get_buttonStatus_1()) {
 			acel_X = ((int16_t)imu_readAcel_X() * 0.061) / 1000;
 			acel_Y = ((int16_t)imu_readAcel_Y() * 0.061) / 1000;
