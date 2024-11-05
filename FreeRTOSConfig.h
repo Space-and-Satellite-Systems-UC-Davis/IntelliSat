@@ -7,7 +7,6 @@
 
    your application. */
 
-<<<<<<< HEAD
 
 
 // Use kernal provided functions for managing memory (1)
@@ -47,33 +46,6 @@
 #define configIDLE_SHOULD_YIELD                                     0
 
 
-=======
-#define configKERNEL_PROVIDED_STATIC_MEMORY							1
-
-
-#define configUSE_PREEMPTION                                        1
-
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION                     0
-
-#define configUSE_TICKLESS_IDLE                                     0
-
-#define configCPU_CLOCK_HZ                                          80000000
-
-#define configSYSTICK_CLOCK_HZ                                      ( configCPU_CLOCK_HZ / 8 )
-
-#define configTICK_RATE_HZ                                          250
-
-#define configMAX_PRIORITIES                                        5
-
-#define configMINIMAL_STACK_SIZE                                    128
-
-#define configMAX_TASK_NAME_LEN                                     16
-
-#define configUSE_16_BIT_TICKS                                      0
-
-#define configIDLE_SHOULD_YIELD                                     0
-
->>>>>>> parent of 6ffc9e3 (Update RTOS_Scheduler branch (#39))
 #define configUSE_TASK_NOTIFICATIONS                                1
 
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES                       3
