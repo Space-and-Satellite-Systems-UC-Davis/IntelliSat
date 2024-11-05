@@ -7,30 +7,44 @@
 
    your application. */
 
+
+
+// Use kernal provided functions for managing memory (1)
 #define configKERNEL_PROVIDED_STATIC_MEMORY							1
 
-
+// Use preemptive scheduler instead of cooperative (1)
 #define configUSE_PREEMPTION                                        1
 
+// TODO: ... test with (1)
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION                     0
 
+// TODO: Power saving mode test with (1)
 #define configUSE_TICKLESS_IDLE                                     0
 
+// ... DON'T MODIFY
 #define configCPU_CLOCK_HZ                                          80000000
 
+// ... DON'T MODIFY
 #define configSYSTICK_CLOCK_HZ                                      ( configCPU_CLOCK_HZ / 8 )
 
+// ... TODO: Tune?
 #define configTICK_RATE_HZ                                          250
 
+// ... TODO: Might need to increase
 #define configMAX_PRIORITIES                                        5
 
+// Primarily sets the Idle mode stack size TODO: See if it can be reduced
 #define configMINIMAL_STACK_SIZE                                    128
 
+// ... TODO: Reduce if required for prod
 #define configMAX_TASK_NAME_LEN                                     16
 
+// Define tick counter type as 32 bits (0)
 #define configUSE_16_BIT_TICKS                                      0
 
+// Idle does not need to yield immediately (0)
 #define configIDLE_SHOULD_YIELD                                     0
+
 
 #define configUSE_TASK_NOTIFICATIONS                                1
 
