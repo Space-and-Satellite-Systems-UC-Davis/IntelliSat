@@ -16,7 +16,7 @@ uint64_t lastStateChange = 0;
  */
 void mgt_init() {
 	usart_init(MGT_USART, MGT_BAUDRATE);
-	lastStateChange = getSysTime();
+	//lastStateChange = getSysTime();
 }
 
 /**
@@ -37,7 +37,13 @@ bool mgt_waitForAcknowledgement(uint64_t initialTime) {
  * Generic function to send a string over MGT_USART
  */
 void mgt_sendMsg(char* message, ...) {
-	usart_transmitBytes(MGT_USART, message);
+	char buff[128];
+
+	va_list args;
+	va_start(args, message);
+	vsprintf(buff,message,args);
+
+	usart_transmitBytes(MGT_USART, buff);
 }
 
 /**
