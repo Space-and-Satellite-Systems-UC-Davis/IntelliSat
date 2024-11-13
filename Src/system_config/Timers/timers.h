@@ -41,7 +41,7 @@ bool pwm_initTimer(uint32_t period);
  * 
  * @param percent A value between 0-100 to indicate 
 */
-void pwm_setDutyCycle(uint8_t percent);
+void pwm_setDutyCycle(float percent);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-

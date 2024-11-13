@@ -70,7 +70,7 @@ bool pwm_initTimer(uint32_t period) {
 	return true;
 }
 
-void pwm_setDutyCycle(uint8_t percentage) {
+void pwm_setDutyCycle(float percentage) {
 	uint32_t period = PWMTimer->ARR;
 	PWMTimer->CCR1 = (int)(percentage * (period/100));
 }

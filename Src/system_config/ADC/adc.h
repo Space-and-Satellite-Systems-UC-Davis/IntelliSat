@@ -20,11 +20,17 @@ void adc_init();
 //Enables the ADC
 void adc_enable();
 
-//Configures the GPIO pin C0 for the ADC
+//Configures the GPIO pin A2 for the ADC
 void adc_configGPIO();
 
-//Configures the channel to set it to pin C0, and sets sampling time to 640.5 cycles per sample
+//Configures the GPIO pin C0 for the ADC
+void adc_configTestGPIO();
+
+//Configures the channel to set it to pin A2, and sets sampling time to 640.5 cycles per sample
 void adc_setChannel();
+
+//Sets the channel to pin C0 instead
+void adc_setTestChannel();
 
 //Test function
 void adc_setConstantGPIOValue();
@@ -36,20 +42,15 @@ void adc_setConstantGPIOValue();
  */
 uint16_t adc_singleConversion();
 
-/* Converts the adcVal to a millivolt value using 2.048 VREFINT (VREFBUF->CSR VRS bit is 0)
- * @returns: the millivolt value of an int
+/* Converts the adcVal to a milivolt value using 2.048 VREFINT (VREFBUF->CSR VRS bit is 0)
+ * @returns: the milivolt value of an int
  */
 uint16_t adc_adcToVolt1(uint16_t adcVal);
 
-/* Converts the adcVal to a millivolt value using 2.5 VREFINT (VREFBUF->CSR VRS bit is 1)
- * @returns: the millivolt value of an int
+/* Converts the adcVal to a milivolt value using 2.5 VREFINT (VREFBUF->CSR VRS bit is 1)
+ * @returns: the milivolt value of an int
  */
 uint16_t adc_adcToVolt2(uint16_t adcVal);
-
-/* Converts the adcVal to a millivolt value using the battery internal reference (idk why its different)
- * @returns: the millivolt value of an int
- */
-uint16_t adc_adcToBatVolt(uint16_t adcVal);
 
 /* Prints the millivolt value in a volt fashion
  *  @returns: none
