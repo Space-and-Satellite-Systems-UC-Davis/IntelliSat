@@ -10,6 +10,7 @@ extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_FLASH();
+extern void testFunction_loggers();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -31,6 +32,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 5:
 			return testFunction_FLASH;
+		case 9:
+			return testFunction_loggers;
 		default:
 			return testFunction_Nothing;
 	}
