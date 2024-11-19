@@ -16,9 +16,24 @@
 //Macros
 #if   OP_REV == 1
 #define IMU_I2C GPIOF, 1, GPIOF, 0
-#elif OP_REV == 2 || OP_REV == 3 //TODO: Make actual change for Rev3
+#elif OP_REV == 2 //TODO: Make actual change for Rev3
+
 #define IMU_SPI    SPI3
 #define IMU_SPI_CS SPI3_CS
+
+#elif OP_REV == 3
+
+#define IMU1_SPI    SPI2
+#define IMU1_SPI_CS SPI2_CS
+#define IMU0_SPI    SPI3
+#define IMU0_SPI_CS SPI3_CS
+
+enum IMU_SELECT { IMU0, IMU1 };
+
+extern enum IMU_SELECT IMU_global;
+
+void set_IMU(enum IMU_SELECT select);
+
 #endif
 
 //Macros
