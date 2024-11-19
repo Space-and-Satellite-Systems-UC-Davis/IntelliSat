@@ -288,11 +288,13 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
-			uart_8bit_1stop(USART3, baud_rate, true);
+			uart_8bit_1stop(USART1, baud_rate, false);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 			usart2_gpio_init();
+			uart_8bit_1stop(USART2, baud_rate, false);
+            NVIC_EnableIRQ(USART2_IRQn);
 			break;
 		case (int)USART3:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
