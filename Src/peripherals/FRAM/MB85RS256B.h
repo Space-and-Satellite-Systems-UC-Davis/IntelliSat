@@ -26,5 +26,16 @@
 //Insert explanation here
 void FRAM_read_deviceID(uint8_t* MISO);
 
+/**
+ * Reads one sector.
+ *
+ * @param sector   # of sector (0 ~ 4095) to read from. Do not use address.
+ * @param buffer   Buffer to put data into. Ensure appropriate size (4096 bytes).
+ *
+ * @returns Whether read was successfully completed.
+ */
+
+
+bool FRAM_readData(uint32_t address, uint8_t* buffer);
 
 #endif /* PERIPHERALS_FRAM_MB85RS256B_H_ */
