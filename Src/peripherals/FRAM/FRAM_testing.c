@@ -42,10 +42,11 @@ void testFunction_FRAM()
 void FRAMtest_readData()
 {
 	uint8_t buffer[256] = {0};
-	uint32_t address = 0x000000; // Start address for reading
+	uint16_t address = 0x000000;
 
 	if (FRAM_readData(address, buffer))
 	{
+
 		printMsg("FRAM Data Read Successful:\n\r");
 		for (uint16_t i = 0; i < 256; ++i)
 		{
@@ -58,4 +59,20 @@ void FRAMtest_readData()
 	{
 		printMsg("FRAM Data Read Failed.\n\r");
 	}
+}
+
+void FRAMtest_readPage() {
+    uint8_t buffer[256] = {0};
+    uint16_t page = 2;
+
+    if (FRAM_readPage(page, buffer)) {
+        printMsg("FRAM Page Read Successful (Page %u):\n\r", page);
+        for (uint16_t i = 0; i < 256; ++i) {
+            printMsg("0x%02X ", buffer[i]);
+            if ((i + 1) % 16 == 0)
+                printMsg("\n\r");
+        }
+    } else {
+        printMsg("FRAM Page Read Failed.\n\r");
+    }
 }
