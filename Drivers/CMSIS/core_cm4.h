@@ -2056,15 +2056,16 @@ extern volatile int32_t ITM_RxBuffer;                              /*!< External
   \param [in]     ch  Character to transmit.
   \returns            Character to transmit.
  */
+void do_nop() {__NOP();}
+bool is_open() {return ITM->PORT[0U].u32 == 0UL;}
 __STATIC_INLINE uint32_t ITM_SendChar (uint32_t ch)
 {
   if (((ITM->TCR & ITM_TCR_ITMENA_Msk) != 0UL) &&      /* ITM enabled */
       ((ITM->TER & 1UL               ) != 0UL)   )     /* ITM Port #0 enabled */
   {
-    while (ITM->PORT[0U].u32 == 0UL)
-    {
-      __NOP();
-    }
+
+    while_timeout(do_nop, is_open, 1000); //globals.h not used here, no DEFAULT_TIMEOUT_MS access
+
     ITM->PORT[0U].u8 = (uint8_t)ch;
   }
   return (ch);
