@@ -51,3 +51,5 @@ or
 [build] clang: warning: argument unused during compilation: '-mfloat-abi=hard' [-Wunused-command-line-argument]
 ```
 See if you have a CMakeCache.txt anywhere in you directory (most likely `build/debug/build/CMakeCache.txt`), delete it and restart the build process.
+
+Make sure that the version of cmake required by vcpkg is high enough. All available version can be found in ![here](https://github.com/microsoft/vcpkg-ce-catalog/tree/main/tools/kitware)
