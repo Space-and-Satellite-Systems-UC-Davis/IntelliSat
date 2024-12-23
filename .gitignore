@@ -58,3 +58,6 @@ release
 
 # Launch file
 *.launch
+
+# CMake build files
+build/*
