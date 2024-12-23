@@ -1,4 +1,5 @@
 {
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-  "cmake.configureOnOpen": true
+  "cmake.configureOnOpen": true,
+  "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/debug/build/compile_commands.json"
 }
