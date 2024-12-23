@@ -6,7 +6,7 @@ This document shows different sections of the Orbital Platform board, and what n
 
 # OP Revision 1
 
-<img src="../../img/physcial_settings/OP_R1.jpg" width=500 height=500>
+<img src="../../img/physical_settings/OP_R1.jpg" width=500 height=500>
 
 | ID | Name          | User Interaction                                                                   | IntelliSat Interface
 |----|---------------|------------------------------------------------------------------------------------|------------------------------------
@@ -26,7 +26,7 @@ Details on which of these peripherals and pins are used under IntelliSat can be 
 
 # OP Revision 2
 
-<img src="../../img/physcial_settings/OP_R2.jpg" width=500 height=500>
+<img src="../../img/physical_settings/OP_R2.jpg" width=500 height=500>
 
 | ID | Name          | User Interaction                                                                   | IntelliSat Interface
 |----|---------------|------------------------------------------------------------------------------------|--------------------------------------------------------------------

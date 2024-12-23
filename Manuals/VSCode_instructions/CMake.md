@@ -2,17 +2,17 @@
 Based on the article of the same name by Microsoft. Read the original 
 [here](https://devblogs.microsoft.com/cppblog/importing-st-projects-into-visual-studio-code/).
 
-## Pre-requesites
+## Pre-requisites
 
 This document assumes the following:
 - The following is installed:
 	- STM32CubeIDE/STM32CubeMX
 	- Visual Studio Code (vs code)
 	- Embedded tools extension ([link](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-embedded-tools)) (version 0.3.0 or greater)
-	- vcpkg (See seperate guide)
+	- vcpkg (See separate guide)
 	- A configured STM32CubeIDE/STM32CubeMX project
-### Highly Recommanded
-Optional but make deveopment easier
+### Highly Recommended
+Optional but make development easier
 - C/C++ extension ([link](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools))
 - CMake Tools extension ([link](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools))
 - Cortex-Debug extension ([link](https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug))

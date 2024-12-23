@@ -1,5 +1,5 @@
 # vcpkg install
-This is a guide of the variaus ways to install vcpkg for maneging cmake and ninja version.
+This is a guide of the various ways to install vcpkg for managing cmake and ninja version.
 ## Windows:
 Winget
 ```
@@ -25,7 +25,7 @@ bash/zsh/fish
 . <(curl https://aka.ms/vcpkg-init.sh -L)
 ```
 ## Manual
-The script should work and due to additional requirements this sould just be used only as a backup method
+The script should work and due to additional requirements this should just be used only as a backup method
 
 ### Windows
 
@@ -58,4 +58,4 @@ cd vcpkg && bootstrap-vcpkg.bat
 export VCPKG_ROOT=/path/to/vcpkg
 export PATH=$VCPKG_ROOT:$PATH
 ```
-__NOTE: To make it permenent, add it to your profile (e.g., `~/.bashrc` or `~/.zshrc`)__
+__NOTE: To make it permanent, add it to your profile (e.g., `~/.bashrc` or `~/.zshrc`)__
