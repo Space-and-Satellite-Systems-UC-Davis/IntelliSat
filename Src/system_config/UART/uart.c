@@ -144,7 +144,7 @@ void usart1_gpio_init() {
 
 	// configure each pin to AF7
 	GPIOG->AFR[1] &= ~(GPIO_AFRH_AFSEL9_Msk | GPIO_AFRH_AFSEL10_Msk);
-	GPIOG->AFR[1] |= (7U << GPIO_AFRH_AFSEL9_Pos) | (7U << GPIO_AFRH_AFSEL10_Pos);
+	GPIOG->AFR[1] |= (GPIO_AFRX_AF7 << GPIO_AFRH_AFSEL9_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRH_AFSEL10_Pos);
 #endif
 
 	return;
@@ -160,7 +160,7 @@ void usart2_gpio_init() {
 
 	// configure each pin to AF7
 	GPIOD->AFR[0] &= ~(GPIO_AFRL_AFSEL5_Msk | GPIO_AFRL_AFSEL6_Msk);
-	GPIOD->AFR[0] |= (7U << GPIO_AFRL_AFSEL6_Pos) | (7U << GPIO_AFRL_AFSEL5_Pos);
+	GPIOD->AFR[0] |= (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL6_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL5_Pos);
 #endif
 	return;
 
@@ -239,8 +239,8 @@ void lpuart_gpio_init() {
 	// configure each pin to AF8
 	GPIOG->AFR[0] &= ~(GPIO_AFRL_AFSEL7_Msk);
 	GPIOG->AFR[1] &= ~(GPIO_AFRH_AFSEL8_Msk);
-	GPIOG->AFR[0] |= (8U << GPIO_AFRL_AFSEL7_Pos);
-	GPIOG->AFR[1] |= (8U << GPIO_AFRH_AFSEL8_Pos);
+	GPIOG->AFR[0] |= (GPIO_AFRX_AF8 << GPIO_AFRL_AFSEL7_Pos);
+	GPIOG->AFR[1] |= (GPIO_AFRX_AF8 << GPIO_AFRH_AFSEL8_Pos);
 
 #endif
 
