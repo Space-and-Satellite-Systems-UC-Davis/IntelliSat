@@ -28,6 +28,16 @@
 #include <MAG/QMC5883L.h>
 #include <print_scan.h>
 
+#define SCB_CPACR_CPN_POS 20U
+#define SCB_CPACR_CPN_0 (0x01UL << SCB_CPACR_CPN_POS)
+#define SCB_CPACR_CPN_1 (0x02UL << SCB_CPACR_CPN_POS)
+
+enum scb_cpacr_cpn_privileges {
+    SCB_CPACR_CPN_ACCESS_DENIED,
+    SCB_CPACR_CPN_PRVILEGED_ONLY,
+    SCB_CPACR_CPN__RESERVED,
+    SCB_CPACR_CPN_FULL_ACCESS
+};
 
 /**
  * Configures only what is necessary to boot.
@@ -66,7 +76,7 @@ void init_first_time() {
  * @returns None
  */
 void init_platform(bool run_scheduler) {
-    SCB->CPACR|= 0x00F00000; // Enable the Floating-Point Unit for full access
+    SCB->CPACR |= SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CPN_POS; // Enable the Floating-Point Unit for full access
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     //TODO: hdd_init().
