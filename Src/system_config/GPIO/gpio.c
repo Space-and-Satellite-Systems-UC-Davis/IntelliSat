@@ -23,11 +23,11 @@
 #include "gpio.h"
 
 void gpio_high(GPIO_TypeDef * port, int pin) {
-	port->BSRR = 1 << pin;
+	port->BSRR = GPIO_BSRR_BS_ODX_SET << pin; // 15:0 set ODx bit and 
 }
 
 void gpio_low(GPIO_TypeDef * port, int pin) {
-	port->BSRR = 1 << (pin+16);
+	port->BSRR = GPIO_BSRR_BR_ODX_RESET << (pin+GPIO_BSRR_BR0_Pos); // 31:16 reset ODx bit
 }
 
 void gpio_set(GPIO_TypeDef * port, int pin, int value) {
@@ -50,18 +50,18 @@ int gpio_read(GPIO_TypeDef * port, int pin) {
 }
 
 void gpio_mode(GPIO_TypeDef * port, int pin, enum gpio_modes mode, int open_drain, int speed, int pull) {
-	port->MODER = (port->MODER & ~(0x3 << (pin*2))) | ((mode & 0x3) << (pin*2));
-	port->OTYPER = (port->OTYPER & ~(0x1 << pin)) | ((open_drain & 0x1) << pin);
-	port->OSPEEDR = (port->OSPEEDR & ~(0x3 << (pin*2))) | ((speed & 0x3) << (pin*2));
-	port->PUPDR = (port->PUPDR & ~(0x3 << (pin*2))) | ((pull & 0x3) << (pin*2));
+	port->MODER = (port->MODER & ~(GPIO_MODER_Analog << (pin*2))) | ((mode & GPIO_MODER_Analog) << (pin*2));
+	port->OTYPER = (port->OTYPER & ~(GPIO_OTYPER_OPEN_DRAIN << pin)) | ((open_drain & GPIO_OTYPER_OPEN_DRAIN) << pin);
+	port->OSPEEDR = (port->OSPEEDR & ~(GPIO_MODER_Analog << (pin*2))) | ((speed & GPIO_MODER_Analog) << (pin*2));
+	port->PUPDR = (port->PUPDR & ~(GPIO_MODER_Analog << (pin*2))) | ((pull & GPIO_MODER_Analog) << (pin*2));
 }
 
 void gpio_af(GPIO_TypeDef * port, uint8_t pin, uint8_t afn) {
-	port->MODER = (port->MODER & ~(0x3 << (pin*2))) | ((0x2) << (pin*2));
+	port->MODER = (port->MODER & ~(GPIO_MODER_Analog << (pin*2))) | ((GPIO_MODER_AlternateFunction) << (pin*2));
 	if (pin > 7) {
-		port->AFR[1] = (port->AFR[1] & ~(0xF << ((pin-8)*4))) | ((afn & 0xF) << ((pin-8)*4));
+		port->AFR[1] = (port->AFR[1] & ~(GPIO_AFRX_AF15 << ((pin-8)*4))) | ((afn & GPIO_AFRX_AF15) << ((pin-8)*4));
 	} else {
-		port->AFR[0] = (port->AFR[0] & ~(0xF << (pin*4))) | ((afn & 0xF) << (pin*4));
+		port->AFR[0] = (port->AFR[0] & ~(GPIO_AFRX_AF15 << (pin*4))) | ((afn & GPIO_AFRX_AF15) << (pin*4));
 	}
 	gpio_low(port, pin);
 }
