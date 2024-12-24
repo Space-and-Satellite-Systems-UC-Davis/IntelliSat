@@ -11,19 +11,19 @@
 
 void softi2c_lineMode(GPIO_TypeDef * port, int pin, bool deassert_line) {
 	if (deassert_line) {
-		port->MODER &= ~(0x3 << (pin*2));
+		port->MODER &= ~(GPIO_MODER_Analog << (pin*2));
 	} else {
-		port->MODER = (port->MODER & ~(0x3 << (pin*2))) | (1 << pin*2);
+		port->MODER = (port->MODER & ~(GPIO_MODER_Analog << (pin*2))) | (GPIO_OTYPER_OPEN_DRAIN << pin*2);
 	}
 }
 
 void softi2c_init(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
-	scl_port->OTYPER = (scl_port->OTYPER & ~(1 << scl_pin)) | (0 << scl_pin); // push pull
-	sda_port->OTYPER = (sda_port->OTYPER & ~(1 << sda_pin)) | (0 << sda_pin);
-	scl_port->OSPEEDR = (scl_port->OSPEEDR & ~(0x3 << (scl_pin*2))) | (3 << scl_pin*2); // very high speed
-	sda_port->OSPEEDR = (sda_port->OSPEEDR & ~(0x3 << (sda_pin*2))) | (3 << sda_pin*2);
-	scl_port->BSRR = 1 << (scl_pin + 16); // drive low when asserted
-	sda_port->BSRR = 1 << (sda_pin + 16);
+	scl_port->OTYPER = (scl_port->OTYPER & ~(GPIO_OTYPER_OPEN_DRAIN << scl_pin)) | (GPIO_OTYPER_PUSH_PULL << scl_pin); // push pull
+	sda_port->OTYPER = (sda_port->OTYPER & ~(GPIO_OTYPER_OPEN_DRAIN << sda_pin)) | (GPIO_OTYPER_PUSH_PULL << sda_pin);
+	scl_port->OSPEEDR = (scl_port->OSPEEDR & ~(GPIO_OSPEEDR_VERY_HIGH << (scl_pin*2))) | (GPIO_OSPEEDR_VERY_HIGH << scl_pin*2); // very high speed
+	sda_port->OSPEEDR = (sda_port->OSPEEDR & ~(GPIO_OSPEEDR_VERY_HIGH << (sda_pin*2))) | (GPIO_OSPEEDR_VERY_HIGH << sda_pin*2);
+	scl_port->BSRR = GPIO_BSRR_BR_ODX_RESET << (scl_pin + GPIO_BSRR_BR0_Pos); // drive low when asserted
+	sda_port->BSRR = GPIO_BSRR_BR_ODX_RESET << (sda_pin + GPIO_BSRR_BR0_Pos);
 	softi2c_lineMode(scl_port, scl_pin, 1);
 	softi2c_lineMode(sda_port, sda_pin, 1);
 }
