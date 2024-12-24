@@ -100,9 +100,9 @@ void spi3_gpioInit() {
 
 	// set each pin to AF6
 	GPIOB->AFR[0] |=
-		  6U << GPIO_AFRL_AFSEL3_Pos
-		| 6U << GPIO_AFRL_AFSEL4_Pos
-		| 6U << GPIO_AFRL_AFSEL5_Pos;
+		  GPIO_AFRH_AFSEL_AF6 << GPIO_AFRL_AFSEL3_Pos
+		| GPIO_AFRH_AFSEL_AF6 << GPIO_AFRL_AFSEL4_Pos
+		| GPIO_AFRH_AFSEL_AF6 << GPIO_AFRL_AFSEL5_Pos;
 #endif
 
 }
@@ -139,9 +139,9 @@ void spi2_gpioInit() {
 		| GPIO_AFRH_AFSEL15_Msk);
 	// set each pin to AF5
 	GPIOB->AFR[1] |=
-		  5U << GPIO_AFRH_AFSEL13_Pos
-		| 5U << GPIO_AFRH_AFSEL14_Pos
-		| 5U << GPIO_AFRH_AFSEL15_Pos;
+		  GPIO_AFRH_AFSEL_AF5 << GPIO_AFRH_AFSEL13_Pos
+		| GPIO_AFRH_AFSEL_AF5 << GPIO_AFRH_AFSEL14_Pos
+		| GPIO_AFRH_AFSEL_AF5 << GPIO_AFRH_AFSEL15_Pos;
 
 #endif
 
@@ -176,8 +176,8 @@ void spi1_config() {
 
 	spi_disable(SPI1, SPI1_CS);
 
-	SPI1->CR1 = 0;
-	SPI1->CR2 = 0;
+	SPI1->CR1 = SPI_CR_RESET;
+	SPI1->CR2 = SPI_CR_RESET;
 	// CR1
 	// CR2
 
@@ -191,16 +191,16 @@ void spi2_config() {
 
 	spi_disable(SPI2, SPI2_CS);
 
-	SPI2->CR1 = 0;
-	SPI2->CR2 = 0;
+	SPI2->CR1 = SPI_CR_RESET;
+	SPI2->CR2 = SPI_CR_RESET;
 	SPI2->CR1 |=
-		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
+		  SPI_CR1_BR_R64 << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR;
 	SPI2->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
-		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
+		| SPI_CR2_DS_8_BIT << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
 
 	spi_enable(SPI2);
 }
@@ -211,10 +211,10 @@ void spi3_config() {
 
 	spi_disable(SPI3, SPI3_CS);
 
-	SPI3->CR1 = 0;
-	SPI3->CR2 = 0;
+	SPI3->CR1 = SPI_CR_RESET;
+	SPI3->CR2 = SPI_CR_RESET;
 	SPI3->CR1 |=
-		  0U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
+		  SPI_CR1_BR_R2 << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR
@@ -222,7 +222,7 @@ void spi3_config() {
 		| SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
-		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
+		| SPI_CR2_DS_8_BIT << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
 
 	spi_enable(SPI3);
 }
