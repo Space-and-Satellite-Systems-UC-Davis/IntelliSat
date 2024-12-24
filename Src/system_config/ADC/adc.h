@@ -12,6 +12,11 @@
 #include <GPIO/gpio.h>
 #include "../../tools/print_scan.h"
 
+#define RCC_CCIPR_ADCSEL_SYSCLK (3 << RCC_CCIPR_ADCSEL_Pos)
+#define GPIO_MODER_MODE0_ANALOG (3 << GPIO_MODER_MODE0_Pos)
+#define ADC_SQR1_SQ1_CHAN18_AS_1st_CONV (18 << ADC_SQR1_SQ1_Pos)
+#define ADC_CHAN18_640_5_CLK_CYC (7 << ADC_SMPR2_SMP18_Pos)
+
 //CALL THESE IN ORDER
 
 //Initializes ADC clocks
