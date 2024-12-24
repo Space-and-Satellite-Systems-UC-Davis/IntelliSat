@@ -19,8 +19,8 @@ void rtc_openWritingPriveledge() {
 	backup_domain_controlEnable();
 
 	// Enable RTC Write Privilege
-	RTC->WPR = 0xCA;
-	RTC->WPR = 0x53;
+	RTC->WPR = RTC_WPR_WRITE_PROTECT_ON_1;
+	RTC->WPR = RTC_WPR_WRITE_PROTECT_ON_2;
 
 	// Enter RTC Initialization mode, wait for confirmation of initialization mode
 	RTC->ISR |= RTC_ISR_INIT;
@@ -32,7 +32,7 @@ void rtc_closeWritingPriveledge() {
 	RTC->ISR &= ~RTC_ISR_INIT;
 
 	// Enable RTC Write Protection
-	RTC->WPR = 0xFF;
+	RTC->WPR = RTC_WPR_WRITE_PROTECT_OFF;
 
 	// Close Backup Domain Writing Access
 	backup_domain_controlDisable();
