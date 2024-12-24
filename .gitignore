@@ -60,4 +60,4 @@ release
 *.launch
 
 # CMake build files
-build/*
+build
