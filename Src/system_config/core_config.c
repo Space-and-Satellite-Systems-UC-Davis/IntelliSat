@@ -35,6 +35,17 @@
 // Global variable
 int core_MHz;
 
+bool is_LSI_ready() {return !(RCC->CSR & RCC_CSR_LSIRDY);}
+bool is_LSE_ready() {return !(RCC->BDCR & RCC_BDCR_LSERDY);}
+bool is_PLL_ready() {return !(RCC->CR & RCC_CR_PLLRDY);}
+bool is_PLLSAI1_ready() {return !(RCC->CR & RCC_CR_PLLSAI1RDY);}
+bool is_GPIOA_ready() {return (GPIOA->OTYPER == 0xFFFFFFFF);}
+bool is_GPIOB_ready() {return (GPIOB->OTYPER == 0xFFFFFFFF);}
+bool is_GPIOC_ready() {return (GPIOC->OTYPER == 0xFFFFFFFF);}
+bool is_GPIOD_ready() {return (GPIOD->OTYPER == 0xFFFFFFFF);}
+bool is_GPIOE_ready() {return (GPIOE->OTYPER == 0xFFFFFFFF);}
+bool is_GPIOF_ready() {return (GPIOF->OTYPER == 0xFFFFFFFF);}
+bool is_GPIOG_ready() {return (GPIOG->OTYPER == 0xFFFFFFFF);}
 void init_coreClocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
@@ -55,9 +66,9 @@ void init_coreClocks() {
 	// enable internal oscillators
 	RCC->CR |= RCC_CR_HSION; 					// enable HSI
 	RCC->CSR |= RCC_CSR_LSION;					// Turn on the LSI Oscillator
-	while (!(RCC->CSR & RCC_CSR_LSIRDY));		// wait for the LSI Oscillator to stabilize
+	empty_while_timeout(is_LSI_ready, DEFAULT_TIMEOUT_MS); // wait for the LSI Oscillator to stabilize
 	// RCC->BDCR |= RCC_BDCR_LSEON;				// Turn on the LSE Oscillator
-	// while (!(RCC->BDCR & RCC_BDCR_LSERDY));	// wait for the LSE Oscillator to stabilize
+	// empty_while_timeout(is_LSE_ready, DEFAULT_TIMEOUT_MS); // wait for the LSE Oscillator to stabilize
 
 	// configure Phased Lock Loop
 	RCC->PLLCFGR =
@@ -80,8 +91,8 @@ void init_coreClocks() {
 		| 12 << RCC_PLLSAI1CFGR_PLLSAI1N_Pos; 	// VCO multiplication factor set to 12
 	// enable PLL and PLLSAI1
 	RCC->CR |= RCC_CR_PLLON | RCC_CR_PLLSAI1ON;
-	while (!(RCC->CR & RCC_CR_PLLRDY));
-	while (!(RCC->CR & RCC_CR_PLLSAI1RDY));
+	empty_while_timeout(is_PLL_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_PLLSAI1_ready, DEFAULT_TIMEOUT_MS);
 	RCC->CFGR = RCC_CFGR_SW;	// system clock to PLL
 
 	// configure UART to use HSI16
@@ -113,13 +124,13 @@ void init_coreClocks() {
 		| RCC_AHB2ENR_GPIOFEN
 		| RCC_AHB2ENR_GPIOGEN;
 	// wait until each GPIO is clocked and ready
-	while (GPIOA->OTYPER == 0xFFFFFFFF);
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	while (GPIOC->OTYPER == 0xFFFFFFFF);
-	while (GPIOD->OTYPER == 0xFFFFFFFF);
-	while (GPIOE->OTYPER == 0xFFFFFFFF);
-	while (GPIOF->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOA_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOC_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOD_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOE_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOF_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOG_ready, DEFAULT_TIMEOUT_MS);
 }
 
 
