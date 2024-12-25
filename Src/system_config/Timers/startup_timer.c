@@ -8,8 +8,8 @@
 
 #include "timers.h"
 
-#define timer_startupTimerOn()	StartupTimer->CR1 |=  TIM_CR1_CEN;
-#define timer_startupTimerOff()	StartupTimer->CR1 &= ~TIM_CR1_CEN;
+#define timer_startupTimerOn()	StartupTimer->CR1 |=  TIM_CR1_CEN
+#define timer_startupTimerOff()	StartupTimer->CR1 &= ~TIM_CR1_CEN
 
 
 #define MAX_STARTUP_COUNT (30 * 60)		// 30 minutes * 60 seconds per minute
