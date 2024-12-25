@@ -11,17 +11,17 @@
 
 void softi2c_lineMode(GPIO_TypeDef * port, int pin, bool deassert_line) {
 	if (deassert_line) {
-		port->MODER &= ~(GPIO_MODER_Analog << (pin*2));
+		port->MODER &= ~(GPIO_MODER_Analog << (pin*GPIO_MODER_BITS_SPAN));
 	} else {
-		port->MODER = (port->MODER & ~(GPIO_MODER_Analog << (pin*2))) | (GPIO_OTYPER_OPEN_DRAIN << pin*2);
+		port->MODER = (port->MODER & ~(GPIO_MODER_Analog << (pin*GPIO_MODER_BITS_SPAN))) | (GPIO_OTYPER_OPEN_DRAIN << pin*GPIO_MODER_BITS_SPAN);
 	}
 }
 
 void softi2c_init(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
 	scl_port->OTYPER = (scl_port->OTYPER & ~(GPIO_OTYPER_OPEN_DRAIN << scl_pin)) | (GPIO_OTYPER_PUSH_PULL << scl_pin); // push pull
 	sda_port->OTYPER = (sda_port->OTYPER & ~(GPIO_OTYPER_OPEN_DRAIN << sda_pin)) | (GPIO_OTYPER_PUSH_PULL << sda_pin);
-	scl_port->OSPEEDR = (scl_port->OSPEEDR & ~(GPIO_OSPEEDR_VERY_HIGH << (scl_pin*2))) | (GPIO_OSPEEDR_VERY_HIGH << scl_pin*2); // very high speed
-	sda_port->OSPEEDR = (sda_port->OSPEEDR & ~(GPIO_OSPEEDR_VERY_HIGH << (sda_pin*2))) | (GPIO_OSPEEDR_VERY_HIGH << sda_pin*2);
+	scl_port->OSPEEDR = (scl_port->OSPEEDR & ~(GPIO_OSPEEDR_VERY_HIGH << (scl_pin*GPIO_OSPEEDR_BITS_SPAN))) | (GPIO_OSPEEDR_VERY_HIGH << scl_pin*GPIO_OSPEEDR_BITS_SPAN); // very high speed
+	sda_port->OSPEEDR = (sda_port->OSPEEDR & ~(GPIO_OSPEEDR_VERY_HIGH << (sda_pin*GPIO_OSPEEDR_BITS_SPAN))) | (GPIO_OSPEEDR_VERY_HIGH << sda_pin*GPIO_OSPEEDR_BITS_SPAN);
 	scl_port->BSRR = GPIO_BSRR_BR_ODX_RESET << (scl_pin + GPIO_BSRR_BR0_Pos); // drive low when asserted
 	sda_port->BSRR = GPIO_BSRR_BR_ODX_RESET << (sda_pin + GPIO_BSRR_BR0_Pos);
 	softi2c_lineMode(scl_port, scl_pin, 1);
@@ -68,7 +68,7 @@ void softi2c_send8(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port
 	for (int i = 0; i < 8; i++) {
 		softi2c_lineMode(scl_port, scl_pin, 0);
 		softi2c_delay();
-		softi2c_lineMode(sda_port, sda_pin, (data8 << i) & (1 << 7));
+		softi2c_lineMode(sda_port, sda_pin, (data8 << i) & MSB_8BIT_Msk);
 		softi2c_delay();
 		softi2c_lineMode(scl_port, scl_pin, 1);
 		softi2c_delay(); softi2c_delay();
@@ -81,7 +81,7 @@ int softi2c_read8(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port,
 	for (int i = 0; i < 8; i++) {
 		softi2c_lineMode(scl_port, scl_pin, 0);
 		softi2c_delay();
-		data |= gpio_read(sda_port, sda_pin) << (7-i);
+		data |= gpio_read(sda_port, sda_pin) << (_8th_BIT_OFFSET-i);
 		softi2c_delay();
 		softi2c_lineMode(scl_port, scl_pin, 1);
 		softi2c_delay(); softi2c_delay();
