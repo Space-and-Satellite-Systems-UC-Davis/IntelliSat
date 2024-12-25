@@ -14,10 +14,12 @@ typedef enum {false, true} bool;
 #define NULL 0
 
 #define WILL_LOOPS_TIMEOUT true
+#define DEFAULT_TIMEOUT_MS 1000
 
 void delay_ms(uint64_t ms);
 void nop(long long nop_loops);
 uint64_t getSysTime();
+
 void while_timeout(void (*do_work)(), bool (*is_done)(), uint64_t timeout_ms);
 void empty_while_timeout(bool (*is_done)(), uint64_t timeout_ms);
 

@@ -1,4 +1,9 @@
-// #include <globals.h>
+#include <globals.h>
+
+//Many loops just stall until is_done is triggered, so they use this as placeholder
+void empty_function() {
+    return;
+}
 
 bool is_time_out(uint64_t start_time, uint64_t timeout_ms) {
     return (WILL_LOOPS_TIMEOUT == true) && ((start_time + timeout_ms) < getSysTime());
