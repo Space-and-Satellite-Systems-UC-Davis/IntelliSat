@@ -9,6 +9,8 @@
 
 //USES ADC1
 
+bool is_ADC_ready() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
+bool is_VREFBUF_ready() { return (VREFBUF->CSR & VREFBUF_CSR_VRR) != 0; }
 void adc_init(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; //enables ADC clock
 	//ADC1->CR |= ADC_CR_ADDIS; //Disables ADC
@@ -20,12 +22,12 @@ void adc_init(){
 	nop(10000); //waits a bit
 	ADC1->CR &= ~(ADC_CR_ADCALDIF); //Sets it to single ended mode
 	ADC1->CR |= ADC_CR_ADCAL; //Calibrates ADC
-	while ((ADC1->CR & ADC_CR_ADCAL) != 0) { } //Waits until ADC is calibrated
+	empty_while_timeout(is_ADC_ready, DEFAULT_TIMEOUT_MS); //Waits until ADC is calibrated
 
 	VREFBUF->CSR |= VREFBUF_CSR_ENVR; //Enables internal reference buffer
 	VREFBUF->CSR &= ~(VREFBUF_CSR_HIZ); //IDK If this is needed or not
 
-	while((VREFBUF->CSR & VREFBUF_CSR_VRR) != 0){} //Waits until voltage reference value reaches expected output
+	empty_while_timeout(is_VREFBUF_ready, DEFAULT_TIMEOUT_MS); //Waits until voltage reference value reaches expected output
 
 	VREFBUF->CSR |= VREFBUF_CSR_VRS; //Sets internal reference buffer to around 2.5V
 
@@ -34,14 +36,16 @@ void adc_init(){
 
 }
 
+bool is_ADRDY_reset() { return (ADC1->ISR & ADC_ISR_ADRDY) == 0; }
 void adc_enable(){
 	ADC1->ISR |= ADC_ISR_ADRDY; // Set before enabling ADC
 	ADC1->CR |= ADC_CR_ADEN; //Enables ADC
-	while ((ADC1->ISR & ADC_ISR_ADRDY) == 0) { } //Waits until ADRDY is reset
+	empty_while_timeout(is_ADRDY_reset, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
 }
+
 void adc_configGPIO(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN; //enables GPIO C
-	while (GPIOC->OTYPER == 0xFFFFFFFF); //Waits until its done enabling
+	empty_while_timeout(is_GPIOC_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
 
 	GPIOC->OTYPER       &= ~( GPIO_OTYPER_OT0 ); //Reset C0 pin
 	GPIOC->PUPDR        &= ~( GPIO_OSPEEDR_OSPEED0 ); //Reset C0 pin
@@ -55,7 +59,7 @@ void adc_configGPIO(){
 
 void adc_setConstantGPIOValue(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN; //enables GPIO B
-	while (GPIOB->OTYPER == 0xFFFFFFFF); //Waits until its done enabling
+	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
 
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE3_Msk
@@ -87,18 +91,20 @@ void adc_setChannel(){
 
 // Perform a single ADC conversion.
 // (Assumes that there is only one channel per sequence)
+bool is_EOC_up() { return !(ADC1->ISR & ADC_ISR_EOC); }
+bool is_EOS_up() { return !(ADC1->ISR & ADC_ISR_EOS); }
 uint16_t adc_singleConversion() {
-  // Start the ADC conversion.
-  ADC1->CR  |=  ( ADC_CR_ADSTART );
-  // Wait for the 'End Of Conversion' flag.
-  while ( !( ADC1->ISR & ADC_ISR_EOC ) ) {};
-  // Read the converted value (this also clears the EOC flag).
-  uint16_t adc_val = ADC1->DR;
-  // Wait for the 'End Of Sequence' flag and clear it.
-  while ( !( ADC1->ISR & ADC_ISR_EOS ) ) {};
-  ADC1->ISR |=  ( ADC_ISR_EOS );
-  // Return the ADC value.
-  return adc_val;
+	// Start the ADC conversion.
+	ADC1->CR  |=  ( ADC_CR_ADSTART );
+	// Wait for the 'End Of Conversion' flag.
+	empty_while_timeout(is_EOC_up, DEFAULT_TIMEOUT_MS);
+	// Read the converted value (this also clears the EOC flag).
+	uint16_t adc_val = ADC1->DR;
+	// Wait for the 'End Of Sequence' flag and clear it.
+	empty_while_timeout(is_EOS_up, DEFAULT_TIMEOUT_MS);
+	ADC1->ISR |=  ( ADC_ISR_EOS );
+	// Return the ADC value.
+	return adc_val;
 }
 
 uint16_t adc_adcToVolt1(uint16_t adcVal){

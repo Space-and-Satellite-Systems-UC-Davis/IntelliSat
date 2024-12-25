@@ -35,17 +35,10 @@
 // Global variable
 int core_MHz;
 
-bool is_LSI_ready() {return !(RCC->CSR & RCC_CSR_LSIRDY);}
-bool is_LSE_ready() {return !(RCC->BDCR & RCC_BDCR_LSERDY);}
-bool is_PLL_ready() {return !(RCC->CR & RCC_CR_PLLRDY);}
-bool is_PLLSAI1_ready() {return !(RCC->CR & RCC_CR_PLLSAI1RDY);}
-bool is_GPIOA_ready() {return (GPIOA->OTYPER == 0xFFFFFFFF);}
-bool is_GPIOB_ready() {return (GPIOB->OTYPER == 0xFFFFFFFF);}
-bool is_GPIOC_ready() {return (GPIOC->OTYPER == 0xFFFFFFFF);}
-bool is_GPIOD_ready() {return (GPIOD->OTYPER == 0xFFFFFFFF);}
-bool is_GPIOE_ready() {return (GPIOE->OTYPER == 0xFFFFFFFF);}
-bool is_GPIOF_ready() {return (GPIOF->OTYPER == 0xFFFFFFFF);}
-bool is_GPIOG_ready() {return (GPIOG->OTYPER == 0xFFFFFFFF);}
+bool is_LSI_ready() { return !(RCC->CSR & RCC_CSR_LSIRDY); }
+bool is_LSE_ready() { return !(RCC->BDCR & RCC_BDCR_LSERDY); }
+bool is_PLL_ready() { return !(RCC->CR & RCC_CR_PLLRDY); }
+bool is_PLLSAI1_ready() { return !(RCC->CR & RCC_CR_PLLSAI1RDY); }
 void init_coreClocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
