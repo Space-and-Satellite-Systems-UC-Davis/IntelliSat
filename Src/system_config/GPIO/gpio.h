@@ -16,7 +16,16 @@
 
 #include "stm32l476xx.h"
 
-#define GPIO_OUT_TRUE 0x1
+#define GPIO_MODER_BITS_SPAN 2U
+
+#define GPIO_OSPEEDR_BITS_SPAN 2U
+
+#define GPIO_PUPDR_BITS_SPAN 2U
+
+#define GPIO_PUPDR_PUPDx_MSK 3U
+
+#define GPIO_AFRx_AFSEL_BITS_LEN 4U // Bit# of GPIOx_AFRH_AFELx to be set can be obtain by $$(Pin - GPIO_AFRH_AFSEL_PIN_BIT_OFFSET) * GPIO_AFRx_AFSEL_BITS_LEN
+#define GPIO_AFRH_AFSEL_PIN_BIT_OFFSET 8U // Bit# of GPIOx_AFRH_AFELx to be set can be obtain by $$(Pin - GPIO_AFRH_AFSEL_PIN_BIT_OFFSET) * GPIO_AFRx_AFSEL_BITS_LEN
 
 enum gpio_modes {
 	GPIO_MODER_Input,
@@ -25,9 +34,15 @@ enum gpio_modes {
 	GPIO_MODER_Analog
 };
 
-enum gpio_pull_states {
+enum gpio_out_states {
 	GPIO_OTYPER_PUSH_PULL,
 	GPIO_OTYPER_OPEN_DRAIN
+};
+
+enum gpio_pull_state {
+	GPIO_PUPDR_NO_PULL,
+	GPIO_PUPDR_PULL_UP,
+	GPIO_PUPDR_PULL_DOWN
 };
 
 enum gpio_alternate_func {
