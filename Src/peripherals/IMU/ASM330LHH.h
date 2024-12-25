@@ -45,6 +45,40 @@
 #define IMU_FS_2000_dps 	12
 #define IMU_FS_4000_dps 	1
 
+#define IMU_SPI_RW 0x80 // 1 is read and 0 is write
+#define IMU_SPI_DATA_DI_Msk 0x7F // data DI(7:0) (write mode). This is the data that is written into the device (MSb first)
+
+#define IMU_CTRL1_XL_ODR_Msk 0xFF // Accelerometer ODR selection
+#define IMU_CTRL1_XL_FS_Msk 0xF // Accelerometer full-scale selection
+#define IMU_CRTL1_XL_LPF2_XL_EN 0x1 // Accelerometer high-resolution selection
+
+#define IMU_CTRL1_XL_ODR_SPAN 4U
+#define IMU_CTRL1_XL_FS_SPAN 2U
+#define IMU_CTRL1_XL_LPF2_XL_SPAN 1U
+
+#define IMU_CTRL2_G_Msk 0xFF // Gyroscope control register 2 (r/w)
+
+#define OUT_TEMP_L_Pos 0x20
+#define OUT_TEMP_H_Pos 0x21
+
+#define OUTX_L_G_Pos 0x22
+#define OUTX_H_G_Pos 0x23
+
+#define OUTY_L_G_Pos 0x24
+#define OUTY_H_G_Pos 0x25
+
+#define OUTZ_L_G_Pos 0x26
+#define OUTZ_H_G_Pos 0x27
+
+#define OUTX_L_A_Pos 0x28
+#define OUTX_H_A_Pos 0x29
+
+#define OUTY_L_A_Pos 0x2A
+#define OUTY_H_A_Pos 0x2B
+
+#define OUTZ_L_A_Pos 0x2C
+#define OUTZ_H_A_Pos 0x2D
+
 /**
  * Configures the accelerometer control register of an IMU device.
  *
