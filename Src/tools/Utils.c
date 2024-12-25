@@ -19,3 +19,7 @@ void while_timeout(void (*do_work)(), bool (*is_done)(), uint64_t timeout_ms) {
         do_work();
     }
 }
+
+void empty_while_timeout(bool (*is_done)(), uint64_t timeout_ms) {
+    while_timeout(empty_function, is_done, timeout_ms);
+}
