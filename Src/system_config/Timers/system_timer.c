@@ -25,7 +25,6 @@ void delay_ms(uint64_t ms) {
 	while (systick_time - start_time < ms);
 }
 
-//Returns elapsed ms
 uint64_t getSysTime() {
 	return systick_time;
 }
@@ -51,7 +50,6 @@ void systick_init(bool run_scheduler) {
  * Interrupt handler for the SysTick timer.
  * Increments the systick_time variable and
  * updates the status of the heartbeat and activity LEDs.
- * Called every ms. Not directly by our code.
  *
  * @param None
  * @returns None
