@@ -21,13 +21,13 @@
 #include <globals.h>
 #include <GPIO/gpio.h>
 
-#define GPIO_AFRH_AFSEL_AF5 0x5
-#define GPIO_AFRH_AFSEL_AF6 0x6
+#define GPIO_AFRH_AFSEL_AF5 5U
+#define GPIO_AFRH_AFSEL_AF6 6U
 
-#define SPI_CR_RESET 0x0
-#define SPI_CR1_BR_R2 0x0
-#define SPI_CR1_BR_R64 0x5
-#define SPI_CR2_DS_8_BIT 0x5
+#define SPI_CR_RESET 0U
+#define SPI_CR1_BR_R2 0U
+#define SPI_CR1_BR_R64 5U
+#define SPI_CR2_DS_8_BIT 5U
 
 // predefined macros for cs_port,cs_pin (useful for later spi functions)
 #if OP_REV == 1
