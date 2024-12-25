@@ -11,7 +11,7 @@
  *
  *	- May 14-16, 2023
  * 		Author       : Raphael, Darsh, Parteek
- *      Contributors : nithilsenthil, Huey, Raymond, Kevin
+ *      Contributors : nithinsenthil, Huey, Raymond, Kevin
  *      Log          : Enabled interrupts for the buttons
  *
  *  - May 22, 2023
@@ -45,7 +45,7 @@ void init_coreClocks() {
 		  FLASH_ACR_DCEN			// Flash data cache enable
 		| FLASH_ACR_ICEN			// Flash instruction cache enable
 		| FLASH_ACR_PRFTEN			// Flash prefetch enable
-		| FLASH_ACR_LATENCY_4WS;	// 4 HCLCK periods of latency in Flash access time
+		| FLASH_ACR_LATENCY_4WS;	// 4 HCLK periods of latency in Flash access time
 
 	RCC->AHB2ENR |=
 		  RCC_AHB2ENR_OTGFSEN	// enable OTG full speed
@@ -78,7 +78,7 @@ void init_coreClocks() {
 		| RCC_PLLSAI1CFGR_PLLSAI1REN 			// PLLADC1CLK output enable
 		| RCC_PLLSAI1CFGR_PLLSAI1Q_0 			// PLL48M2CLK division factor set to 4
 		| RCC_PLLSAI1CFGR_PLLSAI1QEN 			// PLL48M2CLK output enable
-		| 0 << RCC_PLLSAI1CFGR_PLLSAI1P_Pos		// PLLSAI1CLKC division factor set to 7
+		| 0 << RCC_PLLSAI1CFGR_PLLSAI1P_Pos		// PLLSAI1CLK division factor set to 7
 		| 0 << RCC_PLLSAI1CFGR_PLLSAI1PEN_Pos 	// PLLSAI1CLK output disabled
 		| RCC_PLLSAI1CFGR_PLLSAI1N_VAL << RCC_PLLSAI1CFGR_PLLSAI1N_Pos; 	// VCO multiplication factor set to 12
 	// enable PLL and PLLSAI1

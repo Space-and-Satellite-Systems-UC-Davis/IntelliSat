@@ -251,7 +251,7 @@ void lpuart_gpio_init() {
 /*************************** USART INITIALIZATIONS ***************************/
 
 void uart_8bit_1stop(USART_TypeDef *bus, int baud_rate, bool rts_cts_control) {
-	// all UARTs use HSI16 as per core_cofig.c,init_core_clocks()
+	// all UARTs use HSI16 as per core_config.c,init_core_clocks()
 	uint32_t uart_clock_speed = 16000000;
 	if (bus == LPUART1) {
 		// prep for baud rate calculation
@@ -349,7 +349,7 @@ void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
 
 /**************************** USART RECEIVER ****************************/
 
-bool usart_recieverTimedOut(USART_ReceiverBuffer *rx) {
+bool usart_receiverTimedOut(USART_ReceiverBuffer *rx) {
 	if (rx->timedout) {
 		rx->timedout = false;
 		return true;
@@ -358,7 +358,7 @@ bool usart_recieverTimedOut(USART_ReceiverBuffer *rx) {
 	}
 }
 
-bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
+bool usart_receiveBufferNotEmpty(USART_TypeDef *bus) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;
@@ -367,7 +367,7 @@ bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
 	return (rxbuff->front != rxbuff->rear);
 }
 
-int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
+int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;
@@ -380,7 +380,7 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
 		}
 
-		if (usart_recieverTimedOut(rxbuff)) {
+		if (usart_receiverTimedOut(rxbuff)) {
 			break;
 		}
 	}

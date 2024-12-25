@@ -24,7 +24,7 @@ void timer_initStartupTimer() {
 	// 		R   =  1			<-- 1 second
 	//		RCR =  0
 
-	// Prescalar
+	// Prescaler
 	uint32_t PSC = 1065;		// Random Number
 	// Auto Reload Counter
 	uint32_t ARR = 4695;		// (F/(R(PSC + 1)) - 1)

@@ -29,7 +29,7 @@ void adc_init(){
 
 	VREFBUF->CSR |= VREFBUF_CSR_VRS; //Sets internal reference buffer to around 2.5V
 
-	//Try changing ADC CCR prescalar
+	//Try changing ADC CCR prescaler
 	//Try changing VREFBUF CSR register to enable vrefint since vref+ is decoupled
 
 }

@@ -56,7 +56,7 @@ enum pwm_timer_cap_comp_1_modes {
 bool pwm_initTimer(uint32_t period);
 /**
  * Changes the Duty Cycle of the PWM signal... assumes the PWM is being generated already.
- * NOTE: Some percentges might not work properly due to integer math causing rounding errors
+ * NOTE: Some percentages might not work properly due to integer math causing rounding errors
  * 
  * @param percent A value between 0-100 to indicate 
 */
@@ -66,7 +66,7 @@ void pwm_setDutyCycle(uint8_t percent);
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 /**
- * Initializes the Heartbeat LED Timer (the Systck). 
+ * Initializes the Heartbeat LED Timer (the Systick). 
  * Configures it to tick every ms.
  *
  * @param run_scheduler If set to true, the IntelliSat Scheduler will be

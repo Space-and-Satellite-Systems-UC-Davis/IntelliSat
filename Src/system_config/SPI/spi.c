@@ -11,11 +11,11 @@
  *
  *	- September 5-6, 2023
  *		Author	: Darsh
- *		Log		: SPI 2 config, transmitrecieve. Made generic enable and disable
+ *		Log		: SPI 2 config, transmitreceive. Made generic enable and disable
  *
  *  - August 28-31, 2023 (Creation)
  *      Author	: Darsh
- *      Log		: SPI 1 config, disable, transmitrecieve
+ *      Log		: SPI 1 config, disable, transmitreceive
  */
 
 #include "spi.h"

@@ -11,7 +11,7 @@
  *
  *  - August 28-31, 2023 (Creation)
  *      Author	: Darsh
- *      Log		: SPI 1 config, disable, transmitrecieve
+ *      Log		: SPI 1 config, disable, transmitreceive
  */
 
 #ifndef REALOP1_SPI_H_
@@ -56,7 +56,7 @@
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin);
 
 /**
- * Configures an SPI line to be able to transmit_recieve() later
+ * Configures an SPI line to be able to transmit_receive() later
 */
 void spi_config(SPI_TypeDef *spi);
 
@@ -82,14 +82,14 @@ void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin);
 void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
 
 /**
- * Transmits and Recieves messages over an spi line
- * Assumes that communication has already been started using spi_startCommunicationunication()
+ * Transmits and receives messages over an spi line
+ * Assumes that communication has already been started using spi_startCommunication()
  * 
  * NOTE: 1 call of this function will transmit out `size` bytes of data from the 
  * transmission buffer. In parallel, it will store in the `size` bytes that were present
  * on the MISO line during that transmission phase.
- * If you only want to transmit, (recieve nothing at all), set `reception = NULL`
- * If you only want to recieve, (not transmit anything at all), set `transmission = NULL`
+ * If you only want to transmit, (receive nothing at all), set `reception = NULL`
+ * If you only want to receive, (not transmit anything at all), set `transmission = NULL`
  * 
  * @param spi          The SPI line on which the communication is happening
  * @param transmission The buffer which contains the bytes to be sent (must have a length of `size` unless it's `NULL`)

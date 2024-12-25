@@ -14,7 +14,7 @@
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
-void rtc_openWritingPriveledge() {
+void rtc_openWritingPrivilege() {
 	// Allow Backup Domain Writing Access
 	backup_domain_controlEnable();
 
@@ -27,7 +27,7 @@ void rtc_openWritingPriveledge() {
 	while (!(RTC->ISR & RTC_ISR_INITF));
 }
 
-void rtc_closeWritingPriveledge() {
+void rtc_closeWritingPrivilege() {
 	// Exit Initialization Mode
 	RTC->ISR &= ~RTC_ISR_INIT;
 
@@ -75,7 +75,7 @@ void rtc_config(char clock_source, int forced_config) {
 
 	backup_domain_controlDisable();
 
-	rtc_openWritingPriveledge();
+	rtc_openWritingPrivilege();
 
 	// Select the RTC clock source
 	switch (clock_source) {
@@ -100,7 +100,7 @@ void rtc_config(char clock_source, int forced_config) {
 	// Bypass the Shadow registers to read RTC directly
 	RTC->CR |= RTC_CR_BYPSHAD;
 
-	rtc_closeWritingPriveledge();
+	rtc_closeWritingPrivilege();
 
 }
 
@@ -121,7 +121,7 @@ void rtc_setCalendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 		return;
 	}
 
-	rtc_openWritingPriveledge();
+	rtc_openWritingPrivilege();
 
 	// reset all the values
 	RTC->DR &= ~(
@@ -145,11 +145,11 @@ void rtc_setCalendar(uint8_t year, uint8_t month, uint8_t date, uint8_t day) {
 		| (date % 10)  << RTC_DR_DU_Pos		// Date Ones Digit
 	);
 
-	rtc_closeWritingPriveledge();
+	rtc_closeWritingPrivilege();
 }
 
 void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second) {
-	rtc_openWritingPriveledge();
+	rtc_openWritingPrivilege();
 
 	// reset all the values
 	RTC->TR &= ~(
@@ -171,11 +171,11 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second) {
 		| (second % 10) << RTC_TR_SU_Pos	// Second Ones Digit
 	);
 
-	rtc_closeWritingPriveledge();
+	rtc_closeWritingPrivilege();
 }
 
 void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
-		rtc_openWritingPriveledge();
+		rtc_openWritingPrivilege();
 		switch (bkp) {
 		    case 0:
 		        RTC->BKP0R = bits;
@@ -277,7 +277,7 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		        // Handle case when var is not in the range 0 to 31
 		        break;
 		}
-		rtc_closeWritingPriveledge();
+		rtc_closeWritingPrivilege();
 }
 
 /****************************** RTC TIME GETTERS *****************************/
