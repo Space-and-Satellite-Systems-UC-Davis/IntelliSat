@@ -37,8 +37,8 @@ void spi3_gpioInit() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOG_ready, DEFAULT_TIMEOUT_MS);
 
 	GPIOG->PUPDR |= GPIO_PUPDR_PUPD15_0;
 
@@ -75,7 +75,7 @@ void spi3_gpioInit() {
 	 * 		SPI3 NCS		B6		(Output)
 	 */
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS);
 
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD6_0;
 
@@ -119,7 +119,7 @@ void spi2_gpioInit() {
 	 */
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS);
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD12_0;
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk
@@ -158,13 +158,18 @@ void spi1_gpioInit() {
 /**************************** SPI INITIALIZATIONS ****************************/
 
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
-	while(spi->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
-	while(spi->SR & SPI_SR_BSY);	// Wait till last data frame is processed
+	uint64_t start_time = getSysTime(); //time in ms
+	while((spi->SR & SPI_SR_FTLVL) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till there is no data to transmit
+
+	start_time = getSysTime();
+	while((spi->SR & SPI_SR_BSY) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till last data frame is processed
+
 	spi_stopCommunication(cs_port, cs_pin);
 	spi->CR1 &= ~SPI_CR1_SPE;		// Disable SPI2
 
+	start_time = getSysTime();
 	uint8_t temp;
-	while(spi->SR & SPI_SR_FRLVL){
+	while(spi->SR & SPI_SR_FRLVL && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))){
 		// Wait till all data is received
 		temp = SPI2->DR;
 	}
@@ -251,9 +256,12 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 }
 
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
-	while (size-- >= 1) {
+	uint64_t start_time = getSysTime(); //time in ms
+	while ((size-- >= 1) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))) {
+		uint64_t inner_start_time = getSysTime();
+
 		// wait for TXFIFO to be empty
-		while(!(spi->SR & SPI_SR_TXE));	// TXE = TX Empty
+		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));	// TXE = TX Empty
 		if (transmission == NULL) {
 			// send a dummy byte to trigger the clock pulses
 			*((volatile uint8_t*) &(spi->DR)) = SPI_DUMMY_BYTE;
@@ -262,10 +270,12 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			*((volatile uint8_t*) &(spi->DR)) = *transmission;
 			transmission++;
 		}
-		while(!(spi->SR & SPI_SR_TXE));
+		inner_start_time = getSysTime();
+		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
 
 		// read the reception line until it's empty
-		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
+		inner_start_time = getSysTime();
+		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
 			if (reception == NULL) {
 				spi->DR;
 			} else {
