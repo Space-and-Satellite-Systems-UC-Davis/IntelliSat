@@ -37,8 +37,8 @@ void spi3_gpioInit() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 
-	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	GPIOG->PUPDR |= GPIO_PUPDR_PUPD15_0;
 
@@ -75,7 +75,7 @@ void spi3_gpioInit() {
 	 * 		SPI3 NCS		B6		(Output)
 	 */
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD6_0;
 
@@ -119,7 +119,7 @@ void spi2_gpioInit() {
 	 */
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD12_0;
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk

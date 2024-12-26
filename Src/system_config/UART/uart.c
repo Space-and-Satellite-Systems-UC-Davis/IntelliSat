@@ -104,8 +104,8 @@ void usart1_gpio_init() {
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
-	empty_while_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOA->MODER &= ~(GPIO_MODER_MODE9_Msk);
@@ -124,7 +124,7 @@ void usart1_gpio_init() {
 #elif OP_REV == 2
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOB->MODER &= ~(GPIO_MODER_MODE6_Msk | GPIO_MODER_MODE7_Msk);
@@ -135,7 +135,7 @@ void usart1_gpio_init() {
 	GPIOB->AFR[0] |= (7U << GPIO_AFRL_AFSEL6_Pos) | (7U << GPIO_AFRL_AFSEL7_Pos);
 #elif OP_REV == 3 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
-	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 
 	// configure the USART Pins to Alternate Function mode
@@ -153,7 +153,7 @@ void usart1_gpio_init() {
 void usart2_gpio_init() {
 #if OP_REV == 3
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
-	empty_while_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
 
 	GPIOD->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk);
 	GPIOD->MODER |= (GPIO_MODER_MODE5_1 | GPIO_MODER_MODE6_1);
@@ -177,7 +177,7 @@ void usart3_gpio_init() {
 	 */
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
-	empty_while_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOC->MODER &= ~(GPIO_MODER_MODE4_Msk | GPIO_MODER_MODE5_Msk);
@@ -212,7 +212,7 @@ void lpuart_gpio_init() {
 	 */
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
-	empty_while_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the LPUART Pins to Alternate Function mode
 	GPIOC->MODER &= ~(GPIO_MODER_MODE0_Msk | GPIO_MODER_MODE1_Msk);
@@ -230,7 +230,7 @@ void lpuart_gpio_init() {
 	 */
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
-	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the LPUART Pins to Alternate Function mode
 	GPIOG->MODER &= ~(GPIO_MODER_MODE7_Msk | GPIO_MODER_MODE8_Msk);

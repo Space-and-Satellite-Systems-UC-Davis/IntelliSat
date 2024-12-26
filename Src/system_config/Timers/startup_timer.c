@@ -56,7 +56,7 @@ void timer_waitStartupTime() {
 	timer_initStartupTimer();
 
 	timer_startupTimerOn();
-	empty_while_timeout(is_startup_count_under_max, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_startup_count_under_max, DEFAULT_TIMEOUT_MS);
 	timer_startupTimerOff();
 }
 
