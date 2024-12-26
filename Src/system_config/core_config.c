@@ -117,13 +117,13 @@ void init_coreClocks() {
 		| RCC_AHB2ENR_GPIOFEN
 		| RCC_AHB2ENR_GPIOGEN;
 	// wait until each GPIO is clocked and ready
-	empty_while_timeout(is_GPIOA_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOC_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOD_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOE_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOF_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOG_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOF_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 }
 
 

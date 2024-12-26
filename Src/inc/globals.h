@@ -23,12 +23,12 @@ uint64_t getSysTime();
 bool is_time_out(uint64_t start_time, uint64_t timeout_ms);
 void while_timeout(void (*do_work)(), bool (*is_done)(), uint64_t timeout_ms);
 void empty_while_timeout(bool (*is_done)(), uint64_t timeout_ms);
-bool is_GPIOA_ready();
-bool is_GPIOB_ready();
-bool is_GPIOC_ready();
-bool is_GPIOD_ready();
-bool is_GPIOE_ready();
-bool is_GPIOF_ready();
-bool is_GPIOG_ready();
+bool is_GPIOA_not_ready();
+bool is_GPIOB_not_ready();
+bool is_GPIOB_not_ready();
+bool is_GPIOD_not_ready();
+bool is_GPIOE_not_ready();
+bool is_GPIOF_not_ready();
+bool is_GPIOG_not_ready();
 
 #endif // REALOP1_GLOBALS_H_

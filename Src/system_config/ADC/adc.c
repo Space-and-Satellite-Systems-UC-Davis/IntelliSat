@@ -45,7 +45,7 @@ void adc_enable(){
 
 void adc_configGPIO(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN; //enables GPIO C
-	empty_while_timeout(is_GPIOC_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
+	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
 
 	GPIOC->OTYPER       &= ~( GPIO_OTYPER_OT0 ); //Reset C0 pin
 	GPIOC->PUPDR        &= ~( GPIO_OSPEEDR_OSPEED0 ); //Reset C0 pin
@@ -59,7 +59,7 @@ void adc_configGPIO(){
 
 void adc_setConstantGPIOValue(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN; //enables GPIO B
-	empty_while_timeout(is_GPIOB_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
+	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
 
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE3_Msk

@@ -104,8 +104,8 @@ void usart1_gpio_init() {
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
-	while (GPIOA->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOA->MODER &= ~(GPIO_MODER_MODE9_Msk);
@@ -124,7 +124,7 @@ void usart1_gpio_init() {
 #elif OP_REV == 2
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOB->MODER &= ~(GPIO_MODER_MODE6_Msk | GPIO_MODER_MODE7_Msk);
@@ -135,7 +135,7 @@ void usart1_gpio_init() {
 	GPIOB->AFR[0] |= (7U << GPIO_AFRL_AFSEL6_Pos) | (7U << GPIO_AFRL_AFSEL7_Pos);
 #elif OP_REV == 3 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 
 	// configure the USART Pins to Alternate Function mode
@@ -153,7 +153,7 @@ void usart1_gpio_init() {
 void usart2_gpio_init() {
 #if OP_REV == 3
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
-	while (GPIOD->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
 
 	GPIOD->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk);
 	GPIOD->MODER |= (GPIO_MODER_MODE5_1 | GPIO_MODER_MODE6_1);
@@ -177,7 +177,7 @@ void usart3_gpio_init() {
 	 */
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
-	while (GPIOC->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOC->MODER &= ~(GPIO_MODER_MODE4_Msk | GPIO_MODER_MODE5_Msk);
@@ -212,7 +212,7 @@ void lpuart_gpio_init() {
 	 */
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
-	while (GPIOC->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the LPUART Pins to Alternate Function mode
 	GPIOC->MODER &= ~(GPIO_MODER_MODE0_Msk | GPIO_MODER_MODE1_Msk);
@@ -230,7 +230,7 @@ void lpuart_gpio_init() {
 	 */
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the LPUART Pins to Alternate Function mode
 	GPIOG->MODER &= ~(GPIO_MODER_MODE7_Msk | GPIO_MODER_MODE8_Msk);
@@ -328,7 +328,8 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
 	bus->TDR = c;
 
 	// Wait for the Transfer to be completed by monitoring the TC flag
-	while(!(bus->ISR & USART_ISR_TC));
+	uint64_t start_time = getSysTime(); //time in ms
+	while(!(bus->ISR & USART_ISR_TC) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));
 }
 
 void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
@@ -338,13 +339,16 @@ void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
 	// Transfer each character one at a time
 	for (int i = 0; i < (int)strlen(message); i++){
 		// wait until Data register is empty
-		while (!(bus->ISR & USART_ISR_TXE));
+		uint64_t start_time = getSysTime(); //time in ms
+		while (!(bus->ISR & USART_ISR_TXE) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));
+		
 		// Place the character in the Data Register
 		bus->TDR = message[i];
 	}
 
 	// Wait for the Transfer to be completed by monitoring the TC flag
-	while(!(bus->ISR & USART_ISR_TC));
+	uint64_t start_time = getSysTime(); //time in ms
+	while(!(bus->ISR & USART_ISR_TC) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));
 }
 
 /**************************** USART RECEIVER ****************************/
@@ -373,8 +377,9 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 		return false;
 	}
 
+	uint64_t start_time = getSysTime(); //time in ms
 	uint16_t sz = 0;
-	while (sz < size) {
+	while ((sz < size) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))) {
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;

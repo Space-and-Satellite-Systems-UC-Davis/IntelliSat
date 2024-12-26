@@ -51,11 +51,12 @@ void timer_initStartupTimer() {
  *
  * @returns Boolean to indicate if the initialization was successful
  */
+bool is_startup_count_under_max() { return startup_count < MAX_STARTUP_COUNT; }
 void timer_waitStartupTime() {
 	timer_initStartupTimer();
 
 	timer_startupTimerOn();
-	while (startup_count < MAX_STARTUP_COUNT);
+	empty_while_timeout(is_startup_count_under_max, DEFAULT_TIMEOUT_MS);
 	timer_startupTimerOff();
 }
 

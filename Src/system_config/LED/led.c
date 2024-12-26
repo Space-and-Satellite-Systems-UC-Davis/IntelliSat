@@ -29,9 +29,9 @@ void led_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 
-	empty_while_timeout(is_GPIOD_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOE_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOG_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 	
 	// Configure output mode
 	GPIOD->MODER &= ~(
@@ -55,7 +55,7 @@ void led_init() {
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 
-	empty_while_timeout(is_GPIOE_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// Configure output mode
 	GPIOE->MODER &= ~(
@@ -78,9 +78,9 @@ void led_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 
-	empty_while_timeout(is_GPIOD_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOE_ready, DEFAULT_TIMEOUT_MS);
-	empty_while_timeout(is_GPIOG_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	empty_while_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the LED D0-D7 pins to be Output mode
 	GPIOD->MODER &= ~(
