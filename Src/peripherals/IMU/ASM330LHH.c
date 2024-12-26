@@ -82,7 +82,7 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 	// local variables
 	acel_rate &= IMU_CTRL1_XL_ODR_Msk;
 	acel_scale &= IMU_CTRL1_XL_FS_Msk;
-	digital_filter_on &= IMU_CRTL1_XL_LPF2_XL_EN;
+	digital_filter_on &= IMU_CTRL1_XL_LPF2_XL_EN;
 	int data = acel_rate << IMU_CTRL1_XL_ODR_SPAN | acel_scale << IMU_CTRL1_XL_FS_SPAN | digital_filter_on << IMU_CTRL1_XL_LPF2_XL_SPAN;
 
 #if OP_REV == 1

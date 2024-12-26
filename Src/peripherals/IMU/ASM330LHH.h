@@ -45,12 +45,12 @@
 #define IMU_FS_2000_dps 	12
 #define IMU_FS_4000_dps 	1
 
-#define IMU_SPI_RW 0x80 // 1 is read and 0 is write
+#define IMU_SPI_RW 0x80 // 1 is read and 0 is write. By default spi uses MSB first, meaning bit 7 of the address is the first bit sent out, in contrast to 5.1.2 figure 4
 #define IMU_SPI_DATA_DI_Msk 0x7F // data DI(7:0) (write mode). This is the data that is written into the device (MSb first)
 
 #define IMU_CTRL1_XL_ODR_Msk 0xFF // Accelerometer ODR selection
 #define IMU_CTRL1_XL_FS_Msk 0xF // Accelerometer full-scale selection
-#define IMU_CRTL1_XL_LPF2_XL_EN 0x1 // Accelerometer high-resolution selection
+#define IMU_CTRL1_XL_LPF2_XL_EN 0x1 // Accelerometer high-resolution selection
 
 #define IMU_CTRL1_XL_ODR_SPAN 4U
 #define IMU_CTRL1_XL_FS_SPAN 2U
