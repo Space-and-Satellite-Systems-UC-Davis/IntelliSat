@@ -13,11 +13,11 @@
 
 void block_signal();
 void unblock_signal();
-bool isSignalBlocked();
+bool is_signal_blocked();
 void set_user_timeslice(uint32_t t);
 
-void systemsCheck();
-void modeSelect();
+void systems_check();
+void mode_select();
 void cleanup_handler(int8_t field, uint8_t old_task_id);
 void scheduler();
 

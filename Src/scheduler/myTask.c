@@ -12,91 +12,54 @@
 #include "myTask.h"
 
 
-#if KERNEL_VERSION == 1
-
 /* Scheduling methods */
-bool lowPwrTime() {
-    // return !(rand() % 101);
-    return false;
-}    // tautology
-bool detumbleTime() {
-    // return !(rand() % 4);
-    return false;
-}
-bool commsTime() {
-    // return !(rand() % 4);
-    return false;
-}
-
-// adcs_mode ADCS_recommend_mode() {
-//     return ADCS_DETUMBLE;
-// }
-int experimentTime() {
-    // return !(rand() % 4);
-    return ADCS_recommend_mode();
-    // return 0;
-}
-
-bool eccTime() {
-    // return !(rand() % 4);
-    return false;
-}
-
-#else
-
-/* Scheduling methods */
-bool lowPwrTime() {
+bool low_pwr_time() {
     // return !(rand() % 101);
     return true;
 }
-bool detumbleTime() {
+bool detumble_time() {
     // return !(rand() % 4);
     return true;
 }
-bool commsTime() {
+bool comms_time() {
     // return !(rand() % 4);
     return true;
 }
-
-// adcs_mode ADCS_recommend_mode() {
-//     return ADCS_DETUMBLE;
-// }
-int experimentTime() {
+int experiment_time() {
     // return !(rand() % 4);
 //    return ADCS_recommend_mode();
      return 0;
 }
-bool eccTime() {
+bool ecc_time() {
     // return !(rand() % 4);
     return false;
 }
-#endif
 
 
 /* Configure methods */
-void configLowPwr() {
+void config_low_pwr() {
     // Configure method for charging
     // printMsg("Configure Low Power is running\n");
 }
-void configDetumble() {
+void config_detumble() {
     // Configure method for detumble
 }
-void configComms() {
+void config_comms() {
     // Configure method for comms
 }
-void configExperiment() {
+void config_experiment() {
     // Configure method for experiment
 }
-void configEcc() {
+void config_ecc() {
     // Configure method for ecc
 }
-void configIdle() {
+void config_idle() {
 }
 
 
 /* Run methods */
 
-void lowPwr() {
+void low_pwr() {
     // Run method for charging
     // delay_ms(rand());
     // printMsg("Run 'charging'\n");
@@ -150,36 +113,36 @@ void idle() {
 
 
 /* Clean methods */
-void cleanLowPwr() {
+void clean_low_pwr() {
     // Clean method for charging
     // printMsg("cleanup ID: %d\n", LOWPWR);
 
     led_dx(0, 0);
 }
-void cleanDetumble() {
+void clean_detumble() {
     // Clean method for detumble
     // printMsg("cleanup ID: %d\n", DETUMBLE);
 
     led_dx(1, 0);
 }
-void cleanComms() {
+void clean_comms() {
     // Clean method for comms
     // printMsg("cleanup ID: %d\n", COMMS);
 
     led_dx(2, 0);
 }
-void cleanExperiment() {
+void clean_experiment() {
     // Clean method for experiment
     // printMsg("cleanup ID: %d\n", EXPERIMENT);
 
     led_dx(3, 0);
 }
-void cleanEcc() {
+void clean_ecc() {
     // Clean method for ecc
     // printMsg("cleanup ID: %d\n", ECC);
 
     led_dx(4, 0);
 }
-void cleanIdle() {
+void clean_idle() {
     led_dx(5, 0);
 }

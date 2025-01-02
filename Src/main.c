@@ -34,7 +34,7 @@
 /* Misc variables */
 int reboot_count;
 // volatile uint16_t flagBits = 0;     // Declared in status.h
-volatile struct OperationBits flagBits = {0,0};
+volatile struct operation_bits_t flag_bits = {0,0};
 
 /* Testing Variables */
 int max_handler_count;
@@ -48,14 +48,13 @@ struct itimerval sysTick_timer;
 uint32_t main_stack_frame[32];
 volatile uint32_t main_PC;
 
-static bool ledState = 0;
+static bool led_state = 0;
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
-//void SystemClock_Config(void);
 
 
 /* Prototypes */
-void sysTickHandler(int signal);
+void sysTick_handler(int signal);
 //jmp_buf to_mode_select;
 
 /**
@@ -70,11 +69,11 @@ void sysTickHandler(int signal);
 void startup() {
     // TODO: Retrieve base info from flash (flagBits, reboot_count, etc.)
     reboot_count++;
-    if (!IS_BIT_SET(flagBits.statusBits, START)) {
+    if (!IS_BIT_SET(flag_bits.status_bits, START)) {
         //printMsg("First startup detected\nStarting 5 second wait...\n");
         delay_ms(5000); // TODO: replace with correct wait period (30min)
 
-        SET_BIT(flagBits.statusBits, START); // TODO: Intentionally at the end in case of failure during wait state (REVISIT)
+        SET_BIT(flag_bits.status_bits, START); // TODO: Intentionally at the end in case of failure during wait state (REVISIT)
 
     } else {
         //printMsg("Loading Backups\nPlease wait (5s)...\n");
@@ -87,9 +86,9 @@ void startup() {
 static const int led_delay_1 = 1111;
 static const int led_delay_2 = 789;
 
-void toggleLED(int pin) {
-    led_d1(!ledState);
-    ledState = !ledState;
+void toggle_LED(int pin) {
+    led_d1(!led_state);
+    led_state = !led_state;
 }
 
 
@@ -103,8 +102,8 @@ static void led_task(void *args) {
   while (1) {
     // Toggle the LED.
 	  int pin = 0;
-	  led_d1(!ledState);
-	  ledState = !ledState;
+	  led_d1(!led_state);
+	  led_state = !led_state;
     // Delay for a second-ish.
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
   };

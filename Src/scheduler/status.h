@@ -17,18 +17,18 @@
 //     START, ANTENNA, COILS, HDD_STATUS, MRW_STATUS
 // };
 
-struct OperationBits {
-	uint8_t modeBits;
-	uint8_t statusBits;
+struct operation_bits_t {
+	uint8_t mode_bits;
+	uint8_t status_bits;
 };
 
-extern volatile struct OperationBits flagBits;
+extern volatile struct operation_bits_t flag_bits;
 
-enum modes {
-	LOWPWR, DETUMBLE, COMMS, ECC, EXPERIMENT, IDLE
+enum modes_t {
+	LOW_PWR, DETUMBLE, COMMS, ECC, EXPERIMENT, IDLE
 };
 
-enum status {
+enum status_t {
 	START, ANTENNA, COILS, HDD_STATUS, MRW_STATUS
 };
 
@@ -68,6 +68,6 @@ uint_8_t statusBits:
 	MRW_status   4		Is the MRW ESC communicating?
 */
 
-void statusCheck();
+void status_check();
 
 #endif//STATUS_H

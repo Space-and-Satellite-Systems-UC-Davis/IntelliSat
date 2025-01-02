@@ -17,14 +17,13 @@
  * Checks with required peripherals for 
  * functionality and updates status bits.
  *
- * @see systemsCheck()
+ * @see systems_check()
  * @note Implemented by relevant subteams
  * @todo Separate into wrapper functions for implementation
  */
-void statusCheck() {
-    //printMsg("Running status check\n");
+void status_check() {
     // Sets all status flags for testing (ASSUMES ALL SYSTEMS FUNCTIONAL)
     for(int i = 0; i < 5; i++) {
-        SET_BIT(flagBits.statusBits, i);
+        SET_BIT(flag_bits.status_bits, i);
     }
 }

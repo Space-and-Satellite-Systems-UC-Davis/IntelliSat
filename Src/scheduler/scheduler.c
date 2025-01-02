@@ -14,81 +14,28 @@
 #define SYSTICK_DUR_M 3     // Config. of system timer in usec (100 ms)
 
 /*
- * taskTable - info. about all modes on satellite
+ * task_table - info. about all modes on satellite
  * (mode, timerDur, numInterrupts, & corresponding functions)
  */
 
 // TODO: update ECC mode based on discussions with ELEC
 // RS - system, Hamming codes on Idle
-struct Task taskTable[] = {
-	{LOWPWR, 6, configLowPwr, lowPwr, cleanLowPwr, 0},                  // Func1 - N/A
-	{DETUMBLE, 6, configDetumble, detumble, cleanDetumble, 0},           // Func1 - N/A
-	{COMMS, 6, configComms, comms, cleanComms, 0},                        // Func1 - N/A
-    {ECC, 6, configEcc, ecc, cleanEcc, 0},                                // Func1 - N/A
-    {EXPERIMENT, 6, configExperiment, experiment, cleanExperiment, 0},    // Func1 - Experiment ID (0 for none)
-    {IDLE, 6, configIdle, idle, cleanIdle, 0}                             // Func1 - N/A
+struct task_t task_table[] = {
+	{LOW_PWR, 6, config_low_pwr, low_pwr, clean_low_pwr, 0},                // Func1 - N/A
+	{DETUMBLE, 6, config_detumble, detumble, clean_detumble, 0},            // Func1 - N/A
+	{COMMS, 6, config_comms, comms, clean_comms, 0},                        // Func1 - N/A
+    {ECC, 6, config_ecc, ecc, clean_ecc, 0},                                // Func1 - N/A
+    {EXPERIMENT, 6, config_experiment, experiment, clean_experiment, 0},    // Func1 - Experiment ID (0 for none)
+    {IDLE, 6, config_idle, idle, clean_idle, 0}                             // Func1 - N/A
 };
 
-volatile struct Task currTask;
+volatile struct task_t currtask;
 
 uint32_t user_timeslice;
 int scheduler_counter;
 u_int32_t task_counter;
 
 jmp_buf to_mode_select;
-
-
-//  /**
-//  * @brief Signal block
-//  *
-//  * Blocks the specified interrupt signal by
-//  * by adding it to the curr. process blocked signals
-//  *
-//  * @see unblock_signal(), isSignalBlocked()
-//  * @warning Make sure a corresponding unblock is in place
-//  */
-// void block_signal() {
-//     block_scheduler = true;
-// }
-
-
-//   /**
-//  * @brief Signal unblock
-//  *
-//  * Unblocks the specified interrupt signal by
-//  * by removing it from the curr. process blocked signals
-//  *
-//  * @see block_signal(), isSignalBlocked()
-//  */
-// void unblock_signal() {
-//     block_scheduler = false;
-// }
-
-//  /**
-//  * @brief Checks if signal is blocked
-//  *
-//  * Checks if the specified signal is
-//  * on the curr. process blocked signals
-//  *
-//  * @param signal Signal to check
-//  * @see unblock_signal(), block_signal()
-//  */
-// bool isSignalBlocked() {
-//     return block_scheduler;
-// }
-
-/**
- * @brief Timeslice setter
- *
- * Sets the timeslice used in order to pre-empt the
- * runnning task.
- *
- * @param t timeslice in ms
- * @note Inputs must be a multiple of 10
- */
-void set_user_timeslice(uint32_t t) {
-    user_timeslice = t;
-}
 
 
 /**
@@ -102,51 +49,50 @@ void set_user_timeslice(uint32_t t) {
  * @todo Update for combining MRW and HDD
  *       Double check - mode peripheral requirements
  */
-void systemsCheck() {
-    statusCheck(); // CHARGING flag updated in statusCheck()
+void systems_check() {
+    status_check(); // CHARGING flag updated in statusCheck()
 
-    if (lowPwrTime()) {
-        SET_BIT(flagBits.modeBits, LOWPWR);
+    if (low_pwr_time()) {
+        SET_BIT(flag_bits.mode_bits, LOW_PWR);
     } else {
-        CLR_BIT(flagBits.modeBits, LOWPWR);
+        CLR_BIT(flag_bits.mode_bits, LOW_PWR);
     }
 
-    if (detumbleTime()) {
-        if (IS_BIT_SET(flagBits.statusBits, COILS)) {
-                SET_BIT(flagBits.modeBits, DETUMBLE);
+    if (detumble_time()) {
+        if (IS_BIT_SET(flag_bits.status_bits, COILS)) {
+                SET_BIT(flag_bits.mode_bits, DETUMBLE);
         } else {
             // printMsg("Coils circuit is not communicating");
         }
     } else {
-	    CLR_BIT(flagBits.modeBits, DETUMBLE);
+	    CLR_BIT(flag_bits.mode_bits, DETUMBLE);
     }
 
-    if (commsTime()) {
-        if (IS_BIT_SET(flagBits.statusBits, ANTENNA)) {
-            SET_BIT(flagBits.modeBits, COMMS);
+    if (comms_time()) {
+        if (IS_BIT_SET(flag_bits.status_bits, ANTENNA)) {
+            SET_BIT(flag_bits.mode_bits, COMMS);
         } else {
             // printMsg("Antenna is not deployed\n");
         }
     } else {
-        CLR_BIT(flagBits.modeBits, COMMS);
+        CLR_BIT(flag_bits.mode_bits, COMMS);
     }
 
-    int newExpID = experimentTime();
-    if (newExpID) {
-        SET_BIT(flagBits.modeBits, EXPERIMENT);
-        taskTable[4].func1 = newExpID;
+    int new_exp_id = experiment_time();
+    if (new_exp_id) {
+        SET_BIT(flag_bits.mode_bits, EXPERIMENT);
+        task_table[4].func_1 = new_exp_id;
     } else {
-	    CLR_BIT(flagBits.modeBits, EXPERIMENT);
-        taskTable[4].func1 = 0;
+	    CLR_BIT(flag_bits.mode_bits, EXPERIMENT);
+        task_table[4].func_1 = 0;
     }
 
     if (eccTime())
-        SET_BIT(flagBits.modeBits, ECC);
+        SET_BIT(flag_bits.mode_bits, ECC);
     else
-	    CLR_BIT(flagBits.modeBits, ECC);
+	    CLR_BIT(flag_bits.mode_bits, ECC);
     
 }
-
 
 /**
  * @brief Selects highest priority mode
@@ -157,7 +103,7 @@ void systemsCheck() {
  * @see scheduler()
  * @todo Update to new idle requirements
  */
-void modeSelect() {
+void mode_select() {
 
     // Counters
     int new_task_id = 0;
@@ -165,7 +111,7 @@ void modeSelect() {
 
     // Determine which mode to run next
     for (i = 0; i < 5; i++) {
-        if (IS_BIT_SET(flagBits.modeBits, i)) {
+        if (IS_BIT_SET(flag_bits.mode_bits, i)) {
             new_task_id = i;
             break;
         }
@@ -178,8 +124,8 @@ void modeSelect() {
     }
     
     // Select task to run from taskTable 
-    currTask = taskTable[new_task_id];
-
+    curr_task = task_table[new_task_id];
+    
 }
 
 /**
@@ -187,37 +133,26 @@ void modeSelect() {
  *
  * Uses a preference bitfield to determine which cleanup
  * actions need to be done including logs and clearing
- * the relevant bit from flagBits.
+ * the relevant bit from flag_bits.
  *
  * @param field Preference field
  * @see scheduler()
  * @todo Update to match logging requirements
  */
 void cleanup_handler(int8_t field, uint8_t old_task_id) {
-    // b0 - flagBit reset
+    // b0 - flag_bit reset
     // b1 - success log
 
     if (IS_BIT_SET(field, 0)) {
-        CLR_BIT(flagBits.modeBits, taskTable[old_task_id].task_id);
-        modeSelect();
+        CLR_BIT(flag_bits.mode_bits, task_table[old_task_id].task_id);
+        mode_select();
     }
     if (IS_BIT_SET(field, 1)) {
         // printMsg("Task ID: %d has been logged\n", currTask.task_id);
     }
 
     // currTask.cleanPtr();
-    taskTable[old_task_id].cleanPtr();
-}
-
-void rollback(void) {
-    asm volatile (
-        "LDR R0, =main_stack_frame\n"
-        "LDMIA R0!, {R4-R11}\n"      // Restore main function context
-        "LDMIA R0, {R0-R3, R12, LR}\n"
-        "MOV SP, R0\n"
-    	"BX LR\n"
-    );
-
+    task_table[old_task_id].clean_ptr();
 }
 
 /**
@@ -226,102 +161,9 @@ void rollback(void) {
  * Contains the timeslicing between system and mode time,
  * as well as manages the kill/preemption of modes.
  *
- * @param signal timer signal for blocking
- * @param toModeSelect jump buffer in case of preemption
  * @see sysTickHandler()
- * @todo Design check, hardware integration switch jumps
+ * @todo Implement
  */
 void scheduler() {
-    // isSignalBlocked guard not required if blocking signals during system time
-    // if (isSignalBlocked(signal)) {
-    //     return;
-    // }
-
-    scheduler_counter++;
-    task_counter++;
-
-    if (!(scheduler_counter % SYSTICK_DUR_M)) {
-        //block_signal();
-        
-        // Store current task_id
-        int old_task_id = currTask.task_id;
-        
-        // Update flags and reselect task
-        systemsCheck();
-        modeSelect();
-
-        // If same task is selected, resume execution
-        if (old_task_id == currTask.task_id) {
-            return;
-        } else {
-            //Preempt
-            //printMsg("Task %d preempted by %d\n", old_task_id, currTask.task_id);
-            cleanup_handler(0b00, old_task_id);
-
-            // Jmp using flagBits
-            //unblock_signal();
-//            siglongjmp(*toModeSelect, 1); // PROTOTYPE
-
-             asm volatile(
-				"CPSID i\n"                   // Disable interrupts
-				"PUSH {R4-R11}\n"             // Save the context of current function
-				"LDR R0, =main_stack_frame\n"
-				"STMIA R0!, {R4-R11}\n"       // Save the context of main function
-				"MRS R0, MSP\n"
-				"STMIA R0, {R0-R3, R12, LR}\n"
-				"BL rollback\n"
-                "CPSIE i\n"
-             );
-             
-             longjmp(to_mode_select, 1); // SWITCH FOR HARDWARE INTEGRATION
-        }
-
-        //unblock_signal();
-    }
-
-    user_timeslice = currTask.taskInterrupts;
-
-    if (task_counter >= user_timeslice) {
-        //block_signal();
-
-        task_counter = 0;
-        //kill
-        cleanup_handler(0b01, currTask.task_id);
-//        asm volatile(
-//        				"CPSID i\n"                   // Disable interrupts
-//        				"PUSH {R4-R11}\n"             // Save the context of current function
-//        				"LDR R0, =main_stack_frame\n"
-//        				"STMIA R0!, {R4-R11}\n"       // Save the context of main function
-//        				"MRS R0, MSP\n"
-//        				"STMIA R0, {R0-R3, R12, LR}\n"
-//        				"BL rollback\n"
-//        				"CPSIE i\n"                   // Enable interrupts
-//                     );
-
-
-        asm volatile (
-        	"CPSID i\n"                   // Disable interrupts
-        );
-        asm volatile (
-			"LDR R0, =main_stack_frame\n"  // Load the address of the main stack frame
-			"LDMIA R0!, {R4-R11}\n"        // Restore registers R4-R11 from the main stack frame
-			"LDMIA R0, {R0-R3, R12, LR}\n" // Restore registers R0-R3, R12, and LR from the stack
-			"MOV SP, R0\n"                 // Restore the Stack Pointer (SP)
-			"LDR R1, =main_PC\n"           // Load the address of main_PC into R1
-			"LDR R1, [R1]\n"               // Load the value of main_PC (the return address) into R1
-			"LDR LR,=0xFFFFFFFD\n"
-        );
-//        SCB->SHCSR
-        asm volatile (
-//                "LDR PC, [R1]\n"              // Load the PC directly from R1 to exit handler mode
-//        	"LDR PC,=0xFFFFFFF9\n"
-			"BX R1\n"                      // Branch to the return address in R1 (exit handler mode if needed)
-        );
-        asm volatile (
-        	"CPSIE i\n"
-        );
-        longjmp(to_mode_select, 1);
-
-        //unblock_signal();
-    }
+    
 }

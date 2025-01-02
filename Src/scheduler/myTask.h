@@ -12,35 +12,35 @@ typedef void (*FunctionPointer)();  // For mode functions
  * Task - a mode of execution on satellite
  * (note: uses preemption to interrupt running tasks)
  */
-struct Task {
+struct task_t {
     uint8_t task_id;            // PRIMARY_KEY
-    uint32_t taskInterrupts;    // times taskISR called, cancel mode/task after x reached
-    FunctionPointer configPtr;  // configure timers, other mode info.
-    FunctionPointer runPtr;     // the main func. for mode, via ADCS
-    FunctionPointer cleanPtr;   // reset timers, clear temp buffers, etc
-    uint8_t func1;              // Open functionality
+    uint32_t task_interrupts;    // times taskISR called, cancel mode/task after x reached
+    FunctionPointer config_ptr;  // configure timers, other mode info.
+    FunctionPointer run_ptr;     // the main func. for mode, via ADCS
+    FunctionPointer clean_ptr;   // reset timers, clear temp buffers, etc
+    uint8_t func_1;              // Open functionality
 };
 
-extern volatile struct Task currTask;
-extern struct Task taskTable[6];
+extern volatile struct task_t curr_task;
+extern struct task_t task_table[6];
 
 /* Scheduling methods */
-bool lowPwrTime(); // tautology (charging is idle mode)
-bool detumbleTime();
-bool commsTime();
-int experimentTime();
-bool eccTime();
+bool low_pwr_time(); // tautology (charging is idle mode)
+bool detumble_time();
+bool comms_time();
+int experiment_time();
+bool ecc_time();
 
 /* Configure methods */
-void configLowPwr();
-void configDetumble();
-void configComms();
-void configExperiment();
-void configEcc();
-void configIdle();
+void config_low_pwr();
+void config_detumble();
+void config_comms();
+void config_experiment();
+void config_ecc();
+void config_idle();
 
 /* Run methods */
-void lowPwr();
+void low_pwr();
 void detumble();
 void comms();
 void experiment();
@@ -48,11 +48,11 @@ void ecc();
 void idle();
 
 /* Clean methods */
-void cleanLowPwr();
-void cleanDetumble();
-void cleanComms();
-void cleanExperiment();
-void cleanEcc();
-void cleanIdle();
+void clean_low_pwr();
+void clean_detumble();
+void clean_comms();
+void clean_experiment();
+void clean_ecc();
+void clean_idle();
 
 #endif
