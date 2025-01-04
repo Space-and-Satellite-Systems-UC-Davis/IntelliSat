@@ -2,24 +2,4 @@
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "cmake.configureOnOpen": true,
   "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/debug/build/compile_commands.json",
-  "cSpell.words": [
-    "coreid",
-    "dannyk",
-    "Darsh",
-    "eabi",
-    "floatabi",
-    "ihex",
-    "Intelli",
-    "kitware",
-    "managedbuild",
-    "mcpu",
-    "mfloat",
-    "mfpu",
-    "nithinsenthil",
-    "OBJCOPY",
-    "sbrk",
-    "sysmem",
-    "useb",
-    "ZGTX"
-  ]
 }
