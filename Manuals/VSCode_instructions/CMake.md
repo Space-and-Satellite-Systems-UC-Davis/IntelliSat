@@ -46,7 +46,13 @@ One benefit of this over the IDE is that changes to the project will automatical
 - If you open the project again in STM32CubeIDE you will need to exclude the build directory used by CMake from your project. Right click the build directory and select Resource Configurations > Exclude from Build.
 
 ![CubeIDE menu to exclude Build](https://devblogs.microsoft.com/cppblog/wp-content/uploads/sites/9/2022/09/stm32-ide-resourceconfig.png)
+
 - If your project is created with CubeIDE, any time the project configuration is changed within CubeIDE, the import process must be repeated again in VS Code.
+
+## Debug/deploy
+
+- Connect the board with st link/usb cable
+- To start debugging, select [Run] > [Start Debugging].
 
 ## Tips
 
