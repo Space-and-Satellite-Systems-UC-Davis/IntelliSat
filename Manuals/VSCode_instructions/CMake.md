@@ -49,7 +49,7 @@ One benefit of this over the IDE is that changes to the project will automatical
 
 - If your project is created with CubeIDE, any time the project configuration is changed within CubeIDE, the import process must be repeated again in VS Code.
 
-Even if it is a existing project, it is very much recommended to repeated import process again if the code is moved to a new computer. Often, difference such as the build environment/operating system will cause build related commands to failed (some examples include ninja/cmake is missing)
+Even if it is a existing project, it is very much recommended to repeated import process again if the code is moved to a new computer (such as via cloning). Often, difference such as the build environment/operating system will cause build related commands to failed (some examples include ninja/cmake is missing)
 
 ## Debug/deploy
 
