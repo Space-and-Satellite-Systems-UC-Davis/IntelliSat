@@ -16,7 +16,7 @@
       "stopAtConnect": true,
       "postRemoteConnectCommands": [
         {
-          "text": "load build/debug/build/Proj.elf"
+          "text": "load build/debug/build/IntelliSat.elf"
         }
       ],
       "logging": {

@@ -3,7 +3,7 @@
   "configurations": [
     {
       "project": "CMakeLists.txt",
-      "projectTarget": "Proj.elf",
+      "projectTarget": "IntelliSat.elf",
       "name": "Launch",
       "type": "cppdbg",
       "request": "launch",
@@ -18,7 +18,7 @@
       "stopAtConnect": true,
       "postRemoteConnectCommands": [
         {
-          "text": "load build/debug/build/Proj.elf"
+          "text": "load build/debug/build/IntelliSat.elf"
         }
       ],
       "svdPath": "${st.svd}/STM32L476.svd"    }
