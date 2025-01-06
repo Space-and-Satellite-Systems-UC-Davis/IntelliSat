@@ -60,4 +60,7 @@ release
 *.launch
 
 # CMake build files
-build
+build**
+cmake/**
+CMakeFiles/**
+CMakeCache.txt
