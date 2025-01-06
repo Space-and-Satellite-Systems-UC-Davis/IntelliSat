@@ -58,3 +58,4 @@ release
 
 # Launch file
 *.launch
+.codegpt
