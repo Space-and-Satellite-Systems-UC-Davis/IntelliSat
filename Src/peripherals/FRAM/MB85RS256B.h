@@ -2,7 +2,7 @@
  * MB85RS256B.h
  *
  *  Created on: Sep 3, 2024
- *      Author: green
+ *      Author: 
  */
 
 #ifndef PERIPHERALS_FRAM_MB85RS256B_H_
