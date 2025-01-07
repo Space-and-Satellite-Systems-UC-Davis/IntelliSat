@@ -47,7 +47,7 @@ int imu_gyroFullScale = 0;
 
 void imu_spiWriteReg(void *address, uint8_t data) {
 	uint8_t spiDATA[2];
-	spiDATA[0] = (uint8_t)address & 0x7F;
+	spiDATA[0] = (uint8_t)address & IMU_SPI_DATA_DI_Msk;
 	spiDATA[1] = data;
 
 	spi_startCommunication(IMU_SPI_CS);
@@ -56,7 +56,7 @@ void imu_spiWriteReg(void *address, uint8_t data) {
 }
 
 int16_t imu_spiReadHighLow(void *low_address) {
-	uint8_t instruction = (uint8_t)low_address | 0x80;
+	uint8_t instruction = (uint8_t)low_address | IMU_SPI_RW;
 	uint8_t datah, datal;
 
 	spi_startCommunication(IMU_SPI_CS);
@@ -80,10 +80,10 @@ int16_t imu_spiReadHighLow(void *low_address) {
 void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 
 	// local variables
-	acel_rate &= 0xFF;
-	acel_scale &= 0xF;
-	digital_filter_on &= 1;
-	int data = acel_rate << 4 | acel_scale << 2 | digital_filter_on << 1;
+	acel_rate &= IMU_CTRL1_XL_ODR_Msk;
+	acel_scale &= IMU_CTRL1_XL_FS_Msk;
+	digital_filter_on &= IMU_CTRL1_XL_LPF2_XL_EN;
+	int data = acel_rate << IMU_CTRL1_XL_ODR_SPAN | acel_scale << IMU_CTRL1_XL_FS_SPAN | digital_filter_on << IMU_CTRL1_XL_LPF2_XL_SPAN;
 
 #if OP_REV == 1
 
@@ -123,9 +123,9 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 
 	// local variables
-	gyro_rate &= 0xFF;
-	gyro_scale &= 0xFF;
-	int data = gyro_rate << 4 | gyro_scale;
+	gyro_rate &= IMU_CTRL2_G_Msk;
+	gyro_scale &= IMU_CTRL2_G_Msk;
+	int data = gyro_rate << IMU_CTRL1_XL_ODR_SPAN | gyro_scale;
 
 #if OP_REV == 1
 
@@ -182,8 +182,8 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 
 int16_t imu_readAcel_X() {
 
-	uint8_t instructionHi = 0x29 | 0x80 ;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x28 | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUTX_H_A_Pos | IMU_SPI_RW ;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTX_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
@@ -203,8 +203,8 @@ int16_t imu_readAcel_X() {
 
 int16_t imu_readAcel_Y() {
 
-	uint8_t instructionHi = 0x2B | 0x80;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x2A | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUTY_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTY_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
@@ -224,8 +224,8 @@ int16_t imu_readAcel_Y() {
 
 int16_t imu_readAcel_Z() {
 
-	uint8_t instructionHi = 0x2D | 0x80;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x2C | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUTZ_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTZ_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
@@ -244,8 +244,8 @@ int16_t imu_readAcel_Z() {
 
 int16_t imu_readGyro_X() {
 
-	uint8_t instructionHi = 0x23 | 0x80;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x22 | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUTX_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTX_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
@@ -264,8 +264,8 @@ int16_t imu_readGyro_X() {
 
 int16_t imu_readGyro_Y() {
 
-	uint8_t instructionHi = 0x25 | 0x80;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x24 | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUTY_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTY_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
@@ -283,8 +283,8 @@ int16_t imu_readGyro_Y() {
 }
 
 int16_t imu_readGyro_Z() {
-	uint8_t instructionHi = 0x27 | 0x80;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x26 | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUTZ_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTZ_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
@@ -303,8 +303,8 @@ int16_t imu_readGyro_Z() {
 
 int16_t imu_readTemp() {
 
-	uint8_t instructionHi = 0x21 | 0x80;	//Where we send Hi instruction
-	uint8_t instructionLow = 0x20 | 0x80;	//Where we send Low instruction
+	uint8_t instructionHi = OUT_TEMP_H_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUT_TEMP_L_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
     int16_t data = 0;
 
