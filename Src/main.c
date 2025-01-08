@@ -25,6 +25,7 @@ int main() {
 	//}
 
 	while (1) {
+		// printf("Test\n");
 		continue;
 	}
 
