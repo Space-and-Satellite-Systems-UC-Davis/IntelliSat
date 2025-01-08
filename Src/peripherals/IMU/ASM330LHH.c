@@ -45,7 +45,8 @@ enum IMU_SELECT IMU_global = IMU0;
 
 /*************************** IMU Helper Functions *************************/
 
-#define ScaledData(data, scale) ((data * scale) / (uint16_t)(-1))
+// #define ScaledData(data, scale) ((data * scale) * (uint16_t)(-1))
+#define ScaledData(data, scale) ((data * 1))
 
 #if OP_REV == 3
 
@@ -112,6 +113,7 @@ int16_t imu_spiReadHighLow(void *low_address) {
 #endif
 
 	nop(10);
+	printMsg("High: %d, Low: %d\r\n",datah, datal);
 	return (datah << 8) | datal;
 }
 
@@ -137,7 +139,9 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 	softi2c_writeReg(IMU_I2C, IMU_ADDR, ACCEL_RATE_REG, data);
 
 #elif OP_REV == 2 || OP_REV == 3
-
+	set_IMU(IMU0);
+	imu_spiWriteReg(ACCEL_RATE_REG, data);
+	set_IMU(IMU1);
 	imu_spiWriteReg(ACCEL_RATE_REG, data);
 
 #endif
@@ -180,6 +184,10 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 
 #elif OP_REV == 2 || OP_REV == 3
 
+
+	set_IMU(IMU0);
+	imu_spiWriteReg(GYRO_CTRL_REG, data);
+	set_IMU(IMU1);
 	imu_spiWriteReg(GYRO_CTRL_REG, data);
 
 #endif
@@ -226,9 +234,6 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 
 	spi_config(IMU1_SPI);
 	imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
-
-	imu_acelCtrl(acel_rate, acel_scale, 0);
-	imu_gyroCtrl(gyro_rate, gyro_scale);
 
 	set_IMU(IMU0);
 

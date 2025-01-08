@@ -12,7 +12,7 @@
 
 #include <I2C/i2c.h>
 #include <SPI/spi.h>
-
+#include <print_scan.h>
 //Macros
 #if   OP_REV == 1
 #define IMU_I2C GPIOF, 1, GPIOF, 0

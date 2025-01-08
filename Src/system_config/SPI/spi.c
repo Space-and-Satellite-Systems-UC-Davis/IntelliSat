@@ -223,8 +223,8 @@ void spi3_config() {
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR
-		| SPI_CR1_CPOL				// Clock line will be HIGH when IDLE
-		| SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
+		| SPI_CR1_CPOL;				// Clock line will be HIGH when IDLE
+		// | SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| SPI_CR2_DS_8_BIT << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
