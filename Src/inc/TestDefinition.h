@@ -22,7 +22,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 0:
 			return testFunction_Nothing;
 		case 1:
-			return testFunction_IMU_AcelGyro_Reads;
+			return testFunction_IMU_Dupe_Reads;
 		case 2:
 			return testFunction_MAG_Reads;
 		case 3:
