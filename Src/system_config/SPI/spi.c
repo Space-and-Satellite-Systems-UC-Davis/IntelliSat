@@ -214,12 +214,12 @@ void spi3_config() {
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;
 	SPI3->CR1 |=
-		  0U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
+		  1U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR
-		| SPI_CR1_CPOL				// Clock line will be HIGH when IDLE
-		| SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
+		| SPI_CR1_CPOL;				// Clock line will be HIGH when IDLE
+		// | SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
@@ -263,7 +263,7 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			transmission++;
 		}
 		while(!(spi->SR & SPI_SR_TXE));
-
+//		while(!(spi->SR & SPI_SR_RXNE));
 		// read the reception line until it's empty
 		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
 			if (reception == NULL) {
