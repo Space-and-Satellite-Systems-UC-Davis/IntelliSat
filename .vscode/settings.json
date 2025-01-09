@@ -2,4 +2,9 @@
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "cmake.configureOnOpen": true,
   "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/debug/build/compile_commands.json",
+  "C_Cpp.codeAnalysis.clangTidy.args": [
+        "--target=arm-none-eabi",           // Specify the target architecture
+        "-I/path/to/arm-none-eabi/include", // Optional: Add include paths
+        "-I${workspaceFolder}/include"      // Your include paths
+    ]
 }
