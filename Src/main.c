@@ -25,7 +25,7 @@ int main() {
 	//}
 
 	while (1) {
-		// printf("Test\n");
+		printMsg("Hello There!\r\n");
 		continue;
 	}
 
