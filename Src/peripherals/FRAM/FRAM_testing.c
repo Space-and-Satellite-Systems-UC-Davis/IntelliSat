@@ -34,14 +34,6 @@ void FRAMtest_read_deviceID()
 	}
 }
 
-void testFunction_FRAM()
-{
-    FRAMtest_readData();
-    FRAMtest_read_deviceID();
-    FRAMtest_readPage();
-
-}
-
 void FRAMtest_readData()
 {
 	uint8_t buffer[256] = {0};
@@ -155,4 +147,13 @@ void FRAMtest_writeData() {
     }
 
     printMsg("All Tests Completed.\n\r");
+
+}
+
+void testFunction_FRAM()
+{
+    FRAMtest_readData();
+    FRAMtest_read_deviceID();
+    FRAMtest_readPage();
+
 }
