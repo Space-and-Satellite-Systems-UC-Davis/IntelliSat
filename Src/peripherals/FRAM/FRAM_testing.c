@@ -120,3 +120,75 @@ void FRAMtest_readPage()
 		printMsg("FRAM Page Read Failed.\n\r");
 	}
 }
+
+void FRAMtest_writeData() {
+    uint8_t writeBuffer[256] = {0};
+    uint8_t readBuffer[256] = {0};
+    uint32_t address = 0x0000;
+
+    // Fill the buffer with a recognizable pattern
+    for (uint16_t i = 0; i < 256; ++i) {
+        writeBuffer[i] = i;
+    }
+
+    // Test 1: Basic Write and Read
+    printMsg("Starting Basic Write and Read Test...\n\r");
+    if (FRAM_writeData(address, writeBuffer, 256)) {
+        printMsg("Write Command Sent.\n\r");
+        FRAM_readData(address, readBuffer);
+
+        // Verify written and read data
+        for (uint16_t i = 0; i < 256; i++) {
+            if (writeBuffer[i] != readBuffer[i]) {
+                printMsg("Basic Write and Read Test Data mismatch\n\r", i, writeBuffer[i], readBuffer[i]); // at index %d: Sent %02X, Read %02X
+                return;
+            }
+        }
+        printMsg("Basic Write and Read Test Passed.\n\r");
+    } else {
+        printMsg("Write Command Failed.\n\r");
+    }
+
+    // Test 2: Boundary Condition Write
+    address = 0x7F00; // Near upper boundary of memory
+    printMsg("Starting Boundary Condition Test at 0x7F00...\n\r");
+    if (FRAM_writeData(address, writeBuffer, 256)) {
+        printMsg("Boundary Write Command Sent.\n\r");
+        FRAM_readData(address, readBuffer);
+
+        for (uint16_t i = 0; i < 256; i++) {
+            if (writeBuffer[i] != readBuffer[i]) {
+                printMsg("Boundary Condition Test Data Mismatch\n\r", i, writeBuffer[i], readBuffer[i]);
+                return;
+            }
+        }
+        printMsg("Boundary Condition Test Passed.\n\r");
+    } else {
+        printMsg("Boundary Write Command Failed.\n\r");
+    }
+
+    // Test 3: Invalid Address Write (Expect Failure) (0x0000 - 0x7FFF valid range)
+    address = 0x8000; // Invalid address
+    printMsg("Starting Invalid Address Test at 0x8000...\n\r");
+    if (!FRAM_writeData(address, writeBuffer, 256)) {
+        printMsg("Invalid Address Test Passed (Command Rejected as Expected).\n\r");
+    } else {
+        printMsg("Invalid Address Test Failed (Command Unexpectedly Accepted).\n\r");
+    }
+
+    // Test 4: Write Protect Test
+    printMsg("Testing Write Protection...\n\r");
+    if (FRAM_writeEnable()) {
+        FRAM_writeDisable(); // Set WP
+        if (!FRAM_writeData(0x0000, writeBuffer, 256)) {
+            printMsg("Write Protect Test Passed (Write Rejected as Expected).\n\r");
+        } else {
+            printMsg("Write Protect Test Failed (Write Unexpectedly Allowed).\n\r");
+        }
+        FRAM_writeEnable(); // Reset WP
+    } else {
+        printMsg("Failed to Enable Write for Testing.\n\r");
+    }
+
+    printMsg("All Tests Completed.\n\r");
+}
