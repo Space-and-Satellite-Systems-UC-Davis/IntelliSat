@@ -67,3 +67,6 @@ CMakePresets.json
 # VS Code configs
 .vs/**
 .vscode/**
+
+# CubeIDE (?) cache
+.DS_Store
