@@ -58,3 +58,12 @@ release
 
 # Launch file
 *.launch
+
+# CMake build files
+build/**
+cmake/**
+CMakePresets.json
+
+# VS Code configs
+.vs/**
+.vscode/**
