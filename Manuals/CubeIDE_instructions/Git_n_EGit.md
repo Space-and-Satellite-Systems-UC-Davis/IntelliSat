@@ -28,4 +28,4 @@ Do the same for `Git Staging`
 9. The new window opens up in bottom right of the IDE. You have successfully installed and set up the EGit plugin
 
 ## Using EGit
-The EGit Foundation has made a video tutorial to explain the usage of the pluging: https://www.youtube.com/watch?v=D73L9YlBlP8
+The EGit Foundation has made a video tutorial to explain the usage of the plugin: https://www.youtube.com/watch?v=D73L9YlBlP8

@@ -1,4 +1,4 @@
-## Pre-requesites
+## Pre-requisites
 This document assumes the following:
 1. You have installed CubeIDE.
 2. You have some programs (code, startup script, linker file) part of your project
@@ -41,7 +41,7 @@ The easiest way to build a project in CubeIDE is to click on the `Play` icon on 
 This will do the following things:
 1. Build the Project (if it isn't build already)
 2. Attempt to connect to the board to reprogram it
-3. Start reporgramming the board
+3. Start reprogramming the board
 
 Each of these steps will be visible in the _Console_ window.
 
@@ -53,7 +53,7 @@ __NOTE: This section will require an STM32 based board to be connected to the PC
 To start debugging, click the `Bug` icon on the top pane \
 ![Bug](../../img/project_settings/debug_button.png)
 
-When deugging for the first time, the IDE might ask you to set the 'Debug Configurations'. Since this is a slightly lengthy process, refer to Section 3.1.4 of the [CubeIDE Reference Manual](https://www.st.com/resource/en/user_manual/um2609-stm32cubeide-user-guide-stmicroelectronics.pdf) for instructions. \
+When debugging for the first time, the IDE might ask you to set the 'Debug Configurations'. Since this is a slightly lengthy process, refer to Section 3.1.4 of the [CubeIDE Reference Manual](https://www.st.com/resource/en/user_manual/um2609-stm32cubeide-user-guide-stmicroelectronics.pdf) for instructions. \
 __NOTE: For IntelliSat, there is no need to change the default debug configuration__
 
 'Debugging' do the following:
