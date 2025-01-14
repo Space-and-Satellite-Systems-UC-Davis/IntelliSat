@@ -60,7 +60,13 @@ release
 *.launch
 
 # CMake build files
-build**
+build/**
 cmake/**
-CMakeFiles/**
-CMakeCache.txt
+CMakePresets.json
+
+# VS Code configs
+.vs/**
+.vscode/**
+
+# CubeIDE (?) cache
+.DS_Store
