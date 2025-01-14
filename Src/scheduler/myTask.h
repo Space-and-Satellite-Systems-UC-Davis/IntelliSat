@@ -5,6 +5,7 @@
 // #include "./../integration/integration.h"
 
 #include "status.h"
+#include "FreeRTOS/Source/include/FreeRTOS.h"
 
 typedef void (*FunctionPointer)();  // For mode functions
 
@@ -14,11 +15,13 @@ typedef void (*FunctionPointer)();  // For mode functions
  */
 struct task_t {
     uint8_t task_id;            // PRIMARY_KEY
-    uint32_t task_interrupts;    // times taskISR called, cancel mode/task after x reached
-    FunctionPointer config_ptr;  // configure timers, other mode info.
-    FunctionPointer run_ptr;     // the main func. for mode, via ADCS
-    FunctionPointer clean_ptr;   // reset timers, clear temp buffers, etc
-    uint8_t func_1;              // Open functionality
+    uint32_t task_interrupts;   // times taskISR called, cancel mode/task after x reached
+    FunctionPointerSomethingMaybeNotTypedef ready_ptr; // returns true when task should be run
+    FunctionPointer config_ptr; // configure timers, other mode info.
+    FunctionPointer run_ptr;    // the main func. for mode, via ADCS
+    FunctionPointer clean_ptr;  // reset timers, clear temp buffers, etc
+    TaskHandle_t FreeRTOS_handle;// FreeRTOS task handle
+    uint8_t func_1;             // Open functionality
 };
 
 extern volatile struct task_t curr_task;
