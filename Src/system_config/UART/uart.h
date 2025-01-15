@@ -46,7 +46,7 @@ void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
  * @param None
  * @returns Whether the buffer has
  */
-bool usart_recieveBufferNotEmpty();
+bool usart_recieveBufferNotEmpty(USART_TypeDef *bus);
 
 /*
  * Utilizes the USART hardware receiver to get `size` number of bytes from a FIFO buffer.

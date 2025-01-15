@@ -52,6 +52,7 @@ USART_ReceiverBuffer USART3_RxBuffer;
 #elif OP_REV == 2 || OP_REV == 3
 
 USART_ReceiverBuffer USART1_RxBuffer;
+USART_ReceiverBuffer USART2_RxBuffer;
 USART_ReceiverBuffer LPUART1_RxBuffer;
 
 #endif
@@ -71,6 +72,8 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 		rxbuff = &USART1_RxBuffer;
 	} else if (bus == LPUART1) {
 		rxbuff = &LPUART1_RxBuffer;
+	} else if (bus == USART2) {
+        rxbuff = &USART2_RxBuffer;
 	}
 #endif
 
@@ -289,6 +292,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
 			uart_8bit_1stop(USART1, baud_rate, false);
+            NVIC_EnableIRQ(USART1_IRQn);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -300,19 +304,23 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
 			usart3_gpio_init();
 			uart_8bit_1stop(USART3, baud_rate, false);
+            NVIC_EnableIRQ(USART3_IRQn);
 			break;
 		case (int)UART4:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
 			uart4_gpio_init();
+            NVIC_EnableIRQ(UART4_IRQn);
 			break;
 		case (int)UART5:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART5EN;
 			uart4_gpio_init();
+            NVIC_EnableIRQ(UART5_IRQn);
 			break;
 		case (int)LPUART1:
 			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 			lpuart_gpio_init();
 			uart_8bit_1stop(LPUART1, baud_rate, false);
+            NVIC_EnableIRQ(LPUART1_IRQn);
 			break;
 		default:
 			return false;
@@ -395,7 +403,7 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
-#if OP_REV == 1 || OP_REV == 2
+#if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
 		enqueueBuffer(USART1_RxBuffer, USART1);
 #endif
 	}
@@ -410,9 +418,15 @@ void USART1_IRQHandler() {
 void USART2_IRQHandler() {
 	if (USART2->ISR & USART_ISR_RXNE) {
 		USART2->ISR &= ~USART_ISR_RXNE;
+#if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
+		enqueueBuffer(USART2_RxBuffer, USART2);
+#endif
 	}
 	if (USART2->ISR & USART_ISR_RTOF) {
 		USART2->ISR &= ~USART_ISR_RTOF;
+#if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
+		USART2_RxBuffer.timedout = true;
+#endif
 	}
 }
 
@@ -452,7 +466,7 @@ void UART5_IRQHandler() {
 void LPUART1_IRQHandler() {
 	if (LPUART1->ISR & USART_ISR_RXNE) {
 		LPUART1->ISR &= ~USART_ISR_RXNE;
-#if OP_REV == 2
+#if OP_REV == 2 || OP_REV == 3
 		enqueueBuffer(LPUART1_RxBuffer, LPUART1)
 #endif
 	}
