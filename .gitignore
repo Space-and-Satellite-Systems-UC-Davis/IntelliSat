@@ -62,7 +62,9 @@ release
 # CMake build files
 build/**
 cmake/**
+CMakeFiles/**
 CMakePresets.json
+CMakeCache.txt
 
 # VS Code configs
 .vs/**
