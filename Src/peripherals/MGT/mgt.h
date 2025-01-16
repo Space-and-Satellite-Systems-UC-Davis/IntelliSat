@@ -30,7 +30,8 @@ const int E_MGT_INVALID = 2;
 
 enum MgtState { MGT_OFF, MGT_TX_ACTIVE, MGT_RX_ACTIVE};
 
-void mgt_sendMsg(char* message, ...);
+/* TODO: For testing; remove on deploy <15-01-25, Eric Xu> */
+void mgt_transmitBytes(uint8_t message[], int nbytes);
 int mgt_readOneByte();
 int mgt_readBytes(uint8_t buffer[], int receive_buffer_size);
 void mgt_init();

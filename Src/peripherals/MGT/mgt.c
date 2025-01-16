@@ -29,16 +29,22 @@ void mgt_init() {
 }
 
 /**
- * Generic function to send a string over MGT_USART
+ * Transmit `nbytes` from `message` to MGT. References usart_transmitBytes
  */
-void mgt_sendMsg(char* message, ...) {
-	char buff[128];
+void mgt_transmitBytes(uint8_t message[], int nbytes) {
+	// Enable UART3 and Transmitter
+	MGT_USART->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
-	va_list args;
-	va_start(args, message);
-	vsprintf(buff,message,args);
+	// Transfer each character one at a time
+	for (int i = 0; i < nbytes; i++){
+		// wait until Data register is empty
+		while (!(MGT_USART->ISR & USART_ISR_TXE));
+		// Place the character in the Data Register
+		MGT_USART->TDR = message[i];
+	}
 
-	usart_transmitBytes(MGT_USART, buff);
+	// Wait for the Transfer to be completed by monitoring the TC flag
+	while(!(MGT_USART->ISR & USART_ISR_TC));
 }
 
 /**
@@ -67,14 +73,14 @@ bool mgt_waitForAcknowledgement(uint64_t initialTime) {
  * acknowledged, -E_MGT_INVALID if message is invalid and not sent
  */
 int mgt_setCoilPercent(uint8_t coilNumber, uint8_t pwm, uint8_t percentage) {
-    char message[3+3];
+    uint8_t message[3+3];
     message[0] = PACKET_START;
     message[1] = SET_PERCENT;
     message[2] = coilNumber;
     message[3] = pwm;
     message[4] = percentage;
     message[5] = PACKET_END;
-	mgt_sendMsg(message);
+	mgt_transmitBytes(message, 6);
     for (int i = 1; i < 5; i++) {
         if (message[i] == '{' || message[i] == '}')
             return -E_MGT_INVALID;
