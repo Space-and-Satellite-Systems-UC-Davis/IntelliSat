@@ -1,4 +1,4 @@
-# Pre-requesites
+# Pre-requisites
 This document assumes the following:
 1. You have installed CubeIDE
 2. You have a Github account, and a repository you want to clone and work on
@@ -21,7 +21,7 @@ If you did everything correctly, you will see your repository in the Git Reposit
 ![IMAGE](../../img/cloning/Cloned.png)
 
 # Step 2: Setting up as a Project
-Cloning by itself isn't enough for workng on the repository. You won't be able to modify the files, or build the project. What you need is to set up your repository as a `Project`. To do so, first open the `Project Explorer` view. Then, in an empty section of that window, right-click to reveal the options:
+Cloning by itself isn't enough for working on the repository. You won't be able to modify the files, or build the project. What you need is to set up your repository as a `Project`. To do so, first open the `Project Explorer` view. Then, in an empty section of that window, right-click to reveal the options:
 
 ![IMAGE](../../img/cloning/ImportButton.png)
 
@@ -29,6 +29,6 @@ On the window that pops up, select `General --> Existing Project into Workspace`
 
 ![IMAGE](../../img/cloning/ImportOption.png)
 
-On the next window, navigate to the location where you put the cloned repository. In case you can't find it, you can look at the repository in Git Repositries window (it should be shown there in parenthesis). 
+On the next window, navigate to the location where you put the cloned repository. In case you can't find it, you can look at the repository in Git Repositories window (it should be shown there in parenthesis). 
 
 Once you select it, you will see your repository pop up in the window. Select it and click `Finish`. Now you should see the repository in your Project Explorer tab/window.
