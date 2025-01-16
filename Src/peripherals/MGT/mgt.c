@@ -11,8 +11,9 @@
 
 uint64_t lastStateChange = 0;
 
-const char PACKET_START = '{';
-const char PACKET_END = '}';
+const int packet_maxnbytes = 128;
+const uint8_t PACKET_START = '{';
+const uint8_t PACKET_END = '}';
 typedef enum : uint8_t {
     SET_PERCENT = 'S',
     GET_CURRENT = 'C',
@@ -63,6 +64,34 @@ bool mgt_waitForAcknowledgement(uint64_t initialTime) {
 }
 
 /**
+ * Send a packet to MGT and wait for acknowledgement
+ *
+ * @param op
+ * @param payload
+ * @param payload_nbytes
+ *
+ * @return bytes sent if message is acknowledged, -E_MGT_LOST if message is sent but not
+ * acknowledged, -E_MGT_INVALID if message is invalid and not sent
+ */
+int mgt_transmitPacket(mgt_op op, uint8_t payload[], int payload_nbytes) {
+    // Check for delimiters in payload
+    for (int i = 0; i < payload_nbytes; i++) {
+        if (payload[i] == '{' || payload[i] == '}')
+            return -E_MGT_INVALID;
+    }
+
+    uint8_t message[packet_maxnbytes];
+    int i = 0;
+    message[i++] = PACKET_START;
+    message[i++] = op;
+    memcpy(message + i, payload, payload_nbytes);
+    i += payload_nbytes;
+    message[i++] = PACKET_END;
+	bool acknowledged = mgt_waitForAcknowledgement(getSysTime());
+    return acknowledged? i : -E_MGT_LOST;
+}
+
+/**
  * Set percent to Coil X PWM 0/1
  *
  * @param coilNumber - A number between 0 and 2 (inclusive)
@@ -73,20 +102,11 @@ bool mgt_waitForAcknowledgement(uint64_t initialTime) {
  * acknowledged, -E_MGT_INVALID if message is invalid and not sent
  */
 int mgt_setCoilPercent(uint8_t coilNumber, uint8_t pwm, uint8_t percentage) {
-    uint8_t message[3+3];
-    message[0] = PACKET_START;
-    message[1] = SET_PERCENT;
-    message[2] = coilNumber;
-    message[3] = pwm;
-    message[4] = percentage;
-    message[5] = PACKET_END;
-	mgt_transmitBytes(message, 6);
-    for (int i = 1; i < 5; i++) {
-        if (message[i] == '{' || message[i] == '}')
-            return -E_MGT_INVALID;
-    }
-	bool acknowledged = mgt_waitForAcknowledgement(getSysTime());
-    return acknowledged? 6 : -E_MGT_LOST;
+    uint8_t payload[3];
+    payload[0] = coilNumber;
+    payload[1] = pwm;
+    payload[2] = percentage;
+    return mgt_transmitPacket(SET_PERCENT, payload, 3);
 }
 
 /**
