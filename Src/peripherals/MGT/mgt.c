@@ -11,6 +11,16 @@
 
 uint64_t lastStateChange = 0;
 
+const char PACKET_START = '{';
+const char PACKET_END = '}';
+typedef enum : uint8_t {
+    SET_PERCENT = 'S',
+    GET_CURRENT = 'C',
+    ACKNOWLEDGE = 'A',
+    SHUTDOWN = 'D',
+    STOP_TIMER = 'T',
+} mgt_op;
+
 /**
  * Initialize mgt
  */
@@ -46,7 +56,6 @@ bool mgt_waitForAcknowledgement(uint64_t initialTime) {
 	return true;
 }
 
-
 /**
  * Set percent to Coil X PWM 0/1
  *
@@ -54,19 +63,24 @@ bool mgt_waitForAcknowledgement(uint64_t initialTime) {
  * @param pwm - 0 or 1
  * @param percentage - A number between 0 and 100 (inclusive)
  *
- * @return true if message is acknowledged, false if otherwise
+ * @return bytes sent if message is acknowledged, -E_MGT_LOST if message is sent but not
+ * acknowledged, -E_MGT_INVALID if message is invalid and not sent
  */
-bool mgt_setCoilPercent(uint8_t coilNumber, uint8_t pwm, uint8_t percentage) {
+int mgt_setCoilPercent(uint8_t coilNumber, uint8_t pwm, uint8_t percentage) {
     char message[3+3];
-    message[0] = '{';
-    message[1] = 'T';
+    message[0] = PACKET_START;
+    message[1] = SET_PERCENT;
     message[2] = coilNumber;
     message[3] = pwm;
     message[4] = percentage;
-    message[5] = '}';
+    message[5] = PACKET_END;
 	mgt_sendMsg(message);
-	return mgt_waitForAcknowledgement(getSysTime());
-
+    for (int i = 1; i < 5; i++) {
+        if (message[i] == '{' || message[i] == '}')
+            return -E_MGT_INVALID;
+    }
+	bool acknowledged = mgt_waitForAcknowledgement(getSysTime());
+    return acknowledged? 6 : -E_MGT_LOST;
 }
 
 /**

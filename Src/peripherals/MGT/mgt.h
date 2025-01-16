@@ -25,6 +25,9 @@
 #define BYTE_PER_SECOND_LIMIT 1000
 #define MGT_ACKNOWLEDGEMENT_TIMEOUT 1000
 
+const int E_MGT_LOST = 1;
+const int E_MGT_INVALID = 2;
+
 enum MgtState { MGT_OFF, MGT_TX_ACTIVE, MGT_RX_ACTIVE};
 
 void mgt_sendMsg(char* message, ...);
@@ -37,6 +40,6 @@ void mgt_sendState(enum MgtState state);
 bool mgt_sendTransferToMemRequest(int numBytes); //TODO: Test
 char mgt_receiveStateRequest(void);
 
-bool mgt_setCoilPercent(uint8_t coilNumber, uint8_t pwm, uint8_t percentage);
+int mgt_setCoilPercent(uint8_t coilNumber, uint8_t pwm, uint8_t percentage);
 
 #endif /* PERIPHERALS_MGT_MGT_H_ */
