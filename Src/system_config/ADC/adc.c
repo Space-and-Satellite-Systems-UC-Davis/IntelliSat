@@ -10,8 +10,9 @@
 //USES ADC1
 
 bool is_ADC_not_ready() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
+//THE BELOW FUNCTION IN TIMEOUT HUNG FOREVER, COULD NOT TEST OTHER ADC
 bool is_VREFBUF_not_ready() { return (VREFBUF->CSR & VREFBUF_CSR_VRR) != 0; }
-void adc_init(){
+void adc_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; //enables ADC clock
 	//ADC1->CR |= ADC_CR_ADDIS; //Disables ADC
 	RCC->CCIPR   &= ~( RCC_CCIPR_ADCSEL ); //enables peripheral clock
