@@ -15,10 +15,10 @@ bool is_VREFBUF_not_ready() { return (VREFBUF->CSR & VREFBUF_CSR_VRR) != 0; }
 void adc_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; //enables ADC clock
 	//ADC1->CR |= ADC_CR_ADDIS; //Disables ADC
-	RCC->CCIPR   &= ~( RCC_CCIPR_ADCSEL ); //enables peripheral clock
-	RCC->CCIPR   |=  ( 3 << RCC_CCIPR_ADCSEL_Pos ); //Sets ADC clock to system clock
-	ADC1->CR    &= ~( ADC_CR_DEEPPWD );//makes sure ADC isn't in deep power down mode
-	ADC1->CR |= ADC_CR_ADVREGEN; //enables ADC voltage regulator
+	RCC->CCIPR &= ~RCC_CCIPR_ADCSEL; //enables peripheral clock
+	RCC->CCIPR |= RCC_CCIPR_ADCSEL_SYSCLK; //Sets ADC clock to system clock
+	ADC1->CR   &= ~ADC_CR_DEEPPWD;//makes sure ADC isn't in deep power down mode
+	ADC1->CR   |= ADC_CR_ADVREGEN; //enables ADC voltage regulator
 	//Test what happens if voltage regulator is gone
 	nop(10000); //waits a bit
 	ADC1->CR &= ~(ADC_CR_ADCALDIF); //Sets it to single ended mode
@@ -32,7 +32,7 @@ void adc_init() {
 
 	VREFBUF->CSR |= VREFBUF_CSR_VRS; //Sets internal reference buffer to around 2.5V
 
-	//Try changing ADC CCR prescalar
+	//Try changing ADC CCR prescaler
 	//Try changing VREFBUF CSR register to enable vrefint since vref+ is decoupled
 
 }
@@ -48,13 +48,13 @@ void adc_configGPIO(){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN; //enables GPIO C
 	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
 
-	GPIOC->OTYPER       &= ~( GPIO_OTYPER_OT0 ); //Reset C0 pin
-	GPIOC->PUPDR        &= ~( GPIO_OSPEEDR_OSPEED0 ); //Reset C0 pin
-	GPIOC->OSPEEDR      &= ~( GPIO_PUPDR_PUPD0 ); //Reset C0 pin
-	GPIOC->MODER        &= ~( GPIO_MODER_MODE0 ); //Reset C0 pin
-	//GPIOC->MODER        |= ( GPIO_MODER_MODE0_0 ); //Sets C0 pin to output mode (KEEP COMMENTED)
-	GPIOC->ASCR 		|=  ( GPIO_ASCR_ASC0 ); //Connects analog switch to ADC channel for C0
-	GPIOC->MODER        |=  ( 0x3 << GPIO_MODER_MODE0_Pos ); //Sets mode to analog
+	GPIOC->OTYPER   &= ~(GPIO_OTYPER_OT0); //Reset C0 pin
+	GPIOC->PUPDR    &= ~(GPIO_OSPEEDR_OSPEED0); //Reset C0 pin
+	GPIOC->OSPEEDR  &= ~(GPIO_PUPDR_PUPD0); //Reset C0 pin
+	GPIOC->MODER    &= ~(GPIO_MODER_MODE0); //Reset C0 pin
+	//GPIOC->MODER  |= ( GPIO_MODER_MODE0_0 ); //Sets C0 pin to output mode (KEEP COMMENTED)
+	GPIOC->ASCR	    |= ( GPIO_ASCR_ASC0 ); //Connects analog switch to ADC channel for C0
+	GPIOC->MODER    |=  GPIO_MODER_MODE0_ANALOG; //Sets mode to analog
 	//gpio_set(GPIOC, 0,0); //Testing where C0 pin was (KEEP COMMENTED)
 }
 
@@ -85,9 +85,9 @@ void adc_setChannel(){
 	ADC123_COMMON->CCR |= (ADC_CCR_VBATEN);
 	ADC1->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
 	ADC1->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
-	ADC1->SQR1 |= (18 << ADC_SQR1_SQ1_Pos); //Sets the sequence to just channel 1 (PIN C0)
-	ADC1->SMPR2 &= ~( ADC_SMPR2_SMP18 ); //Resets the sampling time of channel 18
-	ADC1->SMPR2 |=  ( 0x7 << ADC_SMPR2_SMP18_Pos ); //Sets the sampling time to max: 640.5 cycles per sample
+	ADC1->SQR1 |= ADC_SQR1_SQ1_CHAN18_AS_1st_CONV; //Sets the sequence to just channel 1 (PIN C0)
+	ADC1->SMPR2 &= ~(ADC_SMPR2_SMP18); //Resets the sampling time of channel 18
+	ADC1->SMPR2 |= ADC_CHAN18_640_5_CLK_CYC; //Sets the sampling time to max: 640.5 cycles per sample
 }
 
 // Perform a single ADC conversion.

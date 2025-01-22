@@ -7,7 +7,7 @@
  *
  *  - May 14-16, 2023
  *      Author       : Raphael, Darsh, Parteek
- *      Contributors : nithilsenthil, Huey, Raymond, Kevin
+ *      Contributors : nithinsenthil, Huey, Raymond, Kevin
  *      Log          : wrote the Button Handlers
  *
  *  - Apr 29, 2023 (Creation)

@@ -14,25 +14,51 @@
 
 #define QSPI_TIMEOUT_PERIOD  	1000000	// TODO
 
+// Macros for QSPI_CCR
 // Macros for FLASH Instruction mode (fmode in qspi_set_command())
-#define QSPI_FMODE_INDIRECT_WRITE		0x00
-#define QSPI_FMODE_INDIRECT_READ		0x01
-#define QSPI_FMODE_AUTOMATIC_POLLING	0x02
-#define QSPI_FMODE_MEMORY_MAPPED		0x03
+enum qspi_fmodes {
+	QSPI_CCR_FMODE_INDIRECT_WRITE,
+	QSPI_CCR_FMODE_INDIRECT_READ,
+	QSPI_CCR_FMODE_AUTOMATIC_POLLING,
+	QSPI_CCR_FMODE_MEMORY_MAPPED
+};
+
+// Macros for # of wires per QSPI Instruction Phase (in qspi_set_command())
+enum qspi_dmodes {
+	QSPI_CCR_DMODE_0_DATA_LINES,
+	QSPI_CCR_DMODE_1_DATA_LINES,
+	QSPI_CCR_DMODE_2_DATA_LINES,
+	QSPI_CCR_DMODE_4_DATA_LINES
+};
+
+enum qspi_admodes {
+	QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+	QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+	QSPI_CCR_ADMODE_2_ADDRESS_LINES,
+	QSPI_CCR_ADMODE_4_ADDRESS_LINES
+};
+
+enum qspi_imodes {
+	QSPI_CCR_IMODE_0_INSTRUCTION_LINES,
+	QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+	QSPI_CCR_IMODE_2_INSTRUCTION_LINES,
+	QSPI_CCR_IMODE_4_INSTRUCTION_LINES
+};
+
+#define QSPI_REG_RESET 0
 
 #define QSPI_READ	false
 #define QSPI_WRITE	true
-
-// Macros for # of wires per QSPI Instruction Phase (in qspi_set_command())
-#define QSPI_UNUSED	0x00
-#define QSPI_1_WIRE	0x01
-#define QSPI_2_WIRE	0x02
-#define QSPI_4_WIRE	0x03
 
 #define qspi_on()	   RCC->AHB3ENR |= RCC_AHB3ENR_QSPIEN
 #define qspi_off()	   RCC->AHB3ENR &= ~RCC_AHB3ENR_QSPIEN;
 #define qspi_enable()  QUADSPI->CR |=   QUADSPI_CR_EN
 #define qspi_disable() QUADSPI->CR &= ~(QUADSPI_CR_EN)
+
+// TODO? macro all DMA_CSELR_CXS values
+// Too much work and may or may not improve readability
+// Below just a adhoc solution
+#define DMA2_CSELR_C7S_QSPI 0x3
 
 /**
  * Configures the QSPI hardware so that it can be used later

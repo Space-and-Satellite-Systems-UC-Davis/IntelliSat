@@ -91,10 +91,9 @@ void buttons_init() {
 	// RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
-    GPIOG->MODER &= ~(0b11 << 24); 
+    GPIOG->MODER &= ~GPIO_MODER_MODE12;
 
-    GPIOG->PUPDR |= 
-        GPIO_PUPDR_PUPD12_0;
+    GPIOG->PUPDR |= GPIO_PUPDR_PUPD12_0;
 
 	button_interruptConfig();
 
