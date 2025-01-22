@@ -25,6 +25,7 @@ void delay_ms(uint64_t ms) {
 	while (systick_time - start_time < ms);
 }
 
+//Returns elapsed ms
 uint64_t getSysTime() {
 	return systick_time;
 }

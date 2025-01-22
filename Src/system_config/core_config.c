@@ -35,6 +35,10 @@
 // Global variable
 int core_MHz;
 
+bool is_LSI_not_ready() { return !(RCC->CSR & RCC_CSR_LSIRDY); }
+bool is_LSE_not_ready() { return !(RCC->BDCR & RCC_BDCR_LSERDY); }
+bool is_PLL_not_ready() { return !(RCC->CR & RCC_CR_PLLRDY); }
+bool is_PLLSAI1_not_ready() { return !(RCC->CR & RCC_CR_PLLSAI1RDY); }
 void init_coreClocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
@@ -55,9 +59,9 @@ void init_coreClocks() {
 	// enable internal oscillators
 	RCC->CR |= RCC_CR_HSION; 					// enable HSI
 	RCC->CSR |= RCC_CSR_LSION;					// Turn on the LSI Oscillator
-	while (!(RCC->CSR & RCC_CSR_LSIRDY));		// wait for the LSI Oscillator to stabilize
+	wait_with_timeout(is_LSI_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSI Oscillator to stabilize
 	// RCC->BDCR |= RCC_BDCR_LSEON;				// Turn on the LSE Oscillator
-	// while (!(RCC->BDCR & RCC_BDCR_LSERDY));	// wait for the LSE Oscillator to stabilize
+	// wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSE Oscillator to stabilize
 
 	// configure Phased Lock Loop
 	RCC->PLLCFGR =
@@ -80,8 +84,8 @@ void init_coreClocks() {
 		| 12 << RCC_PLLSAI1CFGR_PLLSAI1N_Pos; 	// VCO multiplication factor set to 12
 	// enable PLL and PLLSAI1
 	RCC->CR |= RCC_CR_PLLON | RCC_CR_PLLSAI1ON;
-	while (!(RCC->CR & RCC_CR_PLLRDY));
-	while (!(RCC->CR & RCC_CR_PLLSAI1RDY));
+	wait_with_timeout(is_PLL_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_PLLSAI1_not_ready, DEFAULT_TIMEOUT_MS);
 	RCC->CFGR = RCC_CFGR_SW;	// system clock to PLL
 
 	// configure UART to use HSI16
@@ -113,13 +117,13 @@ void init_coreClocks() {
 		| RCC_AHB2ENR_GPIOFEN
 		| RCC_AHB2ENR_GPIOGEN;
 	// wait until each GPIO is clocked and ready
-	while (GPIOA->OTYPER == 0xFFFFFFFF);
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	while (GPIOC->OTYPER == 0xFFFFFFFF);
-	while (GPIOD->OTYPER == 0xFFFFFFFF);
-	while (GPIOE->OTYPER == 0xFFFFFFFF);
-	while (GPIOF->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	wait_with_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOF_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 }
 
 

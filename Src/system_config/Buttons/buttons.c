@@ -72,7 +72,7 @@ void buttons_init() {
 #if OP_REV == 1 || OP_REV == 2
 
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-    while (GPIOB->OTYPER == 0xFFFFFFFF);
+    wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 
     // configure Input mode for BTN0 and BTN1
     GPIOB->MODER = 0x00000000;  // TODO
@@ -89,7 +89,7 @@ void buttons_init() {
 #elif OP_REV == 3
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 	// RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    while (GPIOG->OTYPER == 0xFFFFFFFF);
+    wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
     GPIOG->MODER &= ~(0b11 << 24); 
 
