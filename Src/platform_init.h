@@ -86,9 +86,9 @@ void init_platform(bool run_scheduler) {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
+	printer_init();
 	led_init();
 	buttons_init();
-	printer_init();
 	systick_init(run_scheduler);
 }
 

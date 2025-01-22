@@ -13,6 +13,7 @@
 #include "rtc.h"
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
 
 void rtc_openWritingPrivilege() {
 	// Allow Backup Domain Writing Access
@@ -24,7 +25,7 @@ void rtc_openWritingPrivilege() {
 
 	// Enter RTC Initialization mode, wait for confirmation of initialization mode
 	RTC->ISR |= RTC_ISR_INIT;
-	while (!(RTC->ISR & RTC_ISR_INITF));
+	wait_with_timeout(is_not_init_RTC, DEFAULT_TIMEOUT_MS);
 }
 
 void rtc_closeWritingPrivilege() {
@@ -293,7 +294,13 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		uint8_t temp_second = *second + 1;
 
 		// check to make sure both values read were consistent
-		while ((*hour != temp_hour) || (*minute != temp_minute) || (*second != temp_second)) {
+		uint64_t start_time = getSysTime(); //time in ms
+		while (
+			((*hour != temp_hour) || 
+			(*minute != temp_minute) || 
+			(*second != temp_second)) &&
+			is_time_out(start_time, DEFAULT_TIMEOUT_MS)
+		) {
 			// read the values once
 			*hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);
 			*hour   += 1  * ((RTC->TR & RTC_TR_HU_Msk)  >> RTC_TR_HU_Pos);

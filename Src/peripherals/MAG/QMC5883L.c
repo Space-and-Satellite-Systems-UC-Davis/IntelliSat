@@ -21,7 +21,7 @@ static Mag_Selector current_mag_selected = MAG0;
 
 /*************************** MAG Helper Functions *************************/
 
-#define ScaledData(data, scale) ((float)(data) * (scale) / (uint16_t)(-1))
+#define ScaledData(data, scale) ((float)(data) * (scale) * -1)
 
 /**
  * Configures the control registers of the OP1/2/3 magnetometer.
