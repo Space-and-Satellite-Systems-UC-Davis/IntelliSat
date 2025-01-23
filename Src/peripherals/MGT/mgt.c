@@ -10,7 +10,7 @@
 #include "MGT/mgt.h"
 
 // Forward declarations not part of the packet interface
-void mgt_retransmit();
+void mgt_updateResp();
 void mgt_transmitBytes(uint8_t message[], int nbytes);
 
 const uint8_t PACKET_START = '{';
@@ -95,6 +95,7 @@ int mgt_getResponse(uint8_t* buf) {
  * Retransmit request if timed out.
  */
 void mgt_retransmit() {
+    mgt_updateResp();
     if (req_nbytes == 0) {
         return;
     }
@@ -105,7 +106,7 @@ void mgt_retransmit() {
 }
 
 /**
- * Update response buffer without reading the response.
+ * Buffers response without reading the response.
  */
 void mgt_updateResp() {
     if (received_resp)

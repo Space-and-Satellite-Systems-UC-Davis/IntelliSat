@@ -39,6 +39,7 @@
 void mgt_init();
 bool mgt_request(uint8_t payload[], int nbytes);
 int mgt_getResponse(uint8_t* buf);
+void mgt_retransmit();
 
 /* TODO: For testing; remove on deploy <15-01-25, Eric Xu> */
 //void mgt_transmitBytes(uint8_t message[], int nbytes);
