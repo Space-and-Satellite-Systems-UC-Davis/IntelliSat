@@ -10,6 +10,7 @@
 #include "MGT/mgt.h"
 
 // Forward declarations not part of the packet interface
+void mgt_retransmit();
 void mgt_transmitBytes(uint8_t message[], int nbytes);
 
 const uint8_t PACKET_START = '{';
@@ -26,9 +27,11 @@ typedef enum mgt_op mgt_op;
 
 // Sequence number of the packet in transit
 bool seq_num = 0;
-uint8_t req_buf[PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES];
+uint64_t req_time = 0;
+bool req_sent = false;
+uint8_t req_buf[2*PACKET_MAXBYTES]; // extra memory for escape
 int req_nbytes = 0;
-uint8_t resp_buf[PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES];
+uint8_t resp_buf[PACKET_MAXBYTES];
 int resp_nbytes = 0;
 // Next character will be escaped
 bool escaping = false;
@@ -42,17 +45,17 @@ void mgt_init() {
 }
 
 /**
- * Queue a packet for sending. Only one packet can be queued at a time. Return
- * a packet identifier (`0` or `1`) if packet is successfully queued, `-1`
- * otherwise.
+ * Send a request. Return `true` if packet is queued, `false` if otherwise.
+ * Request cannot be sent if a previous response is not received via
+ * `mgt_getResponse()`
  *
  * @param payload
  * @param nbytes
- * @return packet_idx - `0`, `1`, or `-1` if failed
+ * @return queued
  */
-int mgt_queuePacket(uint8_t payload[], int nbytes) {
+bool mgt_request(uint8_t payload[], int nbytes) {
     if (req_nbytes != 0)
-        return -1;
+        return false;
     // PACKET_START SEQ_NUM <payload> PACKET_END
     req_buf[req_nbytes++] = PACKET_START;
     req_buf[req_nbytes++] = seq_num;
@@ -62,21 +65,42 @@ int mgt_queuePacket(uint8_t payload[], int nbytes) {
         req_buf[req_nbytes++] = payload[i];
     }
     req_buf[req_nbytes++] = PACKET_END;
-    return seq_num;
+
+    req_time = getSysTime();
+    mgt_transmitBytes(req_buf, req_nbytes);
+    return true;
 }
 
 /**
- * Send queued packet
- * TODO: retransmit timeout
+ * Read a response into `buf`. Assume that `buf` is large enough
+ * (PAYLOAD_MAXBYTES). Returns size of response if successfully read, -1 if
+ * otherwise.
  */
-void mgt_sendPacket() {
+int mgt_getResponse(uint8_t* buf) {
+    if (!received_resp)
+        return -1;
+
+    received_resp = false;
+    seq_num = !seq_num;
+    req_sent = false;
+    req_nbytes = 0;
+    resp_nbytes = 0;
+
+    memcpy(buf, resp_buf, resp_nbytes);
+    return resp_nbytes;
+}
+
+/**
+ * Retransmit request if timed out.
+ */
+void mgt_retransmit() {
     if (req_nbytes == 0) {
         return;
     }
-    mgt_transmitBytes(req_buf, req_nbytes);
-
-    req_nbytes = 0;
-    seq_num = !seq_num;
+    if (getSysTime() - req_time > TIMEOUT) {
+        req_time = getSysTime();
+        mgt_transmitBytes(req_buf, req_nbytes);
+    }
 }
 
 void mgt_updateRespPacket() {
@@ -95,6 +119,11 @@ void mgt_updateRespPacket() {
         if (read_nbytes == 0    // nothing is read
             || (resp_nbytes == 0 && buf != PACKET_START)) // hasn't started
             continue;
+
+        if (resp_nbytes == 1 && buf != seq_num) {
+            resp_nbytes = 0;
+            continue;
+        }
 
         // Handle escaped characters
         if (escaping) {
