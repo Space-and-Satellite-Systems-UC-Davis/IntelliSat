@@ -77,6 +77,7 @@ bool mgt_request(uint8_t payload[], int nbytes) {
  * otherwise.
  */
 int mgt_getResponse(uint8_t* buf) {
+    mgt_updateResp();
     if (!received_resp)
         return -1;
 
@@ -97,13 +98,16 @@ void mgt_retransmit() {
     if (req_nbytes == 0) {
         return;
     }
-    if (getSysTime() - req_time > TIMEOUT) {
+    if (!received_resp && getSysTime() - req_time > TIMEOUT) {
         req_time = getSysTime();
         mgt_transmitBytes(req_buf, req_nbytes);
     }
 }
 
-void mgt_updateRespPacket() {
+/**
+ * Update response buffer without reading the response.
+ */
+void mgt_updateResp() {
     if (received_resp)
         return;
 
