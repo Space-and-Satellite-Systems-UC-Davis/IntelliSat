@@ -86,7 +86,8 @@ int mgt_getResponse(uint8_t* buf) {
     req_nbytes = 0;
     resp_nbytes = 0;
 
-    memcpy(buf, resp_buf, resp_nbytes);
+    // only copy payload
+    memcpy(buf, resp_buf + 2, resp_nbytes - 3);
     return resp_nbytes;
 }
 
