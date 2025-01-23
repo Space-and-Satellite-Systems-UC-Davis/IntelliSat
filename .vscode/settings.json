@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "qmc5883l.h": "c",
+        "i2c.h": "c",
+        "globals.h": "c"
+    }
+}
