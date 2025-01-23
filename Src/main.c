@@ -9,6 +9,11 @@
 int main() {
     init_init();
     init_platform(!RUN_TEST);
+    while(1)
+    {
+        printMsg("HELLO WORLD");
+    }
+
     // ^ don't want to run the Scheduler in case we are running other tests
 
 #if (RUN_TEST==1) && (TEST_ID != 0)

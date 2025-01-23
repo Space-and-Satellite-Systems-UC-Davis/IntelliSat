@@ -20,6 +20,11 @@
 
 #include "spi.h"
 
+void spi_enable(SPI_TypeDef *spi){
+    spi->CR1 |= SPI_CR1_SPE;
+}
+
+
 /**
  * Configures GPIO for the SPI-2 Peripheral
  */
@@ -174,7 +179,7 @@ void spi1_config() {
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;	// GPIO
 	spi1_gpioInit();
 
-	spi_disable(SPI1, SPI1_CS);
+	spi_disable(SPI1, SPI1_CS_GPIO, SPI1_CS_PIN);
 
 	SPI1->CR1 = 0;
 	SPI1->CR2 = 0;
@@ -189,7 +194,7 @@ void spi2_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;	// Clock
 	spi2_gpioInit();						// GPIO
 
-	spi_disable(SPI2, SPI2_CS);
+	spi_disable(SPI2, SPI2_CS_GPIO, SPI2_CS_PIN);
 
 	SPI2->CR1 = 0;
 	SPI2->CR2 = 0;
@@ -209,7 +214,7 @@ void spi3_config() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_SPI3EN;	// Clock
     spi3_gpioInit();						// GPIO
 
-	spi_disable(SPI3, SPI3_CS);
+	spi_disable(SPI3, SPI3_CS_GPIO, SPI3_CS_PIN);
 
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;

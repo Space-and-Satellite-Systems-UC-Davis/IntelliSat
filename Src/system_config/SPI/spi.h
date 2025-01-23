@@ -24,15 +24,21 @@
 // predefined macros for cs_port,cs_pin (useful for later spi functions)
 #if OP_REV == 1
 
-#define SPI1_CS			  UNUSED_GPIO
-#define SPI2_CS			  GPIOB,12
-#define SPI3_CS			  UNUSED_GPIO
+#define SPI1_CS_GPIO	  UNUSED_GPIO_GPIO
+#define SPI1_CS_PIN       UNUSED_GPIO_PIN
+#define SPI2_CS_GPIO	  GPIOB
+#define SPI2_CS_PIN       12
+#define SPI3_CS_GPIO	  UNUSED_GPIO_GPIO
+#define SPI3_CS_PIN		  UNUSED_GPIO_PIN
 
 #elif OP_REV == 2 || OP_REV == 3
 
-#define SPI1_CS			  GPIOA, 4
-#define SPI2_CS			  UNUSED_GPIO
-#define SPI3_CS			  GPIOG,15
+#define SPI1_CS_GPIO      GPIOA 
+#define SPI1_CS_PIN       4
+#define SPI2_CS_GPIO      UNUSED_GPIO_GPIO
+#define SPI2_CS_PIN	      UNUSED_GPIO_PIN 
+#define SPI3_CS_GPIO	  GPIOG
+#define SPI3_CS_PIN       15
 
 #endif
 
@@ -40,7 +46,7 @@
 
 /**************************** SPI INITIALIZATIONS ****************************/
 
-#define spi_enable(spi) spi->CR1 |= SPI_CR1_SPE
+void spi_enable(SPI_TypeDef *spi);
 
 /**
  * Stops an SPI peripheral

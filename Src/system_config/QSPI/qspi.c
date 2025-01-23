@@ -16,6 +16,19 @@
 //bool qspi_in_use = false;
 //bool qspi_dma_use = false;
 
+void qspi_on(){
+	RCC->AHB3ENR |= RCC_AHB3ENR_QSPIEN;
+}
+void qspi_off(){
+	RCC->AHB3ENR &= ~RCC_AHB3ENR_QSPIEN;
+}
+void qspi_enable(){
+	QUADSPI->CR |=   QUADSPI_CR_EN;
+}
+void qspi_disable(){
+	QUADSPI->CR &= ~(QUADSPI_CR_EN);
+}
+
 // (1 bit : qspi_in_use)(1 bit : qspi_dma_use)(last 4 bits : qspi_status)
 uint8_t qspi_details;
 
@@ -23,16 +36,29 @@ char qspi_getStatus() {
 	return (qspi_details & 0b00001111);
 }
 
-#define qspi_setStatus(s)	(qspi_details &= ~0b00001111);\
-							(qspi_details |= s)
+void qspi_setStatus(int s){
+	qspi_details &= ~0b00001111;
+	qspi_details |= s;
+}
 
-#define qspi_start_use()	(qspi_details |=  0b1000000)
-#define qspi_stop_use()		(qspi_details &= ~0b1000000)
-#define qspi_in_use()  		(qspi_details &   0b1000000)
-
-#define qspi_dma_use()    (qspi_details |=  0b0100000)
-#define qspi_dma_disuse() (qspi_details &= ~0b0100000)
-#define qspi_dma_inuse()  (qspi_details &   0b0100000)
+void qspi_start_use(){	
+	(qspi_details |=  0b1000000);
+}
+void qspi_stop_use(){		
+	(qspi_details &= ~0b1000000);
+}
+uint8_t qspi_in_use(){
+	(qspi_details &  0b1000000);
+}
+void qspi_dma_use(){
+	(qspi_details |=  0b0100000);
+}
+void qspi_dma_disuse(){
+	(qspi_details &= ~0b0100000);
+}
+bool qspi_dma_inuse(){
+	return (qspi_details &   0b0100000);
+}
 
 // Global (external) variables and functions
 extern int core_MHz;	// from core_config.h
@@ -329,9 +355,9 @@ bool qspi_statusPoll(
 }
 
 
-#define qspi_stopStatusPolling() { \
-		QUADSPI->CCR  &= ~(QUADSPI_CCR_FMODE | QUADSPI_CCR_DMODE); \
-		QUADSPI->CR   &= ~QUADSPI_CR_APMS; \
+void qspi_stopStatusPolling() { 
+		QUADSPI->CCR  &= ~(QUADSPI_CCR_FMODE | QUADSPI_CCR_DMODE); 
+		QUADSPI->CR   &= ~QUADSPI_CR_APMS; 
 }
 
 /**

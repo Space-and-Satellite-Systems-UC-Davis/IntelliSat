@@ -77,8 +77,10 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 	return rxbuff;
 }
 
-#define enqueueBuffer(buff,usart) buff.buffer[buff.rear] = usart->RDR; \
-							      buff.rear = (buff.rear + 1) % ReceiveBufferLen;
+void enqueueBuffer(USART_ReceiverBuffer buff,USART_TypeDef * usart){
+	buff.buffer[buff.rear] = usart->RDR;
+	buff.rear = (buff.rear + 1) % ReceiveBufferLen;
+}
 
 /************************ GPIO INITIALIZATION HELPERS ************************/
 

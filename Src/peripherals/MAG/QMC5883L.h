@@ -18,16 +18,24 @@
 #include <I2C/i2c.h>
 
 #if   OP_REV == 1
-#define MAG_I2C_SCL GPIOF, 1
-#define MAG_I2C_SDA GPIOF, 0
+#define MAG_I2C_SCL_GPIO GPIOF
+#define MAG_I2C_SCL_PIN 1
+#define MAG_I2C_SDA_GPIO GPIOF
+#define MAG_I2C_SDA_PIN 0
 #elif OP_REV == 2
-#define MAG_I2C_SCL GPIOB, 8
-#define MAG_I2C_SDA GPIOB, 9
+#define MAG_I2C_SCL_GPIO GPIOB
+#define MAG_I2C_SCL_PIN 8
+#define MAG_I2C_SDA_GPIO GPIOB
+#define MAG_I2C_SDA_PIN 9
 #elif OP_REV == 3
-#define MAG0_I2C_SCL GPIOB, 8
-#define MAG0_I2C_SDA GPIOB, 9
-#define MAG1_I2C_SCL GPIOF, 0
-#define MAG1_I2C_SDA GPIOF, 1
+#define MAG0_I2C_SCL_GPIO GPIOB
+#define MAG0_I2C_SCL_PIN 8
+#define MAG0_I2C_SDA_GPIO GPIOB
+#define MAG0_I2C_SDA_PIN 9
+#define MAG1_I2C_SCL_GPIO GPIOF
+#define MAG1_I2C_SCL_PIN 0
+#define MAG1_I2C_SDA_GPIO GPIOF
+#define MAG1_I2C_SDA_PIN 1
 
 #endif
 

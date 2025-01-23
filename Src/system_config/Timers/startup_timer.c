@@ -8,11 +8,22 @@
 
 #include "timers.h"
 
-#define timer_startupTimerOn()	StartupTimer->CR1 |=  TIM_CR1_CEN;
-#define timer_startupTimerOff()	StartupTimer->CR1 &= ~TIM_CR1_CEN;
+void timer_startupTimerOn(){
+	StartupTimer->CR1 |=  TIM_CR1_CEN;
+}
 
+void timer_startupTimerOff(){
+	StartupTimer->CR1 &= ~TIM_CR1_CEN;
+}
 
-#define MAX_STARTUP_COUNT (30 * 60)		// 30 minutes * 60 seconds per minute
+void StartupTimer_ClockEnable(){
+    RCC->APB1ENR1 |=  RCC_APB1ENR1_TIM5EN;
+}
+void StartupTimer_ClockDisable(){
+    RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM5EN;
+}
+
+#define MAX_STARTUP_COUNT 1800		// 30 minutes * 60 seconds per minute
 
 int startup_count = 0;
 

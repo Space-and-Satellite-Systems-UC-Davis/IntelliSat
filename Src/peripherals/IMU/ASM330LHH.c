@@ -43,27 +43,31 @@ int imu_gyroFullScale = 0;
 
 /*************************** IMU Helper Functions *************************/
 
-#define ScaledData(data, scale) ((data * scale) / (uint16_t)(-1))
+
+int16_t ScaledData(int16_t data, int scale){
+	return ((data * scale) / (uint16_t)(-1));
+}
+ 
 
 void imu_spiWriteReg(void *address, uint8_t data) {
 	uint8_t spiDATA[2];
 	spiDATA[0] = (uint8_t)address & 0x7F;
 	spiDATA[1] = data;
 
-	spi_startCommunication(IMU_SPI_CS);
+	spi_startCommunication(IMU_SPI_CS_GPIO, IMU_SPI_CS_PIN);
 	spi_transmitReceive(IMU_SPI, spiDATA, NULL, 2, false);
-	spi_stopCommunication(IMU_SPI_CS);
+	spi_stopCommunication(IMU_SPI_CS_GPIO, IMU_SPI_CS_PIN);
 }
 
 int16_t imu_spiReadHighLow(void *low_address) {
 	uint8_t instruction = (uint8_t)low_address | 0x80;
 	uint8_t datah, datal;
 
-	spi_startCommunication(IMU_SPI_CS);
+	spi_startCommunication(IMU_SPI_CS_GPIO, IMU_SPI_CS_PIN);
 	spi_transmitReceive(IMU_SPI, &instruction, NULL, 1, false);
 	spi_transmitReceive(IMU_SPI, NULL, &datal, 1, false);
 	spi_transmitReceive(IMU_SPI, NULL, &datah, 1, false);
-	spi_stopCommunication(IMU_SPI_CS);
+	spi_stopCommunication(IMU_SPI_CS_GPIO, IMU_SPI_CS_PIN);
 	nop(10);
 	return (datah << 8) | datal;
 }
@@ -87,7 +91,7 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 
 #if OP_REV == 1
 
-	softi2c_writeReg(IMU_I2C, IMU_ADDR, ACCEL_RATE_REG, data);
+	softi2c_writeReg(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, ACCEL_RATE_REG, data);
 
 #elif OP_REV == 2
 
@@ -129,7 +133,7 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 
 #if OP_REV == 1
 
-	softi2c_writeReg(IMU_I2C, IMU_ADDR, GYRO_CTRL_REG, data);
+	softi2c_writeReg(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, GYRO_CTRL_REG, data);
 
 #elif OP_REV == 2
 
@@ -165,8 +169,8 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 
 #if OP_REV == 1
 
-	softi2c_init(IMU_I2C);
-	softi2c_writeReg(IMU_I2C, IMU_ADDR, IMU_RESET_REG, IMU_RESET_CMD); // soft reset imu
+	softi2c_init(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN);
+	softi2c_writeReg(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, IMU_RESET_REG, IMU_RESET_CMD); // soft reset imu
 
 #elif OP_REV == 2
 
@@ -189,7 +193,7 @@ int16_t imu_readAcel_X() {
 
 #if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
@@ -210,7 +214,7 @@ int16_t imu_readAcel_Y() {
 
 #if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
@@ -231,7 +235,7 @@ int16_t imu_readAcel_Z() {
 
 #if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
@@ -251,7 +255,7 @@ int16_t imu_readGyro_X() {
 
 	#if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
@@ -271,7 +275,7 @@ int16_t imu_readGyro_Y() {
 
 #if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
@@ -290,7 +294,7 @@ int16_t imu_readGyro_Z() {
 
 #if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 
@@ -310,7 +314,7 @@ int16_t imu_readTemp() {
 
 #if OP_REV == 1
 
-	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
+	data = softi2c_readRegHighLow(IMU_I2C_GPIO, IMU_I2C_SCL_PIN, IMU_I2C_GPIO, IMU_I2C_SDA_PIN, IMU_ADDR, instructionHi, instructionLow);
 
 #elif OP_REV == 2
 

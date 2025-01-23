@@ -29,10 +29,10 @@
 #define QSPI_2_WIRE	0x02
 #define QSPI_4_WIRE	0x03
 
-#define qspi_on()	   RCC->AHB3ENR |= RCC_AHB3ENR_QSPIEN
-#define qspi_off()	   RCC->AHB3ENR &= ~RCC_AHB3ENR_QSPIEN;
-#define qspi_enable()  QUADSPI->CR |=   QUADSPI_CR_EN
-#define qspi_disable() QUADSPI->CR &= ~(QUADSPI_CR_EN)
+void qspi_on();
+void qspi_off();
+void qspi_enable();
+void qspi_disable();
 
 /**
  * Configures the QSPI hardware so that it can be used later

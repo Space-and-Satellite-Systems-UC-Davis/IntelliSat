@@ -31,27 +31,30 @@
 #define HSI 'h'
 #define HSE 'x'
 
+enum Month{
+    January = 1,
+    February = 2,
+    March = 3,
+    April = 4,
+    May = 5,
+    June = 6,
+    July = 7,
+    August = 8,
+    September = 9,
+    October = 10,
+    November = 11,
+    December = 12
+};
 
-#define January    1
-#define February   2
-#define March      3
-#define April      4
-#define May        5
-#define June	   6
-#define July       7
-#define August     8
-#define September  9
-#define October    10
-#define November   11
-#define December   12
-
-#define Monday     1
-#define Tuesday    2
-#define Wednesday  3
-#define Thursday   4
-#define Friday     5
-#define Saturday   6
-#define Sunday     7
+enum Weekday{
+    Monday = 1,
+    Tuesday = 2,
+    Wednesday = 3,
+    Thursday = 4,
+    Friday = 5,
+    Saturday = 6,
+    Sunday = 7
+};
 
 /**
  * Enables the RTC's Clock. Sets the appropriate pre-scalers
