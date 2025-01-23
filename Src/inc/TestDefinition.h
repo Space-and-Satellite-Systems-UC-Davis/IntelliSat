@@ -1,4 +1,5 @@
 #pragma once
+#include "../testing/unity.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST DECLARATIONS
@@ -38,6 +39,10 @@ void (*getTestFunction(int test_id))(void) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           	  EXTRAS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+void testFunction_TestUnity() {
+	TEST_ASSERT(1);
+}
 
 void testFunction_Nothing() {
 	while(1);
