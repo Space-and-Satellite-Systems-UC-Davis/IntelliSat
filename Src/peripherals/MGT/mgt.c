@@ -25,20 +25,19 @@ const uint8_t ESCAPE = '\\';
 //};
 //typedef enum mgt_op mgt_op;
 
-// Sequence number of the packet in transit
+// State of the current request-response pair
 bool seq_num = 0;
-uint64_t req_time = 0;
+uint64_t last_req_time = 0;
 bool req_sent = false;
 uint8_t req_buf[2*PACKET_MAXBYTES]; // extra memory for escape
 int req_nbytes = 0;
 uint8_t resp_buf[PACKET_MAXBYTES];
 int resp_nbytes = 0;
-// Next character will be escaped
-bool escaping = false;
+bool escaping = false;  // escape the next character
 bool received_resp = false;
 
 /**
- * Initialize mgt
+ * Initialize MGT
  */
 void mgt_init() {
 	usart_init(MGT_USART, MGT_BAUDRATE);
@@ -66,7 +65,7 @@ bool mgt_request(uint8_t payload[], int nbytes) {
     }
     req_buf[req_nbytes++] = PACKET_END;
 
-    req_time = getSysTime();
+    last_req_time = getSysTime();
     mgt_transmitBytes(req_buf, req_nbytes);
     return true;
 }
@@ -96,11 +95,10 @@ int mgt_getResponse(uint8_t* buf) {
  */
 void mgt_retransmit() {
     mgt_updateResp();
-    if (req_nbytes == 0) {
-        return;
-    }
-    if (!received_resp && getSysTime() - req_time > MGT_ACKNOWLEDGEMENT_TIMEOUT) {
-        req_time = getSysTime();
+    if (req_nbytes != 0
+            && !received_resp
+            && getSysTime() - last_req_time > MGT_ACKNOWLEDGEMENT_TIMEOUT) {
+        last_req_time = getSysTime();
         mgt_transmitBytes(req_buf, req_nbytes);
     }
 }
@@ -122,7 +120,9 @@ void mgt_updateResp() {
 
         // Not reading if
         if (read_nbytes == 0    // nothing is read
-            || (resp_nbytes == 0 && buf != PACKET_START)) // hasn't started
+                || (resp_nbytes == 0 && buf != PACKET_START) // no start delim
+                || (req_nbytes == 0)    // no request sent
+            )
             continue;
 
         if (resp_nbytes == 1 && buf != seq_num) {
