@@ -36,13 +36,14 @@
 #define PACKET_MAXBYTES PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES
 #define TIMEOUT 500
 
-enum MgtState { MGT_OFF, MGT_TX_ACTIVE, MGT_RX_ACTIVE};
+void mgt_init();
+bool mgt_request(uint8_t payload[], int nbytes);
+int mgt_getResponse(uint8_t* buf);
 
 /* TODO: For testing; remove on deploy <15-01-25, Eric Xu> */
 //void mgt_transmitBytes(uint8_t message[], int nbytes);
 //int mgt_readOneByte();
 //int mgt_readBytes(uint8_t buffer[], int receive_buffer_size);
-void mgt_init();
 //void mgt_sendByteStream(int numberOfBytes, uint8_t buffer[]);
 //bool mgt_sendByteStreamToMemRequest(int numBytes, uint8_t buffer[]); //TODO: Test
 //void mgt_sendState(enum MgtState state);
