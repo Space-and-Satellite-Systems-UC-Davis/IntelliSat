@@ -20,18 +20,26 @@
 #define FRAM_READ_SR 0x05
 #define FRAM_WRITE_SR 0x01
 #define FRAM_WRITE_ENABLE 0x06
+#define FRAM_WRITE_DISABLE 0x04
 #define FRAM_READ 0x03
 #define FRAM_WRITE 0x02
 #define FRAM_MAX_BYTES 8000
 
-// Insert explanation here
+// FRAM Device ID
 void FRAM_read_deviceID(uint8_t *MISO);
 
-bool FRAM_readData(uint16_t address, uint8_t *buffer);
+// FRAM Status Register
+uint8_t FRAM_readStatusRegister();
 
-// Page and sector functions
+// FRAM Read Functions
+
 bool FRAM_readPage(uint16_t page, uint8_t *buffer);
+bool FRAM_readData(uint16_t address, uint8_t *buffer);
 bool FRAM_readSector(uint16_t sector, uint8_t *buffer);
+
+// FRAM Write Functions
+bool FRAM_writeEnable();
+bool FRAM_writeDisable();
 bool FRAM_writePage(uint16_t page, const uint8_t *data);
 bool FRAM_writeSector(uint16_t sector, const uint8_t *data);
 bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size);
