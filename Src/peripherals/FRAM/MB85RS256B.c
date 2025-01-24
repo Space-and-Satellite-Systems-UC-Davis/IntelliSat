@@ -8,13 +8,12 @@
 #include "MB85RS256B.h"
 #include <stddef.h>
 
-void printBinary(uint8_t byte)
-{
-    for (int i = 7; i >= 0; i--)
-    {
-        printMsg("%c", (byte & (1 << i)) ? '1' : '0');
-    }
-    printMsg("\n\r");
+/*  Helper function:
+    Timing issue with raising CS at the end. It was triggering before we had a chance to read all the data.
+    Ensures the SPI hardware has finished transmitting and receiving data before moving on.
+*/
+void FRAM_wait() {
+    while (FRAM_SPI->SR & SPI_SR_BSY);
 }
 
 void FRAM_read_deviceID(uint8_t *MISO)
@@ -25,6 +24,61 @@ void FRAM_read_deviceID(uint8_t *MISO)
     spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
     spi_transmitReceive(FRAM_SPI, NULL, MISO, 5, false);
     spi_stopCommunication(FRAM_SPI_CS);
+}
+
+bool FRAM_writeEnable() {
+    uint8_t MOSI = FRAM_WRITE_ENABLE;
+
+    // Activate SPI communication
+    spi_startCommunication(FRAM_SPI_CS);
+
+    // Send WRITE_ENABLE command
+    bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
+    FRAM_wait();
+
+    // End communication
+    spi_stopCommunication(FRAM_SPI_CS);
+    return success;
+}
+
+bool FRAM_writeDisable() {
+    uint8_t MOSI = FRAM_WRITE_DISABLE;
+
+    // Activate SPI communication
+    spi_startCommunication(FRAM_SPI_CS);
+
+    // Send WRITE_DISABLE command
+    bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
+
+    // End communication
+    spi_stopCommunication(FRAM_SPI_CS);
+    return success;
+}
+
+uint8_t FRAM_readStatusRegister() {
+    uint8_t MOSI = FRAM_READ_SR;
+    uint8_t status = 0;
+    uint8_t trash;
+
+    // Activate SPI communication
+    spi_startCommunication(FRAM_SPI_CS);
+
+    // Send READ_STATUS_REGISTER command
+    if (!spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return 0;  // Return 0 if command fails
+    }
+    // Trash the dummy byte
+    spi_transmitReceive(FRAM_SPI, NULL, &trash, 1, false);
+
+    // Receive and store status register value directly in 'status'
+    if (!spi_transmitReceive(FRAM_SPI, NULL, &status, 1, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return 0;  // Return 0 if read fails
+    }
+    // End communication
+    spi_stopCommunication(FRAM_SPI_CS);
+    return status;  // Return the read status register value
 }
 
 bool FRAM_readData(uint16_t address, uint8_t *buffer)
@@ -134,18 +188,15 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     if (address + size > 0x8000) {
         return false;
     }
-
     // Enable write operations
     if (!FRAM_writeEnable()) {
         return false;
     }
-    //
+
     uint8_t MOSI[3];
     MOSI[0] = FRAM_WRITE;             // Write command
     MOSI[1] = (address >> 8) & 0xFF;  // High byte of address
     MOSI[2] = address & 0xFF;         // Low byte of address
-
-    // Start SPI communication
     spi_startCommunication(FRAM_SPI_CS);
 
     // Send the WRITE command and address
@@ -153,17 +204,14 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
-
     // Send data to write
     if (!spi_transmitReceive(FRAM_SPI, data, NULL, size, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
-    // Wait for completion
     FRAM_wait();
-
     // End SPI communication
     spi_stopCommunication(FRAM_SPI_CS);
-
+    
     return true;
 }

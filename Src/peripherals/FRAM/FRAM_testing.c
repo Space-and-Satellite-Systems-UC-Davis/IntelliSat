@@ -8,17 +8,23 @@
 #include "MB85RS256B.h"
 #include "print_scan.h"
 
-void FRAMtest_write_enable()
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+/*                            HELPER FUNCTIONS                               */
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+// Print a byte in binary. Useful for visualizing status registers.
+void printBinary(uint8_t byte)
 {
-
-	uint8_t SR1 = FRAM_read_SR1();
-	printMsg("\n\rSR1 initial: %c", SR1);
-
-	FRAM_write_enable();
-
-	SR1 = FRAM_read_SR1();
-	printMsg("\n\rSR1 after WREn: %c", SR1);
+    for (int i = 7; i >= 0; i--)
+    {
+        printMsg("%c", (byte & (1 << i)) ? '1' : '0');
+    }
+    printMsg("\n\r");
 }
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+/*                              FUNCTION TESTS                               */
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // FRAM: Basic communications
 // Currently, bytes 1~3 are getting the correct 0x04 0x7F 0x05 code. byte 0 seems to get gibberish
@@ -33,7 +39,48 @@ void FRAMtest_read_deviceID()
 		printMsg("\n%u", MOSI[i]);
 	}
 }
+/*  Check whether Initial WEL bit is 0. Then see if write_enable passes or not.
+    * expected: 
+    * actual: 
+*/
+void FRAMtest_write_enable()
+{
+    // Read initial SR WEL bit
+    uint8_t initialWEL = (FRAM_readStatusRegister() >> 1) & 0x01;
+    printMsg("\n\rInitial WEL bit: %d", initialWEL);
 
+    FRAM_writeEnable();
+
+    uint8_t updatedWEL = (FRAM_readStatusRegister() >> 1) & 0x01;
+
+    // Test if the WEL bit is set
+    if (updatedWEL == 1) {
+        printMsg("\n\rTest Passed: Write Enabled\n\r");
+    } else {
+        printMsg("\n\rTest Failed: Write Enable Failed.\n\r");
+    }
+}
+/*  Reads current Status Register
+    * expect: "Status Register Read Successful. Value: xyz"
+    * actual: 
+*/
+void FRAMtest_readStatusRegister() {
+    printMsg("Starting Read Status Register Test...\n\r");
+
+    // Read the status register
+    uint8_t status = FRAM_readStatusRegister();
+
+    // Check if the status register read was successful
+    if (status == 0) {
+        printMsg("Failed to Read Status Register. Received 0x00 (possible error).\n\r");
+    } else {
+        printMsg("Status Register Read Successful. Value: 0x%02X\n\r", status);
+    }
+}
+/*  Displays the FRAM data starting at 0x0 in hexadecimal format, 16 bytes per line.
+    * expect: "FRAM Data Read Successful"
+    * actual: 
+*/
 void FRAMtest_readData()
 {
 	uint8_t buffer[256] = {0};
@@ -55,7 +102,10 @@ void FRAMtest_readData()
 		printMsg("FRAM Data Read Failed.\n\r");
 	}
 }
-
+/*  Sets page number to 2 and reads. Corresponds to the address range 0x0200 to 0x02FF.
+    * expected: 
+    * actual: 
+*/
 void FRAMtest_readPage()
 {
 	uint8_t buffer[256] = {0};
@@ -77,7 +127,22 @@ void FRAMtest_readPage()
 	}
 }
 
+/* Write Data Tests (4 Tests)
+  Test 1: Write to buffer with bits 1-256 and read.
+  * expected: "Basic Write and Read Test Passed"
+  * actual: 
+  Test 2: Write to boundary of memory
+  * expected: "Boundary Condition Test Passed"
+  * actual: 
+  Test 3: Write to Invalid Address (Expect rejection)
+  * expected: "Invalid Address Test Passed (Command Rejected as Expected)."
+  * actual: 
+  Test 4: Write Protect Test
+  * expected: "Write Protect Test Passed (Write Rejected as Expected)."
+  * actual: 
+*/
 void FRAMtest_writeData() {
+
     uint8_t writeBuffer[256] = {0};
     uint8_t readBuffer[256] = {0};
     uint32_t address = 0x0000;
@@ -96,7 +161,7 @@ void FRAMtest_writeData() {
         // Verify written and read data
         for (uint16_t i = 0; i < 256; i++) {
             if (writeBuffer[i] != readBuffer[i]) {
-                printMsg("Basic Write and Read Test Data mismatch\n\r", i, writeBuffer[i], readBuffer[i]); // at index %d: Sent %02X, Read %02X
+                printMsg("Basic Write and Read Test Data mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
                 return;
             }
         }
@@ -114,7 +179,7 @@ void FRAMtest_writeData() {
 
         for (uint16_t i = 0; i < 256; i++) {
             if (writeBuffer[i] != readBuffer[i]) {
-                printMsg("Boundary Condition Test Data Mismatch\n\r", i, writeBuffer[i], readBuffer[i]);
+                printMsg("Boundary Condition Test Data Mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
                 return;
             }
         }
@@ -147,13 +212,16 @@ void FRAMtest_writeData() {
     }
 
     printMsg("All Tests Completed.\n\r");
-
 }
 
+/*
+    Test Function Core
+*/
 void testFunction_FRAM()
 {
-    FRAMtest_readData();
     FRAMtest_read_deviceID();
+    FRAMtest_write_enable();
+    FRAMtest_readData();
     FRAMtest_readPage();
-
+    FRAMtest_writeData();
 }
