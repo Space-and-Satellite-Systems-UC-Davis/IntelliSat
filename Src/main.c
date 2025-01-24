@@ -24,6 +24,8 @@
 
 #include "../FreeRTOS/Source/include/FreeRTOS.h"
 #include "../FreeRTOS/Source/include/task.h"
+#include "../scheduler/myTasks.h"
+#include "../Src/system_config/Timers/timers.h"
 //#include "FreeRTOS.h"
 //#include "task.h"
 
@@ -31,6 +33,10 @@
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
 #define BATTERY_THRESHOLD 20        // TODO: Min. battery voltage value, below which mode -> CHARGING
 
+// Any extra queues should be define here, after forward declaration in myTasks.h.
+// You should initialize with xQueueCreate in main(), before calling xTaskCreate, vTaskStartScheduler
+// Before using the Queue instances.
+QueueHandle_t myQueue;
 /* Misc variables */
 int reboot_count;
 // volatile uint16_t flagBits = 0;     // Declared in status.h
@@ -117,12 +123,22 @@ static void led_task(void *args) {
  * there is no scheduler intervention.
  */
 int branch_main() {
+    pwm_initTimer(20000);
+    PWM_TIMER_ON();
+    myQueue = xQueueCreate(configTIMER_QUEUE_LENGTH, sizeof(Data_t));
 
-    xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-1, NULL);
-    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-1, NULL);
+    if (myQueue != NULL) {
 
-    vTaskStartScheduler();
+        xTaskCreate(vSenderTask, "Sender1", 1000, &( xStructsToSend[ 0 ]), configMAX_PRIORITIES-1, NULL);
+        xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
 
+        // The sender task should always be prioritized over the receiver
+        xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES, NULL );
+
+        vTaskStartScheduler();
+    } else {
+        
+    }
     while(1) {}
 
     return 0;
@@ -144,6 +160,5 @@ int main() {
     
     init_platform(!RUN_TEST);
     // ^ don't want to run the Scheduler in case we are running other tests
-    
     branch_main();
 }
