@@ -9,12 +9,10 @@
 #ifndef SCHEDULER_TASK_MANAGER_H_
 #define SCHEDULER_TASK_MANAGER_H_
 
-typedef void (*TaskPointer)(void *); //TODO: temporary
-
 
 /**@brief Handle task expiration and preemption.
  *
- * @param
+ * @param args Unused.
  *
  * @return Void.
  */

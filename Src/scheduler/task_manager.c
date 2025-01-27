@@ -9,18 +9,21 @@
 #include "FreeRTOS/Source/include/FreeRTOS.h"
 #include "FreeRTOS/Source/include/task.h"
 
-//Assuming task table exists w/ TaskPointer and TaskHandle_t
+//Assuming task table exists w/ TaskHandle_t
 extern struct intellisat_task_t task_table[6];
-//let's make a macro for TASK_TABLE_LENGTH
 
 #define TASK_MANAGER_YIELD_TICKS 10000 //TODO: temporary
+#define TASK_TABLE_LENGTH 6 //TODO: temporary
 
 
 void task_manager(void *args) {
 	static intellisat_task_t current_task = task_table[TASK_TABLE_LENGTH - 1]; //idle/null
+	static uint32_t current_task_count = 0;
 
 	bool cancel_current_task = false;
-	if (/*current_task.expired()???*/true) {
+
+	// If expired, cancel. Else if preempted, cancel.
+	if (current_task_count++ >= current_task.task_interrupts) {
 		cancel_current_task = true;
 	} else {
 		for (int id = 0; id < current_task.task_id; id++) {
@@ -34,21 +37,25 @@ void task_manager(void *args) {
 	if (cancel_current_task) {
 		current_task.clean_ptr();
 		vTaskDelete(current_task.FreeRTOS_handle);
-	} else {
-
+		task_table[current_task.task_id].FreeRTOS_handle = NULL;
+		current_task = 0;
 	}
 
-	for (int id = 0; id <= TASK_TABLE_LENGTH; id++) {
-		if (id == TASK_TABLE_LENGTH) { //no other task needs to run
-
-		} else if (task_table[id].ready_ptr()) {
-			TaskHandle_t handle = xTaskCreate(/*...*/);
-			current_task = task_table[id];
-			current_task.handle = handle;
-			break;
+	//schedule other tasks, from high to low priority
+	for (int id = 0; id < TASK_TABLE_LENGTH; id++) {
+		if (task_table[id].ready_ptr()) {
+			//If a task needs to be scheduled and has no handle, create one
+			if (!(task_table[id].FreeRTOS_handle)) {
+				TaskHandle_t handle = xTaskCreate(/*...*/);
+				task_table[id].FreeRTOS_handle = handle;
+			}
+			//If we need to start a task, choose the highest priority one (it will already be running in FreeRTOS)
+			if (!(current_task)) {
+				current_task = task_table[id];
+				current_task_count = 0;
+			}
 		}
 	}
 
-	//schedule lower priority tasks
-	vTaskDelay((TickType_t) TASK_MANAGER_YIELD_TICKS); //TODO check if this is yielding
+	vTaskDelay((TickType_t) TASK_MANAGER_YIELD_TICKS);
 }
