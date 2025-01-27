@@ -10,48 +10,62 @@ const struct FlashHeader default_flash_header = {
         .start_sector_num = EVENT_START_SECTOR,
         .end_sector_num = EVENT_START_SECTOR + EVENT_SECTORS,
         .tail = EVENT_START_SECTOR,
-        .oldest_sector_num = EVENT_START_SECTOR},
-    .exp1_header = {.start_sector_num = EXP1_START_SECTOR, .end_sector_num = EXP1_END_SECTOR, .tail = EXP1_START_SECTOR, .oldest_sector_num = EXP1_START_SECTOR},
-    .exp2_header = {.start_sector_num = EXP2_START_SECTOR, .end_sector_num = EXP2_END_SECTOR, .tail = EXP2_START_SECTOR, .oldest_sector_num = EXP2_START_SECTOR},
-    .current_exp_num = 1};
+        .oldest_sector_num = EVENT_START_SECTOR
+    },
+    .exp1_header = {
+        .start_sector_num = EXP1_START_SECTOR,
+        .end_sector_num = EXP1_END_SECTOR,
+        .tail = EXP1_START_SECTOR,
+        .oldest_sector_num = EXP1_START_SECTOR,
+		.extra = 0
+    },
+    .exp2_header = {
+        .start_sector_num = EXP2_START_SECTOR,
+        .end_sector_num = EXP2_END_SECTOR,
+        .tail = EXP2_START_SECTOR,
+        .oldest_sector_num = EXP2_START_SECTOR,
+		.extra = 0
+    },
+    .current_exp_num = 1,
+	.backup_tle_addr = 0,
+	.extra = 0
+};
 
-struct FlashHeader FLASH_header;
+struct FlashHeader FLASH_header = {0};
 
-void logger_initHeader()
-{
-    flash_eraseSector(0);
-    flash_writePage(0, (uint8_t *)&default_flash_header);
+
+// ============================================================== //
+//                 		 HEADER<-->FLASH                  		  //
+// ============================================================== //
+
+bool logger_initHeader() {
+    if (!flash_eraseSector(0)) return false;
+    if (!flash_writePage(0, (uint8_t*) &default_flash_header)) return false;
     memcpy(&FLASH_header, &default_flash_header, sizeof(default_flash_header));
+    return true;
 }
 
-void logger_fetchHeader()
-{
-    struct FlashHeader temp_header;
-
-    flash_readPage(0, (uint8_t *)&temp_header);
-
-    if (temp_header.events_header.start_sector_num >= EVENT_START_SECTOR &&
-        temp_header.events_header.end_sector_num <= (EVENT_START_SECTOR + EVENT_SECTORS) &&
-        temp_header.exp1_header.start_sector_num >= EXP1_START_SECTOR &&
-        temp_header.exp1_header.end_sector_num <= EXP1_END_SECTOR &&
-        temp_header.exp2_header.start_sector_num >= EXP2_START_SECTOR &&
-        temp_header.exp2_header.end_sector_num <= EXP2_END_SECTOR)
-    {
-
-        memcpy(&FLASH_header, &temp_header, sizeof(struct FlashHeader));
-    }
-    else
-    {
-        memcpy(&FLASH_header, &default_flash_header, sizeof(struct FlashHeader));
-    }
+bool logger_fetchHeader() {
+    if(!flash_readPage(0, (uint8_t*) &FLASH_header)) return false;
+    return true;
 }
 
-// TODO Oct 19 2024 Need to think about FLASH_sector_erase() requirements for FLASH_write_page()
-void logger_updateHeader()
-{
-    // memcpy(mock_flash_buff, &flash_header, sizeof(struct FlashHeader));
-    flash_writePage(0, (uint8_t *)&FLASH_header);
+// TODO 2024.10.29 Need to think about FLASH_sector_erase() requirements for FLASH_write_page()
+bool logger_pushHeader() {
+	struct FlashHeader empty_header = {0};
+	if (memcmp(&FLASH_header, &empty_header, sizeof(struct FlashHeader)) == 0) {
+		return false;
+	}
+
+	if (!flash_eraseSector(0)) return false;
+    if (!flash_writePage(0, (uint8_t*) &FLASH_header)) return false;
+    return true;
 }
+
+
+// ============================================================== //
+//                 		 HEADER UPDATERS                 		  //
+// ============================================================== //
 
 static uint32_t advance_addr(
     const uint32_t start,
@@ -81,8 +95,75 @@ static void logger_advanceOldestExpBlock(struct ExperimentLogHeader *exp_log_hea
         1);
 }
 
-enum LogType logger_getOldestSector(uint8_t *sector_buff)
-{
+
+// ============================================================== //
+//                 		  LOGGER-->FLASH                		  //
+// ============================================================== //
+
+/*
+If the local buffer is longer than remaining space in mock flash buffer, this will write too much.
+
+Potential solutions:
+    1. Make the size of block a multiple of local buffer size, and only transfer when local buffer is full
+    2. Check if size of block being transfered > remaining space in buffer and wrap around to start.
+*/
+// Not implemented
+uint8_t logger_pushEvent() {
+    // memcpy(mock_flash_buff + flash_header.events_header.tail, local_event_logs->logs, sizeof(local_event_logs->logs));
+    //FLASH_write_page(current_event_header->tail, (uint8_t*) local_event_logs->logs);
+    FLASH_header.events_header.tail = advance_addr(
+        FLASH_header.events_header.start_sector_num,
+        FLASH_header.events_header.end_sector_num,
+        FLASH_header.events_header.tail,
+        1
+    );
+
+    return 0;
+}
+
+uint8_t logger_pushExp(struct LocalExpLogs* local_exp_logs,
+                       struct ExperimentLogHeader* current_exp_header) {
+
+	uint8_t log_buffer[FLASH_SECTOR_SIZE]; //there's a more efficient way to do this. look at pushEvent()
+	memcpy(log_buffer, (uint8_t*)local_exp_logs->logs, sizeof(local_exp_logs->logs));
+
+	flash_eraseSector(current_exp_header->tail);
+    flash_writeSector(current_exp_header->tail, log_buffer);
+    current_exp_header->tail = advance_addr(
+                                    current_exp_header->start_sector_num,
+                                    current_exp_header->end_sector_num,
+                                    current_exp_header->tail,
+                                    1
+    );
+
+    return 0;
+}
+
+
+// ============================================================== //
+//                 		  FLASH-->LOGGER              		      //
+// ============================================================== //
+
+struct LocalExpLogs logger_fetchExps(uint16_t page) {
+	struct LocalExpLogs logs_in;
+	uint8_t MISO[FLASH_PAGE_SIZE];
+
+	if (!flash_readPage(page, MISO)) {
+		memset(&logs_in, 0xFF, EXP_LOG_SIZE);
+	}
+
+	uint8_t num_logs = FLASH_PAGE_SIZE / EXP_LOG_SIZE;
+
+	for (uint8_t i = 0; i < num_logs; ++i) {
+		struct ExperimentLog* current_log = &logs_in.logs[i];
+		memcpy(current_log, &MISO[i * EXP_LOG_SIZE], EXP_LOG_SIZE);
+	}
+
+	return logs_in;
+}
+
+
+enum LogType logger_getOldestSector(uint8_t* sector_buff) {
     static enum LogType oldest_block_type = EVENT;
     uint32_t oldest_sector_num;
     switch (oldest_block_type)
@@ -123,6 +204,7 @@ enum LogType logger_getOldestSector(uint8_t *sector_buff)
     return block_type;
 }
 
+<<<<<<< HEAD
 /**
 If the local buffer is longer than remaining space in mock flash buffer, this will write too much.
 
