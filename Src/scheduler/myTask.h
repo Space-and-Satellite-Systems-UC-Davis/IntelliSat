@@ -6,6 +6,7 @@
 
 #include "status.h"
 #include "FreeRTOS/Source/include/FreeRTOS.h"
+#include "FreeRTOS/Source/include/task.h"
 
 #include <stdbool.h>
 
@@ -17,6 +18,7 @@ typedef void (*FunctionPointer)();  // For mode functions
  */
 struct task_t {
     uint8_t task_id;            // PRIMARY_KEY
+    const char *task_name;		// Task name as string
     uint32_t task_interrupts;   // times taskISR called, cancel mode/task after x reached
     bool (*ready_ptr)(void); 	// returns true when task should be run
     FunctionPointer config_ptr; // configure timers, other mode info.
@@ -35,6 +37,7 @@ bool detumble_time();
 bool comms_time();
 int experiment_time();
 bool ecc_time();
+bool pizza_time();
 
 /* Configure methods */
 void config_low_pwr();

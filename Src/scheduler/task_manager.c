@@ -23,6 +23,8 @@ void task_manager(void *args) {
 	bool cancel_current_task = false;
 
 	// If expired, cancel. Else if preempted, cancel.
+	// TODO: count ms instead of count*yield_ticks
+	// TODO: check for current task yield via notif
 	if (current_task_count++ >= current_task.task_interrupts) {
 		cancel_current_task = true;
 	} else {
@@ -34,25 +36,22 @@ void task_manager(void *args) {
 		}
 	}
 
-	if (cancel_current_task) {
-		current_task.clean_ptr();
-		vTaskDelete(current_task.FreeRTOS_handle);
-		task_table[current_task.task_id].FreeRTOS_handle = NULL;
-		current_task = 0;
-	}
+	if (cancel_current_task == false) {
+		vTaskResume(current_task.FreeRTOS_handle);
+	} else {
+		// Suspend current_task
+		vTaskSuspend(current_task.FreeRTOS_handle);
+		current_task.clean_ptr(); //clean must run after suspend!
+		current_task = NULL;
+		current_task_count = 0;
 
-	//schedule other tasks, from high to low priority
-	for (int id = 0; id < TASK_TABLE_LENGTH; id++) {
-		if (task_table[id].ready_ptr()) {
-			//If a task needs to be scheduled and has no handle, create one
-			if (!(task_table[id].FreeRTOS_handle)) {
-				TaskHandle_t handle = xTaskCreate(/*...*/);
-				task_table[id].FreeRTOS_handle = handle;
-			}
-			//If we need to start a task, choose the highest priority one (it will already be running in FreeRTOS)
-			if (!(current_task)) {
+		// Schedule another task, highest priority first
+		for (int id = 0; id < TASK_TABLE_LENGTH; id++) {
+			if (task_table[id].ready_ptr()) {
 				current_task = task_table[id];
-				current_task_count = 0;
+				vTaskResume(current_task.FreeRTOS_handle);
+				//TODO: send the new task a start notification
+				break;
 			}
 		}
 	}
