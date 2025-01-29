@@ -32,8 +32,10 @@
 // Without escaping payload
 #define PACKET_MAXBYTES PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES
 
+typedef struct PCPDevice PCPDevice;
+
 bool request(uint8_t payload[], int nbytes);
 int getResponse(uint8_t* buf);
-void retransmit();
+void retransmit(PCPDevice* dev);
 
 #endif /* SYSTEM_CONFIG_UART_PCP_H_ */
