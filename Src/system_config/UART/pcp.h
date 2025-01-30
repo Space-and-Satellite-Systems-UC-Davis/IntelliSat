@@ -31,6 +31,8 @@
 #define OVERHEAD_MAXBYTES 3
 // Without escaping payload
 #define PACKET_MAXBYTES PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES
+// Number of packets in rx buffer
+#define RX_BUFSIZ 32
 
 typedef struct PCPDevice PCPDevice;
 // Commented since in progress
