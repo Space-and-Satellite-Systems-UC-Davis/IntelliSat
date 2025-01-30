@@ -33,6 +33,13 @@
 #define PACKET_MAXBYTES PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES
 
 typedef struct PCPDevice PCPDevice;
+// Commented since in progress
+//PCPDevice make_pcpdevice(USART_TypeDef *bus,
+//                        int timeout_ms,
+//                        int outgoing_payload_maxbytes,
+//                        int incoming_payload_maxbytes,
+//                        int window_size);
+void delete(PCPDevice device);
 
 bool request(uint8_t payload[], int nbytes);
 int getResponse(uint8_t* buf);

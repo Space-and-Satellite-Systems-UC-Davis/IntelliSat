@@ -1,16 +1,16 @@
 /******************************************************************************
-* File:             mgt.c
+* File:             pcp.c
 *
 * Author:           Eric Xu  
-* Created:          11/03/24 
-* Description:      Communicate to MGT
+* Created:          2025-01-26 20:54
+* Description:      See pcp.h
 *****************************************************************************/
 
 
 #include "UART/pcp.h"
 
 //// Forward declarations not part of the packet interface
-//void updateResp();
+void update_recv(PCPDevice* dev);
 void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 // Constants
@@ -28,141 +28,163 @@ struct PCPDevice {
     const int outgoing_payload_maxbytes;
     /** Must be at least 1 */
     const int incoming_payload_maxbytes;
+    /** Maximum number of packets concurrently in transit */
+    const int window_size;
 
     // State
-    bool seq_num;
-    uint64_t last_req_time;
-    bool req_sent;
-    uint8_t *req_buf;
-    int req_nbytes;
-    uint8_t *resp_buf;
-    int resp_nbytes;
-    /** True if the next character is escaped. */
-    bool escaping;
-    bool received_resp;
+    /** The sequence number of the oldest unacknowledged packet */
+    uint8_t tx_old_seq;
+    /** Number of packets in transmission */
+    int curr_window_sz;
+    /** The system time of the last transmission */
+    uint64_t last_tx_time;
+    /** Transmission buffers, indexable by sequence number */
+    uint8_t** tx_bufs;
+    int* tx_buf_lens;
+    //bool req_sent;
+    //uint8_t *req_buf;
+    //int req_nbytes;
+    //uint8_t *recv_buf;
+    //int recv_nbytes;
+    ///** True if the next character is escaped. */
+    //bool escaping;
+    //bool received_recv;
 };
 
 /**
- * Creates a PCPDevice. See documentation on that.
+ * Creates a `PCPDevice`. See documentation on `struct PCPDevice`.
+ *
+ * @returns 0 if successful, -E_INVALID if parameters are invalid
  */
-PCPDevice make_pcpdevice(USART_TypeDef *bus,
-                       int timeout_ms,
-                       int outgoing_payload_maxbytes,
-                       int incoming_payload_maxbytes) {
-    return (PCPDevice){
+int make_pcpdevice(PCPDevice* out,
+                   USART_TypeDef *bus,
+                   int timeout_ms,
+                   int outgoing_payload_maxbytes,
+                   int incoming_payload_maxbytes,
+                   int window_size) {
+    // Window size < max(sequence number) / 2
+    if (window_size > 128) {
+        return -E_INVALID;
+    }
+    PCPDevice dev = (PCPDevice){
         .bus = bus,
         .timeout_ms = timeout_ms,
         .outgoing_payload_maxbytes = outgoing_payload_maxbytes,
         .incoming_payload_maxbytes = incoming_payload_maxbytes,
+        .window_size = window_size,
 
-        .seq_num = 0,
-        .last_req_time = 0,
-        .req_sent = false,
-        .req_buf = calloc(2 * outgoing_payload_maxbytes, sizeof(uint8_t)),
-        .req_nbytes = 0,
-        .resp_buf = calloc(2 * incoming_payload_maxbytes, sizeof(uint8_t)),
-        .resp_nbytes = 0,
-        .escaping = false,
-        .received_resp = false,
+        .tx_new_seq = 0,
+        //.last_req_time = 0,
+        //.req_sent = false,
+        //.req_buf = calloc(2 * outgoing_payload_maxbytes, sizeof(uint8_t)),
+        //.req_nbytes = 0,
+        //.recv_buf = calloc(2 * incoming_payload_maxbytes, sizeof(uint8_t)),
+        //.recv_nbytes = 0,
+        //.escaping = false,
+        //.received_recv = false,
     };
+    memcpy(out, &dev, sizeof(PCPDevice));
+    return 0;
 }
 
 void delete(PCPDevice device) {
-    free(device.req_buf);
-    free(device.resp_buf);
 }
 
 /**
- * Send a request. Return `true` if packet is queued, `false` if otherwise.
- * Request cannot be sent if a previous response is not received via
- * `getResponse()`
+ * Transmit a message. Return 0 if packet is queued for transmission,
+ * -E_OVERFLOW if otherwise.
  *
+ * @param dev
  * @param payload
  * @param nbytes
- * @return queued
  */
-bool send(PCPDevice *dev, uint8_t payload[], int nbytes) {
-    if (dev->req_nbytes != 0)
-        return false;
+int transmit(PCPDevice *dev, uint8_t payload[], int nbytes) {
     // PACKET_START SEQ_NUM <payload> PACKET_END
-    dev->req_buf[dev->req_nbytes++] = PACKET_START;
-    dev->req_buf[dev->req_nbytes++] = dev->seq_num;
+    if (dev->curr_window_sz >= dev->window_size)
+        return -E_OVERFLOW;
+    int seq = dev->tx_old_seq + dev->curr_window_sz;
+    uint8_t* tx_buf = dev->tx_bufs[seq];
+    int* tx_buf_len = dev->tx_buf_lens + seq;
+
+    tx_buf[*tx_buf_len++] = PACKET_START;
+    tx_buf[*tx_buf_len++] = seq;
     for (int i = 0; i < nbytes; i++) {
         if (payload[i] == PACKET_END || payload[i] == ESCAPE)
-            dev->req_buf[dev->req_nbytes++] = ESCAPE;
-        dev->req_buf[dev->req_nbytes++] = payload[i];
+            tx_buf[*tx_buf_len++] = ESCAPE;
+        tx_buf[*tx_buf_len++] = payload[i];
     }
-    dev->req_buf[dev->req_nbytes++] = PACKET_END;
+    tx_buf[*tx_buf_len++] = PACKET_END;
 
-    dev->last_req_time = getSysTime();
-    transmit_bytes(dev->bus, dev->req_buf, dev->req_nbytes);
+    dev->last_tx_time = getSysTime();
+    dev->curr_window_sz++;
+    transmit_bytes(dev->bus, tx_buf, *tx_buf_len);
     return true;
 }
 
 /**
  * Read a response into `buf`. Assume that `buf` is large enough
- * (PAYLOAD_MAXBYTES). Returns size of response if successfully read, -1 if
+ * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
  * otherwise.
  */
-int get_response(PCPDevice* dev, uint8_t* buf) {
-    update_resp();
-    if (!dev->received_resp)
+int get_recvonse(PCPDevice* dev, uint8_t* buf) {
+    update_recv(dev);
+    if (!dev->received_recv)
         return -1;
 
-    dev->received_resp = false;
-    dev->seq_num = !dev->seq_num;
+    dev->received_recv = false;
+    dev->tx_new_seq = !dev->tx_new_seq;
     dev->req_sent = false;
     dev->req_nbytes = 0;
-    dev->resp_nbytes = 0;
+    dev->recv_nbytes = 0;
 
     // only copy payload
-    memcpy(buf, dev->resp_buf + 2, dev->resp_nbytes - 3);
-    return dev->resp_nbytes;
+    memcpy(buf, dev->recv_buf + 2, dev->recv_nbytes - 3);
+    return dev->recv_nbytes;
 }
 
 /**
- * Buffers response without reading the response.
+ * Buffers recvonse without reading the recvonse.
  */
-void update_resp(PCPDevice* dev) {
-    if (dev->received_resp)
+void update_recv(PCPDevice* dev) {
+    if (dev->received_recv)
         return;
 
     uint8_t buf;
-	uint64_t initTime  = getSysTime();
+	uint64_t init_time = getSysTime();
 	while (true) {
-        if (getSysTime() - initTime > 10) {
+        if (getSysTime() - init_time > 10) {
             break;
         }
         int read_nbytes = usart_recieveBytes(dev->bus, &buf, 1);
 
         // Not reading if
         if (read_nbytes == 0    // nothing is read
-                || (dev->resp_nbytes == 0 && buf != PACKET_START) // no start delim
+                || (dev->recv_nbytes == 0 && buf != PACKET_START) // no start delim
                 || (dev->req_nbytes == 0)    // no request sent
             )
             continue;
 
-        if (dev->resp_nbytes == 1 && buf != dev->seq_num) {
-            dev->resp_nbytes = 0;
+        if (dev->recv_nbytes == 1 && buf != dev->tx_new_seq) {
+            dev->recv_nbytes = 0;
             continue;
         }
 
         // Handle escaped characters
         if (dev->escaping) {
             if (buf != ESCAPE && buf != PACKET_END)
-                dev->resp_nbytes = 0;
+                dev->recv_nbytes = 0;
             else
-                dev->resp_buf[dev->resp_nbytes++] = buf;
+                dev->recv_buf[dev->recv_nbytes++] = buf;
             continue;
         } else if (buf == ESCAPE) {
             dev->escaping = true;
             continue;
         }
 
-        dev->resp_buf[dev->resp_nbytes++] = buf;
+        dev->recv_buf[dev->recv_nbytes++] = buf;
 
         if (buf == PACKET_END)
-            dev->received_resp = true;
+            dev->received_recv = true;
 	}
 }
 
@@ -170,11 +192,11 @@ void update_resp(PCPDevice* dev) {
  * Retransmit requests that timed out.
  */
 void retransmit(PCPDevice* dev) {
-    update_resp(dev);
+    update_recv(dev);
     if (dev->req_nbytes != 0
-            && !dev->received_resp
-            && getSysTime() - dev->last_req_time > dev->timeout_ms) {
-        dev->last_req_time = getSysTime();
+            && !dev->received_recv
+            && getSysTime() - dev->last_tx_time > dev->timeout_ms) {
+        dev->last_tx_time = getSysTime();
         transmit_bytes(dev->bus, dev->req_buf, dev->req_nbytes);
     }
 }
