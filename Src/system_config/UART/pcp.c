@@ -16,6 +16,8 @@ void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 // Constants
 const uint8_t PACKET_START = '{';
 const uint8_t PACKET_END = '}';
+const uint8_t ACK_START = '<';
+const uint8_t ACK_END = '>';
 const uint8_t ESCAPE = '\\';
 
 /**
@@ -164,7 +166,7 @@ bool set_received(PCPDevice* dev, SeqNum seq, bool val) {
  * @param payload
  * @param nbytes
  */
-int transmit(PCPDevice *dev, uint8_t payload[], int nbytes) {
+int transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     // PACKET_START SEQ_NUM <payload> PACKET_END
     if (dev->curr_window_sz >= dev->window_size)
         return -E_OVERFLOW;
@@ -203,6 +205,11 @@ void retransmit(PCPDevice* dev) {
 void check_ack(PCPDevice* dev) {
     if (dev->curr_window_sz <= 0)
         return;
+}
+
+void acknowledge(PCPDevice *dev, SeqNum seq) {
+    uint8_t buf[3] = {ACK_START, seq, ACK_END};
+    transmit_bytes(dev->bus, buf, 3);
 }
 
 /**
