@@ -9,9 +9,8 @@
 #include "UART/pcp.h"
 
 //// Forward declarations not part of the packet interface
-void update_rx(PCPDevice* dev);
-void update_recv(PCPDevice* dev);
-void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
+static void update_rx(PCPDevice* dev);
+static void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 // Constants
 const uint8_t PACKET_START = '{';
@@ -25,12 +24,23 @@ const uint8_t ESCAPE = '\\';
  * addition.
  */
 typedef uint8_t SeqNum;
+
+/**
+ * Return the distance from `before` to `after`
+ */
+int distance(SeqNum before, SeqNum after) {
+    if (after > before)
+        return after - before;
+    else
+        return 255 - before + after;
+}
+
 typedef struct {
     uint8_t* data;
     size_t len;
 } PCPBuf;
 
-void append(PCPBuf* buf, uint8_t* data, int nbytes) {
+static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
     memcpy(buf->data, data, nbytes);
     buf->len += nbytes;
 }
@@ -105,7 +115,20 @@ struct PCPDevice {
  *
  * @returns 0 if successful, -E_INVALID if parameters are invalid
  */
-int make(PCPDevice* out,
+int make_pcpdev(PCPDevice* out,
+         USART_TypeDef *bus,
+         int outgoing_payload_maxbytes,
+         int incoming_payload_maxbytes) {
+  return make_pcpdev_advanced(out, bus, 200, 128 - PCP_HEAD_NBYTES,
+                              128 - PCP_HEAD_NBYTES, 5);
+}
+
+/**
+ * Creates a `PCPDevice`. See documentation on `struct PCPDevice`.
+ *
+ * @returns 0 if successful, -E_INVALID if parameters are invalid
+ */
+int make_pcpdev_advanced(PCPDevice* out,
          USART_TypeDef *bus,
          int timeout_ms,
          int outgoing_payload_maxbytes,
@@ -150,7 +173,7 @@ int make(PCPDevice* out,
     return 0;
 }
 
-void delete_members(PCPDevice *dev) {
+void del_pcpdev_members(PCPDevice *dev) {
     for (int i = 0; i < dev->window_size; ++i) {
         free(dev->tx_bufs[i].data);
     }
@@ -162,34 +185,6 @@ void delete_members(PCPDevice *dev) {
 }
 
 /**
- * Return the distance from `before` to `after`
- */
-int distance(SeqNum before, SeqNum after) {
-    if (after > before)
-        return after - before;
-    else
-        return 255 - before + after;
-}
-
-/**
- * Return true if packet with `seq` is received as indicated by `rx_received`.
- * False otherwise. Assume `seq` is within window range.
- */
-bool received(PCPDevice* dev, SeqNum seq) {
-    return dev->rx_received << distance(dev->rx_tail_seq, seq) & 1;
-}
-/**
- * Set bit for packet with `seq`. Assume `seq` is within window range.
- */
-bool set_received(PCPDevice* dev, SeqNum seq, bool val) {
-    int mask = 1 << distance(dev->rx_tail_seq, seq);
-    if (val)
-        dev->rx_received |= mask;
-    else
-        dev->rx_received = ~(~dev->rx_received | mask);
-}
-
-/**
  * Transmit a message. Return 0 if packet is queued for transmission,
  * -E_OVERFLOW if otherwise.
  *
@@ -197,7 +192,7 @@ bool set_received(PCPDevice* dev, SeqNum seq, bool val) {
  * @param payload
  * @param nbytes
  */
-int transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
+int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     // PACKET_START SEQ_NUM <payload> PACKET_END
     if (dev->curr_window_sz >= dev->window_size)
         return -E_OVERFLOW;
@@ -222,7 +217,7 @@ int transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
 /**
  * Retransmit requests that timed out.
  */
-void retransmit(PCPDevice* dev) {
+void pcp_retransmit(PCPDevice* dev) {
     update_rx(dev);
     if (dev->curr_window_sz >= 0
             && getSysTime() - dev->last_tx_time > dev->timeout_ms) {
@@ -233,12 +228,44 @@ void retransmit(PCPDevice* dev) {
     }
 }
 
-void check_ack(PCPDevice* dev) {
-    if (dev->curr_window_sz <= 0)
-        return;
+/**
+ * Read a response into `buf`. Assume that `buf` is large enough
+ * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
+ * otherwise.
+ */
+int pcp_receive(PCPDevice* dev, uint8_t* buf) {
+    update_rx(dev);
+    if (!dev->rx_full && dev->rx_head == dev->rx_tail)
+        return -1;
+    PCPBuf rx_buf = dev->rx_bufs[dev->rx_head];
+    memcpy(buf, rx_buf.data, rx_buf.len);
+    int ret = rx_buf.len;
+    rx_buf.len = 0;
+    dev->rx_head++;
+    dev->rx_full = false;
+    return ret;
 }
 
-void acknowledge(PCPDevice *dev, SeqNum seq) {
+/**
+ * Return true if packet with `seq` is received as indicated by `rx_received`.
+ * False otherwise. Assume `seq` is within window range.
+ */
+bool received(PCPDevice* dev, SeqNum seq) {
+    return dev->rx_received << distance(dev->rx_tail_seq, seq) & 1;
+}
+
+/**
+ * Set bit for packet with `seq`. Assume `seq` is within window range.
+ */
+static void set_received(PCPDevice* dev, SeqNum seq, bool val) {
+    int mask = 1 << distance(dev->rx_tail_seq, seq);
+    if (val)
+        dev->rx_received |= mask;
+    else
+        dev->rx_received = ~(~dev->rx_received | mask);
+}
+
+static void acknowledge(PCPDevice *dev, SeqNum seq) {
     uint8_t buf[3] = {ACK_START, seq, ACK_END};
     transmit_bytes(dev->bus, buf, 3);
 }
@@ -247,7 +274,7 @@ void acknowledge(PCPDevice *dev, SeqNum seq) {
  * Flush `dev->bus`'s receive buffer into `dev`. This also transmits and
  * receives acknowledgements.
  */
-void update_rx(PCPDevice* dev) {
+static void update_rx(PCPDevice* dev) {
     if (dev->rx_full)
         return;
 
@@ -312,27 +339,9 @@ void update_rx(PCPDevice* dev) {
 }
 
 /**
- * Read a response into `buf`. Assume that `buf` is large enough
- * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
- * otherwise.
- */
-int receive(PCPDevice* dev, uint8_t* buf) {
-    update_rx(dev);
-    if (!dev->rx_full && dev->rx_head == dev->rx_tail)
-        return -1;
-    PCPBuf rx_buf = dev->rx_bufs[dev->rx_head];
-    memcpy(buf, rx_buf.data, rx_buf.len);
-    int ret = rx_buf.len;
-    rx_buf.len = 0;
-    dev->rx_head++;
-    dev->rx_full = false;
-    return ret;
-}
-
-/**
  * Transmit `nbytes` from `message` to MGT. References usart_transmitBytes
  */
-void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
+static void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
