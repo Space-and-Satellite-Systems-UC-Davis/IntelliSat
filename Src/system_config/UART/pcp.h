@@ -44,7 +44,7 @@ int make(PCPDevice* out,
          int outgoing_payload_maxbytes,
          int incoming_payload_maxbytes,
          int window_size);
-void delete(PCPDevice device);
+void delete_members(PCPDevice *dev);
 
 bool request(uint8_t payload[], int nbytes);
 int getResponse(uint8_t* buf);

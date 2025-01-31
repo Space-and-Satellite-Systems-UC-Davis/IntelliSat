@@ -150,7 +150,15 @@ int make(PCPDevice* out,
     return 0;
 }
 
-void delete(PCPDevice device) {
+void delete_members(PCPDevice *dev) {
+    for (int i = 0; i < dev->window_size; ++i) {
+        free(dev->tx_bufs[i].data);
+    }
+    free(dev->tx_bufs);
+    for (int i = 0; i < RX_BUFSIZ; ++i) {
+        free(dev->rx_bufs[i].data);
+    }
+    free(dev->rx_bufs);
 }
 
 /**
