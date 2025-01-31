@@ -285,66 +285,17 @@ void update_rx(PCPDevice* dev) {
  * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
  * otherwise.
  */
-int get_recvonse(PCPDevice* dev, uint8_t* buf) {
-    update_recv(dev);
-    if (!dev->received_recv)
+int receive(PCPDevice* dev, uint8_t* buf) {
+    update_rx(dev);
+    if (!dev->rx_full && dev->rx_head == dev->rx_tail)
         return -1;
-
-    dev->received_recv = false;
-    dev->tx_new_seq = !dev->tx_new_seq;
-    dev->req_sent = false;
-    dev->req_nbytes = 0;
-    dev->rx_readnbytes = 0;
-
-    // only copy payload
-    memcpy(buf, dev->recv_buf + 2, dev->rx_readnbytes - 3);
-    return dev->rx_readnbytes;
-}
-
-/**
- * Buffers recvonse without reading the recvonse.
- */
-void update_recv(PCPDevice* dev) {
-    if (dev->received_recv)
-        return;
-
-    uint8_t buf;
-	uint64_t init_time = getSysTime();
-	while (true) {
-        if (getSysTime() - init_time > 10) {
-            break;
-        }
-        int read_nbytes = usart_recieveBytes(dev->bus, &buf, 1);
-
-        // Not reading if
-        if (read_nbytes == 0    // nothing is read
-                || (dev->rx_readnbytes == 0 && buf != PACKET_START) // no start delim
-                || (dev->req_nbytes == 0)    // no request sent
-            )
-            continue;
-
-        if (dev->rx_readnbytes == 1 && buf != dev->tx_new_seq) {
-            dev->rx_readnbytes = 0;
-            continue;
-        }
-
-        // Handle escaped characters
-        if (dev->escaping) {
-            if (buf != ESCAPE && buf != PACKET_END)
-                dev->rx_readnbytes = 0;
-            else
-                dev->recv_buf[dev->rx_readnbytes++] = buf;
-            continue;
-        } else if (buf == ESCAPE) {
-            dev->escaping = true;
-            continue;
-        }
-
-        dev->recv_buf[dev->rx_readnbytes++] = buf;
-
-        if (buf == PACKET_END)
-            dev->received_recv = true;
-	}
+    PCPBuf rx_buf = dev->rx_bufs[dev->rx_head];
+    memcpy(buf, rx_buf.data, rx_buf.len);
+    int ret = rx_buf.len;
+    rx_buf.len = 0;
+    dev->rx_head++;
+    dev->rx_full = false;
+    return ret;
 }
 
 /**
