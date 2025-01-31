@@ -32,12 +32,6 @@
 #define RX_BUFSIZ 32
 
 typedef struct PCPDevice PCPDevice;
-// Commented since in progress
-//PCPDevice make_pcpdevice(USART_TypeDef *bus,
-//                        int timeout_ms,
-//                        int outgoing_payload_maxbytes,
-//                        int incoming_payload_maxbytes,
-//                        int window_size);
 int make(PCPDevice* out,
          USART_TypeDef *bus,
          int timeout_ms,
@@ -46,8 +40,8 @@ int make(PCPDevice* out,
          int window_size);
 void delete_members(PCPDevice *dev);
 
-bool request(uint8_t payload[], int nbytes);
-int getResponse(uint8_t* buf);
+int transmit(PCPDevice *dev, uint8_t *payload, int nbytes);
+int receive(PCPDevice* dev, uint8_t* buf);
 void retransmit(PCPDevice* dev);
 
 #endif /* SYSTEM_CONFIG_UART_PCP_H_ */
