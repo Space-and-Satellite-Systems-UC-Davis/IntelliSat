@@ -35,8 +35,17 @@ void append(PCPBuf* buf, uint8_t* data, int nbytes) {
     buf->len += nbytes;
 }
 
+/**
+ * Contains the configurations and state of a PCP device, used by PCP functions.
+ *
+ * Use `pcp.h` functions to create, delete, and interact with this object
+ * instead of directly manipulating it.
+ *
+ * Peripheral control protocol (PCP) is a transmission protocol built above UART
+ * that allows the sending and receiving of packets.
+ */
 struct PCPDevice {
-    // Configuration
+    // Device configurations
     /** An initialized bus */
     USART_TypeDef *const bus;
     /** Milliseconds without acknowledgement until retransmission */
@@ -48,7 +57,7 @@ struct PCPDevice {
     /** Maximum number of packets being transmitted or received concurrently */
     const int window_size;
 
-    // State
+    // Device state
 
     // TX
     /** The sequence number of the oldest unacknowledged packet */
@@ -57,11 +66,17 @@ struct PCPDevice {
     size_t curr_window_sz;
     /** The system time of the last transmission */
     uint64_t last_tx_time;
-    /** Transmission buffers, indexable by sequence number */
+    /**
+     * `window_size` number of transmission buffers, indexable by sequence
+     * number % window size. Each buffer stores full packets.
+     */
     PCPBuf* tx_bufs;
 
     // RX
-    /** Receive circular buffer */
+    /**
+     * `RX_BUFSIZ` number of receive buffers, circular queue with [rx_head] and
+     * [rx_tail]. Each buffer stores payload of received messages.
+     */
     PCPBuf* rx_bufs;
     int rx_head;
     /** Exclusive */
@@ -83,12 +98,6 @@ struct PCPDevice {
      * The least significant bit indicates status of `rx_tail_seq`.
      */
     int rx_received;
-    //bool req_sent;
-    //uint8_t *req_buf;
-    //int req_nbytes;
-    //uint8_t *recv_buf;
-    //int rx_readnbytes;
-    //bool received_recv;
 };
 
 /**
@@ -96,15 +105,26 @@ struct PCPDevice {
  *
  * @returns 0 if successful, -E_INVALID if parameters are invalid
  */
-int make_pcpdevice(PCPDevice* out,
-                   USART_TypeDef *bus,
-                   int timeout_ms,
-                   int outgoing_payload_maxbytes,
-                   int incoming_payload_maxbytes,
-                   int window_size) {
+int make(PCPDevice* out,
+         USART_TypeDef *bus,
+         int timeout_ms,
+         int outgoing_payload_maxbytes,
+         int incoming_payload_maxbytes,
+         int window_size) {
     // Window size < max(sequence number) / 2
     if (window_size > 128) {
         return -E_INVALID;
+    }
+    PCPBuf* tx_bufs = calloc(window_size, sizeof(PCPBuf));
+    for (int i = 0; i < window_size; ++i) {
+        tx_bufs[i].data = calloc(2 * (outgoing_payload_maxbytes + PCP_HEAD_NBYTES),
+                                 sizeof(uint8_t));
+        tx_bufs[i].len = 0;
+    }
+    PCPBuf* rx_bufs = calloc(RX_BUFSIZ, sizeof(PCPBuf));
+    for (int i = 0; i < RX_BUFSIZ; ++i) {
+        rx_bufs[i].data = calloc(2 * incoming_payload_maxbytes, sizeof(uint8_t));
+        rx_bufs[i].len = 0;
     }
     PCPDevice dev = (PCPDevice){
         .bus = bus,
@@ -112,16 +132,19 @@ int make_pcpdevice(PCPDevice* out,
         .outgoing_payload_maxbytes = outgoing_payload_maxbytes,
         .incoming_payload_maxbytes = incoming_payload_maxbytes,
         .window_size = window_size,
-
-        .tx_new_seq = 0,
-        //.last_req_time = 0,
-        //.req_sent = false,
-        //.req_buf = calloc(2 * outgoing_payload_maxbytes, sizeof(uint8_t)),
-        //.req_nbytes = 0,
-        //.recv_buf = calloc(2 * incoming_payload_maxbytes, sizeof(uint8_t)),
-        //.rx_readnbytes = 0,
-        //.escaping = false,
-        //.received_recv = false,
+        .tx_old_seq = 0,
+        .curr_window_sz = 0,
+        .last_tx_time = 0,
+        .tx_bufs = tx_bufs,
+        .rx_bufs = rx_bufs,
+        .rx_head = 0,
+        .rx_tail = 0,
+        .rx_full = false,
+        .rx_tail_seq = 0,
+        .rx_curr_seq = 0,
+        .rx_readnbytes = 0,
+        .rx_escaping = false,
+        .rx_received = 0,
     };
     memcpy(out, &dev, sizeof(PCPDevice));
     return 0;
@@ -171,7 +194,7 @@ int transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     if (dev->curr_window_sz >= dev->window_size)
         return -E_OVERFLOW;
     SeqNum seq = dev->tx_old_seq + dev->curr_window_sz;
-    PCPBuf* tx_buf = dev->tx_bufs + seq;
+    PCPBuf* tx_buf = dev->tx_bufs + (seq % dev->window_size);
 
     tx_buf->data[tx_buf->len++] = PACKET_START;
     tx_buf->data[tx_buf->len++] = seq;

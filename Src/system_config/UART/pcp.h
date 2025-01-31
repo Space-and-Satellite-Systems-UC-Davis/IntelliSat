@@ -26,11 +26,8 @@
 #define E_INVALID 2
 #define E_OVERFLOW 3
 
-#define PAYLOAD_MAXBYTES 125
 // PACKET_START, SEQ_NUM, PACKET_END
-#define OVERHEAD_MAXBYTES 3
-// Without escaping payload
-#define PACKET_MAXBYTES PAYLOAD_MAXBYTES + OVERHEAD_MAXBYTES
+#define PCP_HEAD_NBYTES 3
 // Number of packets in rx buffer
 #define RX_BUFSIZ 32
 
@@ -41,6 +38,12 @@ typedef struct PCPDevice PCPDevice;
 //                        int outgoing_payload_maxbytes,
 //                        int incoming_payload_maxbytes,
 //                        int window_size);
+int make(PCPDevice* out,
+         USART_TypeDef *bus,
+         int timeout_ms,
+         int outgoing_payload_maxbytes,
+         int incoming_payload_maxbytes,
+         int window_size);
 void delete(PCPDevice device);
 
 bool request(uint8_t payload[], int nbytes);
