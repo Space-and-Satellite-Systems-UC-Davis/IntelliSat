@@ -107,6 +107,7 @@ typedef struct PCPDevice {
     int rx_received;
 } PCPDevice;
 
+int make_pcpdev(PCPDevice* out, USART_TypeDef *bus);
 int make_pcpdev_advanced(PCPDevice* out,
          USART_TypeDef *bus,
          int timeout_ms,

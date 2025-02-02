@@ -39,8 +39,7 @@ static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
  *
  * @returns 0 if successful, -E_INVALID if parameters are invalid
  */
-int make_pcpdev(PCPDevice* out,
-         USART_TypeDef *bus) {
+int make_pcpdev(PCPDevice* out, USART_TypeDef *bus) {
   return make_pcpdev_advanced(out, bus, 200, 128 - PCP_HEAD_NBYTES,
                               128 - PCP_HEAD_NBYTES, 5);
 }
