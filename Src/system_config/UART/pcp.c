@@ -65,7 +65,7 @@ struct PCPDevice {
     /** Must be at least 1 */
     const int incoming_payload_maxbytes;
     /** Maximum number of packets being transmitted or received concurrently */
-    const int window_size;
+    const size_t window_size;
 
     // Device state
 
@@ -116,9 +116,7 @@ struct PCPDevice {
  * @returns 0 if successful, -E_INVALID if parameters are invalid
  */
 int make_pcpdev(PCPDevice* out,
-         USART_TypeDef *bus,
-         int outgoing_payload_maxbytes,
-         int incoming_payload_maxbytes) {
+         USART_TypeDef *bus) {
   return make_pcpdev_advanced(out, bus, 200, 128 - PCP_HEAD_NBYTES,
                               128 - PCP_HEAD_NBYTES, 5);
 }
@@ -219,7 +217,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
  */
 void pcp_retransmit(PCPDevice* dev) {
     update_rx(dev);
-    if (dev->curr_window_sz >= 0
+    if (dev->curr_window_sz > 0
             && getSysTime() - dev->last_tx_time > dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
         transmit_bytes(dev->bus,
