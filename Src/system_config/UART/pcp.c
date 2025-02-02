@@ -20,12 +20,6 @@ const uint8_t ACK_END = '>';
 const uint8_t ESCAPE = '\\';
 
 /**
- * Type for sequence number. Use `distance()` for subtraction and `+` for
- * addition.
- */
-typedef uint8_t SeqNum;
-
-/**
  * Return the distance from `before` to `after`
  */
 int distance(SeqNum before, SeqNum after) {
@@ -35,80 +29,10 @@ int distance(SeqNum before, SeqNum after) {
         return 255 - before + after;
 }
 
-typedef struct {
-    uint8_t* data;
-    size_t len;
-} PCPBuf;
-
 static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
     memcpy(buf->data, data, nbytes);
     buf->len += nbytes;
 }
-
-/**
- * Contains the configurations and state of a PCP device, used by PCP functions.
- *
- * Use `pcp.h` functions to create, delete, and interact with this object
- * instead of directly manipulating it.
- *
- * Peripheral control protocol (PCP) is a transmission protocol built above UART
- * that allows the sending and receiving of packets.
- */
-struct PCPDevice {
-    // Device configurations
-    /** An initialized bus */
-    USART_TypeDef *const bus;
-    /** Milliseconds without acknowledgement until retransmission */
-    const int timeout_ms;
-    /** Must be at least 1 */
-    const int outgoing_payload_maxbytes;
-    /** Must be at least 1 */
-    const int incoming_payload_maxbytes;
-    /** Maximum number of packets being transmitted or received concurrently */
-    const size_t window_size;
-
-    // Device state
-
-    // TX
-    /** The sequence number of the oldest unacknowledged packet */
-    SeqNum tx_old_seq;
-    /** Number of packets in transmission */
-    size_t curr_window_sz;
-    /** The system time of the last transmission */
-    uint64_t last_tx_time;
-    /**
-     * `window_size` number of transmission buffers, indexable by sequence
-     * number % window size. Each buffer stores full packets.
-     */
-    PCPBuf* tx_bufs;
-
-    // RX
-    /**
-     * `RX_BUFSIZ` number of receive buffers, circular queue with [rx_head] and
-     * [rx_tail]. Each buffer stores payload of received messages.
-     */
-    PCPBuf* rx_bufs;
-    int rx_head;
-    /** Exclusive */
-    int rx_tail;
-    bool rx_full;
-    /** Sequence number of packet rx_bufs[rx_tail] */
-    SeqNum rx_tail_seq;
-    /** Sequence number of the current packet being read */
-    SeqNum rx_curr_seq;
-    /**
-     * The number of bytes read of the current packet; Used for processing
-     * header.
-     */
-    int rx_readnbytes;
-    /** True if the next character is escaped */
-    bool rx_escaping;
-    /**
-     * Bitmap indicating whether a packet has been received. Used by received().
-     * The least significant bit indicates status of `rx_tail_seq`.
-     */
-    int rx_received;
-};
 
 /**
  * Creates a `PCPDevice`. See documentation on `struct PCPDevice`.
@@ -218,7 +142,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
 void pcp_retransmit(PCPDevice* dev) {
     update_rx(dev);
     if (dev->curr_window_sz > 0
-            && getSysTime() - dev->last_tx_time > dev->timeout_ms) {
+            && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
         transmit_bytes(dev->bus,
                        dev->tx_bufs[dev->tx_old_seq].data,
