@@ -341,12 +341,31 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
 	while(!(bus->ISR & USART_ISR_TC));
 }
 
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
+void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Transfer each character one at a time
 	for (int i = 0; i < (int)strlen(message); i++){
+		// wait until Data register is empty
+		while (!(bus->ISR & USART_ISR_TXE));
+		// Place the character in the Data Register
+		bus->TDR = message[i];
+	}
+
+	// Wait for the Transfer to be completed by monitoring the TC flag
+	while(!(bus->ISR & USART_ISR_TC));
+}
+
+/**
+ * Transmit `nbytes` from `message` to MGT. References usart_transmitBytes
+ */
+static void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
+	// Enable UART3 and Transmitter
+	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
+
+	// Transfer each character one at a time
+	for (int i = 0; i < nbytes; i++){
 		// wait until Data register is empty
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register
