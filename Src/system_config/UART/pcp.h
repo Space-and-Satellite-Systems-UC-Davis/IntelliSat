@@ -107,17 +107,48 @@ typedef struct PCPDevice {
     int rx_received;
 } PCPDevice;
 
+/**
+ * Creates a `PCPDevice`. See documentation on `struct PCPDevice`.
+ *
+ * @returns 0 if successful, -E_INVALID if parameters are invalid
+ */
 int make_pcpdev(PCPDevice* out, USART_TypeDef *bus);
+
+/**
+ * Creates a `PCPDevice` with more finetuned configurations. For general
+ * purpose, it is recommended to use [make_pcpdev] instead.
+ *
+ * @returns 0 if successful, -E_INVALID if parameters are invalid
+ */
 int make_pcpdev_advanced(PCPDevice* out,
          USART_TypeDef *bus,
          int timeout_ms,
          int outgoing_payload_maxbytes,
          int incoming_payload_maxbytes,
          int window_size);
+
 void del_pcpdev_members(PCPDevice *dev);
 
+/**
+ * Transmit a message. Return 0 if packet is queued for transmission,
+ * -E_OVERFLOW if otherwise.
+ *
+ * @param dev
+ * @param payload
+ * @param nbytes
+ */
 int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes);
+
+/**
+ * Read a response into `buf`. Assume that `buf` is large enough
+ * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
+ * otherwise.
+ */
 int pcp_receive(PCPDevice* dev, uint8_t* buf);
+
+/**
+ * Retransmit requests that timed out.
+ */
 void pcp_retransmit(PCPDevice* dev);
 
 #endif /* SYSTEM_CONFIG_UART_PCP_H_ */

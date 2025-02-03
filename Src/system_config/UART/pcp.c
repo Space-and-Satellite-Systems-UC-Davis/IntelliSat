@@ -34,21 +34,11 @@ static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
     buf->len += nbytes;
 }
 
-/**
- * Creates a `PCPDevice`. See documentation on `struct PCPDevice`.
- *
- * @returns 0 if successful, -E_INVALID if parameters are invalid
- */
 int make_pcpdev(PCPDevice* out, USART_TypeDef *bus) {
   return make_pcpdev_advanced(out, bus, 200, 128 - PCP_HEAD_NBYTES,
                               128 - PCP_HEAD_NBYTES, 5);
 }
 
-/**
- * Creates a `PCPDevice`. See documentation on `struct PCPDevice`.
- *
- * @returns 0 if successful, -E_INVALID if parameters are invalid
- */
 int make_pcpdev_advanced(PCPDevice* out,
          USART_TypeDef *bus,
          int timeout_ms,
@@ -105,14 +95,6 @@ void del_pcpdev_members(PCPDevice *dev) {
     free(dev->rx_bufs);
 }
 
-/**
- * Transmit a message. Return 0 if packet is queued for transmission,
- * -E_OVERFLOW if otherwise.
- *
- * @param dev
- * @param payload
- * @param nbytes
- */
 int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     // PACKET_START SEQ_NUM <payload> PACKET_END
     if (dev->curr_window_sz >= dev->window_size)
@@ -135,9 +117,6 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     return true;
 }
 
-/**
- * Retransmit requests that timed out.
- */
 void pcp_retransmit(PCPDevice* dev) {
     update_rx(dev);
     if (dev->curr_window_sz > 0
@@ -149,11 +128,6 @@ void pcp_retransmit(PCPDevice* dev) {
     }
 }
 
-/**
- * Read a response into `buf`. Assume that `buf` is large enough
- * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
- * otherwise.
- */
 int pcp_receive(PCPDevice* dev, uint8_t* buf) {
     update_rx(dev);
     if (!dev->rx_full && dev->rx_head == dev->rx_tail)
@@ -171,7 +145,7 @@ int pcp_receive(PCPDevice* dev, uint8_t* buf) {
  * Return true if packet with `seq` is received as indicated by `rx_received`.
  * False otherwise. Assume `seq` is within window range.
  */
-bool received(PCPDevice* dev, SeqNum seq) {
+static bool received(PCPDevice* dev, SeqNum seq) {
     return dev->rx_received << distance(dev->rx_tail_seq, seq) & 1;
 }
 
