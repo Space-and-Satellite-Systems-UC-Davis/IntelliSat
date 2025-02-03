@@ -50,12 +50,12 @@ void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]);
 void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 /*
- * Returns the status of the USART reciever's FIFO buffer
+ * Returns the status of the USART receiver's FIFO buffer
  *
  * @param None
  * @returns Whether the buffer has
  */
-bool usart_recieveBufferNotEmpty(USART_TypeDef *bus);
+bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
 
 /*
  * Utilizes the USART hardware receiver to get `size` number of bytes from a FIFO buffer.
@@ -68,6 +68,6 @@ bool usart_recieveBufferNotEmpty(USART_TypeDef *bus);
  *
  * @returns			The number of bytes actually received and stored ( <= `size`)
  */
-int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
+int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
 
 #endif	// REALOP1_UART_H_

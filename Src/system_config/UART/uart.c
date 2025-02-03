@@ -384,7 +384,7 @@ bool usart_recieverTimedOut(USART_ReceiverBuffer *rx) {
 	}
 }
 
-bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
+bool usart_receiveBufferNotEmpty(USART_TypeDef *bus) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;
@@ -393,7 +393,7 @@ bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
 	return (rxbuff->front != rxbuff->rear);
 }
 
-int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
+int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;

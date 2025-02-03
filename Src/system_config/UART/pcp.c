@@ -175,11 +175,11 @@ static void update_rx(PCPDevice* dev) {
     uint64_t timeout = getSysTime() + 10;
     uint8_t read_buf;
     while (true) {
-        if (getSysTime() > timeout || !usart_recieveBufferNotEmpty(dev->bus)) {
+        if (getSysTime() > timeout || !usart_receiveBufferNotEmpty(dev->bus)) {
             break;
         }
 
-        int read_nbytes = usart_recieveBytes(dev->bus, &read_buf, 1);
+        int read_nbytes = usart_receiveBytes(dev->bus, &read_buf, 1);
 
         // Nothing
         if (read_nbytes == 0)
