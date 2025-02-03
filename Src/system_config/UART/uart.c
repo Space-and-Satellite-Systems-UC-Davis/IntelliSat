@@ -357,10 +357,7 @@ void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]) {
 	while(!(bus->ISR & USART_ISR_TC));
 }
 
-/**
- * Transmit `nbytes` from `message` to MGT. References usart_transmitBytes
- */
-static void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 

@@ -39,6 +39,15 @@ bool usart_init(USART_TypeDef *bus, int baud_rate);
  * @returns None
  */
 void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]);
+/*
+ * Utilizes USART hardware transmitter to send a fixed length byte stream
+ *
+ * @param bus       The USART Bus doing the transmission
+ * @param message   The string (character array) being sent
+ *
+ * @returns None
+ */
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 /*
  * Returns the status of the USART reciever's FIFO buffer

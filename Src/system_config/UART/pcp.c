@@ -10,7 +10,6 @@
 
 //// Forward declarations not part of the packet interface
 static void update_rx(PCPDevice* dev);
-static void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 // Constants
 const uint8_t PACKET_START = '{';
@@ -113,7 +112,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
 
     dev->last_tx_time = getSysTime();
     dev->curr_window_sz++;
-    transmit_bytes(dev->bus, tx_buf->data, tx_buf->len);
+    usart_transmitBytes(dev->bus, tx_buf->data, tx_buf->len);
     return true;
 }
 
@@ -122,7 +121,7 @@ void pcp_retransmit(PCPDevice* dev) {
     if (dev->curr_window_sz > 0
             && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
-        transmit_bytes(dev->bus,
+        usart_transmitBytes(dev->bus,
                        dev->tx_bufs[dev->tx_old_seq].data,
                        dev->tx_bufs[dev->tx_old_seq].len);
     }
@@ -162,7 +161,7 @@ static void set_received(PCPDevice* dev, SeqNum seq, bool val) {
 
 static void acknowledge(PCPDevice *dev, SeqNum seq) {
     uint8_t buf[3] = {ACK_START, seq, ACK_END};
-    transmit_bytes(dev->bus, buf, 3);
+    usart_transmitBytes(dev->bus, buf, 3);
 }
 
 /**
@@ -231,23 +230,4 @@ static void update_rx(PCPDevice* dev) {
 
         append(write_buf, &read_buf, 1);
 	}
-}
-
-/**
- * Transmit `nbytes` from `message` to MGT. References usart_transmitBytes
- */
-static void transmit_bytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
-	// Enable UART3 and Transmitter
-	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
-
-	// Transfer each character one at a time
-	for (int i = 0; i < nbytes; i++){
-		// wait until Data register is empty
-		while (!(bus->ISR & USART_ISR_TXE));
-		// Place the character in the Data Register
-		bus->TDR = message[i];
-	}
-
-	// Wait for the Transfer to be completed by monitoring the TC flag
-	while(!(bus->ISR & USART_ISR_TC));
 }
