@@ -14,17 +14,22 @@
 #include "../tools/print_scan.h"
 #include "../../Src/system_config/Timers/timers.h"
 
-#define led_delay 10000
+#define led_delay 40000
 
 void vSenderTask(void *pvParameters)
 {
     BaseType_t taskStatus;
 
     TickType_t delay = QUEUE_TICKS_TO_WAIT / portTICK_PERIOD_MS;
+    const TickType_t block_delay = TICKS_TO_BLOCK_SENDER / portTICK_PERIOD_MS;
 
     for(;;) {
-        if (uxQueueMessagesWaiting(myQueue) != configTIMER_QUEUE_LENGTH) {
-            taskYIELD();
+        TickType_t xLastWakeTime;
+        xLastWakeTime = xTaskGetTickCount();
+        if (uxQueueMessagesWaiting(myQueue) == configTIMER_QUEUE_LENGTH) {
+            xTaskDelayUntil(&xLastWakeTime, block_delay);
+            printMsg("Sender: Could not send to the queue since it is full!\r\n");
+            // taskYIELD();
         }
         taskStatus = xQueueSendToBack(myQueue, pvParameters, delay);
         if(taskStatus != pdPASS) {
@@ -40,7 +45,7 @@ void vSenderTask(void *pvParameters)
             nop(led_delay);
             led_d2(0);
         }
-        taskYIELD();
+        // taskYIELD();
     }
 }
 
@@ -55,22 +60,22 @@ void vReceiverTask(void *pvParameter) {
     BaseType_t taskStatus;
 
     for(;;) {
-        if(uxQueueMessagesWaiting(myQueue) != configTIMER_QUEUE_LENGTH)
+        if(uxQueueMessagesWaiting(myQueue) != configTIMER_QUEUE_LENGTH)              
         {
-            printMsg("Queue should have been full!\r\n");
+            printMsg("Receiver: Queue should have been full! %d messages in queue.\r\n", uxQueueMessagesWaiting(myQueue));
         }
         taskStatus = xQueueReceive(myQueue, &xReceivedStructure, QUEUE_TICKS_TO_WAIT);
         if(taskStatus == pdPASS )
         {
             // TODO Implement actual handler for when data is received from queue
             if(xReceivedStructure.eDataSource == eSender1) {
-                printMsg("From Sender 1 = %d", xReceivedStructure.ucValue);
+                printMsg("From Sender 1 = %d\r\n", xReceivedStructure.ucValue);
                 led_d3(1);
                 pwm_setDutyCycle(60);
                 nop(led_delay);
                 led_d3(0);
             } else {
-                printMsg("From Sender 2 = %d", xReceivedStructure.ucValue);
+                printMsg("From Sender 2 = %d\r\n", xReceivedStructure.ucValue);
                 led_d4(1);
                 pwm_setDutyCycle(80);
                 nop(led_delay);
@@ -85,6 +90,6 @@ void vReceiverTask(void *pvParameter) {
             nop(led_delay);
             led_d5(0);
         }
-        taskYIELD();
+        // taskYIELD();
     }
 }

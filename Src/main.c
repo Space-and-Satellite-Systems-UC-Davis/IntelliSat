@@ -129,11 +129,11 @@ int branch_main() {
 
     if (myQueue != NULL) {
 
-        xTaskCreate(vSenderTask, "Sender1", 1000, &( xStructsToSend[ 0 ]), configMAX_PRIORITIES-1, NULL);
-        xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
+        xTaskCreate(vSenderTask, "Sender1", 1000, &(xStructsToSend[ 0 ]), configMAX_PRIORITIES, NULL);
+        // xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
 
         // The sender task should always be prioritized over the receiver
-        xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES, NULL );
+        xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES-1, NULL );
 
         vTaskStartScheduler();
     } else {

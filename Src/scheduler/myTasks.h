@@ -34,6 +34,7 @@ static const Data_t xStructsToSend[ 2 ] =
 };
 
 #define QUEUE_TICKS_TO_WAIT 100
+#define TICKS_TO_BLOCK_SENDER 500
 
 
 
