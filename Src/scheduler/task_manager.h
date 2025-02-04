@@ -9,6 +9,8 @@
 #ifndef SCHEDULER_TASK_MANAGER_H_
 #define SCHEDULER_TASK_MANAGER_H_
 
+#define TASK_MANAGER_PRIORITY 1 //TODO: move to task.*
+
 
 /**@brief Handle task expiration and preemption.
  *

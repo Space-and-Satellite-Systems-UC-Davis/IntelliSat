@@ -12,7 +12,7 @@
 //Assuming task table exists w/ TaskHandle_t
 extern struct intellisat_task_t task_table[6];
 
-#define TASK_MANAGER_YIELD_TICKS 10000 //TODO: temporary
+#define TASK_MANAGER_YIELD_TICKS pdMS_TO_TICKS(10000) //TODO: temporary 10 seconds
 #define TASK_TABLE_LENGTH 6 //TODO: temporary
 
 
