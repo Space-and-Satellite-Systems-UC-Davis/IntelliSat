@@ -9,6 +9,7 @@ extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
+extern void testFunction_HDD_RPM();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -28,6 +29,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogTimer_Callback;
 		case 4:
 			return testerFunction_PWMGeneration;
+		case 10:
+			return testFunction_HDD_RPM;
 		default:
 			return testFunction_Nothing;
 	}
