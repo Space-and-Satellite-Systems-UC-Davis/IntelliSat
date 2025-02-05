@@ -40,10 +40,10 @@ void systick_init(bool run_scheduler) {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
-	SysTick->CTRL = (SysTick->CTRL 
-	| SysTick_CTRL_ENABLE_Msk 
-	| SysTick_CTRL_TICKINT_Msk) 
-	& SysTick_CTRL_CLKSOURCE_Msk;
+
+	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;	// CLKSOURCE of 0 uses AHB/8
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
 	NVIC_EnableIRQ(SysTick_IRQn);
 
