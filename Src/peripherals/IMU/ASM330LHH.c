@@ -424,6 +424,7 @@ float imu_readTemp() {
     return (data / 256.0) + 25;
 }
 
+/**                            Debugging Functions                                      */
 bool imu_isCommunicationWorking() {
 
 	uint8_t value;
@@ -442,6 +443,19 @@ bool imu_isCommunicationWorking() {
 	}
 
 	return value == 0x6B;
+}
+
+bool imu_hasExpectedValuesAccel() {
+	return imu_readAcel_Z() < 1.2 && imu_readAcel_Z() > 0.8;
+}
+
+bool imu_hasExpectedValuesGyro() {
+	int correctCount = 0;
+	for (int i  = 0; i < 10; i++) {
+		 if( imu_readGyro_X() < 6 && imu_readGyro_X() > -6)
+		 	correctCount++;
+	}
+	return correctCount > 8;
 }
 
 void imu_printAllValues() {

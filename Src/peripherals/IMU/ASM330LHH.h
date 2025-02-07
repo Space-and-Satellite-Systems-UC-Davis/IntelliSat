@@ -188,4 +188,14 @@ bool imu_isCommunicationWorking();
  */
 void imu_printAllValues(); 
 
+/**
+ * Checks if Z acceleration is roughly equal to gravity with board at rest
+ */
+bool imu_hasExpectedValuesAccel();
+
+/**
+ * Checks in X rotation is roughly zero with board at rest
+ */
+bool imu_hasExpectedValuesGyro();
+
 #endif /* REALOP1_PERIPHERALS_IMU_H_ */
