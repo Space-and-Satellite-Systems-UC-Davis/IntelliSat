@@ -38,15 +38,15 @@
 
 /****************************** IMU Properties ****************************/
 
-int imu_acelFullScale = 0;
-int imu_gyroFullScale = 0;
+float imu_acelFullScale = 0;
+float imu_gyroFullScale = 0;
 
 enum IMU_SELECT IMU_global = IMU0;
 
 /*************************** IMU Helper Functions *************************/
 
 // #define ScaledData(data, scale) ((data * scale) * (uint16_t)(-1))
-#define ScaledData(data, scale) ((data * 1))
+#define ScaledData(data, scale) ((data * scale))
 
 #if OP_REV == 3
 
@@ -114,6 +114,7 @@ int16_t imu_spiReadHighLow(void *low_address) {
 #endif
 
 	nop(10);
+
 	return (datah << 8) | datal;
 }
 
@@ -145,19 +146,18 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 	imu_spiWriteReg(ACCEL_RATE_REG, data);
 
 #endif
-
     switch (acel_scale) {
         case IMU_FS_2_g:
-            imu_acelFullScale = 2;
+            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_2G / 1000;
             break;
         case IMU_FS_4_g:
-            imu_acelFullScale = 4;
+            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_4G / 1000;
             break;
         case IMU_FS_8_g:
-            imu_acelFullScale = 8;
+            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_8G / 1000;
             break;
         case IMU_FS_16_g:
-            imu_acelFullScale = 16;
+            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_16G / 1000;
             break;
     }
 
@@ -194,22 +194,22 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 
     switch (gyro_scale) {
         case IMU_FS_125_dps:
-            imu_gyroFullScale = 125;
+            imu_gyroFullScale = ASM330LHH_GYRO_SENSITIVITY_FS_125DPS / 1000;
             break;
         case IMU_FS_250_dps:
-            imu_gyroFullScale = 250;
+            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_250DPS / 1000;
             break;
         case IMU_FS_500_dps:
-            imu_gyroFullScale = 500;
+            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_500DPS / 1000;
             break;
         case IMU_FS_1000_dps:
-            imu_gyroFullScale = 1000;
+            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_1000DPS / 1000;
             break;
         case IMU_FS_2000_dps:
-            imu_gyroFullScale = 2000;
+            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS / 1000;
             break;
         case IMU_FS_4000_dps:
-            imu_gyroFullScale = 4000;
+            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS / 1000;
             break;
     }
 }
@@ -249,7 +249,7 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 
 }
 
-int16_t imu_readAcel_X() {
+float imu_readAcel_X() {
 
 	uint8_t instructionHi = 0x29 | 0x80 ;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x28 | 0x80;	//Where we send Low instruction
@@ -270,7 +270,7 @@ int16_t imu_readAcel_X() {
 
 }
 
-int16_t imu_readAcel_Y() {
+float imu_readAcel_Y() {
 
 	uint8_t instructionHi = 0x2B | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x2A | 0x80;	//Where we send Low instruction
@@ -291,7 +291,7 @@ int16_t imu_readAcel_Y() {
 
 }
 
-int16_t imu_readAcel_Z() {
+float imu_readAcel_Z() {
 
 	uint8_t instructionHi = 0x2D | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x2C | 0x80;	//Where we send Low instruction
@@ -311,7 +311,7 @@ int16_t imu_readAcel_Z() {
     return ScaledData(data, imu_acelFullScale);
 }
 
-int16_t imu_readGyro_X() {
+float imu_readGyro_X() {
 
 	uint8_t instructionHi = 0x23 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x22 | 0x80;	//Where we send Low instruction
@@ -331,7 +331,7 @@ int16_t imu_readGyro_X() {
     return ScaledData(data, imu_gyroFullScale);
 }
 
-int16_t imu_readGyro_Y() {
+float imu_readGyro_Y() {
 
 	uint8_t instructionHi = 0x25 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x24 | 0x80;	//Where we send Low instruction
@@ -351,7 +351,7 @@ int16_t imu_readGyro_Y() {
     return ScaledData(data, imu_gyroFullScale);
 }
 
-int16_t imu_readGyro_Z() {
+float imu_readGyro_Z() {
 	uint8_t instructionHi = 0x27 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x26 | 0x80;	//Where we send Low instruction
 
