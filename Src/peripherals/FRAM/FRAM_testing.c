@@ -29,20 +29,6 @@ void printBinary(uint8_t byte)
     printMsg("\n\r");
 }
 
-// Fill an array with a repeating value.
-void fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
-    for (uint16_t i = 0; i < size; i++) {
-        buf[i] = value;
-    }
-}
-
-// Clear an array by filling it with 0xFF.
-void clearBuf(uint8_t buf[], uint16_t size) {
-    for (uint16_t i = 0; i < size; i++) {
-        buf[i] = 0xFF;
-    }
-}
-
 // Print the contents of a buffer in hexadecimal, 16 bytes per line.
 void printBuf(uint8_t buf[], uint16_t size) {
     for (uint16_t i = 0; i < size; i++) {
@@ -67,13 +53,13 @@ bool FRAMtest_read_deviceID()
 	FRAM_read_deviceID(MOSI);
 	for (uint8_t i = 0; i < 5; ++i)
 	{
-		printMsg("\n%u", MOSI[i]);
+		printMsg("%u ", MOSI[i]);
 	}
 	return true;
 }
 /*  Check whether Initial WEL bit is 0. Then see if write_enable passes or not.
-    * expected: 
-    * actual: 
+    * expected: Write Enable: PASS
+    * actual: fatal: WEL bit incorrect
 */
 bool FRAMtest_writeEnable()
 {
@@ -84,15 +70,14 @@ bool FRAMtest_writeEnable()
 
     // Test if the WEL bit is set
     if (updatedWEL == 1 && initialWEL == 0) {
-        printMsg("Write Enable Test PASS\n\r");
         return true;
     }
-	printMsg("Write Enable Test FAIL - WEL bit incorrect\n\r");
+	printMsg("fatal: WEL bit incorrect\n\r");
 	return false;
 }
-/*  Reads current Status Register
-    * expect: "Status Register Read Successful. Value: xyz"
-    * actual: 
+/*  Reads current Status Register values
+    * expect: "Read Status Register: PASS"
+    * actual: "Read Status Register: PASS"
 */
 bool FRAMtest_readStatusRegister() {
     printMsg("Starting Read Status Register Test...\n\r");
@@ -105,12 +90,12 @@ bool FRAMtest_readStatusRegister() {
     	printMsg("Status Register Read PASS. Value: 0x%02X\n\r", status);
     	return true;
     }
-    printMsg("Read Status Register FAIL. Received 0x00 (possible error).\n\r");
+    printMsg("fatal: Read Status Register FAIL. Received 0x00 (possible error).\n\r");
     return false;
 }
 /*  Displays the FRAM data starting at 0x0 in hexadecimal format, 16 bytes per line.
-    * expect: "FRAM Data Read Successful"
-    * actual: 
+    * expect: "Read Data: PASS"
+    * actual: "Read Data: PASS"
 */
 bool FRAMtest_readData()
 {
@@ -118,22 +103,16 @@ bool FRAMtest_readData()
 	uint16_t address = 0x000000;
 
 	if (FRAM_readData(address, buffer)) {
-
-		printMsg("FRAM Data Read PASS:\n\r");
-		for (uint16_t i = 0; i < 256; ++i)
-		{
-			printMsg("0x%02X ", buffer[i]);
-			if ((i + 1) % 16 == 0)
-				printMsg("\n\r");
-		}
+		printMsg("FRAM Data Read Starting...\n\r");
+		printBuf(buffer, 256);
 		return true;
 	}
-	printMsg("FRAM Data Read FAIL.\n\r");
+	printMsg("fatal: FRAM Read attempt failed\n\r");
 	return false;
 }
 /*  Sets page number to 2 and reads. Corresponds to the address range 0x0200 to 0x02FF.
-    * expected: 
-    * actual: 
+    * expected: "Read Page: PASS"
+    * actual: "Read Page: PASS"
 */
 bool FRAMtest_readPage()
 {
@@ -141,32 +120,27 @@ bool FRAMtest_readPage()
 	uint16_t page = 2;
 
 	if (FRAM_readPage(page, buffer)) {
-		printMsg("FRAM Page Read PASS (Page %u):\n\r", page);
-		for (uint16_t i = 0; i < 256; ++i)
-		{
-			printMsg("0x%02X", buffer[i]);
-			if ((i + 1) % 16 == 0)
-				printMsg("\n\r");
-		}
+		printMsg("FRAM Page Read (Page %u):\n\r", page);
+		printBuf(buffer, 256);
 		return true;
 	}
-	printMsg("FRAM Page Read FAIL.\n\r");
+	printMsg("fatal: FRAM Read Page Read attempt failed.\n\r");
 	return false;
 }
 
 /* Write Data Tests (4 Tests)
   Test 1: Write to buffer with bits 1-256 and read.
-  * expected: "Basic Write and Read Test Passed"
-  * actual: 
+  * expected: "Basic Write and Read: PASS"
+  * actual: "Basic Write and Read: PASS"
   Test 2: Write to boundary of memory
-  * expected: "Boundary Condition Test Passed"
-  * actual: 
+  * expected: "Boundary Write: PASS"
+  * actual: "Boundary Write: PASS"
   Test 3: Write to Invalid Address (Expect rejection)
-  * expected: "Invalid Address Test Passed (Command Rejected as Expected)."
-  * actual: 
+  * expected: "Invalid Address Write: PASS"
+  * actual: "Invalid Address Write: PASS"
   Test 4: Write Protect Test
-  * expected: "Write Protect Test Passed (Write Rejected as Expected)."
-  * actual: 
+  * expected: "Write Protect: PASS"
+  * actual: "fatal: Write Protect: Write succeeded despite WEL=0"
 */
 
 uint8_t writeBuffer[256] = {0};
@@ -188,14 +162,13 @@ bool FRAMtest_basicWriteData() {
         // Verify written and read data
         for (uint16_t i = 0; i < 256; i++) {
             if (writeBuffer[i] != readBuffer[i]) {
-                printMsg("Basic Write and Read Test Data mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
+                printMsg("fatal: Basic Write and Read Test Data mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
                 return false;
             }
         }
-        printMsg("Basic Write and Read Test PASS.\n\r");
         return true;
     }
-    printMsg("Write Command FAIL.\n\r");
+    printMsg("fatal: Write Command FAIL.\n\r");
     return false;
 }
 
@@ -208,14 +181,13 @@ bool FRAMtest_BoundaryWriteData() {
     	FRAM_readData(address, readBuffer);
         for (uint16_t i = 0; i < 256; i++) {
             if (writeBuffer[i] != readBuffer[i]) {
-                printMsg("Boundary Condition Test Data Mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
+                printMsg("fatal: Boundary Condition Test Data Mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
                 return false;
             }
         }
-        printMsg("Boundary Condition Test PASS.\n\r");
         return true;
     }
-    printMsg("Boundary Write Command FAIL.\n\r");
+    printMsg("fatal: Boundary Write Command FAIL.\n\r");
     return false;
 }
 
@@ -224,31 +196,37 @@ bool FRAMtest_InvalidAddressWriteData() {
     address = 0x8000; // Invalid address
     printMsg("Starting Invalid Address Test at 0x8000...\n\r");
     if (!FRAM_writeData(address, writeBuffer, 256)) {
-        printMsg("Invalid Address Test Passed (Command Rejected as Expected).\n\r");
+        printMsg("Invalid Address Test (Command Rejected as Expected).\n\r");
         return true;
     }
-    printMsg("Invalid Address Test Failed (Command Unexpectedly Accepted).\n\r");
+    printMsg("fatal: Invalid Address Test (Command Unexpectedly Accepted).\n\r");
     return false;
 }
 
 bool FRAMtest_WriteProtect() {
-    // Test 4: Write Protect Test
-    FRAM_writeEnable(); // Ensure WEL is set first
-    FRAM_writeDisable(); // Clear WEL
-    
-    uint8_t status = FRAM_readStatusRegister();
-    if ((status & 0x02) != 0) { // Check WEL is 0
-        printMsg("Write Protect Test FAIL: WEL still set\n\r");
+    // Ensure WEL is set first
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
         return false;
     }
-    // Try to write data (should fail)
-    uint8_t dummyData[1] = {0xAA};
-    if (!FRAM_writeData(0x0000, dummyData, 1)) {
-        printMsg("Write Protect Test PASS\n\r");
-        return true;
+    // Clear WEL via WRDI
+    if (!FRAM_writeDisable()) {
+        printMsg("fatal: Write Protect: WRDI command failed\n\r");
+        return false;
     }
-    printMsg("Write Protect Test FAIL\n\r");
-    return false;
+    // Verify WEL is 0
+    uint8_t status = FRAM_readStatusRegister();
+    if ((status & 0x02) != 0) { 
+        printMsg("fatal: Write Protect: WEL still set\n\r");
+        return false;
+    }
+    // Attempt write (should fail)
+    uint8_t dummy = 0xAA;
+    if (FRAM_writeData(0x0000, &dummy, 1)) {
+        printMsg("fatal: Write Protect: Write succeeded despite WEL=0\n\r");
+        return false;
+    }
+    return true;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
