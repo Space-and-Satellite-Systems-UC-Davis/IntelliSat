@@ -18,6 +18,7 @@ void testFunction_IMU_Dupe_Reads() {
 			printMsg("X: %f\r\n", imu_readAcel_X());
 			printMsg("Y: %f\r\n", imu_readAcel_Y());
 			printMsg("Z: %f\r\n", imu_readAcel_Z());
+			printMsg("%f\r\n", imu_readTemp());
 
 			set_IMU(IMU1);
 			printMsg("IMU1 Selected\r\n");
@@ -29,6 +30,7 @@ void testFunction_IMU_Dupe_Reads() {
 			printMsg("%d\r\n", imu_readAcel_X());
 			printMsg("%d\r\n", imu_readAcel_Y());
 			printMsg("%d\r\n", imu_readAcel_Z());
+			printMsg("%f\r\n", imu_readTemp());
 		}
 	}
 }

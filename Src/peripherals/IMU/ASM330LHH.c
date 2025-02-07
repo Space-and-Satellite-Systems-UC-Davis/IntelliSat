@@ -405,7 +405,7 @@ float imu_readGyro_Z() {
     return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
-int16_t imu_readTemp() {
+float imu_readTemp() {
 
 	uint8_t instructionHi = 0x21 | 0x80;	//Where we send Hi instruction
 	uint8_t instructionLow = 0x20 | 0x80;	//Where we send Low instruction
@@ -422,5 +422,5 @@ int16_t imu_readTemp() {
 
 #endif
 
-    return data;
+    return (data / 256.0) + 25;
 }
