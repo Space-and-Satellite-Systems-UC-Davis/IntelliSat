@@ -33,12 +33,17 @@ bool FRAM_writeEnable() {
     spi_startCommunication(FRAM_SPI_CS);
 
     // Send WRITE_ENABLE command
-    bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
+    if (!spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return false;
+    }
     FRAM_wait();
-
     // End communication
     spi_stopCommunication(FRAM_SPI_CS);
-    return success;
+
+    // Confirm WEL is set
+    uint8_t status = FRAM_readStatusRegister();
+    return (status & 0x02) != 0;  // Check if WEL bit is set
 }
 
 bool FRAM_writeDisable() {
@@ -49,6 +54,7 @@ bool FRAM_writeDisable() {
 
     // Send WRITE_DISABLE command
     bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
+    FRAM_wait();
 
     // End communication
     spi_stopCommunication(FRAM_SPI_CS);
@@ -88,10 +94,10 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer)
         return false;
     }
     uint8_t command = FRAM_READ; 
-    uint8_t addresses[2];
-
-    addresses[0] = (address >> 16) & 0xFF; 
-    addresses[1] = (address >> 8) & 0xFF;  
+    uint8_t addresses[2] = {
+        (address >> 8) & 0x7F, // Mask MSB (bit 15)
+        address & 0xFF         // Low byte
+    };
 
     spi_startCommunication(FRAM_SPI_CS);
     // Send FRAM_READ opcode
@@ -100,10 +106,15 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer)
         return false;
     }
     // Send address bytes
-    if (!spi_transmitReceive(FRAM_SPI, address, NULL, 2, false)) {
+    if (!spi_transmitReceive(FRAM_SPI, addresses, NULL, 2, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
+
+    // Dummy read to handle timing/delay issues
+    uint8_t trash;
+    spi_transmitReceive(FRAM_SPI, NULL, &trash, 1, false);
+
     // Read into buffer
     if (!spi_transmitReceive(FRAM_SPI, NULL, buffer, 256, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
@@ -111,47 +122,11 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer)
     }
     spi_stopCommunication(FRAM_SPI_CS);
     return true;
-
-    /*
-    bool FRAM_readData(uint16_t address, uint8_t *buffer) {
-    if (address >= FRAM_MAX_BYTES) { // Validate address (0x0000-0x7FFF)
-        return false;
-    }
-
-    uint8_t command = FRAM_READ;
-    uint8_t addresses[2] = {
-        (address >> 8) & 0x7F, // High byte (mask bit 15)
-        address & 0xFF          // Low byte
-    };
-
-    spi_startCommunication(FRAM_SPI_CS);
-
-    // Send READ command
-    if (!spi_transmitReceive(FRAM_SPI, &command, NULL, 1, false)) {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-
-    // Send address bytes
-    if (!spi_transmitReceive(FRAM_SPI, addresses, NULL, 2, false)) {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-
-    // Read 256 bytes
-    if (!spi_transmitReceive(FRAM_SPI, NULL, buffer, 256, false)) {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-
-    spi_stopCommunication(FRAM_SPI_CS);
-    return true;
-    */
 }
 
 bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     // Validate address
-    if (address + size > FRAM_MAX_BYTES) {
+    if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES) {
         return false;
     }
     // Enable write operations
@@ -159,10 +134,12 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
         return false;
     }
 
-    uint8_t MOSI[3];
-    MOSI[0] = FRAM_WRITE;             // Write command
-    MOSI[1] = (address >> 8) & 0xFF;  // High byte of address
-    MOSI[2] = address & 0xFF;         // Low byte of address
+    uint8_t MOSI[3] = {
+        FRAM_WRITE,
+        (address >> 8) & 0x7F, // Mask MSB (bit 15)
+        address & 0xFF
+    };
+
     spi_startCommunication(FRAM_SPI_CS);
 
     // Send the WRITE command and address
@@ -176,7 +153,6 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
         return false;
     }
     FRAM_wait();
-    // End SPI communication
     spi_stopCommunication(FRAM_SPI_CS);
 
     return true;
