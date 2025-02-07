@@ -132,42 +132,42 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
  *
  * @returns The X-axis acceleration value as a 16-bit signed integer.
  */
-int16_t imu_readAcel_X();
+float imu_readAcel_X();
 
 /**
  * Reads the y-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis acceleration value as a 16-bit signed integer.
  */
-int16_t imu_readAcel_Y();
+float imu_readAcel_Y();
 
 /**
  * Reads the acceleration value of the z-axis from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The acceleration value of the z-axis.
  */
-int16_t imu_readAcel_Z();
+float imu_readAcel_Z();
 
 /**
  * Reads the X-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The X-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t imu_readGyro_X();
+float imu_readGyro_X();
 
 /**
  * Reads the y-axis gyroscope value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis gyroscope value as a 16-bit signed integer.
  */
-int16_t imu_readGyro_Y();
+float imu_readGyro_Y();
 
 /**
  * Reads the Z-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The Z-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t imu_readGyro_Z();
+float imu_readGyro_Z();
 
 /**
  * Reads the temperature from the IMU sensor connected to the I2C2 bus of OP1.
