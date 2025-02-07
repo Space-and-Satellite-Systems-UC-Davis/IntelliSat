@@ -38,8 +38,11 @@
 
 /****************************** IMU Properties ****************************/
 
-float imu_acelFullScale = 0;
-float imu_gyroFullScale = 0;
+float imu_acelFullScaleIMU0 = 0;
+float imu_gyroFullScaleIMU0 = 0;
+
+float imu_acelFullScaleIMU1 = 0;
+float imu_gyroFullScaleIMU1 = 0;
 
 enum IMU_SELECT IMU_global = IMU0;
 
@@ -140,26 +143,41 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 	softi2c_writeReg(IMU_I2C, IMU_ADDR, ACCEL_RATE_REG, data);
 
 #elif OP_REV == 2 || OP_REV == 3
-	set_IMU(IMU0);
-	imu_spiWriteReg(ACCEL_RATE_REG, data);
-	set_IMU(IMU1);
+
 	imu_spiWriteReg(ACCEL_RATE_REG, data);
 
 #endif
-    switch (acel_scale) {
-        case IMU_FS_2_g:
-            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_2G / 1000;
-            break;
-        case IMU_FS_4_g:
-            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_4G / 1000;
-            break;
-        case IMU_FS_8_g:
-            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_8G / 1000;
-            break;
-        case IMU_FS_16_g:
-            imu_acelFullScale = ASM330LHH_ACC_SENSITIVITY_FS_16G / 1000;
-            break;
-    }
+	if (IMU_global == IMU1) { 
+		switch (acel_scale) {
+			case IMU_FS_2_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_2G / 1000;
+				break;
+			case IMU_FS_4_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_4G / 1000;
+				break;
+			case IMU_FS_8_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_8G / 1000;
+				break;
+			case IMU_FS_16_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_16G / 1000;
+				break;
+		}
+	} else {
+		switch (acel_scale) {
+			case IMU_FS_2_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_2G / 1000;
+				break;
+			case IMU_FS_4_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_4G / 1000;
+				break;
+			case IMU_FS_8_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_8G / 1000;
+				break;
+			case IMU_FS_16_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_16G / 1000;
+				break;
+		}
+	}
 
 }
 
@@ -185,33 +203,52 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 #elif OP_REV == 2 || OP_REV == 3
 
 
-	set_IMU(IMU0);
-	imu_spiWriteReg(GYRO_CTRL_REG, data);
-	set_IMU(IMU1);
 	imu_spiWriteReg(GYRO_CTRL_REG, data);
 
 #endif
-
-    switch (gyro_scale) {
-        case IMU_FS_125_dps:
-            imu_gyroFullScale = ASM330LHH_GYRO_SENSITIVITY_FS_125DPS / 1000;
-            break;
-        case IMU_FS_250_dps:
-            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_250DPS / 1000;
-            break;
-        case IMU_FS_500_dps:
-            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_500DPS / 1000;
-            break;
-        case IMU_FS_1000_dps:
-            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_1000DPS / 1000;
-            break;
-        case IMU_FS_2000_dps:
-            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS / 1000;
-            break;
-        case IMU_FS_4000_dps:
-            imu_gyroFullScale =  ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS / 1000;
-            break;
-    }
+	if (IMU_global == IMU0) {
+		switch (gyro_scale) {
+			case IMU_FS_125_dps:
+				imu_gyroFullScaleIMU0 = ASM330LHH_GYRO_SENSITIVITY_FS_125DPS / 1000;
+				break;
+			case IMU_FS_250_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_250DPS / 1000;
+				break;
+			case IMU_FS_500_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_500DPS / 1000;
+				break;
+			case IMU_FS_1000_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_1000DPS / 1000;
+				break;
+			case IMU_FS_2000_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS / 1000;
+				break;
+			case IMU_FS_4000_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS / 1000;
+				break;
+		}
+	} else {
+		switch (gyro_scale) {
+			case IMU_FS_125_dps:
+				imu_gyroFullScaleIMU1 = ASM330LHH_GYRO_SENSITIVITY_FS_125DPS / 1000;
+				break;
+			case IMU_FS_250_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_250DPS / 1000;
+				break;
+			case IMU_FS_500_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_500DPS / 1000;
+				break;
+			case IMU_FS_1000_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_1000DPS / 1000;
+				break;
+			case IMU_FS_2000_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS / 1000;
+				break;
+			case IMU_FS_4000_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS / 1000;
+				break;
+		}
+	}
 }
 
 /*************************** IMU Interface Functions *************************/
@@ -230,15 +267,13 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 
 #elif OP_REV == 3
 
-	set_IMU(IMU1);
-
-	spi_config(IMU1_SPI);
-	imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
-
-	set_IMU(IMU0);
-
-	spi_config(IMU0_SPI);
-	imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
+	if (IMU_global == IMU1) {
+		spi_config(IMU1_SPI);
+		imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
+	} else {
+		spi_config(IMU0_SPI);
+		imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
+	}
 
 #endif
 
@@ -266,7 +301,7 @@ float imu_readAcel_X() {
 
 #endif
 
-    return ScaledData(data, imu_acelFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_acelFullScaleIMU0) : ScaledData(data, imu_acelFullScaleIMU1);
 
 }
 
@@ -287,7 +322,7 @@ float imu_readAcel_Y() {
 
 #endif
 
-    return ScaledData(data, imu_acelFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_acelFullScaleIMU0) : ScaledData(data, imu_acelFullScaleIMU1);
 
 }
 
@@ -308,7 +343,7 @@ float imu_readAcel_Z() {
 
 #endif
 
-    return ScaledData(data, imu_acelFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_acelFullScaleIMU0) : ScaledData(data, imu_acelFullScaleIMU1);
 }
 
 float imu_readGyro_X() {
@@ -328,7 +363,7 @@ float imu_readGyro_X() {
 
 #endif
 
-    return ScaledData(data, imu_gyroFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
 float imu_readGyro_Y() {
@@ -348,7 +383,7 @@ float imu_readGyro_Y() {
 
 #endif
 
-    return ScaledData(data, imu_gyroFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
 float imu_readGyro_Z() {
@@ -367,7 +402,7 @@ float imu_readGyro_Z() {
 
 #endif
 
-    return ScaledData(data, imu_gyroFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
 int16_t imu_readTemp() {
