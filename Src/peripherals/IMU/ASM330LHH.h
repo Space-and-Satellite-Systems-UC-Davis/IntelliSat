@@ -176,4 +176,16 @@ float imu_readGyro_Z();
  */
 float imu_readTemp();
 
+/**
+ * Tests SPI communication using WHO_AM_I register
+ * 
+ * @returns if communication between PFC and IMU are working
+ */
+bool imu_isCommunicationWorking();
+
+/**
+ * Prints all values in gyro, accceleromter, and temperarture
+ */
+void imu_printAllValues(); 
+
 #endif /* REALOP1_PERIPHERALS_IMU_H_ */
