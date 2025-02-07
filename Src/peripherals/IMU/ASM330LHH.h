@@ -174,6 +174,6 @@ float imu_readGyro_Z();
  *
  * @returns The temperature value in 16-bit signed integer format.
  */
-int16_t imu_readTemp();
+float imu_readTemp();
 
 #endif /* REALOP1_PERIPHERALS_IMU_H_ */
