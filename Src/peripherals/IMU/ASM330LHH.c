@@ -113,7 +113,6 @@ int16_t imu_spiReadHighLow(void *low_address) {
 #endif
 
 	nop(10);
-	printMsg("High: %d, Low: %d\r\n",datah, datal);
 	return (datah << 8) | datal;
 }
 
