@@ -424,3 +424,35 @@ float imu_readTemp() {
 
     return (data / 256.0) + 25;
 }
+
+bool imu_isCommunicationWorking() {
+
+	uint8_t value;
+	uint8_t instruction = 0x0F | 0x80;
+	
+	if (IMU_global == IMU0) {
+		spi_startCommunication(IMU0_SPI_CS);
+		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
+		spi_transmitReceive(IMU0_SPI, NULL, &value, 1, false);
+		spi_stopCommunication(IMU0_SPI_CS);
+	} else {
+		spi_startCommunication(IMU1_SPI_CS);
+		spi_transmitReceive(IMU1_SPI, &instruction, NULL, 1, false);
+		spi_transmitReceive(IMU1_SPI, NULL, &value, 1, false);
+		spi_stopCommunication(IMU1_SPI_CS);
+	}
+
+	return value == 0x6B;
+}
+
+void imu_printAllValues() {
+	printMsg("Gyro\r\n");
+	printMsg("X: %f\r\n", imu_readGyro_X());
+	printMsg("Y: %f\r\n", imu_readGyro_Y());
+	printMsg("Z: %f\r\n", imu_readGyro_Z());
+	printMsg("Accel:\r\n");
+	printMsg("X: %f\r\n", imu_readAcel_X());
+	printMsg("Y: %f\r\n", imu_readAcel_Y());
+	printMsg("Z: %f\r\n", imu_readAcel_Z());
+	printMsg("%f\r\n", imu_readTemp());
+}
