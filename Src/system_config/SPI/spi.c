@@ -77,7 +77,10 @@ void spi3_gpioInit() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	while (GPIOB->OTYPER == 0xFFFFFFFF);
 
-	GPIOB->PUPDR |= GPIO_PUPDR_PUPD6_0;
+	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD4_0;
+
+	GPIOB->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED3_Msk;
+
 
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE3_Msk
@@ -120,7 +123,9 @@ void spi2_gpioInit() {
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	GPIOB->PUPDR |= GPIO_PUPDR_PUPD12_0;
+	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD12_0;
+
+	GPIOB->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED13_Msk;
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk
 		| GPIO_MODER_MODE13_Msk
@@ -161,12 +166,12 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	while(spi->SR & SPI_SR_FTLVL);	// Wait till there is no data to transmit
 	while(spi->SR & SPI_SR_BSY);	// Wait till last data frame is processed
 	spi_stopCommunication(cs_port, cs_pin);
-	spi->CR1 &= ~SPI_CR1_SPE;		// Disable SPI2
+	spi->CR1 &= ~SPI_CR1_SPE;	
 
 	uint8_t temp;
 	while(spi->SR & SPI_SR_FRLVL){
 		// Wait till all data is received
-		temp = SPI2->DR;
+		temp = spi->DR;
 	}
 }
 
@@ -194,13 +199,17 @@ void spi2_config() {
 	SPI2->CR1 = 0;
 	SPI2->CR2 = 0;
 	SPI2->CR1 |=
-		  5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
+		  0U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
-		| SPI_CR1_MSTR;
+		| SPI_CR1_MSTR
+		| SPI_CR1_CPOL
+		| SPI_CR1_CPHA;	
+
 	SPI2->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
+	SPI3->CR1 &= ~(SPI_CR1_BIDIMODE | SPI_CR1_RXONLY);
 
 	spi_enable(SPI2);
 }
@@ -214,12 +223,14 @@ void spi3_config() {
 	SPI3->CR1 = 0;
 	SPI3->CR2 = 0;
 	SPI3->CR1 |=
-		  1U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
+		  0U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR
-		| SPI_CR1_CPOL;				// Clock line will be HIGH when IDLE
-		// | SPI_CR1_CPHA;				// Clock transitions happen with Data Transitions
+		| SPI_CR1_CPOL
+		| SPI_CR1_CPHA;				
+	SPI3->CR1 &= ~(SPI_CR1_BIDIMODE | SPI_CR1_RXONLY);
+
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
@@ -263,13 +274,14 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			transmission++;
 		}
 		while(!(spi->SR & SPI_SR_TXE));
-//		while(!(spi->SR & SPI_SR_RXNE));
+		while(!(spi->SR & SPI_SR_RXNE));
 		// read the reception line until it's empty
 		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
 			if (reception == NULL) {
 				spi->DR;
 			} else {
-				*reception = spi->DR;
+				uint16_t value = spi->DR;
+				*reception = value;
 				reception++;
 			}
 		}
