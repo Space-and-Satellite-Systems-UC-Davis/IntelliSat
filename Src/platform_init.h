@@ -67,7 +67,12 @@ void init_first_time() {
  */
 void init_platform(bool run_scheduler) {
     SCB->CPACR|= 0x00F00000; // Enable the Floating-Point Unit for full access
+    set_IMU(IMU0);
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+    set_IMU(IMU1);
+    imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
+
+
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     //TODO: hdd_init().
     //TODO: initialize intercomm.
