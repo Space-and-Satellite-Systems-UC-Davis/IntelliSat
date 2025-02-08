@@ -85,12 +85,12 @@ void sensor_init(int averages, int bus_time, int shunt_time, int mode, int rshun
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
  * @param mode The mode of sensor (triggered, continuous, powered down)
- * @param rshunt The value of the external shunt used
- * @param max_current The value of the maximum current
+ * @param rshunt The value of the external shunt used in milliohms
+ * @param max_current The value of the maximum current in Amps
  *
  * @returns None
  */
-void sensor_config_init(int averages, int bus_time, int shunt_time, int mode, int rshunt, int max_current);
+void sensor_config(int averages, int bus_time, int shunt_time, int mode, int rshunt, int max_current);
 
 /**
  * Retriggers voltage calculations if in triggered mode.

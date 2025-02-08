@@ -22,10 +22,10 @@ void sensor_init(int averages, int bus_time, int shunt_time, int mode, int rshun
         softi2c_init(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN);
         sensors[i]->mode = mode;
     }
-    sensor_config_all(averages, bus_time, shunt_time, mode, rshunt, max_current);
+    sensor_config(averages, bus_time, shunt_time, mode, rshunt, max_current);
 }
 
-void sensor_config_init(int averages, int bus_time, int shunt_time, int mode, int rshunt, int max_current){
+void sensor_config(int averages, int bus_time, int shunt_time, int mode, int rshunt, int max_current){
     config = averages << 9 | bus_time << 6 | shunt_time << 3 | mode;
     current_lsb = ceil(max_current / 32768.0 * MICRO); //2^15
     int cal = ceil(0.00512 / (current_lsb/MICRO * rshunt/MILLI)); //round to nearest integer above
@@ -58,7 +58,7 @@ float get_shunt_voltage(){
 
 float get_bus_voltage(){
     int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO,sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0x02);
-    return output * 1.25/(double)MILLI; 
+    return output * 1.25/MILLI; 
 }
 
 
