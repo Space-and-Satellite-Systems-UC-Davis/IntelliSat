@@ -51,40 +51,24 @@ void trigger(){
 }
 
 float get_shunt_voltage(){
-    if(sensors[current_sensor]->mode != MODE_CONTINUOUS)
-    {
-        trigger();
-    }
     int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO,sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0x01);
     return output * .0025;
 }
 
 
 float get_bus_voltage(){
-    if(sensors[current_sensor]->mode != MODE_CONTINUOUS)
-    {
-        trigger();
-    }
     int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO,sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0x02);
     return output * 1.25/(double)MILLI; 
 }
 
 
 float get_power(){
-    if(sensors[current_sensor]->mode != MODE_CONTINUOUS)
-    {
-        trigger();
-    }
     int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO,sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0x03);
     return output * current_lsb/(double)MICRO * 25; 
 }
 
 
 float get_current(){
-    if(sensors[current_sensor]->mode != MODE_CONTINUOUS)
-    {
-        trigger();
-    }
     int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO,sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0x04);
     return output * current_lsb / (double)MICRO;
 }
