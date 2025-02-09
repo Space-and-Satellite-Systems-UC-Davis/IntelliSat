@@ -8,6 +8,7 @@
 
 #include "UART/pcp.h"
 #include <stdio.h>
+char str[200];
 
 void debug_mgt2(char* msg) {
     uint64_t now = getSysTime();
@@ -80,7 +81,7 @@ int make_pcpdev_advanced(PCPDevice* out,
         .outgoing_payload_maxbytes = outgoing_payload_maxbytes,
         .incoming_payload_maxbytes = incoming_payload_maxbytes,
         .window_size = window_size,
-        .tx_old_seq = 0,
+        .tx_old_seq = 48,   // TODO: Initialize to 0. 48 is for debugging ('0')
         .curr_window_sz = 0,
         .last_tx_time = 0,
         .tx_bufs = tx_bufs,
@@ -136,12 +137,12 @@ void pcp_retransmit(PCPDevice* dev) {
     if (dev->curr_window_sz > 0
             && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
-        char str[100];
         sprintf(str, "Retransmitting seqnum %d", dev->tx_old_seq);
         debug_mgt2(str);
+        PCPBuf* tx_buf = dev->tx_bufs + (dev->tx_old_seq % dev->window_size);
         usart_transmitBytes(dev->bus,
-                       dev->tx_bufs[dev->tx_old_seq].data,
-                       dev->tx_bufs[dev->tx_old_seq].len);
+                       tx_buf->data,
+                       tx_buf->len);
     }
 }
 
@@ -190,7 +191,10 @@ static void update_rx(PCPDevice* dev) {
     if (dev->rx_full)
         return;
 
-    uint64_t timeout = getSysTime() + 10;
+    // A bit less than 100 ms per character received
+    uint64_t timeout = getSysTime() + 500;
+    sprintf(str, "Timeout is %d", timeout);
+    debug_mgt2(str);
     uint8_t read_buf;
     while (true) {
         if (getSysTime() > timeout || !usart_receiveBufferNotEmpty(dev->bus)) {
@@ -198,15 +202,17 @@ static void update_rx(PCPDevice* dev) {
         }
 
         if (usart_receiveBytes(dev->bus, &read_buf, 1) == 0) continue;
-        char str[60];
         sprintf(str, "Received %c", read_buf);
         debug_mgt2(str);
 
         // New packet, identify type
         if (dev->rx_readnbytes == 0) {
-            if (read_buf == PACKET_START)
+            if (read_buf == PACKET_START) {
                 dev->rx_readnbytes++;
+            }
             if (read_buf == ACK_START) {
+                sprintf(str, "Receiving acknowledgement");
+                debug_mgt2(str);
                 dev->rx_readnbytes++;
                 dev->rx_acknowledging = true;
             }
@@ -218,6 +224,8 @@ static void update_rx(PCPDevice* dev) {
                 distance(read_buf, dev->rx_tail_seq) <= dev->window_size) {
                 dev->rx_readnbytes++;
                 dev->rx_curr_seq = read_buf;
+                sprintf(str, "Sequence number is %d", dev->rx_curr_seq);
+                debug_mgt2(str);
             } else {
                 set_rx_waiting(dev);
             }
@@ -228,6 +236,8 @@ static void update_rx(PCPDevice* dev) {
             if (read_buf != ACK_END) {
                 // ignore malformed acknowledgement
             } else if (dev->rx_curr_seq == dev->tx_old_seq) {
+                sprintf(str, "Acknowledged!", dev->rx_curr_seq);
+                debug_mgt2(str);
                 dev->tx_old_seq += 1 + dev->rx_num_acknowledging;
                 dev->curr_window_sz -= 1 + dev->rx_num_acknowledging;
                 dev->rx_num_acknowledging = 0;
