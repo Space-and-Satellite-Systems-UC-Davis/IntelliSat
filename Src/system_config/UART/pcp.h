@@ -15,12 +15,14 @@
 #ifndef SYSTEM_CONFIG_UART_PCP_H_
 #define SYSTEM_CONFIG_UART_PCP_H_
 
+
 #include <globals.h>
 #include <stm32l476xx.h>
 #include <UART/uart.h>
 #include <stdarg.h>
 #include <Timers/timers.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define E_LOST 1
 #define E_INVALID 2
@@ -30,6 +32,7 @@
 #define PCP_HEAD_NBYTES 3
 // Number of packets in rx buffer
 #define RX_BUFSIZ 32
+
 
 /**
  * Type for sequence number. Use `distance()` for subtraction and `+` for
@@ -69,20 +72,22 @@ typedef struct PCPDevice {
     // TX
     /** The sequence number of the oldest unacknowledged packet */
     SeqNum tx_old_seq;
-    /** Number of packets in transmission */
+    /** Number of packets unacknowledged */
     size_t curr_window_sz;
     /** The system time of the last transmission */
     uint64_t last_tx_time;
     /**
      * `window_size` number of transmission buffers, indexable by sequence
-     * number % window size. Each buffer stores full packets.
+     * number % window size. Each buffer stores full packets ready for
+     * transmission without processing.
      */
     PCPBuf* tx_bufs;
 
     // RX
     /**
      * `RX_BUFSIZ` number of receive buffers, circular queue with [rx_head] and
-     * [rx_tail]. Each buffer stores payload of received messages.
+     * [rx_tail]. Each buffer stores the payloads of messages. [rx_tail] is the
+     * first unreceived message.
      */
     PCPBuf* rx_bufs;
     int rx_head;
@@ -94,17 +99,24 @@ typedef struct PCPDevice {
     /** Sequence number of the current packet being read */
     SeqNum rx_curr_seq;
     /**
+     * Bitmap indicating whether a packet has been received. Used by received().
+     * The least significant bit indicates status of `rx_tail_seq`.
+     */
+    int rx_received;
+    /**
      * The number of bytes read of the current packet; Used for processing
      * header.
      */
     int rx_readnbytes;
     /** True if the next character is escaped */
     bool rx_escaping;
+    /** True if the current packet being read is an acknowledgement */
+    bool rx_acknowledging;
     /**
-     * Bitmap indicating whether a packet has been received. Used by received().
-     * The least significant bit indicates status of `rx_tail_seq`.
+     * The number of packets that have been acknowledged but is blocked by the
+     * lack of acknowledgement on `tx_old_seq`
      */
-    int rx_received;
+    int rx_num_acknowledging;
 } PCPDevice;
 
 /**

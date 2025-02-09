@@ -7,9 +7,23 @@
 *****************************************************************************/
 
 #include "UART/pcp.h"
+#include <stdio.h>
+
+void debug_mgt2(char* msg) {
+    uint64_t now = getSysTime();
+    char str[64];
+    sprintf(str, "%d", now);
+    usart_transmitStr(USART2, "\n");
+    usart_transmitStr(USART2, str);
+    usart_transmitStr(USART2, "=======\n");
+    usart_transmitStr(USART2, msg);
+    usart_transmitStr(USART2, "\n");
+    usart_transmitStr(USART2, "==========\n");
+}
 
 //// Forward declarations not part of the packet interface
 static void update_rx(PCPDevice* dev);
+static void set_rx_waiting(PCPDevice* dev);
 
 // Constants
 const uint8_t PACKET_START = '{';
@@ -21,7 +35,7 @@ const uint8_t ESCAPE = '\\';
 /**
  * Return the distance from `before` to `after`
  */
-int distance(SeqNum before, SeqNum after) {
+size_t distance(SeqNum before, SeqNum after) {
     if (after > before)
         return after - before;
     else
@@ -34,7 +48,8 @@ static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
 }
 
 int make_pcpdev(PCPDevice* out, USART_TypeDef *bus) {
-  return make_pcpdev_advanced(out, bus, 200, 128 - PCP_HEAD_NBYTES,
+    /* TODO: timeout is made slow for testing <02-02-25, Eric Xu> */
+    return make_pcpdev_advanced(out, bus, 1000, 128 - PCP_HEAD_NBYTES,
                               128 - PCP_HEAD_NBYTES, 5);
 }
 
@@ -121,6 +136,9 @@ void pcp_retransmit(PCPDevice* dev) {
     if (dev->curr_window_sz > 0
             && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
+        char str[100];
+        sprintf(str, "Retransmitting seqnum %d", dev->tx_old_seq);
+        debug_mgt2(str);
         usart_transmitBytes(dev->bus,
                        dev->tx_bufs[dev->tx_old_seq].data,
                        dev->tx_bufs[dev->tx_old_seq].len);
@@ -135,7 +153,7 @@ int pcp_receive(PCPDevice* dev, uint8_t* buf) {
     memcpy(buf, rx_buf.data, rx_buf.len);
     int ret = rx_buf.len;
     rx_buf.len = 0;
-    dev->rx_head++;
+    dev->rx_head = (dev->rx_head + 1) % RX_BUFSIZ;
     dev->rx_full = false;
     return ret;
 }
@@ -179,30 +197,52 @@ static void update_rx(PCPDevice* dev) {
             break;
         }
 
-        int read_nbytes = usart_receiveBytes(dev->bus, &read_buf, 1);
+        if (usart_receiveBytes(dev->bus, &read_buf, 1) == 0) continue;
+        char str[60];
+        sprintf(str, "Received %c", read_buf);
+        debug_mgt2(str);
 
-        // Nothing
-        if (read_nbytes == 0)
-            continue;
-        // New packet
+        // New packet, identify type
         if (dev->rx_readnbytes == 0) {
             if (read_buf == PACKET_START)
                 dev->rx_readnbytes++;
+            if (read_buf == ACK_START) {
+                dev->rx_readnbytes++;
+                dev->rx_acknowledging = true;
+            }
             continue;
         }
         // read_buf is the sequence number
         if (dev->rx_readnbytes == 1) {
-            if (distance(read_buf, dev->rx_tail_seq) > dev->window_size)
-                dev->rx_readnbytes = 0;
-            else {
+            if (dev->rx_acknowledging ||
+                distance(read_buf, dev->rx_tail_seq) <= dev->window_size) {
                 dev->rx_readnbytes++;
                 dev->rx_curr_seq = read_buf;
+            } else {
+                set_rx_waiting(dev);
             }
             continue;
         }
-
-        const int offset = distance(dev->rx_tail_seq, dev->rx_curr_seq);
-        PCPBuf* write_buf = dev->rx_bufs + dev->rx_tail + offset;
+        // Packet is acknowledgement
+        if (dev->rx_acknowledging) {
+            if (read_buf != ACK_END) {
+                // ignore malformed acknowledgement
+            } else if (dev->rx_curr_seq == dev->tx_old_seq) {
+                dev->tx_old_seq += 1 + dev->rx_num_acknowledging;
+                dev->curr_window_sz -= 1 + dev->rx_num_acknowledging;
+                dev->rx_num_acknowledging = 0;
+            } else if (distance(dev->tx_old_seq, dev->rx_curr_seq) <
+                       dev->curr_window_sz) {
+                dev->rx_num_acknowledging++;
+            }
+            set_rx_waiting(dev);
+            continue;
+        }
+        // Packet is transmission
+        const int offset =
+            (distance(dev->rx_tail_seq, dev->rx_curr_seq) + dev->rx_tail) %
+            RX_BUFSIZ;
+        PCPBuf* write_buf = dev->rx_bufs + offset;
         // read_buf is escaped
         if (dev->rx_escaping) {
             if (read_buf != ESCAPE && read_buf != PACKET_END)
@@ -215,7 +255,6 @@ static void update_rx(PCPDevice* dev) {
             dev->rx_escaping = true;
             continue;
         }
-
         if (read_buf == PACKET_END) {
             set_received(dev, dev->rx_curr_seq, true);
             if (dev->rx_curr_seq == dev->rx_tail_seq) {
@@ -223,11 +262,20 @@ static void update_rx(PCPDevice* dev) {
                     dev->rx_tail_seq++;
                     dev->rx_received >>= 1;
                     dev->rx_tail++;
+                    dev->rx_tail = (dev->rx_tail + 1) % RX_BUFSIZ;
                 }
             }
             acknowledge(dev, dev->rx_tail_seq);
+            set_rx_waiting(dev);
         }
-
         append(write_buf, &read_buf, 1);
 	}
+}
+
+/**
+* Set RX state to listening for new packets.
+*/
+static void set_rx_waiting(PCPDevice* dev) {
+    dev->rx_acknowledging = false;
+    dev->rx_readnbytes = 0;
 }
