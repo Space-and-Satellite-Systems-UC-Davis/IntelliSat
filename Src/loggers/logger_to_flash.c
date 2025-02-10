@@ -204,7 +204,6 @@ enum LogType logger_getOldestSector(uint8_t* sector_buff) {
     return block_type;
 }
 
-<<<<<<< HEAD
 /**
 If the local buffer is longer than remaining space in mock flash buffer, this will write too much.
 
