@@ -11,7 +11,7 @@
 
 uint32_t flash_getPageAddr(uint32_t page) {
   if (page > FLASH_MAX_PAGE) { //MIN check not needed. Not possible with uint32_t
-    return NULL;
+    return FLASH_MAX_PAGE;
   }
   return (uint32_t) (page * FLASH_PAGE_SIZE);
 }
@@ -76,9 +76,9 @@ bool flash_eraseSector(uint16_t sector) {
 	}
 	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
 	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	/*if (address == NULL) {
 		return false;
-	}
+	}*/
 
 	flash_writeEnable();
 
@@ -110,9 +110,9 @@ bool flash_writePage(uint16_t page, uint8_t* buffer) {
 	}
 
 	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	/*if (address == NULL) {
 		return false;
-	}
+	}*/
 
 	flash_writeEnable();
 
@@ -144,9 +144,9 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 	}
 
 	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	/*if (address == NULL) {
 		return false;
-	}
+	}*/
 
 	qspi_setCommand(
 		QSPI_FMODE_INDIRECT_READ,
@@ -176,9 +176,9 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
   	}
 
 	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	/*if (address == NULL) {
 		return false;
-	}
+	}*/
 
   	qspi_setCommand(
       	QSPI_FMODE_INDIRECT_READ,

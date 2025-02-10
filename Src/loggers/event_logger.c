@@ -29,11 +29,11 @@ uint8_t buildAddEventLog(
     unsigned int extra
 ) {
 
-    if (   !fits_in_bits(rtc_datetime, 22)
-        || !fits_in_bits(current_mode, 4)
-        || !fits_in_bits(action, 3)
-        || !fits_in_bits(details, 24)
-        || !fits_in_bits(extra, 11)
+    if (   !fitsInBits(rtc_datetime, 22)
+        || !fitsInBits(current_mode, 4)
+        || !fitsInBits(action, 3)
+        || !fitsInBits(details, 24)
+        || !fitsInBits(extra, 11)
     ) {
         // Gave too large a value somewhere :(
         // printf("Improper value\n");

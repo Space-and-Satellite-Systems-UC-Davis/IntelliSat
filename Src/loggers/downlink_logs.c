@@ -17,6 +17,12 @@ void logger_downlinkExpLogs(struct LocalExpLogs * local_exp_logs) {
     for(uint16_t i = 0; i < local_exp_logs->num_logs; ++i) {
         struct ExperimentLog* log = &local_exp_logs->logs[i];
 
+        if (i % 4 == 0) {
+        	printMsg("\n\r");
+        }
+        printMsg("exp_num: %u ", log->exp_num);
+
+        /*
         printMsg("exp_num: %u\r\nrtc_time: %u\r\n",
             log->exp_num,
             log->rtc_time
@@ -45,6 +51,7 @@ void logger_downlinkExpLogs(struct LocalExpLogs * local_exp_logs) {
 			log->sunsensor_5,
 			log->sunsensor_6
 		);
+		*/
     }
 }
 

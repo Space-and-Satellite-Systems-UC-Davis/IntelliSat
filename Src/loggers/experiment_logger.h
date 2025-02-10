@@ -25,7 +25,10 @@
 //     uint32_t  extra: 20;
 // };
 
-//m ExperimentLog
+/**
+ * Experiment Log: the main structure associated with experimental data.
+ * The log is 32 bytes (256 bits). 8 logs fit in a page, so 128 logs fit in a sector.
+ */
 struct ExperimentLog
 {
     uint16_t exp_num;
@@ -37,7 +40,7 @@ struct ExperimentLog
 
     int16_t mag_x: 16,
         mag_y: 16,
-        mag_z: 16;
+		mag_z: 16;
 
     int16_t sunsensor_1: 12,
         sunsensor_2: 12,
@@ -47,16 +50,17 @@ struct ExperimentLog
         sunsensor_6: 12;
 
     uint8_t extra: 4;
-    uint64_t extra2: 52;
+    uint64_t extra2: 56;
 };
-
 #pragma pack(pop)
 
-#define LOCAL_EXP_LOG_COUNT (FLASH_SECTOR_SIZE/sizeof(struct ExperimentLog))
+#define EXP_LOG_SIZE        sizeof(struct ExperimentLog)
+#define LOCAL_EXP_LOG_COUNT (FLASH_SECTOR_SIZE / EXP_LOG_SIZE)
 
 struct LocalExpLogs {
     bool paused;
     unsigned int num_logs;
+    unsigned int num_headers;
     unsigned int tail;
     struct ExperimentLog logs[LOCAL_EXP_LOG_COUNT];
 };

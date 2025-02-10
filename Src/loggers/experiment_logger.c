@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include <stdio.h>
-//#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
@@ -70,15 +69,16 @@ void logger_stopExp(int experiment_status) {
     }
 
     FLASH_header.current_exp_num = current_exp;
-//    LOGGER_update_header();
+
+    // TODO: handle pushHeader failing
+    logger_pushHeader();
 }
 
 // TODO: swap out the local buffer used for local logging on overflow
 static void logger_handleExpOverflow() {
     logger_local_exp_logs.paused = true;
 
-    printf("Moving Experiment Logs\r\n");
-    logger_downlinkExpLogs(&logger_local_exp_logs);
+    //logger_downlinkExpLogs(&logger_local_exp_logs);
 
     // TODO: Should unpausing go into an interrupt handler for comms (0.5) or flash (1.0)?
     logger_local_exp_logs.paused = false;
@@ -91,8 +91,6 @@ static void logger_handleExpOverflow() {
  * Checks that the fields fit in the bitfields
  * Might just be useful for testing
  */
-//TODO Oct 19th 2024: Decide whether or not to remove. Currently made a hardcoded version in
-//loggers testing file
 uint8_t logger_logExp(
     uint16_t exp_num,
     uint16_t rtc_time,     // Date+Hr+Min+Sec
@@ -140,7 +138,8 @@ uint8_t logger_logExp(
     logger_local_exp_logs.logs[current_log_index].sunsensor_5 = sunsensor_5;
     logger_local_exp_logs.logs[current_log_index].sunsensor_6 = sunsensor_6;
 
-    logger_local_exp_logs.logs[current_log_index].extra = extra;
+    logger_local_exp_logs.logs[current_log_index].extra = 0;
+    logger_local_exp_logs.logs[current_log_index].extra2 = 0;
 
     current_log_index++;
 
@@ -219,7 +218,7 @@ struct UnpackedExpLog decode(uint64_t log_0, uint64_t log_1) {
     return unpacked;
 }
 */
-
+/*
 uint8_t logger_getExpLog(uint64_t addr, struct ExperimentLog * retrieved_log) {
     if (addr > logger_local_exp_logs.num_logs) {
         // printf("idx %lu fail\n", idx);
@@ -229,3 +228,4 @@ uint8_t logger_getExpLog(uint64_t addr, struct ExperimentLog * retrieved_log) {
         return 0;
     }
 }
+*/
