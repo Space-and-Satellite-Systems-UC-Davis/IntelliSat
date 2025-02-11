@@ -133,6 +133,9 @@
 
 #define configTIMER_TASK_STACK_DEPTH                        0 //configMINIMAL_STACK_SIZE
 
+// Enable event groups
+#define configUSE_EVENT_GROUPS                              1
+
 
 /* Interrupt nesting behaviour configuration. */
 /* Cortex-M specific definitions. */

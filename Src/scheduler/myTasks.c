@@ -16,75 +16,47 @@
 
 #define led_delay 10000
 
-void vSenderTask(void *pvParameters)
-{
-    BaseType_t taskStatus;
+#define TASK_1_BIT (1UL << 0UL)
+#define TASK_2_BIT (1UL << 1UL)
 
-    TickType_t delay = QUEUE_TICKS_TO_WAIT / portTICK_PERIOD_MS;
+void setter(void *pvParameters) {
 
-    for(;;) {
-        if (uxQueueMessagesWaiting(myQueue) != configTIMER_QUEUE_LENGTH) {
-            taskYIELD();
-        }
-        taskStatus = xQueueSendToBack(myQueue, pvParameters, delay);
-        if(taskStatus != pdPASS) {
-            printMsg("Could not send to the queue.\r\n");
-            led_d1(1);
-            pwm_setDutyCycle(20);
-            nop(led_delay);
-            led_d1(0);
-        } else {
-            printMsg("Send to queue Successfully.\r\n");
-            led_d2(1);
-            pwm_setDutyCycle(40);
-            nop(led_delay);
-            led_d2(0);
-        }
-        taskYIELD();
-    }
+    // Blink to indicate task start
+    led_d5(true);
+     vTaskDelay(pdMS_TO_TICKS(2000));
+    led_d5(false);
+
+    led_d3(true);
+     vTaskDelay(pdMS_TO_TICKS(3000));
+
+    (void)xEventGroupSetBits(events, (const EventBits_t) 0x1);
+    led_d3(false);
+
+    vTaskDelete(NULL);
 }
 
 
-void vReceiverTask(void *pvParameter) {
-    // TODO different types of Receivers maybe? Can avoid having to keep creating task for receivers
-    // For The line below, any type of data allowed by FreeRTOS is allowed.
-    // That means char, char *, TickType_t, BaseType_t, UBaseType_t, StackType_t, uints, and ints and so on.
-    // As far as I understand even structs
-    Data_t xReceivedStructure;
+void reciever(void *pvParameters) {
 
-    BaseType_t taskStatus;
+    // Blink to indicate task start
+    led_d1(true);
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    led_d1(false);
+    
+    // Starting wait
+    led_d2(true);
 
-    for(;;) {
-        if(uxQueueMessagesWaiting(myQueue) != configTIMER_QUEUE_LENGTH)
-        {
-            printMsg("Queue should have been full!\r\n");
-        }
-        taskStatus = xQueueReceive(myQueue, &xReceivedStructure, QUEUE_TICKS_TO_WAIT);
-        if(taskStatus == pdPASS )
-        {
-            // TODO Implement actual handler for when data is received from queue
-            if(xReceivedStructure.eDataSource == eSender1) {
-                printMsg("From Sender 1 = %d", xReceivedStructure.ucValue);
-                led_d3(1);
-                pwm_setDutyCycle(60);
-                nop(led_delay);
-                led_d3(0);
-            } else {
-                printMsg("From Sender 2 = %d", xReceivedStructure.ucValue);
-                led_d4(1);
-                pwm_setDutyCycle(80);
-                nop(led_delay);
-                led_d4(0);
-            }
-        }
-        else
-        {
-            printMsg( "Could not receive from the queue.\r\n" );
-            led_d5(1);
-            pwm_setDutyCycle(100);
-            nop(led_delay);
-            led_d5(0);
-        }
-        taskYIELD();
-    }
+    (void)xEventGroupWaitBits(
+        events,
+        (const EventBits_t) 0x1,
+        true, //clear bit on exit
+        false, //wait for all bits in bit mask to be true
+        portMAX_DELAY);
+
+    // Delay to simulate work after unblocked
+     vTaskDelay(pdMS_TO_TICKS(1000));
+    
+    led_d2(false);
+
+    vTaskDelete(NULL);
 }

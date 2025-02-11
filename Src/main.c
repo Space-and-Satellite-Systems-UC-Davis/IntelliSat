@@ -33,10 +33,7 @@
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
 #define BATTERY_THRESHOLD 20        // TODO: Min. battery voltage value, below which mode -> CHARGING
 
-// Any extra queues should be define here, after forward declaration in myTasks.h.
-// You should initialize with xQueueCreate in main(), before calling xTaskCreate, vTaskStartScheduler
-// Before using the Queue instances.
-QueueHandle_t myQueue;
+volatile EventGroupHandle_t events;
 /* Misc variables */
 int reboot_count;
 // volatile uint16_t flagBits = 0;     // Declared in status.h
@@ -115,6 +112,8 @@ static void led_task(void *args) {
   };
 }
 
+// EventGroupHandle_t events;
+
 /**
  * @brief Superloop
  *
@@ -123,17 +122,15 @@ static void led_task(void *args) {
  * there is no scheduler intervention.
  */
 int branch_main() {
-    pwm_initTimer(20000);
-    PWM_TIMER_ON();
-    myQueue = xQueueCreate(configTIMER_QUEUE_LENGTH, sizeof(Data_t));
 
-    if (myQueue != NULL) {
+    events = xEventGroupCreate();
 
-        xTaskCreate(vSenderTask, "Sender1", 1000, &( xStructsToSend[ 0 ]), configMAX_PRIORITIES-1, NULL);
-        xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
+    if (true) {
+
+        xTaskCreate(setter, "Setter", 1000, (void*) &events, configMAX_PRIORITIES-2, NULL );
 
         // The sender task should always be prioritized over the receiver
-        xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES, NULL );
+       xTaskCreate(reciever, "Reciever", 1000, (void*) &events, configMAX_PRIORITIES-1, NULL );
 
         vTaskStartScheduler();
     } else {
@@ -145,7 +142,7 @@ int branch_main() {
 
 }
 
-#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
+#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
 
 #include <TestDefinition.h>
