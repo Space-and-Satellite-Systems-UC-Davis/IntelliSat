@@ -7,6 +7,7 @@
 #include <Timers/timers.h>
 #include <ADC/adc.h>
 #include <LED/led.h>
+#include <inttypes.h>
 
 void testFunction_HDD_Training(){
 	/*
@@ -28,6 +29,15 @@ void testFunction_HDD_Training(){
 	pwm_setDutyCycle(15); //20% of the power
 	PWM_TIMER_ON();
 
+	//uint64_t time = getSysTime();
+	//printMsg("%llu", getSysTime());
+	printMsg( "%d", (int) getSysTime() ) ;
+	printMsg("\r\n");
+	delay_ms(1000);
+	//time = getSysTime();
+	printMsg( "%d", (int) getSysTime() ) ;
+	printMsg("\r\n");
+
 	adc_init();
 	printMsg("Initializing ADC\r\n");
 
@@ -41,11 +51,18 @@ void testFunction_HDD_Training(){
 	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
 	adc_setChannel();
 	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
-	nop(80000000);
-	pwm_setDutyCycle(19);
-	nop(80000000);
+	delay_ms(1000);
+	pwm_setDutyCycle(15);
+	delay_ms(1000);
 	pwm_setDutyCycle(15);
 	while (1) {
+		 float duty = 15.5f;
+		 while (duty < 20.0){
+			 delay_ms(250);
+			 duty += 0.1;
+			 pwm_setDutyCycle(duty);
+			 printMsg("%f \r\n", duty);
+		 }
 		 pwm_setDutyCycle(16);
 		 printMsg("This should start spamming. \r\n Working Setup! \r\n");
 		 uint16_t adcVal = adc_singleConversion();
