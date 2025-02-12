@@ -23,17 +23,35 @@ void testFunction_HDD_Training(){
 	 */
 	// This is where write your code.
 	// I made some normal code just to generate a PWM signal and check if everything is working.
+	led_d1(true);
 	pwm_initTimer(10000); //This is in microseconds
-	pwm_setDutyCycle(16); //20% of the power
+	pwm_setDutyCycle(20); //20% of the power
 	PWM_TIMER_ON();
 
+	adc_init();
+	printMsg("Initializing ADC\r\n");
+
+	adc_enable();
+	printMsg("Enabling ADC\r\n");
+
+	adc_configGPIO();
+	printMsg("Configuring GPIO Pin A2 for ADC\r\n");
+
+	//Right now it sets it pin A2, which is photodiode/sunsensor 0 (SOL-0)
+	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
+	adc_setChannel();
+	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
+
 	while (1) {
-		 delay_ms(10);
 		 printMsg("This should start spamming. \r\n Working Setup! \r\n");
-		 led_d1(true);
+		 uint16_t adcVal = adc_singleConversion();
+		 printMsg("ADC value: %d", adcVal);
+		 printMsg(". MilliVolt value: ");
+		 adc_printMilliVolt(adc_adcToVolt2(adcVal));
+		 printMsg("\r\n");
+
 	}
 	delay_ms(10000);
 	PWM_TIMER_OFF();
-	adc_singleConversion();
 }
 
