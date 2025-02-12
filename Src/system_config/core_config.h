@@ -32,11 +32,11 @@ enum rcc_uart_and_usart_clk_sources {
 };
 
 enum rcc_cfgr_ppre_prescalers {
-    RCC_CFGR_PPRE_APB_HCLK_NO_DIV,
-    RCC_CFGR_PPRE_APB_HCLK_DIV_2,
-    RCC_CFGR_PPRE_APB_HCLK_DIV_4,
-    RCC_CFGR_PPRE_APB_HCLK_DIV_8,
-    RCC_CFGR_PPRE_APB_HCLK_DIV_16
+    RCC_CFGR_PPRE_APB_HCLK_NO_DIV = 0,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_2 = 4,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_4 = 5,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_8 = 6,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_16 = 7
 };
 
 /**
