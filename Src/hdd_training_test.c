@@ -25,8 +25,8 @@ void testFunction_HDD_Training(){
 	// This is where write your code.
 	// I made some normal code just to generate a PWM signal and check if everything is working.
 	led_d1(true);
-	pwm_initTimer(10000); //This is in microseconds
-	pwm_setDutyCycle(15); //20% of the power
+	pwm_initTimer(20000); //This is in microseconds
+	pwm_setDutyCycle(10); //20% of the power
 	PWM_TIMER_ON();
 
 	//uint64_t time = getSysTime();
@@ -51,19 +51,19 @@ void testFunction_HDD_Training(){
 	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
 	adc_setChannel();
 	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
+	delay_ms(5000);
+	pwm_setDutyCycle(7.5);
 	delay_ms(1000);
-	pwm_setDutyCycle(15);
-	delay_ms(1000);
-	pwm_setDutyCycle(15);
+	pwm_setDutyCycle(7.5);
 	while (1) {
-		 float duty = 15.5f;
-		 while (duty < 20.0){
-			 delay_ms(250);
-			 duty += 0.1;
+		 float duty = 7.75f;
+		 while (duty < 10.0){
+			 delay_ms(125);
+			 duty += 0.05;
 			 pwm_setDutyCycle(duty);
 			 printMsg("%f \r\n", duty);
 		 }
-		 pwm_setDutyCycle(16);
+		 pwm_setDutyCycle(10);
 		 printMsg("This should start spamming. \r\n Working Setup! \r\n");
 		 uint16_t adcVal = adc_singleConversion();
 		 printMsg("ADC value: %d", adcVal);
