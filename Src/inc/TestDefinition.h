@@ -1,8 +1,18 @@
 #pragma once
 
+#include <print_scan.h>
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+typedef enum {
+    TEST_NOTHING,
+    TEST_IMU_ACEL_GYRO_READS,
+    TEST_MAG_READS,
+    TEST_LOGTIMER_CALLBACK,
+    TEST_PWMGENERATION,
+} Test;
 
 extern void testFunction_Nothing();
 extern void testFunction_IMU_AcelGyro_Reads();
@@ -15,18 +25,18 @@ extern void testerFunction_PWMGeneration();
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // Function that returns a pointer to a void function
-void (*getTestFunction(int test_id))(void) {
+void (*getTestFunction(Test test))(void) {
 	//! Every case must return a void function
-	switch (test_id) {
-		case 0:
+	switch (test) {
+		case TEST_NOTHING:
 			return testFunction_Nothing;
-		case 1:
+		case TEST_IMU_ACEL_GYRO_READS:
 			return testFunction_IMU_AcelGyro_Reads;
-		case 2:
+		case TEST_MAG_READS:
 			return testFunction_MAG_Reads;
-		case 3:
+		case TEST_LOGTIMER_CALLBACK:
 			return testFunction_LogTimer_Callback;
-		case 4:
+		case TEST_PWMGENERATION:
 			return testerFunction_PWMGeneration;
 		default:
 			return testFunction_Nothing;
@@ -40,5 +50,6 @@ void (*getTestFunction(int test_id))(void) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 void testFunction_Nothing() {
+    printMsg("Hello, world");
 	while(1);
 }
