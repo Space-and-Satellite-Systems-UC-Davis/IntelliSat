@@ -18,7 +18,7 @@ typedef struct
 }Sun_Sensor;
 
 //Address
-#define SENSOR_ADDRESS 0x4B
+#define SENSOR_ADDRESS 0x45
 
 //Macros for the Sunsensor pins
 #define PAN0_GPIO GPIOG
@@ -158,4 +158,4 @@ int get_id();
  * 
  * @returns num rounded up
  */
-int ceil(float num);
+int ceiling(float num);

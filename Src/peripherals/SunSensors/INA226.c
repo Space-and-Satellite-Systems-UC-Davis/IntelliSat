@@ -13,7 +13,7 @@ static int current_sensor = 0;
 static int current_lsb; //in microamps
 static int config;
 
-int ceil(float num){
+int celing(float num){
     return num - (int)num > 0 ? (int)num + 1: (int)num;
 }
 
@@ -27,8 +27,8 @@ void sensor_init(int averages, int bus_time, int shunt_time, int mode, int rshun
 
 void sensor_config(int averages, int bus_time, int shunt_time, int mode, int rshunt, int max_current){
     config = averages << 9 | bus_time << 6 | shunt_time << 3 | mode;
-    current_lsb = ceil(max_current / 32768.0 * MICRO); //2^15
-    int cal = ceil(0.00512 / (current_lsb/MICRO * rshunt/MILLI)); //round to nearest integer above
+    current_lsb = celing(max_current / 32768.0 * MICRO); //2^15
+    int cal = celing(0.00512 / (current_lsb/MICRO * rshunt/MILLI)); //round to nearest integer above
     for(int i = 0; i<4; i++){
         softi2c_writeReg(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 0, config);
         softi2c_writeReg(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 5, cal);
@@ -75,7 +75,7 @@ float get_current(){
 
 
 void set_mode(int mode, bool all){
-    int changed_config = config & 7 | mode;
+    int changed_config = (config & 7) | mode;
     if(all)
     {
         for(int i = 0; i < 4; i++){
@@ -98,5 +98,15 @@ void select_sensor(int sensor){
 
 
 int get_id(){
-    return softi2c_readReg(sensor_0.SCL_GPIO, sensor_0.SCL_PIN, sensor_0.SDA_GPIO, sensor_0.SDA_PIN, SENSOR_ADDRESS, 0xff );
+	int hex_value = 0x40;
+	int output = 0;
+	while (hex_value < 0x50)
+	{
+		output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, hex_value, 0xfe);
+		if (output != 0)
+			break;
+		hex_value +=1;
+	}
+    //int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0xfe);
+    return output;
 }
