@@ -21,7 +21,7 @@ static Mag_Selector current_mag_selected = MAG0;
 
 /*************************** MAG Helper Functions *************************/
 
-#define ScaledData(data, scale) ((float)(data) * (scale) / (uint16_t)(-1))
+#define ScaledData(data, scale) ((float)(data) * (scale) * -1)
 
 /**
  * Configures the control registers of the OP1/2/3 magnetometer.
@@ -41,11 +41,11 @@ void magCtrl(int rate, int scale, int oversample) {
         }
     #elif OP_REV == 3
         if (rate) {
-            softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x09, oversample << 6 | scale << 4 | (rate-1) << 2 | 1);
-            softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x09, oversample << 6 | scale << 4 | (rate-1) << 2 | 1);
+            softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, oversample << MAG_OVERSAMPLE_SPAN | scale << MAG_FS_SPAN | rate << MAG_ODR_SPAN | MAG_MODE_CONTINUOUS);
+            softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, oversample << MAG_OVERSAMPLE_SPAN | scale << MAG_FS_SPAN | rate << MAG_ODR_SPAN | MAG_MODE_CONTINUOUS);
         } else {
-            softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x09, 0);
-            softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x09, 0);
+            softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, 0);
+            softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, 0);
         }
     #endif
 
@@ -77,14 +77,14 @@ void mag_init(int rate, int scale, int oversample) {
     #elif OP_REV == 3
         softi2c_init(MAG0_I2C_SCL, MAG0_I2C_SDA);
         softi2c_init(MAG1_I2C_SCL, MAG1_I2C_SDA);
-        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x0A, 0x80); // soft reset
-        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x0A, 0x80); // soft reset
+        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, MAG_CR2_ADDR, MAG_CR2_SOFT_RST_Msk); // soft reset
+        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, MAG_CR2_ADDR, MAG_CR2_SOFT_RST_Msk); // soft reset
         nop(50);
-        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x0A, 0x00);
-        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x0A, 0x00);
+        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, MAG_CR2_ADDR, 0x00 & ~MAG_CR2_INT_ENB_Msk);
+        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, MAG_CR2_ADDR, 0x00 & ~MAG_CR2_INT_ENB_Msk);
 
-        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x0B, 1);
-        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x0B, 1);
+        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, MAG_BSRR_ADDR, MAG_BSRR_RST);
+        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, MAG_BSRR_ADDR, MAG_BSRR_RST);
         nop(50);
         magCtrl(rate, scale, oversample);
     #endif
@@ -97,9 +97,9 @@ int16_t mag_read_X() {
     #elif OP_REV == 3
         int16_t x = 0;
         if (mag_select == MAG0)
-            x = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x01, 0x00);
+            x = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, XOUT_MSB_ADDR, XOUT_LSB_ADDR);
         else
-            x = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x01, 0x00);
+            x = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, XOUT_MSB_ADDR, XOUT_LSB_ADDR);
     #endif
 
 	return ScaledData(x, mag_magFullScale);
@@ -111,9 +111,9 @@ int16_t mag_read_Y() {
     #elif OP_REV == 3
         int16_t y = 0;
         if (mag_select == MAG0)
-            y = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x03, 0x02);
+            y = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, YOUT_MSB_ADDR, YOUT_LSB_ADDR);
         else 
-            y = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x03, 0x02);
+            y = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, YOUT_MSB_ADDR, YOUT_LSB_ADDR);
     #endif
 
     return ScaledData(y, mag_magFullScale);
@@ -125,9 +125,9 @@ int16_t mag_read_Z() {
     #elif OP_REV == 3
         int16_t z = 0;
         if (mag_select == MAG0)
-            z = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x05, 0x04);
+            z = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, ZOUT_MSB_ADDR, ZOUT_LSB_ADDR);
         else   
-            z = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x05, 0x04);
+            z = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, ZOUT_MSB_ADDR, ZOUT_LSB_ADDR);
     #endif
 
     return ScaledData(z, mag_magFullScale);
@@ -139,9 +139,9 @@ int16_t mag_readTemp() {
     #elif OP_REV == 3
         int16_t temp = 0;
         if (mag_select == MAG0)
-            temp = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, 0x07, 0x06);
+            temp = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, TOUT_MSB_ADDR, TOUT_LSB_ADDR);
         else
-            temp = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, 0x07, 0x06);
+            temp = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, TOUT_MSB_ADDR, TOUT_LSB_ADDR);
     #endif
 
 	return temp;

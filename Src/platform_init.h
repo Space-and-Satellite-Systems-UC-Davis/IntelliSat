@@ -28,6 +28,15 @@
 #include <MAG/QMC5883L.h>
 #include <print_scan.h>
 
+#define SCB_CPACR_CP10_POS 20U
+#define SCB_CPACR_CP11_POS 22U
+
+enum scb_cpacr_cpn_privileges {
+    SCB_CPACR_CPN_ACCESS_DENIED,
+    SCB_CPACR_CPN_PRIVILEGED_ONLY,
+    SCB_CPACR_CPN__RESERVED,
+    SCB_CPACR_CPN_FULL_ACCESS
+};
 
 /**
  * Configures only what is necessary to boot.
@@ -66,24 +75,26 @@ void init_first_time() {
  * @returns None
  */
 void init_platform(bool run_scheduler) {
-    SCB->CPACR|= 0x00F00000; // Enable the Floating-Point Unit for full access
+
+    SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
+    | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
     set_IMU(IMU0);
-	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+	  imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
     set_IMU(IMU1);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
 
 
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     //TODO: hdd_init().
-    //TODO: initialize intercomm.
+    //TODO: initialize intercom.
     //TODO: fetch flash header.
     //TODO: increment boot counter.
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
+	printer_init();
 	led_init();
 	buttons_init();
-	printer_init();
 	systick_init(run_scheduler);
 }
 
