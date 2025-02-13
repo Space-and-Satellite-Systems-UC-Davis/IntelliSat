@@ -23,7 +23,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 0:
 			return testFunction_Nothing;
 		case 1:
-			return testFunction_IMU_Dupe_Reads;
+			return testFunction_IMU_AcelGyro_Reads;
 		case 2:
 			return testFunction_MAG_Reads;
 		case 3:
@@ -33,6 +33,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 12:
 			return testFunction_Diode_Reads;
 		case 5:
+		case 8:
 			return testFunction_IMU_Dupe_Reads;
 		default:
 			return testFunction_Nothing;
