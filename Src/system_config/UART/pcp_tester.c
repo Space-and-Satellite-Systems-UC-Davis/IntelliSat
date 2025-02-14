@@ -17,12 +17,26 @@
 #define RECV_NBYTES 256
 
 PCPDevice test_pcpdev;
+/** Send log messages. */
 USART_TypeDef* const debug_bus = LPUART1;
-USART_TypeDef* const pcpdev_bus = USART1;
+/** Send and receive from control_bus */
+USART_TypeDef* const pcpdev_bus = USART2;
+// Shared with debug_bus since no debug messages contain packets ('{payload}')
 /** Send to and receive from pcpdev_bus */
 USART_TypeDef* const control_bus = LPUART1;
 
 const uint64_t timeout = 3000;
+
+static void wait(uint64_t time) {
+    uint64_t timer = getSysTime();
+    while (getSysTime() - timer < time) {}
+}
+
+static void flush(USART_TypeDef* bus) {
+    uint8_t buf;
+    while (usart_receiveBufferNotEmpty(bus))
+        usart_receiveBytes(bus, &buf, 1);
+}
 
 void debug(char* msg) {
     int now = getSysTime();
@@ -34,7 +48,7 @@ void debug(char* msg) {
     usart_transmitStr(debug_bus, (uint8_t*)msg);
 }
 
-bool debug_cmp(char* expected, char* received) {
+static bool debug_cmp(char* expected, char* received) {
     if (strcmp(expected, (char*)received) != 0) {
         debug("Failed. Expected:");
         debug(expected);
@@ -48,10 +62,9 @@ bool debug_cmp(char* expected, char* received) {
     }
 }
 
-bool debug_retransmission(char* expected) {
+static bool debug_retransmission(char* expected) {
     debug("Wait a bit to timeout transmission...");
-    uint64_t timer = getSysTime();
-    while (getSysTime() - timer < timeout) {}
+    wait(timeout);
     debug("Retransmitting...");
     pcp_retransmit(&test_pcpdev);
     uint8_t received[RECV_NBYTES];
@@ -60,23 +73,17 @@ bool debug_retransmission(char* expected) {
     return debug_cmp(expected, (char*)received);
 }
 
-void update() {
-    //printMsg("Pulsing%d\n", getSysTime());
-    debug("Update loop");
-    pcp_retransmit(&test_pcpdev);
-}
-
-void testFunction_PCP() {
+static void test() {
     debug("Running PCP Tests");
 
-    debug("Initializing PCP Device bus...");
-	usart_init(pcpdev_bus, 9600);
     debug("Initializing PCP Device...");
     make_pcpdev_advanced(&test_pcpdev, pcpdev_bus, timeout, 200, 200, 3);
     debug("Setting first sequence number to '0'...");
     test_pcpdev.tx_old_seq = '0';
 
     debug("[Test transmission] Transmitting three packets...");
+    flush(control_bus);
+    flush(pcpdev_bus);
     const int payload_len = 9;
     pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 48", payload_len);
     pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 49", payload_len);
@@ -85,39 +92,73 @@ void testFunction_PCP() {
     uint8_t received[200];
     int readnbytes = usart_receiveBytes(control_bus, received, strlen(expected));
     received[readnbytes] = '\0';
-    debug_cmp(expected, (char*)received);
-    debug_retransmission("{0Packet 48}");
+    if (!debug_cmp(expected, (char*)received))
+        return;
+
+    debug("[Test retransmission]");
+    flush(control_bus);
+    flush(pcpdev_bus);
+    if (!debug_retransmission("{0Packet 48}"))
+        return;
 
     debug("[Test acknowledgement] Acknowledging Packet 48...");
+    flush(control_bus);
+    flush(pcpdev_bus);
     usart_transmitBytes(control_bus, (uint8_t*)"<0>", 3);
-    debug_retransmission("{1Packet 49}");
+    if (!debug_retransmission("{1Packet 49}"))
+        return;
 
     debug("[Test out of order acknowledgement] Sending Packet 51...");
+    flush(control_bus);
+    flush(pcpdev_bus);
     pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 51", payload_len);
     debug("Acknowledging Packet 50...");
+    flush(control_bus);
+    flush(pcpdev_bus);
     usart_transmitBytes(control_bus, (uint8_t*)"<2>", 3);
-    debug_retransmission("{1Packet 49}");
+    if (!debug_retransmission("{1Packet 49}"))
+        return;
+    flush(control_bus);
+    flush(pcpdev_bus);
     debug("Acknowledging Packet 49...");
     usart_transmitBytes(control_bus, (uint8_t*)"<1>", 3);
-    debug_retransmission("{3Packet 51}");
+    if (!debug_retransmission("{3Packet 51}"))
+        return;
 
     debug("[Test invalid acknowledgement] Acknowledging Packet 48");
+    flush(control_bus);
+    flush(pcpdev_bus);
     usart_transmitBytes(control_bus, (uint8_t*)"<0>", 3);
-    debug_retransmission("{3Packet 51}");
+    if (!debug_retransmission("{3Packet 51}"))
+        return;
     debug("Acknowledging Packet 50");
+    flush(control_bus);
+    flush(pcpdev_bus);
     usart_transmitBytes(control_bus, (uint8_t*)"<2>", 3);
-    debug_retransmission("{3Packet 51}");
+    if (!debug_retransmission("{3Packet 51}"))
+        return;
+}
 
-    const uint64_t interval = 1000;
+void testFunction_PCP() {
+    debug("Initializing PCP Device bus...");
+	usart_init(pcpdev_bus, 9600);
+    wait(3000);
+    flush(control_bus);
+    flush(pcpdev_bus);
+
+    test();
+    debug("PCP Tests complete. Entering interactive mode.");
+
+    const uint64_t interval = 100;
     uint64_t last_update = getSysTime();
     while (true) {
-        if (getSysTime() - last_update > interval) {
-            update();
-            last_update = getSysTime();
+        if (getSysTime() - last_update < interval) {
+            continue;
         }
+        last_update = getSysTime();
+        pcp_retransmit(&test_pcpdev);
     }
 
-    debug("PCP Tests complete");
 	while(1);
 }
 
