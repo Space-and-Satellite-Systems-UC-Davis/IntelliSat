@@ -12,13 +12,28 @@
 
 #include <I2C/i2c.h>
 #include <SPI/spi.h>
-
+#include <print_scan.h>
 //Macros
 #if   OP_REV == 1
 #define IMU_I2C GPIOF, 1, GPIOF, 0
-#elif OP_REV == 2 || OP_REV == 3 //TODO: Make actual change for Rev3
+#elif OP_REV == 2 //TODO: Make actual change for Rev3
+
 #define IMU_SPI    SPI3
 #define IMU_SPI_CS SPI3_CS
+
+#elif OP_REV == 3
+
+#define IMU1_SPI    SPI2
+#define IMU1_SPI_CS SPI2_CS
+#define IMU0_SPI    SPI3
+#define IMU0_SPI_CS SPI3_CS
+
+enum IMU_SELECT { IMU0, IMU1 };
+
+extern enum IMU_SELECT IMU_global;
+
+void set_IMU(enum IMU_SELECT select);
+
 #endif
 
 //Macros
@@ -117,48 +132,70 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
  *
  * @returns The X-axis acceleration value as a 16-bit signed integer.
  */
-int16_t imu_readAcel_X();
+float imu_readAcel_X();
 
 /**
  * Reads the y-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis acceleration value as a 16-bit signed integer.
  */
-int16_t imu_readAcel_Y();
+float imu_readAcel_Y();
 
 /**
  * Reads the acceleration value of the z-axis from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The acceleration value of the z-axis.
  */
-int16_t imu_readAcel_Z();
+float imu_readAcel_Z();
 
 /**
  * Reads the X-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The X-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t imu_readGyro_X();
+float imu_readGyro_X();
 
 /**
  * Reads the y-axis gyroscope value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis gyroscope value as a 16-bit signed integer.
  */
-int16_t imu_readGyro_Y();
+float imu_readGyro_Y();
 
 /**
  * Reads the Z-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The Z-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t imu_readGyro_Z();
+float imu_readGyro_Z();
 
 /**
  * Reads the temperature from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The temperature value in 16-bit signed integer format.
  */
-int16_t imu_readTemp();
+float imu_readTemp();
+
+/**
+ * Tests SPI communication using WHO_AM_I register
+ * 
+ * @returns if communication between PFC and IMU are working
+ */
+bool imu_isCommunicationWorking();
+
+/**
+ * Prints all values in gyro, accceleromter, and temperarture
+ */
+void imu_printAllValues(); 
+
+/**
+ * Checks if Z acceleration is roughly equal to gravity with board at rest
+ */
+bool imu_hasExpectedValuesAccel();
+
+/**
+ * Checks in X rotation is roughly zero with board at rest
+ */
+bool imu_hasExpectedValuesGyro();
 
 #endif /* REALOP1_PERIPHERALS_IMU_H_ */

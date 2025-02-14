@@ -38,33 +38,87 @@
 
 /****************************** IMU Properties ****************************/
 
-int imu_acelFullScale = 0;
-int imu_gyroFullScale = 0;
+float imu_acelFullScaleIMU0 = 0;
+float imu_gyroFullScaleIMU0 = 0;
+
+float imu_acelFullScaleIMU1 = 0;
+float imu_gyroFullScaleIMU1 = 0;
+
+enum IMU_SELECT IMU_global = IMU0;
 
 /*************************** IMU Helper Functions *************************/
 
-#define ScaledData(data, scale) ((data * scale) / (uint16_t)(-1))
+// #define ScaledData(data, scale) ((data * scale) * (uint16_t)(-1))
+#define ScaledData(data, scale) ((data * scale))
+
+#if OP_REV == 3
+
+void set_IMU(enum IMU_SELECT select){
+	IMU_global = select;
+}
+
+#endif
 
 void imu_spiWriteReg(void *address, uint8_t data) {
 	uint8_t spiDATA[2];
 	spiDATA[0] = (uint8_t)address & IMU_SPI_DATA_DI_Msk;
 	spiDATA[1] = data;
 
+#if OP_REV == 2
+	
 	spi_startCommunication(IMU_SPI_CS);
 	spi_transmitReceive(IMU_SPI, spiDATA, NULL, 2, false);
 	spi_stopCommunication(IMU_SPI_CS);
+
+#elif OP_REV == 3
+
+	if (IMU_global == IMU0) {
+		spi_startCommunication(IMU0_SPI_CS);
+		spi_transmitReceive(IMU0_SPI, spiDATA, NULL, 2, false);
+		spi_stopCommunication(IMU0_SPI_CS);
+	} else {
+		spi_startCommunication(IMU1_SPI_CS);
+		spi_transmitReceive(IMU1_SPI, spiDATA, NULL, 2, false);
+		spi_stopCommunication(IMU1_SPI_CS);
+	}
+#endif
+
 }
 
 int16_t imu_spiReadHighLow(void *low_address) {
+  
 	uint8_t instruction = (uint8_t)low_address | IMU_SPI_RW;
-	uint8_t datah, datal;
+	uint8_t datah = 0;
+	uint8_t datal = 0;
+
+#if OP_REV == 2
 
 	spi_startCommunication(IMU_SPI_CS);
 	spi_transmitReceive(IMU_SPI, &instruction, NULL, 1, false);
 	spi_transmitReceive(IMU_SPI, NULL, &datal, 1, false);
 	spi_transmitReceive(IMU_SPI, NULL, &datah, 1, false);
 	spi_stopCommunication(IMU_SPI_CS);
+
+#elif OP_REV == 3
+
+	if (IMU_global == IMU0) {
+		spi_startCommunication(IMU0_SPI_CS);
+		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
+		spi_transmitReceive(IMU0_SPI, NULL, &datal, 1, false);
+		spi_transmitReceive(IMU0_SPI, NULL, &datah, 1, false);
+		spi_stopCommunication(IMU0_SPI_CS);
+	} else {
+		spi_startCommunication(IMU1_SPI_CS);
+		spi_transmitReceive(IMU1_SPI, &instruction, NULL, 1, false);
+		spi_transmitReceive(IMU1_SPI, NULL, &datal, 1, false);
+		spi_transmitReceive(IMU1_SPI, NULL, &datah, 1, false);
+		spi_stopCommunication(IMU1_SPI_CS);
+	}
+
+#endif
+
 	nop(10);
+
 	return (datah << 8) | datal;
 }
 
@@ -89,26 +143,42 @@ void imu_acelCtrl(int acel_rate, int acel_scale, int digital_filter_on) {
 
 	softi2c_writeReg(IMU_I2C, IMU_ADDR, ACCEL_RATE_REG, data);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	imu_spiWriteReg(ACCEL_RATE_REG, data);
 
 #endif
-
-    switch (acel_scale) {
-        case IMU_FS_2_g:
-            imu_acelFullScale = 2;
-            break;
-        case IMU_FS_4_g:
-            imu_acelFullScale = 4;
-            break;
-        case IMU_FS_8_g:
-            imu_acelFullScale = 8;
-            break;
-        case IMU_FS_16_g:
-            imu_acelFullScale = 16;
-            break;
-    }
+	if (IMU_global == IMU1) { 
+		switch (acel_scale) {
+			case IMU_FS_2_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_2G / 1000;
+				break;
+			case IMU_FS_4_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_4G / 1000;
+				break;
+			case IMU_FS_8_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_8G / 1000;
+				break;
+			case IMU_FS_16_g:
+				imu_acelFullScaleIMU1 = ASM330LHH_ACC_SENSITIVITY_FS_16G / 1000;
+				break;
+		}
+	} else {
+		switch (acel_scale) {
+			case IMU_FS_2_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_2G / 1000;
+				break;
+			case IMU_FS_4_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_4G / 1000;
+				break;
+			case IMU_FS_8_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_8G / 1000;
+				break;
+			case IMU_FS_16_g:
+				imu_acelFullScaleIMU0 = ASM330LHH_ACC_SENSITIVITY_FS_16G / 1000;
+				break;
+		}
+	}
 
 }
 
@@ -131,32 +201,55 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale) {
 
 	softi2c_writeReg(IMU_I2C, IMU_ADDR, GYRO_CTRL_REG, data);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
+
 
 	imu_spiWriteReg(GYRO_CTRL_REG, data);
 
 #endif
-
-    switch (gyro_scale) {
-        case IMU_FS_125_dps:
-            imu_gyroFullScale = 125;
-            break;
-        case IMU_FS_250_dps:
-            imu_gyroFullScale = 250;
-            break;
-        case IMU_FS_500_dps:
-            imu_gyroFullScale = 500;
-            break;
-        case IMU_FS_1000_dps:
-            imu_gyroFullScale = 1000;
-            break;
-        case IMU_FS_2000_dps:
-            imu_gyroFullScale = 2000;
-            break;
-        case IMU_FS_4000_dps:
-            imu_gyroFullScale = 4000;
-            break;
-    }
+	if (IMU_global == IMU0) {
+		switch (gyro_scale) {
+			case IMU_FS_125_dps:
+				imu_gyroFullScaleIMU0 = ASM330LHH_GYRO_SENSITIVITY_FS_125DPS / 1000;
+				break;
+			case IMU_FS_250_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_250DPS / 1000;
+				break;
+			case IMU_FS_500_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_500DPS / 1000;
+				break;
+			case IMU_FS_1000_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_1000DPS / 1000;
+				break;
+			case IMU_FS_2000_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS / 1000;
+				break;
+			case IMU_FS_4000_dps:
+				imu_gyroFullScaleIMU0 =  ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS / 1000;
+				break;
+		}
+	} else {
+		switch (gyro_scale) {
+			case IMU_FS_125_dps:
+				imu_gyroFullScaleIMU1 = ASM330LHH_GYRO_SENSITIVITY_FS_125DPS / 1000;
+				break;
+			case IMU_FS_250_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_250DPS / 1000;
+				break;
+			case IMU_FS_500_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_500DPS / 1000;
+				break;
+			case IMU_FS_1000_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_1000DPS / 1000;
+				break;
+			case IMU_FS_2000_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_2000DPS / 1000;
+				break;
+			case IMU_FS_4000_dps:
+				imu_gyroFullScaleIMU1 =  ASM330LHH_GYRO_SENSITIVITY_FS_4000DPS / 1000;
+				break;
+		}
+	}
 }
 
 /*************************** IMU Interface Functions *************************/
@@ -173,14 +266,26 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 	spi_config(IMU_SPI);
 	imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
 
+#elif OP_REV == 3
+
+	if (IMU_global == IMU1) {
+		spi_config(IMU1_SPI);
+		imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
+	} else {
+		spi_config(IMU0_SPI);
+		imu_spiWriteReg(IMU_RESET_REG, IMU_RESET_CMD);
+	}
+
 #endif
 
 	//initialize accelerometer and gyroscope
 	imu_acelCtrl(acel_rate, acel_scale, 0);
 	imu_gyroCtrl(gyro_rate, gyro_scale);
+
+
 }
 
-int16_t imu_readAcel_X() {
+float imu_readAcel_X() {
 
 	uint8_t instructionHi = OUTX_H_A_Pos | IMU_SPI_RW ;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTX_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
@@ -191,17 +296,17 @@ int16_t imu_readAcel_X() {
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data =  imu_spiReadHighLow((uint8_t*)0x28);
 
 #endif
 
-    return ScaledData(data, imu_acelFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_acelFullScaleIMU0) : ScaledData(data, imu_acelFullScaleIMU1);
 
 }
 
-int16_t imu_readAcel_Y() {
+float imu_readAcel_Y() {
 
 	uint8_t instructionHi = OUTY_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTY_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
@@ -212,17 +317,17 @@ int16_t imu_readAcel_Y() {
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data = imu_spiReadHighLow((uint8_t*)0x2A);
 
 #endif
 
-    return ScaledData(data, imu_acelFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_acelFullScaleIMU0) : ScaledData(data, imu_acelFullScaleIMU1);
 
 }
 
-int16_t imu_readAcel_Z() {
+float imu_readAcel_Z() {
 
 	uint8_t instructionHi = OUTZ_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTZ_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
@@ -233,16 +338,16 @@ int16_t imu_readAcel_Z() {
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data = imu_spiReadHighLow((uint8_t*)0x2C);
 
 #endif
 
-    return ScaledData(data, imu_acelFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_acelFullScaleIMU0) : ScaledData(data, imu_acelFullScaleIMU1);
 }
 
-int16_t imu_readGyro_X() {
+float imu_readGyro_X() {
 
 	uint8_t instructionHi = OUTX_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTX_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
@@ -253,16 +358,16 @@ int16_t imu_readGyro_X() {
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data = imu_spiReadHighLow((uint8_t*)0x22);
 
 #endif
 
-    return ScaledData(data, imu_gyroFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
-int16_t imu_readGyro_Y() {
+float imu_readGyro_Y() {
 
 	uint8_t instructionHi = OUTY_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTY_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
@@ -273,35 +378,36 @@ int16_t imu_readGyro_Y() {
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data = imu_spiReadHighLow((uint8_t*)0x24);
 
 #endif
 
-    return ScaledData(data, imu_gyroFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
-int16_t imu_readGyro_Z() {
+
+float imu_readGyro_Z() {
 	uint8_t instructionHi = OUTZ_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTZ_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
-    int16_t data = 0;
+  int16_t data = 0;
 
 #if OP_REV == 1
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data = imu_spiReadHighLow((uint8_t*)0x26);
 
 #endif
 
-    return ScaledData(data, imu_gyroFullScale);
+    return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
-int16_t imu_readTemp() {
+float imu_readTemp() {
 
 	uint8_t instructionHi = OUT_TEMP_H_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUT_TEMP_L_Pos | IMU_SPI_RW;	//Where we send Low instruction
@@ -312,11 +418,57 @@ int16_t imu_readTemp() {
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 
 	data = imu_spiReadHighLow((uint8_t*)0x20);
 
 #endif
 
-    return data;
+    return (data / 256.0) + 25;
+}
+
+/**                            Debugging Functions                                      */
+bool imu_isCommunicationWorking() {
+
+	uint8_t value;
+	uint8_t instruction = 0x0F | 0x80;
+	
+	if (IMU_global == IMU0) {
+		spi_startCommunication(IMU0_SPI_CS);
+		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
+		spi_transmitReceive(IMU0_SPI, NULL, &value, 1, false);
+		spi_stopCommunication(IMU0_SPI_CS);
+	} else {
+		spi_startCommunication(IMU1_SPI_CS);
+		spi_transmitReceive(IMU1_SPI, &instruction, NULL, 1, false);
+		spi_transmitReceive(IMU1_SPI, NULL, &value, 1, false);
+		spi_stopCommunication(IMU1_SPI_CS);
+	}
+
+	return value == 0x6B;
+}
+
+bool imu_hasExpectedValuesAccel() {
+	return imu_readAcel_Z() < 1.2 && imu_readAcel_Z() > 0.8;
+}
+
+bool imu_hasExpectedValuesGyro() {
+	int correctCount = 0;
+	for (int i  = 0; i < 10; i++) {
+		 if( imu_readGyro_X() < 6 && imu_readGyro_X() > -6)
+		 	correctCount++;
+	}
+	return correctCount > 8;
+}
+
+void imu_printAllValues() {
+	printMsg("Gyro\r\n");
+	printMsg("X: %f\r\n", imu_readGyro_X());
+	printMsg("Y: %f\r\n", imu_readGyro_Y());
+	printMsg("Z: %f\r\n", imu_readGyro_Z());
+	printMsg("Accel:\r\n");
+	printMsg("X: %f\r\n", imu_readAcel_X());
+	printMsg("Y: %f\r\n", imu_readAcel_Y());
+	printMsg("Z: %f\r\n", imu_readAcel_Z());
+	printMsg("%f\r\n", imu_readTemp());
 }
