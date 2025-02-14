@@ -9,7 +9,6 @@
 #include "UART/pcp.h"
 #include <stdio.h>
 
-// Forward declarations not part of the packet interface
 static void set_rx_waiting(PCPDevice* dev);
 
 // Constants
@@ -201,15 +200,18 @@ void update_rx(PCPDevice* dev) {
         }
         // Packet is acknowledgement
         if (dev->rx_acknowledging) {
+            PCPBuf* tx_buf = dev->tx_bufs + (dev->rx_curr_seq % dev->window_size);
             if (read_buf != ACK_END) {
                 // ignore malformed acknowledgement
             } else if (dev->rx_curr_seq == dev->tx_old_seq) {
                 dev->tx_old_seq += 1 + dev->rx_num_acknowledging;
                 dev->curr_window_sz -= 1 + dev->rx_num_acknowledging;
                 dev->rx_num_acknowledging = 0;
+                tx_buf->len = 0;
             } else if (distance(dev->tx_old_seq, dev->rx_curr_seq) <
                        dev->curr_window_sz) {
                 dev->rx_num_acknowledging++;
+                tx_buf->len = 0;
             }
             set_rx_waiting(dev);
             continue;
