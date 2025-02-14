@@ -40,7 +40,6 @@ void spi3_gpioInit() {
 	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
-	GPIOG->PUPDR |= GPIO_PUPDR_PUPD15_0;
 
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE3_Msk
