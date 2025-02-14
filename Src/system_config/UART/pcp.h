@@ -159,8 +159,17 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes);
 int pcp_receive(PCPDevice* dev, uint8_t* buf);
 
 /**
- * Retransmit requests that timed out.
+ * Transmit the oldest unacknowledged message if timeout is reached.
  */
 void pcp_retransmit(PCPDevice* dev);
+
+/**
+ * Flush `dev->bus`'s receive buffer into `dev` without retransmission. This
+ * also transmits and receives acknowledgements.
+ *
+ * In general, [pcp_retransmit] should be used. This function is useful for
+ * flushing buffer during testing.
+ */
+void update_rx(PCPDevice* dev);
 
 #endif /* SYSTEM_CONFIG_UART_PCP_H_ */

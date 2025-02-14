@@ -9,8 +9,7 @@
 #include "UART/pcp.h"
 #include <stdio.h>
 
-//// Forward declarations not part of the packet interface
-static void update_rx(PCPDevice* dev);
+// Forward declarations not part of the packet interface
 static void set_rx_waiting(PCPDevice* dev);
 
 // Constants
@@ -87,7 +86,7 @@ int make_pcpdev_advanced(PCPDevice* out,
 }
 
 void del_pcpdev_members(PCPDevice *dev) {
-    for (int i = 0; i < dev->window_size; ++i) {
+    for (size_t i = 0; i < dev->window_size; ++i) {
         free(dev->tx_bufs[i].data);
     }
     free(dev->tx_bufs);
@@ -145,14 +144,6 @@ int pcp_receive(PCPDevice* dev, uint8_t* buf) {
 }
 
 /**
- * Return true if packet with `seq` is received as indicated by `rx_received`.
- * False otherwise. Assume `seq` is within window range.
- */
-static bool received(PCPDevice* dev, SeqNum seq) {
-    return dev->rx_received << distance(dev->rx_tail_seq, seq) & 1;
-}
-
-/**
  * Set bit for packet with `seq`. Assume `seq` is within window range.
  */
 static void set_received(PCPDevice* dev, SeqNum seq, bool val) {
@@ -172,7 +163,7 @@ static void acknowledge(PCPDevice *dev, SeqNum seq) {
  * Flush `dev->bus`'s receive buffer into `dev`. This also transmits and
  * receives acknowledgements.
  */
-static void update_rx(PCPDevice* dev) {
+void update_rx(PCPDevice* dev) {
     if (dev->rx_full)
         return;
 
@@ -184,7 +175,7 @@ static void update_rx(PCPDevice* dev) {
             break;
         }
 
-        if (usart_receiveBytes(dev->bus, &read_buf, 1) == 0) continue;
+        usart_receiveBytes(dev->bus, &read_buf, 1);
 
         // New packet, identify type
         if (dev->rx_readnbytes == 0) {
