@@ -1,69 +1,88 @@
 #include "adc_sun_sensors.h"
 
-PANEL* panel0;
-PANEL* panel1;
-PANEL* panel2;
-PANEL* panel3;
-PANEL* panel4;
-PANEL* panel5;
 
-void adc_initializePanelConstants() {
-    panel0->adcDiode0 = ADC3;
-    panel0->adcDiode1 = ADC3;
-    panel0->diode0Channel = 6;
-    panel0->diode1Channel = 7;
-
-    panel1->adcDiode0 = ADC3;
-    panel1->adcDiode1 = ADC2;
-    panel1->diode0Channel = 12;
-    panel1->diode1Channel = 5;
-
-    panel2->adcDiode0 = ADC2;
-    panel2->adcDiode1 = ADC2;
-    panel2->diode0Channel = 6;
-    panel2->diode1Channel = 7;
-
-    panel3->adcDiode0 = ADC3;
-    panel3->adcDiode1 = ADC3;
-    panel3->diode0Channel = 10;
-    panel3->diode1Channel = 9;
+PANEL_INFO* panelInfo0;
+PANEL_INFO* panelInfo1;
+PANEL_INFO* panelInfo2;
+PANEL_INFO* panelInfo3;
+PANEL_INFO* panelInfo4;
+PANEL_INFO* panelInfo5;
 
 
-    panel4->adcDiode0 = ADC2;
-    panel4->adcDiode1 = ADC2;
-    panel4->diode0Channel = 1;
-    panel4->diode1Channel = 2;
+/** Private helper functions */
 
-    panel5->adcDiode0 = ADC2;
-    panel5->adcDiode1 = ADC2;
-    panel5->diode0Channel = 3;
-    panel5->diode1Channel = 4;
+static void adc_initializePanelConstants() {
+    panelInfo0->adcDiode0 = ADC3;
+    panelInfo0->adcDiode1 = ADC3;
+    panelInfo0->diode0Channel = 6;
+    panelInfo0->diode1Channel = 7;
+
+    panelInfo1->adcDiode0 = ADC3;
+    panelInfo1->adcDiode1 = ADC2;
+    panelInfo1->diode0Channel = 12;
+    panelInfo1->diode1Channel = 5;
+
+    panelInfo2->adcDiode0 = ADC2;
+    panelInfo2->adcDiode1 = ADC2;
+    panelInfo2->diode0Channel = 6;
+    panelInfo2->diode1Channel = 7;
+
+    panelInfo3->adcDiode0 = ADC3;
+    panelInfo3->adcDiode1 = ADC3;
+    panelInfo3->diode0Channel = 10;
+    panelInfo3->diode1Channel = 9;
+
+
+    panelInfo4->adcDiode0 = ADC2;
+    panelInfo4->adcDiode1 = ADC2;
+    panelInfo4->diode0Channel = 1;
+    panelInfo4->diode1Channel = 2;
+
+    panelInfo5->adcDiode0 = ADC2;
+    panelInfo5->adcDiode1 = ADC2;
+    panelInfo5->diode0Channel = 3;
+    panelInfo5->diode1Channel = 4;
 }
 
-bool adc1_isCalibrationDone() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
-bool adc2_isCalibrationDone() { return (ADC2->CR & ADC_CR_ADCAL) != 0; }
-bool adc3_isCalibrationDone() { return (ADC3->CR & ADC_CR_ADCAL) != 0; }
+static bool adc1_isCalibrationDone() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
+static bool adc2_isCalibrationDone() { return (ADC2->CR & ADC_CR_ADCAL) != 0; }
+static bool adc3_isCalibrationDone() { return (ADC3->CR & ADC_CR_ADCAL) != 0; }
 
-bool adc_isEOCDownADC1() { return !(ADC1->ISR & ADC_ISR_EOC); }
-bool adc_isEOSDownADC1() { return !(ADC1->ISR & ADC_ISR_EOS); }
+static bool adc_isEOCDownADC1() { return !(ADC1->ISR & ADC_ISR_EOC); }
+static bool adc_isEOSDownADC1() { return !(ADC1->ISR & ADC_ISR_EOS); }
 
-bool adc_isEOCDownADC2() { return !(ADC2->ISR & ADC_ISR_EOC); }
-bool adc_isEOSDownADC2() { return !(ADC2->ISR & ADC_ISR_EOS); }
+static bool adc_isEOCDownADC2() { return !(ADC2->ISR & ADC_ISR_EOC); }
+static bool adc_isEOSDownADC2() { return !(ADC2->ISR & ADC_ISR_EOS); }
 
-bool adc_isEOCDownADC3() { return !(ADC3->ISR & ADC_ISR_EOC); }
-bool adc_isEOSDownADC3() { return !(ADC3->ISR & ADC_ISR_EOS); }
+static bool adc_isEOCDownADC3() { return !(ADC3->ISR & ADC_ISR_EOC); }
+static bool adc_isEOSDownADC3() { return !(ADC3->ISR & ADC_ISR_EOS); }
 
-bool adc_isADRDYNotResetADC1() { return (ADC1->ISR & ADC_ISR_ADRDY) == 0; }
-bool adc_isADRDYNotResetADC2() { return (ADC2->ISR & ADC_ISR_ADRDY) == 0; }
-bool adc_isADRDYNotResetADC3() { return (ADC3->ISR & ADC_ISR_ADRDY) == 0; }
+static bool adc_isADRDYNotResetADC1() { return (ADC1->ISR & ADC_ISR_ADRDY) == 0; }
+static bool adc_isADRDYNotResetADC2() { return (ADC2->ISR & ADC_ISR_ADRDY) == 0; }
+static bool adc_isADRDYNotResetADC3() { return (ADC3->ISR & ADC_ISR_ADRDY) == 0; }
 
+static void adc_enable(ADC_TypeDef* adc){
+	adc->ISR |= ADC_ISR_ADRDY; // Set before enabling ADC
+	adc->CR |= ADC_CR_ADEN; //Enables ADC
 
+    switch((int) adc) {
+        case (int) ADC1:
+            wait_with_timeout(adc_isADRDYNotResetADC1, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
+            break;
+        case (int) ADC2:
+            wait_with_timeout(adc_isADRDYNotResetADC2, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
+            break;
+        case (int) ADC3:
+            wait_with_timeout(adc_isADRDYNotResetADC3, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
+            break;
+    }
+}
 
-void ADC1_gpio_init() {
+static void ADC1_gpio_init() {
     // Currently not being used
 }
 
-void ADC2_gpio_init() {
+static void ADC2_gpio_init() {
     /**
      * Pan1-pd1 PA0  ADC1(2)_IN5
      * Pan2-pd0 PA1 ADC1(2)_IN6
@@ -90,7 +109,7 @@ void ADC2_gpio_init() {
 
 }
 
-void ADC3_gpio_init() {
+static void ADC3_gpio_init() {
     /**
      * Pan0-pd0 PF3 ADC3_IN6
      * Pan0-pd1 PF4 ADC3_IN7
@@ -103,7 +122,7 @@ void ADC3_gpio_init() {
     GPIOF->PUPDR &= GPIO_PUPDR_PUPD3_Msk | GPIO_PUPDR_PUPD4_Msk | GPIO_PUPDR_PUPD9_Msk | GPIO_PUPDR_PUPD7_Msk | GPIO_PUPDR_PUPD6_Msk;
 }
 
-uint8_t adc_calibrateADC(ADC_TypeDef* adc) {
+static uint8_t adc_calibrateADC(ADC_TypeDef* adc) {
     adc->CR &= ~ADC_CR_DEEPPWD;//makes sure ADC isn't in deep power down mode
 	adc->CR |= ADC_CR_ADVREGEN; //enables ADC voltage regulator
     adc->CR &= ~ADC_CR_ADEN; //Disable ADC
@@ -130,14 +149,7 @@ uint8_t adc_calibrateADC(ADC_TypeDef* adc) {
     return adc->CALFACT | ADC_CALFACT_CALFACT_S;
 }
 
-void adc_init() {
-    adc_initializePanelConstants();
-    ADC1_init();
-    ADC2_init();
-    ADC3_init();
-}
-
-void adcx_initCommon(ADC_TypeDef* adc) {
+static void adcx_initCommon(ADC_TypeDef* adc) {
     RCC->APB2ENR |= RCC_AHB2ENR_ADCEN;
     adc_calibrateADC(adc);
     RCC->CCIPR &= ~RCC_CCIPR_ADCSEL; //enables peripheral clock
@@ -147,14 +159,14 @@ void adcx_initCommon(ADC_TypeDef* adc) {
 	adc->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
 }
 
-void ADC1_init() {
+static void ADC1_init() {
     ADC1_gpio_init();
     adcx_initCommon(ADC1);
     //Not being set because need to know what pins being used and ADC1 is currently not being used
 
 }
 
-void ADC2_init() {
+static void ADC2_init() {
     ADC2_gpio_init();
     adcx_initCommon(ADC2);
     ADC2->SMPR1 = 0; 
@@ -164,7 +176,7 @@ void ADC2_init() {
     adc_enable(ADC2);
 }
 
-void ADC3_init() {
+static void ADC3_init() {
     ADC3_gpio_init();
     adcx_initCommon(ADC3);
 
@@ -177,25 +189,42 @@ void ADC3_init() {
     adc_enable(ADC3);
 }
 
-void adc_enable(ADC_TypeDef* adc){
-	adc->ISR |= ADC_ISR_ADRDY; // Set before enabling ADC
-	adc->CR |= ADC_CR_ADEN; //Enables ADC
 
-    switch((int) adc) {
-        case (int) ADC1:
-            wait_with_timeout(adc_isADRDYNotResetADC1, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
-            break;
-        case (int) ADC2:
-            wait_with_timeout(adc_isADRDYNotResetADC2, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
-            break;
-        case (int) ADC3:
-            wait_with_timeout(adc_isADRDYNotResetADC3, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
-            break;
+static PANEL_INFO* adc_panelInfoSelect(PANELS panel) {
+    switch (panel) {
+        case PANEL0:
+            return panelInfo0;
+        case PANEL1:
+            return panelInfo1;
+        case PANEL2:
+            return panelInfo2;
+        case PANEL3:
+            return panelInfo3;
+        case PANEL4:
+            return panelInfo4;
+        case PANEL5:
+            return panelInfo5;                 
     }
+    return NULL;
+}
+
+/** Private helper functions */
+
+
+/** Public Functions */
+
+void adc_init() {
+    adc_initializePanelConstants();
+    ADC1_init();
+    ADC2_init();
+    ADC3_init();
 }
 
 
-uint16_t adc_readVoltageFromDiode(PANEL* panel, int diodeNumber) {
+uint16_t adc_readVoltageFromDiode(PANELS panelNumber, DIODES diodeNumber) {
+
+    PANEL_INFO* panel = adc_panelInfoSelect(panelNumber);
+
     ADC_TypeDef* adc = NULL;
     int channel = -1;
 
@@ -248,3 +277,6 @@ uint16_t adc_readVoltageFromDiode(PANEL* panel, int diodeNumber) {
 	return adc_val;
 
 }
+
+
+/** Public Functions */
