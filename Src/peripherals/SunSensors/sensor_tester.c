@@ -1,9 +1,12 @@
 #include "INA226.h"
 #include <globals.h>
+#include <LED/led.h>
 
 void testFunction_INA_Outputs()
 {
-    sensor_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, MODE_CONTINUOUS, 22,10);
+    led_init();
+    led_d2(true);
+    sensor_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, MODE_CONTINUOUS, 68,10);
     int id = get_id();
     float voltage = get_bus_voltage();
     select_sensor(1);

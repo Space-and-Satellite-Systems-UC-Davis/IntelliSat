@@ -191,4 +191,6 @@ bool softi2c_probe(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, 
  */
 int16_t softi2c_readRegHighLow(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int high_reg_addr, int low_reg_addr);
 
+
+int softi2c_writeReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr, int data);
 #endif /* REALOP1_I2C_H_ */

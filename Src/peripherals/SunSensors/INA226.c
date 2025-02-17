@@ -30,9 +30,12 @@ void sensor_config(int averages, int bus_time, int shunt_time, int mode, int rsh
     current_lsb = celing(max_current / 32768.0 * MICRO); //2^15
     int cal = celing(0.00512 / (current_lsb/MICRO * rshunt/MILLI)); //round to nearest integer above
     for(int i = 0; i<4; i++){
-        softi2c_writeReg(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 0, config);
-        softi2c_writeReg(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 5, cal);
-        softi2c_writeReg(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 6, 1 << 3); //set conversion ready flag
+        softi2c_writeReg16(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 0, config);
+        softi2c_delay();
+        softi2c_writeReg16(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 5, cal);
+        softi2c_delay();
+        softi2c_writeReg16(sensors[i]->SCL_GPIO, sensors[i]->SCL_PIN, sensors[i]->SDA_GPIO, sensors[i]->SDA_PIN, SENSOR_ADDRESS, 6, 1 << 3); //set conversion ready flag
+        softi2c_delay();
     }
 }
 
@@ -102,7 +105,7 @@ int get_id(){
 	int output = 0;
 	while (hex_value < 0x50)
 	{
-		output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, hex_value, 0xfe);
+		output = softi2c_readReg16(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, hex_value, 0xfe);
 		if (output != 0)
 			break;
 		hex_value +=1;
