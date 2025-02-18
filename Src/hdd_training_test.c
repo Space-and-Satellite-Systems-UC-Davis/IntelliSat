@@ -20,7 +20,7 @@ void arm(const float MIN_DUTY, const float MAX_DUTY);
 //void pwm_setDutyCycle(const float TARGET_DUTY);
 
 // default ramp
-void ramp(const float TARGET_DUTY);
+void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY);
 
 void testFunction_HDD_Training(){
 	/*
