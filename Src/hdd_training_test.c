@@ -203,7 +203,7 @@ void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY){
 	const float INIT_DUTY = ZERO_DUTY + 10 * DUTY_STEP;
 	float current_duty = INIT_DUTY;
 	while (current_duty <= TARGET_DUTY && current_duty <= MAX_DUTY){
-		setDutyActual(current_duty);
+		pwm_setDutyCycle(current_duty);
 		printMsg("Duty cycle: %f", current_duty);
 		current_duty += DUTY_STEP;
 		delay_ms(DELAY);
