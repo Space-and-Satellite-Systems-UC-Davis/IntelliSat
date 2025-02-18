@@ -34,10 +34,11 @@ void testFunction_HDD_Training(){
 	 */
 	// This is where write your code.
 	// I made some normal code just to generate a PWM signal and check if everything is working.
-	const float MAX_START_DUTY = 20;
-	const float MAX_DUTY = 10;
-	const float MIN_DUTY = 5;
+	const float MAX_START_DUTY = 20;  // previous max duty to trigger calibration
+	const float MAX_DUTY = 10;  // targeted current max duty
+	const float MIN_DUTY = 5;  // targeted current min duty
 
+	// init timer here does other initialization actions
 	led_d1(true);
 	pwm_initTimer(20000); //This period time is in microseconds
 	pwm_setDutyCycle(10); //20% of the power
@@ -183,7 +184,8 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 // duty is a float, but realistically is treated as a percent already
 // the esc's we bought claim that they want pulses with length 1-2ms
 void setDutyActual(const float TARGET_DUTY) {
-	PWMTimer->ARR = (int) (100 * 2000 / TARGET_DUTY);  //2ms / DUTY %
+	// below is what init timer modifies when it goes to set the period itself
+	PWMTimer->ARR = (uint32_t) (100 * 2000 / TARGET_DUTY);  //2ms / DUTY %
 	pwm_setDutyCycle(TARGET_DUTY);
 	printMsg("Period changed to {%f}us for duty cycle of {%f}% with pulse time {%f}ms.", PWMTimer->ARR, TARGET_DUTY, PWM->TIMER * TARGET_DUTY / 1000);
 }
