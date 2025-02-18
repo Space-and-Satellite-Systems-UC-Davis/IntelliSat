@@ -17,7 +17,7 @@ void calibrate(const bool CAL_MAX, const float MIN_DUTY, const float MAX_DUTY, c
 void arm(const float MIN_DUTY, const float MAX_DUTY);
 
 // modifies the period to result in a targeted duty, aiming for a pulse width of 2ms
-void setDutyActual(const float TARGET_DUTY);
+//void pwm_setDutyCycle(const float TARGET_DUTY);
 
 void testFunction_HDD_Training(){
 	/*
@@ -37,10 +37,11 @@ void testFunction_HDD_Training(){
 	const float MAX_START_DUTY = 20;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty
 	const float MIN_DUTY = 5;  // targeted current min duty
+	const int PERIOD_US = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 	// init timer here does other initialization actions
 	led_d1(true);
-	pwm_initTimer(20000); //This period time is in microseconds
+	pwm_initTimer(PERIOD_US); //This period time is in microseconds
 	pwm_setDutyCycle(10); //20% of the power
 	PWM_TIMER_ON();
 
@@ -100,7 +101,7 @@ void testFunction_HDD_Training(){
 		printMsg("Preparing to start trial. \r\n");
 		float currDuty = MIN_DUTY;
 		while (currDuty < MID_DUTY) {
-			pwm_setDutyActual(currDuty);
+			pwm_setDutyCycle(currDuty);
 			printMsg("Duty: %f \r\n", currDuty);
 			delay_ms(500);
 			currDuty += DUTY_STEP;
@@ -109,7 +110,7 @@ void testFunction_HDD_Training(){
 		printMsg("Waiting to up duty cycle. \r\n");
 		delay_ms(5000);
 		while (currDuty <= MAX_DUTY) {
-			pwm_setDutyActual(currDuty);
+			pwm_setDutyCycle(currDuty);
 			printMsg("Duty: %f \r\n", currDuty);
 			delay_ms(500);
 			currDuty += DUTY_STEP;
@@ -140,17 +141,17 @@ void testFunction_HDD_Training(){
 }
 
 void calibrate(const bool CAL_MAX, const float MIN_DUTY, const float MAX_DUTY, const float MAX_START_DUTY) {
-	pwm_setDutyActual(MAX_START_DUTY); // trigger calibration
+	pwm_setDutyCycle(MAX_START_DUTY); // trigger calibration
 	printMsg("Min duty: %f, Max duty: %f, Max start duty: %f \r\n", MIN_DUTY, MAX_DUTY, MAX_START_DUTY);
 	delay_ms(1000);
 
 	if (CAL_MAX) {
 		printMsg("Feeding Maximum duty. \r\n");
-		pwm_setDutyActual(MAX_DUTY);
+		pwm_setDutyCycle(MAX_DUTY);
 		delay_ms(4000);
 	} else {
 		printMsg("Feeding minimum duty. \r\n");
-		pwm_setDutyActual(MIN_DUTY);
+		pwm_setDutyCycle(MIN_DUTY);
 		delay_ms(4000);
 	}
 }
@@ -163,7 +164,7 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 	printMsg("Min duty: %f, Max duty: %f, Zero duty: %f, Duty step: %f \r\n", MIN_DUTY, MAX_DUTY, ZERO_DUTY, DUTY_STEP);
 	printMsg("Ramping up. \r\n");
 	while (currDuty < MAX_DUTY) {
-		pwm_setDutyActual(currDuty);
+		pwm_setDutyCycle(currDuty);
 		printMsg("Current duty: %f \r\n", currDuty);
 		delay_ms(250);
 		currDuty += DUTY_STEP;
@@ -172,7 +173,7 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 	currDuty -= DUTY_STEP; // go below max
 	printMsg("Ramping down. \r\n");
 	while (currDuty >= ZERO_DUTY) {
-		pwm_setDutyActual(currDuty);
+		pwm_setDutyCycle(currDuty);
 		printMsg("Current duty: %f \r\n", currDuty);
 		delay_ms(250);
 		currDuty -= DUTY_STEP;
@@ -181,12 +182,14 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 	delay_ms(1000); // wait to run
 }
 
+/*
 // duty is a float, but realistically is treated as a percent already
 // the esc's we bought claim that they want pulses with length 1-2ms
-void setDutyActual(const float TARGET_DUTY) {
+void setDutyAtual(const float TARGET_DUTY) {
 	// below is what init timer modifies when it goes to set the period itself
 	PWMTimer->ARR = (uint32_t) (100 * 2000 / TARGET_DUTY);  //2ms / DUTY %
 	pwm_setDutyCycle(TARGET_DUTY);
 	printMsg("Period changed to {%f}us for duty cycle of {%f}% with pulse time {%f}ms.", PWMTimer->ARR, TARGET_DUTY, PWM->TIMER * TARGET_DUTY / 1000);
 }
+*/
 
