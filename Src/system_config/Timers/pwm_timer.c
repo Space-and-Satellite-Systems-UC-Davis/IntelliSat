@@ -61,8 +61,9 @@ bool pwm_initTimer(uint32_t period) {
 	// (f_clk / f_goal) - 1  ==> ( 2*(core_MHz/16) / 1 MHz) - 1
 	// (2*(core_MHz/16)) due to RCC configurations in core_config.c
  	PWMTimer->PSC = 2*(core_MHz/16) - 1;		// Frequency in 1us;
-	PWMTimer->ARR = period;
+	PWMTimer->ARR = period;  // set period (microseconds)
 
+	// flag stuff
 	PWMTimer->EGR |= TIM_EGR_UG;
 	PWMTimer->CCMR1 = (6 << TIM_CCMR1_OC1M_Pos);
 	PWMTimer->CCER |= TIM_CCER_CC1E;

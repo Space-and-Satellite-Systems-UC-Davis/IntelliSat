@@ -19,6 +19,7 @@
 
 #elif OP_REV == 2
 
+// PWMTimer is #define TIM2_BASE             (APB1PERIPH_BASE + 0x0000UL) Tim typedefed to TIM2??
 #define PWMTimer 					TIM2
 #define PWMTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
 #define	PWMTimer_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
