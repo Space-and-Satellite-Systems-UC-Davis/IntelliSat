@@ -6,6 +6,16 @@
 
 #include <TestDefinition.h>
 
+int run_tests() {
+	UNITY_BEGIN();
+
+	void (*testFunc)();
+	testFunc = getTestFunction(TEST_ID);
+	testFunc();
+
+	return UNITY_END();
+}
+
 int main() {
     init_init();
     init_platform(!RUN_TEST);
@@ -13,9 +23,7 @@ int main() {
 
 #if (RUN_TEST==1) && (TEST_ID != 0)
 
-    void (*testFunc)();
-    testFunc = getTestFunction(TEST_ID);
-    testFunc();
+    run_tests();
 
     #else
 
