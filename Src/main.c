@@ -1,21 +1,33 @@
 #include <print_scan.h>
 #include "platform_init.h"
 
-#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
+#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 	5	// ID of the test to run in case RUN_TEST = 1, or 0 to run all tests
 
 #include <TestDefinition.h>
+
+int run_tests() {
+	UNITY_BEGIN();
+
+	if (TEST_ID == 0) {
+		runAllTests();
+	} else {
+		void (*testFunc)();
+		testFunc = getTestFunction(TEST_ID);
+		testFunc();
+	}
+
+	return UNITY_END();
+}
 
 int main() {
     init_init();
     init_platform(!RUN_TEST);
     // ^ don't want to run the Scheduler in case we are running other tests
 
-#if (RUN_TEST==1) && (TEST_ID != 0)
+#if (RUN_TEST==1)
 
-    void (*testFunc)();
-    testFunc = getTestFunction(TEST_ID);
-    testFunc();
+    run_tests();
 
     #else
 

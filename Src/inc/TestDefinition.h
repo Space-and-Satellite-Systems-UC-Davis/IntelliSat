@@ -1,14 +1,17 @@
 #pragma once
+#include "../testing/unity.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-extern void testFunction_Nothing();
 extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
+
+extern void testFunction_Nothing();
+extern void testFunction_TestUnity();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -28,6 +31,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogTimer_Callback;
 		case 4:
 			return testerFunction_PWMGeneration;
+		case 5:
+			return testFunction_TestUnity;
 		default:
 			return testFunction_Nothing;
 	}
@@ -35,9 +40,18 @@ void (*getTestFunction(int test_id))(void) {
 }
 
 
+// Run every test
+void runAllTests() {
+
+}
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           	  EXTRAS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+void testFunction_TestUnity() {
+	TEST_ASSERT(1);
+}
 
 void testFunction_Nothing() {
 	while(1);
