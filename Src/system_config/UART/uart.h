@@ -70,4 +70,11 @@ bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
  */
 int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
 
+/*
+ * Empties the receive buffer.
+ *
+ * @param bus		The USART Bus that will be receiving
+ */
+void usart_flushrx(USART_TypeDef* bus);
+
 #endif	// REALOP1_UART_H_

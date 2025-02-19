@@ -414,6 +414,11 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	return sz;
 }
 
+void usart_flushrx(USART_TypeDef* bus) {
+	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
+    rxbuff->front = rxbuff->rear;
+}
+
 /**************************** USART INTERRUPTS ****************************/
 
 void USART1_IRQHandler() {
