@@ -56,7 +56,7 @@ static bool debug_cmp(char* expected, char* received) {
         debug((char*)received);
         return false;
     } else {
-        debug("Success! Received:");
+        debug("SUCCESS! Received:");
         debug((char*)received);
         return true;
     }
@@ -73,14 +73,29 @@ static bool debug_retransmission(char* expected) {
     return debug_cmp(expected, (char*)received);
 }
 
-static void test() {
+static bool debug_control_rx(char* expected) {
+    uint8_t received[RECV_NBYTES];
+    int readnbytes = usart_receiveBytes(control_bus, received, strlen(expected));
+    received[readnbytes] = '\0';
+    return debug_cmp(expected, (char*)received);
+}
+
+static void test_init() {
     debug("Running PCP Tests");
 
+    debug("Initializing PCP Device bus...");
+	usart_init(pcpdev_bus, 9600);
+    wait(3000);
+    flush(control_bus);
+    flush(pcpdev_bus);
     debug("Initializing PCP Device...");
     make_pcpdev_advanced(&test_pcpdev, pcpdev_bus, timeout, 200, 200, 3);
     debug("Setting first sequence number to '0'...");
     test_pcpdev.tx_old_seq = '0';
+    test_pcpdev.rx_tail_seq = '0';
+}
 
+static void test_tx() {
     debug("[Test transmission] Transmitting three packets...");
     flush(control_bus);
     flush(pcpdev_bus);
@@ -88,11 +103,7 @@ static void test() {
     pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 48", payload_len);
     pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 49", payload_len);
     pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 50", payload_len);
-    char* expected = "{0Packet 48}{1Packet 49}{2Packet 50}";
-    uint8_t received[200];
-    int readnbytes = usart_receiveBytes(control_bus, received, strlen(expected));
-    received[readnbytes] = '\0';
-    if (!debug_cmp(expected, (char*)received))
+    if (!debug_control_rx("{0Packet 48}{1Packet 49}{2Packet 50}"))
         return;
 
     debug("[Test retransmission]");
@@ -139,14 +150,53 @@ static void test() {
         return;
 }
 
-void testFunction_PCP() {
-    debug("Initializing PCP Device bus...");
-	usart_init(pcpdev_bus, 9600);
-    wait(3000);
+static void test_rx() {
+    debug("[Test receive] Sending Packet 48");
     flush(control_bus);
     flush(pcpdev_bus);
+    usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
+    wait(500);
+    pcp_update_rx(&test_pcpdev);
+    if (!debug_control_rx("<0>"))
+        return;
+    char buf[RECV_NBYTES];
+    int readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 48", buf))
+        return;
+}
 
-    test();
+static void playground() {
+    //usart_transmitStr(control_bus, (uint8_t*)"Hello, world!");
+    //char buf;
+    //uint64_t last_pinged = getSysTime();
+    //while (true) {
+    //    // Ping tx every 3 seconds
+    //    if (getSysTime() - last_pinged > 3000) {
+    //        usart_transmitStr(control_bus, (uint8_t*)"hi!");
+    //        last_pinged = getSysTime();
+    //    }
+    //    // Echo rx to tx
+    //    if (usart_receiveBufferNotEmpty(control_bus)) {
+    //        usart_receiveBytes(control_bus, (uint8_t*)&buf, 1);
+    //        usart_transmitBytes(control_bus, (uint8_t*)&buf, 1);
+    //    }
+    //}
+    const int payload_len = 9;
+    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 48", payload_len);
+    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 49", payload_len);
+    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 50", payload_len);
+    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 51", payload_len);
+    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 52", payload_len);
+}
+
+void testFunction_PCP() {
+    test_init();
+
+    //test_tx();
+    test_rx();
+    //playground();
+
     debug("PCP Tests complete. Entering interactive mode.");
 
     const uint64_t interval = 100;

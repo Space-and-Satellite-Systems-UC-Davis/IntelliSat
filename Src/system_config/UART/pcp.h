@@ -153,8 +153,8 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes);
 
 /**
  * Read a response into `buf`. Assume that `buf` is large enough
- * (PAYLOAD_MAXBYTES). Returns size of recvonse if successfully read, -1 if
- * otherwise.
+ * ([PAYLOAD_MAXBYTES]). Returns size of received payload if successfully read,
+ * -1 if otherwise.
  */
 int pcp_receive(PCPDevice* dev, uint8_t* buf);
 
@@ -170,6 +170,6 @@ void pcp_retransmit(PCPDevice* dev);
  * In general, [pcp_retransmit] should be used. This function is useful for
  * flushing buffer during testing.
  */
-void update_rx(PCPDevice* dev);
+void pcp_update_rx(PCPDevice* dev);
 
 #endif /* SYSTEM_CONFIG_UART_PCP_H_ */

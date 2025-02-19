@@ -118,7 +118,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
 }
 
 void pcp_retransmit(PCPDevice* dev) {
-    update_rx(dev);
+    pcp_update_rx(dev);
     if (dev->curr_window_sz > 0
             && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
@@ -130,7 +130,7 @@ void pcp_retransmit(PCPDevice* dev) {
 }
 
 int pcp_receive(PCPDevice* dev, uint8_t* buf) {
-    update_rx(dev);
+    pcp_update_rx(dev);
     if (!dev->rx_full && dev->rx_head == dev->rx_tail)
         return -1;
     PCPBuf rx_buf = dev->rx_bufs[dev->rx_head];
@@ -162,7 +162,7 @@ static void acknowledge(PCPDevice *dev, SeqNum seq) {
  * Flush `dev->bus`'s receive buffer into `dev`. This also transmits and
  * receives acknowledgements.
  */
-void update_rx(PCPDevice* dev) {
+void pcp_update_rx(PCPDevice* dev) {
     if (dev->rx_full)
         return;
 
