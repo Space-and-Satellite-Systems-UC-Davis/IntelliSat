@@ -1,48 +1,7 @@
 #include "adc_sun_sensors.h"
 
 
-PANEL_INFO* panelInfo0;
-PANEL_INFO* panelInfo1;
-PANEL_INFO* panelInfo2;
-PANEL_INFO* panelInfo3;
-PANEL_INFO* panelInfo4;
-PANEL_INFO* panelInfo5;
-
-
 /** Private helper functions */
-
-static void adc_initializePanelConstants() {
-    panelInfo0->adcDiode0 = ADC3;
-    panelInfo0->adcDiode1 = ADC3;
-    panelInfo0->diode0Channel = 6;
-    panelInfo0->diode1Channel = 7;
-
-    panelInfo1->adcDiode0 = ADC3;
-    panelInfo1->adcDiode1 = ADC2;
-    panelInfo1->diode0Channel = 12;
-    panelInfo1->diode1Channel = 5;
-
-    panelInfo2->adcDiode0 = ADC2;
-    panelInfo2->adcDiode1 = ADC2;
-    panelInfo2->diode0Channel = 6;
-    panelInfo2->diode1Channel = 7;
-
-    panelInfo3->adcDiode0 = ADC3;
-    panelInfo3->adcDiode1 = ADC3;
-    panelInfo3->diode0Channel = 10;
-    panelInfo3->diode1Channel = 9;
-
-
-    panelInfo4->adcDiode0 = ADC2;
-    panelInfo4->adcDiode1 = ADC2;
-    panelInfo4->diode0Channel = 1;
-    panelInfo4->diode1Channel = 2;
-
-    panelInfo5->adcDiode0 = ADC2;
-    panelInfo5->adcDiode1 = ADC2;
-    panelInfo5->diode0Channel = 3;
-    panelInfo5->diode1Channel = 4;
-}
 
 static bool adc1_isCalibrationDone() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
 static bool adc2_isCalibrationDone() { return (ADC2->CR & ADC_CR_ADCAL) != 0; }
@@ -150,11 +109,7 @@ static uint8_t adc_calibrateADC(ADC_TypeDef* adc) {
 }
 
 static void adcx_initCommon(ADC_TypeDef* adc) {
-    RCC->APB2ENR |= RCC_AHB2ENR_ADCEN;
     adc_calibrateADC(adc);
-    RCC->CCIPR &= ~RCC_CCIPR_ADCSEL; //enables peripheral clock
-	RCC->CCIPR |= RCC_CCIPR_ADCSEL_SYSCLK; //Sets ADC clock to system clock
-    ADC123_COMMON->CCR |= (ADC_CCR_VBATEN);
     adc->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
 	adc->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
 }
@@ -190,55 +145,27 @@ static void ADC3_init() {
 }
 
 
-static PANEL_INFO* adc_panelInfoSelect(PANELS panel) {
-    switch (panel) {
-        case PANEL0:
-            return panelInfo0;
-        case PANEL1:
-            return panelInfo1;
-        case PANEL2:
-            return panelInfo2;
-        case PANEL3:
-            return panelInfo3;
-        case PANEL4:
-            return panelInfo4;
-        case PANEL5:
-            return panelInfo5;                 
-    }
-    return NULL;
-}
-
 /** Private helper functions */
 
 
 /** Public Functions */
 
 void adc_init() {
-    adc_initializePanelConstants();
+    RCC->APB2ENR |= RCC_AHB2ENR_ADCEN;
+    VREFBUF->CSR |= VREFBUF_CSR_ENVR; //Enables internal reference buffer
+	VREFBUF->CSR &= ~(VREFBUF_CSR_HIZ); //IDK If this is needed or not
+    RCC->CCIPR &= ~RCC_CCIPR_ADCSEL; //enables peripheral clock
+	RCC->CCIPR |= RCC_CCIPR_ADCSEL_SYSCLK; //Sets ADC clock to system clock
+    ADC123_COMMON->CCR |= (ADC_CCR_VBATEN);
     ADC1_init();
     ADC2_init();
     ADC3_init();
 }
 
 
-uint16_t adc_readVoltageFromDiode(PANELS panelNumber, DIODES diodeNumber) {
-
-    PANEL_INFO* panel = adc_panelInfoSelect(panelNumber);
-
-    ADC_TypeDef* adc = NULL;
-    int channel = -1;
-
-    if (diodeNumber == DIODE0) {
-        adc = panel->adcDiode0;
-        channel = panel->diode0Channel;
-    } else {
-        adc = panel->adcDiode1;
-        channel = panel->diode1Channel;
-    }
-
-
-    adc->CR &= ~ADC_CR_ADSTART;
-    adc->SQR1 |= channel << ADC_SQR1_SQ1_Pos; //Set the channel in sequence to be converted
+uint16_t adc_readVoltage(ADC_TypeDef* adc, int channel) {
+   adc->CR &= ~ADC_CR_ADSTART;
+   adc->SQR1 |= channel << ADC_SQR1_SQ1_Pos; //Set the channel in sequence to be converted
     
     adc->CR  |=  ( ADC_CR_ADSTART ); //Start conversion
 
@@ -275,8 +202,6 @@ uint16_t adc_readVoltageFromDiode(PANELS panelNumber, DIODES diodeNumber) {
 
 	// Return the ADC value.
 	return adc_val;
-
 }
-
 
 /** Public Functions */

@@ -9,7 +9,7 @@ extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
-extern void testFunction_ADC_Reads();
+extern void testFunction_Diode_Reads();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -30,7 +30,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 4:
 			return testerFunction_PWMGeneration;
 		case 12:
-			return testFunction_ADC_Reads;
+			return testFunction_Diode_Reads;
 		default:
 			return testFunction_Nothing;
 	}
