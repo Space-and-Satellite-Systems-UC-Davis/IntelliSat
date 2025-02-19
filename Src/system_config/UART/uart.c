@@ -51,9 +51,21 @@ USART_ReceiverBuffer USART3_RxBuffer;
 
 #elif OP_REV == 2 || OP_REV == 3
 
-USART_ReceiverBuffer USART1_RxBuffer;
-USART_ReceiverBuffer USART2_RxBuffer;
-USART_ReceiverBuffer LPUART1_RxBuffer;
+USART_ReceiverBuffer USART1_RxBuffer = (USART_ReceiverBuffer){
+    .front = 0,
+    .rear = 0,
+    .timedout = false,
+};
+USART_ReceiverBuffer USART2_RxBuffer = (USART_ReceiverBuffer){
+    .front = 0,
+    .rear = 0,
+    .timedout = false,
+};
+USART_ReceiverBuffer LPUART1_RxBuffer = (USART_ReceiverBuffer){
+    .front = 0,
+    .rear = 0,
+    .timedout = false,
+};
 
 #endif
 
