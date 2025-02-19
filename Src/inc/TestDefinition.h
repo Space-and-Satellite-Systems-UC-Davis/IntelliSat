@@ -13,6 +13,7 @@ typedef enum {
     TEST_LOGTIMER_CALLBACK,
     TEST_PWMGENERATION,
     TEST_PCP,
+    TEST_UART,
 } Test;
 
 extern void testFunction_Nothing();
@@ -21,6 +22,7 @@ extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_PCP();
+extern void testFunction_UART();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -42,6 +44,8 @@ void (*getTestFunction(Test test))(void) {
 			return testerFunction_PWMGeneration;
 		case TEST_PCP:
 			return testFunction_PCP;
+		case TEST_UART:
+			return testFunction_UART;
 		default:
 			return testFunction_Nothing;
 	}
