@@ -16,16 +16,16 @@
 
 #define RECV_NBYTES 256
 
-PCPDevice test_pcpdev;
+static PCPDevice test_pcpdev;
 /** Send log messages. */
-USART_TypeDef* const debug_bus = LPUART1;
+static USART_TypeDef* const debug_bus = LPUART1;
 /** Send and receive from control_bus */
-USART_TypeDef* const pcpdev_bus = USART2;
+static USART_TypeDef* const pcpdev_bus = USART2;
 // Shared with debug_bus since no debug messages contain packets ('{payload}')
 /** Send to and receive from pcpdev_bus */
-USART_TypeDef* const control_bus = LPUART1;
+static USART_TypeDef* const control_bus = LPUART1;
 
-const uint64_t timeout = 3000;
+static const uint64_t timeout = 3000;
 
 static void wait(uint64_t time) {
     uint64_t timer = getSysTime();
@@ -38,7 +38,7 @@ static void flush(USART_TypeDef* bus) {
         usart_receiveBytes(bus, &buf, 1);
 }
 
-void debug(char* msg) {
+static void debug(char* msg) {
     int now = getSysTime();
     uint8_t str[64];
     sprintf((char*)str, "%8d", now);
@@ -211,4 +211,3 @@ void testFunction_PCP() {
 
 	while(1);
 }
-
