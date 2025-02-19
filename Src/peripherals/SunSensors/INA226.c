@@ -101,15 +101,17 @@ void select_sensor(int sensor){
 
 
 int get_id(){
-	int hex_value = 0x40;
-	int output = 0;
+
+    int output = 0;
+    output = softi2c_readReg16(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, 0x45, 0xfe);
+	/*int hex_value = 0x40;
 	while (hex_value < 0x50)
 	{
 		output = softi2c_readReg16(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, hex_value, 0xfe);
 		if (output != 0)
 			break;
 		hex_value +=1;
-	}
+	}*/
     //int output = softi2c_readReg(sensors[current_sensor]->SCL_GPIO, sensors[current_sensor]->SCL_PIN, sensors[current_sensor]->SDA_GPIO, sensors[current_sensor]->SDA_PIN, SENSOR_ADDRESS, 0xfe);
     return output;
 }
