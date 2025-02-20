@@ -1,11 +1,14 @@
 #include "sun_sensors.h"
 
-PANEL_INFO* panelInfo0;
-PANEL_INFO* panelInfo1;
-PANEL_INFO* panelInfo2;
-PANEL_INFO* panelInfo3;
-PANEL_INFO* panelInfo4;
-PANEL_INFO* panelInfo5;
+PANEL_INFO panel0, panel1, panel2, panel3, panel4, panel5;
+
+PANEL_INFO* panelInfo0 = &panel0;
+PANEL_INFO* panelInfo1 = &panel1;
+PANEL_INFO* panelInfo2 = &panel2;
+PANEL_INFO* panelInfo3 = &panel3;
+PANEL_INFO* panelInfo4 = &panel4;
+PANEL_INFO* panelInfo5 = &panel5;
+
 
 static void sun_sensors_initializePanelConstants() {
     panelInfo0->adcDiode0 = ADC3;
