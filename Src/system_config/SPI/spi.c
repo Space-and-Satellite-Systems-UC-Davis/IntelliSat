@@ -127,7 +127,6 @@ void spi2_gpioInit() {
 
 	GPIOB->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED13_Msk;
 
-
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk
 		| GPIO_MODER_MODE13_Msk
@@ -283,6 +282,7 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			*((volatile uint8_t*) &(spi->DR)) = *transmission;
 			transmission++;
 		}
+
     
     inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
