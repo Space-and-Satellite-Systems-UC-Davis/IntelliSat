@@ -48,15 +48,6 @@ void testFunction_HDD_Training(){
 	pwm_setDutyCycle(10); //20% of the power
 	PWM_TIMER_ON();
 
-	//uint64_t time = getSysTime();
-	//printMsg("%llu", getSysTime());
-	printMsg( "%d", (int) getSysTime() ) ;
-	printMsg("\r\n");
-	delay_ms(1000);
-	//time = getSysTime();
-	printMsg( "%d", (int) getSysTime() ) ;
-	printMsg("\r\n");
-
 	adc_init();
 	printMsg("Initializing ADC\r\n");
 
@@ -91,9 +82,18 @@ void testFunction_HDD_Training(){
 		arm(MIN_DUTY, MAX_DUTY);
 
 		const float DRIVE_DUTY = MAX_DUTY;
+		const float ZERO_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
+
+		/*
 		printMsg("Driving at %f duty. \r\n", DRIVE_DUTY);
 		delay_ms(1000);
 		pwm_setDutyCycle(DRIVE_DUTY);
+		*/
+		printMsg("Return to zero. \r\n");
+		pwm_setDutyCycle(ZERO_DUTY);
+		delay_ms(1000);
+		printMsg("Starting Ramp. \r\n");
+		ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
 
 		delay_ms(10000);
 	}
@@ -165,17 +165,17 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 	float currDuty = ZERO_DUTY;
 
 	printMsg("Min duty: %f, Max duty: %f, Zero duty: %f, Duty step: %f \r\n", MIN_DUTY, MAX_DUTY, ZERO_DUTY, DUTY_STEP);
-	printMsg("Ramping up. \r\n");
+	/*printMsg("Ramping up. \r\n");
 	while (currDuty < MAX_DUTY) {
 		pwm_setDutyCycle(currDuty);
 		printMsg("Current duty: %f \r\n", currDuty);
 		delay_ms(250);
 		currDuty += DUTY_STEP;
-	}
+	}*/
 
 	currDuty -= DUTY_STEP; // go below max
 	printMsg("Ramping down. \r\n");
-	while (currDuty >= ZERO_DUTY) {
+	while (currDuty >= MIN_DUTY) {
 		pwm_setDutyCycle(currDuty);
 		printMsg("Current duty: %f \r\n", currDuty);
 		delay_ms(250);
@@ -204,7 +204,7 @@ void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY){
 	float current_duty = INIT_DUTY;
 	while (current_duty <= TARGET_DUTY && current_duty <= MAX_DUTY){
 		pwm_setDutyCycle(current_duty);
-		printMsg("Duty cycle: %f", current_duty);
+		printMsg("Duty cycle: %f \r\n", current_duty);
 		current_duty += DUTY_STEP;
 		delay_ms(DELAY);
 	}
