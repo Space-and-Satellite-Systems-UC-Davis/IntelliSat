@@ -31,9 +31,6 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogTimer_Callback;
 		case 4:
 			return testerFunction_PWMGeneration;
-		case 12:
-			return testFunction_Diode_Reads;
-		case 5:
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
 		case 12:
