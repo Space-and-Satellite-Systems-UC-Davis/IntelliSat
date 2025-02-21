@@ -10,7 +10,7 @@
 #include "MB85RS256B.h"
 #include "print_scan.h"
 
-#define FRAM_NUM_TESTS 9 // Update as you add more tests
+#define FRAM_NUM_TESTS 12 // Update as you add more tests
 #define FRAM_TEST_PAGE 2
 #define FRAM_TEST_ADDRESS 0x0000
 #define FRAM_BUFFER_SIZE 256
@@ -38,6 +38,29 @@ void printBuf(uint8_t buf[], uint16_t size) {
         }
     }
 }
+
+// Fill buffer
+void fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
+    for (uint16_t i = 0; i < size; i++) {
+        buf[i] = value;
+    }
+}
+
+// Clear entire FRAM with 0xFF
+bool FRAM_clearAll() {
+    uint8_t buffer[256];
+    fillBuf(buffer, 256, 0xFF);  // Fill the buffer with 0xFF
+
+    for (uint16_t page = 0; page < (FRAM_MAX_BYTES / 256); ++page) {
+        if (!FRAM_writePage(page, buffer)) {
+            printMsg("fatal: Failed to clear FRAM at page %u.\n\r", page);
+            return false;
+        }
+    }
+    printMsg("FRAM cleared.\n\r");
+    return true;
+}
+
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                              FUNCTION TESTS                               */
@@ -93,7 +116,7 @@ bool FRAMtest_readStatusRegister() {
     printMsg("fatal: Read Status Register FAIL. Received 0x00 (possible error).\n\r");
     return false;
 }
-/*  Displays the FRAM data starting at 0x0 in hexadecimal format, 16 bytes per line.
+/*  Displays the FRAM data starting at 0x0 in hexadecimal format, 16 bytes per line. Should be all 0xFF.
     * expect: "Read Data: PASS"
     * actual: "Read Data: PASS"
 */
@@ -101,6 +124,7 @@ bool FRAMtest_readData()
 {
 	uint8_t buffer[256] = {0};
 	uint16_t address = 0x000000;
+    if (!FRAM_clearAll()) return false;
 
 	if (FRAM_readData(address, buffer)) {
 		printMsg("FRAM Data Read Starting...\n\r");
@@ -126,6 +150,22 @@ bool FRAMtest_readPage()
 	}
 	printMsg("fatal: FRAM Read Page Read attempt failed.\n\r");
 	return false;
+}
+
+/*  Reads sector data (should initially be all 0xFF if cleared) */
+bool FRAMtest_readSector()
+{
+    uint8_t buffer[4096] = {0};
+    uint16_t sector = 1; // Read from sector 1 for testing
+    if (!FRAM_clearAll()) return false;
+
+    if (FRAM_readSector(sector, buffer)) {
+        printMsg("FRAM Sector Read (Sector %u):\n\r", sector);
+        printBuf(buffer, 256); // Print only the first 256 bytes for readability
+        return true;
+    }
+    printMsg("fatal: FRAM Read Sector Read attempt failed.\n\r");
+    return false;
 }
 
 /* Write Data Tests (4 Tests)
@@ -229,6 +269,78 @@ bool FRAMtest_WriteProtect() {
     return true;
 }
 
+/*  Write a pattern to a page and verify it by reading back */
+bool FRAMtest_writePage()
+{
+    uint8_t writeBuffer[256];
+    uint8_t readBuffer[256] = {0};
+    uint16_t page = 2;
+
+    // Fill buffer with test data
+    for (uint16_t i = 0; i < 256; i++) {
+        writeBuffer[i] = i;  // Incremental pattern
+    }
+
+    printMsg("Starting Write Page Test at page %u...\n\r", page);
+
+    if (!FRAM_writePage(page, writeBuffer)) {
+        printMsg("fatal: Write to page %u failed.\n\r", page);
+        return false;
+    }
+
+    printMsg("Write successful. Verifying data...\n\r");
+
+    if (!FRAM_readPage(page, readBuffer)) {
+        printMsg("fatal: Read from page %u failed.\n\r", page);
+        return false;
+    }
+
+    for (uint16_t i = 0; i < 256; i++) {
+        if (writeBuffer[i] != readBuffer[i]) {
+            printMsg("fatal: Data mismatch at index %u: Expected 0x%02X, Read 0x%02X\n\r", i, writeBuffer[i], readBuffer[i]);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*  Write a pattern to a sector and verify it by reading back */
+bool FRAMtest_writeSector()
+{
+    uint8_t writeBuffer[4096];
+    uint8_t readBuffer[4096] = {0};
+    uint16_t sector = 1;
+
+    // Fill buffer with test data
+    for (uint16_t i = 0; i < 4096; i++) {
+        writeBuffer[i] = (i % 256);  // Cyclic pattern
+    }
+
+    printMsg("Starting Write Sector Test at sector %u...\n\r", sector);
+
+    if (!FRAM_writeSector(sector, writeBuffer)) {
+        printMsg("fatal: Write to sector %u failed.\n\r", sector);
+        return false;
+    }
+
+    printMsg("Write successful. Verifying data...\n\r");
+
+    if (!FRAM_readSector(sector, readBuffer)) {
+        printMsg("fatal: Read from sector %u failed.\n\r", sector);
+        return false;
+    }
+
+    for (uint16_t i = 0; i < 4096; i++) {
+        if (writeBuffer[i] != readBuffer[i]) {
+            printMsg("fatal: Data mismatch at index %u: Expected 0x%02X, Read 0x%02X\n\r", i, writeBuffer[i], readBuffer[i]);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                            testFunction Core                              */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -240,10 +352,13 @@ void testFunction_FRAM() {
 		FRAMtest_readStatusRegister,
 		FRAMtest_readData,
 		FRAMtest_readPage,
+        FRAMtest_readSector,
 		FRAMtest_basicWriteData,
 		FRAMtest_BoundaryWriteData,
 		FRAMtest_InvalidAddressWriteData,
 		FRAMtest_WriteProtect,
+        FRAMtest_writePage,
+        FRAMtest_writeSector,
     };
 
     const char *testNames[FRAM_NUM_TESTS] = {
@@ -252,10 +367,13 @@ void testFunction_FRAM() {
         "Read Status Register",
 		"Read Data",
 		"Read Page",
+        "Read Sector",
         "Basic Write and Read",
 		"Boundary Write",
         "Invalid Address Write",
         "Write Protect",
+        "Write Page",
+        "Write Sector",
     };
 
     printMsg("\n\rFRAM Core Tests\n\r");
