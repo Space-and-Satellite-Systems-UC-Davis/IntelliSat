@@ -121,10 +121,12 @@ void spi2_gpioInit() {
 	 */
 	// Reset mode on each SPI-2 pin
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
+
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD12_0;
 
 	GPIOB->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED13_Msk;
+
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk
 		| GPIO_MODER_MODE13_Msk
@@ -203,7 +205,7 @@ void spi2_config() {
 	SPI2->CR1 = SPI_CR_RESET;
 	SPI2->CR2 = SPI_CR_RESET;
 	SPI2->CR1 |=
-		  SPI_CR1_BR_R64 << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
+		  SPI_CR1_BR_R2 << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR
@@ -213,7 +215,8 @@ void spi2_config() {
 	SPI2->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| SPI_CR2_DS_8_BIT << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
-
+  
+  SPI3->CR1 &= ~(SPI_CR1_BIDIMODE | SPI_CR1_RXONLY);
 	spi_enable(SPI2);
 }
 
@@ -279,8 +282,13 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			*((volatile uint8_t*) &(spi->DR)) = *transmission;
 			transmission++;
 		}
-		while(!(spi->SR & SPI_SR_TXE));
-		while(!(spi->SR & SPI_SR_RXNE));
+
+    
+    inner_start_time = getSysTime();
+		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+    inner_start_time = getSysTime();
+		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+
 		// read the reception line until it's empty
 		inner_start_time = getSysTime();
 		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty

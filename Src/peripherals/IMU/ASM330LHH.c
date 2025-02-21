@@ -86,8 +86,12 @@ void imu_spiWriteReg(void *address, uint8_t data) {
 }
 
 int16_t imu_spiReadHighLow(void *low_address) {
+  
 	uint8_t instruction = (uint8_t)low_address | IMU_SPI_RW;
-	uint8_t datah, datal;
+	uint8_t datah = 0;
+	uint8_t datal = 0;
+
+#if OP_REV == 2
 
 #if OP_REV == 2
 
@@ -385,11 +389,12 @@ float imu_readGyro_Y() {
     return IMU_global == IMU0 ? ScaledData(data, imu_gyroFullScaleIMU0) : ScaledData(data, imu_gyroFullScaleIMU1);
 }
 
+
 float imu_readGyro_Z() {
 	uint8_t instructionHi = OUTZ_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
 	uint8_t instructionLow = OUTZ_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
-    int16_t data = 0;
+  int16_t data = 0;
 
 #if OP_REV == 1
 
