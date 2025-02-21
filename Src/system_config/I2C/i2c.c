@@ -162,22 +162,10 @@ void softi2c_sendAck(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_po
 	softi2c_lineMode(sda_port, sda_pin, 0);
 	softi2c_delay();
 	softi2c_lineMode(scl_port, scl_pin, 1);
-	softi2c_delay();
+	softi2c_delay(); softi2c_delay();
+	softi2c_lineMode(scl_port, scl_pin, 0);
 }
 
-int softi2c_readNack_copy(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
-	softi2c_lineMode(scl_port, scl_pin, 0);
-	softi2c_delay();
-	softi2c_lineMode(sda_port, sda_pin, 1);
-	softi2c_delay();
-	softi2c_lineMode(scl_port, scl_pin, 1);
-	softi2c_delay();
-	softi2c_lineMode(scl_port,scl_pin,0);
-	softi2c_delay();
-	int nack = gpio_read(sda_port, sda_pin);
-	softi2c_delay();
-	return nack;
-}
 
 int softi2c_writeReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr, int data) {
 	
@@ -196,12 +184,13 @@ int softi2c_writeReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_
 	nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
 
 	//send most significant byte first
-	int msb = data & ~(0xFF << 8);
+	int msb = data >> 8;
 	softi2c_send8(scl_port, scl_pin, sda_port,sda_pin,msb);
 	nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
 
 	//least significant byte
-	softi2c_send8(scl_port, scl_pin, sda_port,sda_pin,data >> 8);
+	int lsb = data & ~(0xFF << 8);
+	softi2c_send8(scl_port, scl_pin, sda_port,sda_pin,lsb);
 	nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
 
 	//stop 
@@ -214,18 +203,23 @@ int softi2c_readReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_p
 	//change register pointer
 	softi2c_sigStart(scl_port,scl_pin,sda_port,sda_pin);
 	softi2c_send8(scl_port,scl_pin,sda_port,sda_pin, device_addr << 1 | 0);
+	nack += softi2c_readNack(scl_port, scl_pin, sda_port, sda_pin);
 	softi2c_send8(scl_port,scl_pin,sda_port,sda_pin, reg_addr);
+	nack += softi2c_readNack(scl_port, scl_pin, sda_port, sda_pin);
 	softi2c_sigStop(scl_port,scl_pin,sda_port,sda_pin);
 
 	//read data from register 
 	softi2c_sigStart(scl_port,scl_pin,sda_port,sda_pin);
+
+	//softi2c_sigRepeatedStart(scl_port, scl_pin, sda_port, sda_pin);
+
 	softi2c_send8(scl_port,scl_pin,sda_port,sda_pin, device_addr << 1 | 1);
 	nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
 
 	int data = softi2c_read8(scl_port,scl_pin,sda_port,sda_pin);
 	softi2c_sendAck(scl_port,scl_pin,sda_port,sda_pin);
 
-	data = softi2c_read8(scl_port,scl_pin,sda_port,sda_pin) << 8 | data;
+	data = data << 8 | softi2c_read8(scl_port,scl_pin,sda_port,sda_pin);
 	softi2c_sendNack(scl_port,scl_pin,sda_port,sda_pin);
 
 	softi2c_sigStop(scl_port,scl_pin,sda_port,sda_pin);

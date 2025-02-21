@@ -191,6 +191,47 @@ bool softi2c_probe(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, 
  */
 int16_t softi2c_readRegHighLow(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin, int device_addr, int high_reg_addr, int low_reg_addr);
 
+/**
+ * Sends an ACK (Acknowledged) signal over a software I2C bus.
+ *
+ * @param scl_port The GPIO port of the SCL line.
+ * @param scl_pin The GPIO pin of the SCL line.
+ * @param sda_port The GPIO port of the SDA line.
+ * @param sda_pin The GPIO pin of the SDA line.
+ *
+ * @returns None
+ */
+void softi2c_sendAck(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin);
 
+/**
+ * Reads a 16-bit register value with only one register address
+ *
+ * @param scl_port The GPIO port of the SCL pin.
+ * @param scl_pin The pin number of the SCL pin.
+ * @param sda_port The GPIO port of the SDA pin.
+ * @param sda_pin The pin number of the SDA pin.
+ * @param device_addr The address of the device to read from.
+ * @param reg_addr The address of the register to read.
+ *
+ * @returns The 16-bit register value read from the device.
+ */
+int softi2c_readReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr);
+
+
+/**
+ * Writes data to a 16-bit register of a device using software I2C.
+ *
+ * @param scl_port The GPIO port of the SCL pin.
+ * @param scl_pin The pin number of the SCL pin.
+ * @param sda_port The GPIO port of the SDA pin.
+ * @param sda_pin The pin number of the SDA pin.
+ * @param device_addr The address of the device to write to.
+ * @param reg_addr The address of the register to write to.
+ * @param data The data to write to the register.
+ *
+ * @returns The number of NACKs received during the write operation.
+ */
 int softi2c_writeReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr, int data);
+
+
 #endif /* REALOP1_I2C_H_ */

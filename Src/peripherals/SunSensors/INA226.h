@@ -124,7 +124,7 @@ float get_power();
 /**
  * Reads the current from the sun sensor
  *
- * @returns Wattage as a 16 bit integer
+ * @returns Amps as a 16 bit integer
  */
 float get_current();
 
@@ -150,7 +150,7 @@ void select_sensor(int sensor);
  * 
  * @returns ID
  */
-int get_id();
+int16_t get_id();
 
 /**
  * Helper function to round up calculations to nearest number
@@ -159,3 +159,5 @@ int get_id();
  * @returns num rounded up
  */
 int ceiling(float num);
+
+int16_t get_config();
