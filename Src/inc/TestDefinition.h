@@ -9,7 +9,6 @@ extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
-extern void testFunction_Diode_Reads();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 
