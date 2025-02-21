@@ -27,6 +27,7 @@
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
 #include <print_scan.h>
+#include <SunSensors/sun_sensors.h>
 
 #define SCB_CPACR_CP10_POS 20U
 #define SCB_CPACR_CP11_POS 22U
@@ -79,6 +80,7 @@ void init_platform(bool run_scheduler) {
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
+    sun_sensor_init();
     //TODO: hdd_init().
     //TODO: initialize intercom.
     //TODO: fetch flash header.
