@@ -1,13 +1,13 @@
 #include "sun_sensors.h"
 
-PANEL_INFO panel0, panel1, panel2, panel3, panel4, panel5;
+panel_t panel0, panel1, panel2, panel3, panel4, panel5;
 
-PANEL_INFO* panelInfo0 = &panel0;
-PANEL_INFO* panelInfo1 = &panel1;
-PANEL_INFO* panelInfo2 = &panel2;
-PANEL_INFO* panelInfo3 = &panel3;
-PANEL_INFO* panelInfo4 = &panel4;
-PANEL_INFO* panelInfo5 = &panel5;
+panel_t* panelInfo0 = &panel0;
+panel_t* panelInfo1 = &panel1;
+panel_t* panelInfo2 = &panel2;
+panel_t* panelInfo3 = &panel3;
+panel_t* panelInfo4 = &panel4;
+panel_t* panelInfo5 = &panel5;
 
 
 static void sun_sensors_initializePanelConstants() {
@@ -43,7 +43,7 @@ static void sun_sensors_initializePanelConstants() {
     panelInfo5->diode1Channel = 4;
 }
 
-static PANEL_INFO* sun_sensors_panelInfoSelect(PANELS panel) {
+static panel_t* sun_sensors_panelInfoSelect(PANELS panel) {
     switch (panel) {
         case PANEL0:
             return panelInfo0;
@@ -68,7 +68,7 @@ void sun_sensor_init() {
 
 
 float sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber) {
-    PANEL_INFO* panel = sun_sensors_panelInfoSelect(panelNumber);
+    panel_t* panel = sun_sensors_panelInfoSelect(panelNumber);
 
     ADC_TypeDef* adc = NULL;
     int channel = -1;
