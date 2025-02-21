@@ -1,131 +1,222 @@
-// /*
-//  * adc.c
-//  *
-//  *  Created on: Feb 10, 2024
-//  *      Author: Chandrark Muddana
-//  */
+#include "adc.h"
 
-// #include "adc.h"
 
-// //USES ADC1
+/** Private helper functions */
 
-// bool is_ADC_not_ready() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
-// //THE BELOW FUNCTION IN TIMEOUT HUNG FOREVER, COULD NOT TEST OTHER ADC
-// bool is_VREFBUF_not_ready() { return (VREFBUF->CSR & VREFBUF_CSR_VRR) != 0; }
-// void adc_init() {
-// 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN; //enables ADC clock
-// 	//ADC1->CR |= ADC_CR_ADDIS; //Disables ADC
-// 	RCC->CCIPR &= ~RCC_CCIPR_ADCSEL; //enables peripheral clock
-// 	RCC->CCIPR |= RCC_CCIPR_ADCSEL_SYSCLK; //Sets ADC clock to system clock
-// 	ADC1->CR   &= ~ADC_CR_DEEPPWD;//makes sure ADC isn't in deep power down mode
-// 	ADC1->CR   |= ADC_CR_ADVREGEN; //enables ADC voltage regulator
-// 	//Test what happens if voltage regulator is gone
-// 	nop(10000); //waits a bit
-// 	ADC1->CR &= ~(ADC_CR_ADCALDIF); //Sets it to single ended mode
-// 	ADC1->CR |= ADC_CR_ADCAL; //Calibrates ADC
-// 	wait_with_timeout(is_ADC_not_ready, DEFAULT_TIMEOUT_MS); //Waits until ADC is calibrated
+static bool adc1_isCalibrationDone() { return (ADC1->CR & ADC_CR_ADCAL) != 0; }
+static bool adc2_isCalibrationDone() { return (ADC2->CR & ADC_CR_ADCAL) != 0; }
+static bool adc3_isCalibrationDone() { return (ADC3->CR & ADC_CR_ADCAL) != 0; }
 
-// 	VREFBUF->CSR |= VREFBUF_CSR_ENVR; //Enables internal reference buffer
-// 	VREFBUF->CSR &= ~(VREFBUF_CSR_HIZ); //IDK If this is needed or not
+static bool adc_isEOCDownADC1() { return !(ADC1->ISR & ADC_ISR_EOC); }
+static bool adc_isEOSDownADC1() { return !(ADC1->ISR & ADC_ISR_EOS); }
 
-// 	wait_with_timeout(is_VREFBUF_not_ready, DEFAULT_TIMEOUT_MS); //Waits until voltage reference value reaches expected output
+static bool adc_isEOCDownADC2() { return !(ADC2->ISR & ADC_ISR_EOC); }
+static bool adc_isEOSDownADC2() { return !(ADC2->ISR & ADC_ISR_EOS); }
 
-// 	VREFBUF->CSR |= VREFBUF_CSR_VRS; //Sets internal reference buffer to around 2.5V
+static bool adc_isEOCDownADC3() { return !(ADC3->ISR & ADC_ISR_EOC); }
+static bool adc_isEOSDownADC3() { return !(ADC3->ISR & ADC_ISR_EOS); }
 
-// 	//Try changing ADC CCR prescaler
-// 	//Try changing VREFBUF CSR register to enable vrefint since vref+ is decoupled
+static bool adc_isADRDYNotResetADC1() { return (ADC1->ISR & ADC_ISR_ADRDY) == 0; }
+static bool adc_isADRDYNotResetADC2() { return (ADC2->ISR & ADC_ISR_ADRDY) == 0; }
+static bool adc_isADRDYNotResetADC3() { return (ADC3->ISR & ADC_ISR_ADRDY) == 0; }
 
-// }
+static void adc_enable(ADC_TypeDef* adc){
+	adc->ISR |= ADC_ISR_ADRDY; // Set before enabling ADC
+	adc->CR |= ADC_CR_ADEN; //Enables ADC
 
-// bool is_ADRDY_not_reset() { return (ADC1->ISR & ADC_ISR_ADRDY) == 0; }
-// void adc_enable(){
-// 	ADC1->ISR |= ADC_ISR_ADRDY; // Set before enabling ADC
-// 	ADC1->CR |= ADC_CR_ADEN; //Enables ADC
-// 	wait_with_timeout(is_ADRDY_not_reset, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
-// }
+    switch((int) adc) {
+        case (int) ADC1:
+            wait_with_timeout(adc_isADRDYNotResetADC1, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
+            break;
+        case (int) ADC2:
+            wait_with_timeout(adc_isADRDYNotResetADC2, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
+            break;
+        case (int) ADC3:
+            wait_with_timeout(adc_isADRDYNotResetADC3, DEFAULT_TIMEOUT_MS); //Waits until ADRDY is reset
+            break;
+    }
+}
 
-// void adc_configGPIO(){
-// 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN; //enables GPIO C
-// 	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
+static void ADC1_gpio_init() {
+    // Currently not being used
+}
 
-// 	GPIOC->OTYPER   &= ~(GPIO_OTYPER_OT0); //Reset C0 pin
-// 	GPIOC->PUPDR    &= ~(GPIO_OSPEEDR_OSPEED0); //Reset C0 pin
-// 	GPIOC->OSPEEDR  &= ~(GPIO_PUPDR_PUPD0); //Reset C0 pin
-// 	GPIOC->MODER    &= ~(GPIO_MODER_MODE0); //Reset C0 pin
-// 	//GPIOC->MODER  |= ( GPIO_MODER_MODE0_0 ); //Sets C0 pin to output mode (KEEP COMMENTED)
-// 	GPIOC->ASCR	    |= ( GPIO_ASCR_ASC0 ); //Connects analog switch to ADC channel for C0
-// 	GPIOC->MODER    |=  GPIO_MODER_MODE0_ANALOG; //Sets mode to analog
-// 	//gpio_set(GPIOC, 0,0); //Testing where C0 pin was (KEEP COMMENTED)
-// }
+static void ADC2_gpio_init() {
+    /**
+     * Pan1-pd1 PA0  ADC1(2)_IN5
+     * Pan2-pd0 PA1 ADC1(2)_IN6
+     * Pan2-pd1 PA2 ADC1(2)_IN7
+     * Pan4-pd0 PC0 ADC1(2)3_IN1
+     * Pan4-pd1 PC1 ADC1(2)3_IN2
+     * Pan5-pd0 PC2 ADC1(2)3_IN3
+     * Pan5-pc1 PC3 ADC1(2)3_IN4
+     */
 
-// void adc_setConstantGPIOValue(){
-// 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN; //enables GPIO B
-// 	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS); //Waits until its done enabling
 
-// 	GPIOB->MODER &= ~(
-// 		  GPIO_MODER_MODE3_Msk
-// 		| GPIO_MODER_MODE4_Msk
-// 		| GPIO_MODER_MODE5_Msk
-// 		| GPIO_MODER_MODE6_Msk); //Resets config of B3 to B6
 
-// 	GPIOB->MODER |=
-// 	   	  GPIO_MODER_MODE3_0	// B3
-// 		| GPIO_MODER_MODE4_0	// B4
-// 		| GPIO_MODER_MODE5_0	// B5
-// 		| GPIO_MODER_MODE6_0;	// B6 Sets to output mode
+    
+    RCC->APB2ENR |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOCEN;
 
-// 	gpio_set(GPIOB, 3, 0); //3-3
-// 	gpio_set(GPIOB, 4, 0); //3-2
-// 	gpio_set(GPIOB, 5, 1); //2-2
-// 	gpio_set(GPIOB, 6, 1); //1-3
-// }
+    GPIOA->MODER |= GPIO_MODER_MODE0 | GPIO_MODER_MODE1 | GPIO_MODER_MODE2;
+    GPIOC->MODER |= GPIO_MODER_MODE0 | GPIO_MODER_MODE1 | GPIO_MODER_MODE2 | GPIO_MODER_MODE3;
 
-// void adc_setChannel(){
-// 	//leave sampling time at default
-// 	ADC123_COMMON->CCR |= (ADC_CCR_VBATEN);
-// 	ADC1->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
-// 	ADC1->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
-// 	ADC1->SQR1 |= ADC_SQR1_SQ1_CHAN18_AS_1st_CONV; //Sets the sequence to just channel 1 (PIN C0)
-// 	ADC1->SMPR2 &= ~(ADC_SMPR2_SMP18); //Resets the sampling time of channel 18
-// 	ADC1->SMPR2 |= ADC_CHAN18_640_5_CLK_CYC; //Sets the sampling time to max: 640.5 cycles per sample
-// }
+    GPIOA->PUPDR &= GPIO_PUPDR_PUPD0_Msk | GPIO_PUPDR_PUPD1_Msk | GPIO_PUPDR_PUPD2_Msk;
+    GPIOC->PUPDR &= GPIO_PUPDR_PUPD0_Msk | GPIO_PUPDR_PUPD1_Msk | GPIO_PUPDR_PUPD2_Msk | GPIO_PUPDR_PUPD3_Msk;
 
-// // Perform a single ADC conversion.
-// // (Assumes that there is only one channel per sequence)
-// bool is_EOC_down() { return !(ADC1->ISR & ADC_ISR_EOC); }
-// bool is_EOS_down() { return !(ADC1->ISR & ADC_ISR_EOS); }
-// uint16_t adc_singleConversion() {
-// 	// Start the ADC conversion.
-// 	ADC1->CR  |=  ( ADC_CR_ADSTART );
-// 	// Wait for the 'End Of Conversion' flag.
-// 	wait_with_timeout(is_EOC_down, DEFAULT_TIMEOUT_MS);
-// 	// Read the converted value (this also clears the EOC flag).
-// 	uint16_t adc_val = ADC1->DR;
-// 	// Wait for the 'End Of Sequence' flag and clear it.
-// 	wait_with_timeout(is_EOS_down, DEFAULT_TIMEOUT_MS);
-// 	ADC1->ISR |=  ( ADC_ISR_EOS );
-// 	// Return the ADC value.
-// 	return adc_val;
-// }
+    GPIOA->ASCR |= GPIO_ASCR_ASC0 | GPIO_ASCR_ASC1 | GPIO_ASCR_ASC2;
+    GPIOC->ASCR |= GPIO_ASCR_ASC0 | GPIO_ASCR_ASC1 | GPIO_ASCR_ASC2 | GPIO_ASCR_ASC3; 
 
-// uint16_t adc_adcToVolt1(uint16_t adcVal){
-// 	return (adcVal * 2062) / 4095; //Uses 2.048 volt reference (VREFBUF->CSR VRS bit is 0)
-// }
+}
 
-// uint16_t adc_adcToVolt2(uint16_t adcVal){
-// 	return (adcVal * 2532) / 4095; //Uses 2.048 volt reference (VREFBUF->CSR VRS bit is 0)
-// }
+static void ADC3_gpio_init() {
+    /**
+     * Pan0-pd0 PF3 ADC3_IN6
+     * Pan0-pd1 PF4 ADC3_IN7
+     * Pan1-pd0 PF9 ADC3_IN12
+     * Pan3-pd0 PF7 ADC3_IN10
+     * Pan3-pd1 PF6 ADC3_IN9
+     */
+    RCC->APB2ENR |= RCC_AHB2ENR_GPIOFEN;
+    GPIOF->MODER |= GPIO_MODER_MODE3 | GPIO_MODER_MODE4 | GPIO_MODER_MODE9 | GPIO_MODER_MODE7 | GPIO_MODER_MODE6;
+    GPIOF->PUPDR &= GPIO_PUPDR_PUPD3_Msk | GPIO_PUPDR_PUPD4_Msk | GPIO_PUPDR_PUPD9_Msk | GPIO_PUPDR_PUPD7_Msk | GPIO_PUPDR_PUPD6_Msk;
+    GPIOF->ASCR |= GPIO_ASCR_ASC3 | GPIO_ASCR_ASC4 | GPIO_ASCR_ASC6 | GPIO_ASCR_ASC7 | GPIO_ASCR_ASC9;
+}
 
-// uint16_t adc_adcToBatVolt(uint16_t adcVal){
-// 	return (adcVal * 1757) / 200; //Uses whatever im testing as a basis
-// }
+static uint8_t adc_calibrateADC(ADC_TypeDef* adc) {
+    adc->CR &= ~ADC_CR_DEEPPWD;//makes sure ADC isn't in deep power down mode
+	adc->CR |= ADC_CR_ADVREGEN; //enables ADC voltage regulator
 
-// void adc_printVolt(uint16_t volt){
-// 	printMsg("%d", volt / 1000);
-// 	printMsg(".");
-// 	printMsg("%d", volt % 1000);
-// }
+	nop(10000);
+    adc->CR &= ~ADC_CR_ADEN; //Disable ADC
+	adc->CR &= ~ADC_CR_ADCALDIF; //Single-ended input
+    adc->CR |= ADC_CR_ADCAL; //Enable Calibration
 
-// void adc_printMilliVolt(uint16_t volt){
-// 	printMsg("%d", volt);
-// }
+
+
+    //Wait for Calibration to Finish
+    switch ((int)adc) {
+        case (int)ADC1:
+            wait_with_timeout(adc1_isCalibrationDone, DEFAULT_TIMEOUT_MS);
+            break;
+        case (int)ADC2:
+            wait_with_timeout(adc2_isCalibrationDone, DEFAULT_TIMEOUT_MS);
+            break;
+        case (int)ADC3:
+            wait_with_timeout(adc3_isCalibrationDone, DEFAULT_TIMEOUT_MS);
+            break;
+        default:
+            break;
+    }
+
+    return adc->CALFACT | ADC_CALFACT_CALFACT_S;
+}
+
+static void adcx_initCommon(ADC_TypeDef* adc) {
+    adc_calibrateADC(adc);
+    adc->SQR1 &= ~( ADC_SQR1_L ); //Sets number of channels in the sequence of 1
+	adc->SQR1 &= ~(ADC_SQR1_SQ1); //Resets the sequence
+}
+
+static void ADC1_init() {
+    ADC1_gpio_init();
+    adcx_initCommon(ADC1);
+    //Not being set because need to know what pins being used and ADC1 is currently not being used
+
+}
+
+static void ADC2_init() {
+    ADC2_gpio_init();
+    adcx_initCommon(ADC2);
+    ADC2->SMPR1 = 0; 
+
+    //Set sample rate to slowest rate (640.5) per conversion 
+    ADC2->SMPR1 |=  ADC_SMPR1_SMP1 | ADC_SMPR1_SMP2  | ADC_SMPR1_SMP3 | ADC_SMPR1_SMP4 | ADC_SMPR1_SMP5 | ADC_SMPR1_SMP6 | ADC_SMPR1_SMP7;
+    adc_enable(ADC2);
+}
+
+static void ADC3_init() {
+    ADC3_gpio_init();
+    adcx_initCommon(ADC3);
+
+    //Set sample rate to slowest rate (640.5) per conversion 
+    ADC3->SMPR1 = 0; 
+    ADC3->SMPR1 |=  ADC_SMPR1_SMP6 | ADC_SMPR1_SMP7  | ADC_SMPR1_SMP9;
+    ADC3->SMPR2 = 0;
+    ADC3->SMPR2 |= ADC_SMPR2_SMP10 | ADC_SMPR2_SMP12; 
+
+    adc_enable(ADC3);
+}
+
+
+/** Private helper functions */
+
+
+/** Public Functions */
+
+void adc_init() {
+    RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN;
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    
+    RCC->CCIPR &= ~RCC_CCIPR_ADCSEL; //enables peripheral clock
+	RCC->CCIPR |= RCC_CCIPR_ADCSEL_SYSCLK; //Sets ADC clock to system clock
+
+    ADC1_init();
+    ADC2_init();
+    ADC3_init();
+    ADC123_COMMON->CCR |= ADC_CCR_VREFEN;
+
+    VREFBUF->CSR |= VREFBUF_CSR_ENVR; //Enables internal reference buffer
+	VREFBUF->CSR &= ~(VREFBUF_CSR_HIZ); //Set to internal voltage reference mode (this is default high)
+
+	while(!(VREFBUF->CSR & VREFBUF_CSR_VRR)); //Waits until voltage reference value reaches expected output
+	VREFBUF->CSR |= VREFBUF_CSR_VRS; //Sets internal reference buffer to around 2.5V
+
+
+}
+
+uint16_t adc_readChannel(ADC_TypeDef* adc, int channel) {
+   adc->CR &= ~ADC_CR_ADSTART;
+   adc->SQR1 |= channel << ADC_SQR1_SQ1_Pos; //Set the channel in sequence to be converted
+    
+    adc->CR  |=  ( ADC_CR_ADSTART ); //Start conversion
+
+	// Wait for the 'End Of Conversion' flag.
+    switch((int)adc) {
+        case (int) ADC1:
+            wait_with_timeout(adc_isEOCDownADC1, DEFAULT_TIMEOUT_MS);    
+            break;
+        case (int) ADC2:
+            wait_with_timeout(adc_isEOCDownADC2, DEFAULT_TIMEOUT_MS);    
+            break;
+        case (int) ADC3:
+            wait_with_timeout(adc_isEOCDownADC3, DEFAULT_TIMEOUT_MS);    
+            break;
+    }
+	// Read the converted value (this also clears the EOC flag).
+	uint16_t adc_val = adc->DR;
+
+	// Wait for the 'End Of Sequence' flag and clear it.
+	switch((int)adc) {
+        case (int) ADC1:
+            wait_with_timeout(adc_isEOSDownADC1, DEFAULT_TIMEOUT_MS);    
+            break;
+        case (int) ADC2:
+            wait_with_timeout(adc_isEOSDownADC2, DEFAULT_TIMEOUT_MS);    
+            break;
+        case (int) ADC3:
+            wait_with_timeout(adc_isEOSDownADC3, DEFAULT_TIMEOUT_MS);    
+            break;
+    }
+	adc->ISR |=  ( ADC_ISR_EOS );
+
+    adc->SQR1 &= ~(channel << ADC_SQR1_SQ1_Pos); //Remove the channel from the sequence
+
+	// Return the ADC value.
+	return adc_val;
+}
+
+float adc_readVoltage(uint16_t channelReading) {
+    return (channelReading / MAX_12_BIT_READING) * INTERNAL_VOLTAGE_REFERENCE;
+}
+
+/** Public Functions */

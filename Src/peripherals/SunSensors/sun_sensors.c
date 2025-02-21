@@ -67,7 +67,7 @@ void sun_sensor_init() {
 }
 
 
-uint16_t sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber) {
+float sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber) {
     PANEL_INFO* panel = sun_sensors_panelInfoSelect(panelNumber);
 
     ADC_TypeDef* adc = NULL;
@@ -81,9 +81,11 @@ uint16_t sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber) {
         channel = panel->diode1Channel;
     }
 
-    return adc_readVoltage(adc, channel);
+    return adc_readVoltage(adc_readChannel(adc, channel));
     
 }
+
+
 
 
 

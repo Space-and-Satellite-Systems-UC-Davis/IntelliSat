@@ -11,9 +11,10 @@ void testFunction_Diode_Reads() {
 	while (1) {
 		if (get_buttonStatus_SW1()) {
             printMsg("Reading Voltage\r\n");
-			uint16_t voltage = sun_sensors_readVoltage(PANEL0, DIODE0);
-            printMsg("Voltage: %d\r\n", voltage);
-
+			float voltage = sun_sensors_readVoltage(PANEL3, DIODE0);
+            printMsg("Voltage 1: %f\r\n", voltage);
+            voltage = sun_sensors_readVoltage(PANEL3, DIODE1);
+            printMsg("Voltage 2: %f\r\n", voltage);
 		}
 	}
 }

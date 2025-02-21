@@ -1,17 +1,6 @@
-/*
- *
- */
 
 #include <globals.h>
-#include <ADC/adc_sun_sensors.h>
-
-#if OP_REV == 2
-
-#define SUN_I2C		GPIOF, 1, GPIOF, 0
-
-#endif
-
-
+#include <ADC/adc.h>
 
 typedef struct PANEL_STRUCT {
     ADC_TypeDef* adcDiode0;
@@ -35,6 +24,6 @@ typedef enum PANELS_ENUM {
 
 void sun_sensor_init();
 
-uint16_t sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber);
+float sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber);
 
 
