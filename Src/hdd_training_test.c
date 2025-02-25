@@ -26,21 +26,8 @@ void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY);
 // reverse ramp
 void rampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY);
 
-void testFunction_HDD_Training(){
-	/*
-	 * This is the function where your logic goes.
-	 * In IntelliSat we have a testing system so that our main files do not collide when merging
-	 * This way we can keep unit tests more organized and integration tests will be more seamless to merge
-	 *
-	 * We really only care about two things for the training project:
-	 * The PWM signal for the ESC.
-	 * The ADC for reading the Sun Sensor.
-	 *
-	 * Our focus will mainly be on the HDD and PWM for now.
-	 * The FSW team is responsible for actually generating the PWM signal, so all we have to worry about is driving the motor
-	 */
-	// This is where write your code.
-	// I made some normal code just to generate a PWM signal and check if everything is working.
+// runs the actual testing code
+void testFunction_HDD(){
 	const float MAX_START_DUTY = 20;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty
 	const float MIN_DUTY = 5;  // targeted current min duty

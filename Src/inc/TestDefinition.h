@@ -31,6 +31,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
+		case 10:
+			return testFunction_HDD;
 		default:
 			return testFunction_Nothing;
 	}
