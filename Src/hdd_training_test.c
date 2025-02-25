@@ -14,6 +14,7 @@
 // if max should be calibrated, the min and max duty, and the max duty previous calibrated
 void calibrate(const bool CAL_MAX, const float MIN_DUTY, const float MAX_DUTY, const float MAX_START_DUTY);
 
+// it seems like to arm, the esc just expects an absolute min duty for 0 after getting some signal
 void arm(const float MIN_DUTY, const float MAX_DUTY);
 
 // modifies the period to result in a targeted duty, aiming for a pulse width of 2ms
@@ -21,6 +22,9 @@ void arm(const float MIN_DUTY, const float MAX_DUTY);
 
 // default ramp
 void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY);
+
+// reverse ramp
+void rampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY);
 
 void testFunction_HDD_Training(){
 	/*
@@ -199,13 +203,18 @@ void setDutyAtual(const float TARGET_DUTY) {
 void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY){
 	const float ZERO_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
 	const float DUTY_STEP = (MAX_DUTY - ZERO_DUTY) / 100;
-	const int DELAY = 250;
+	const int DELAY_MS = 250;
+
 	const float INIT_DUTY = ZERO_DUTY + 10 * DUTY_STEP;
 	float current_duty = INIT_DUTY;
 	while (current_duty <= TARGET_DUTY && current_duty <= MAX_DUTY){
 		pwm_setDutyCycle(current_duty);
 		printMsg("Duty cycle: %f \r\n", current_duty);
 		current_duty += DUTY_STEP;
-		delay_ms(DELAY);
+		delay_ms(DELAY_MS);
 	}
+}
+
+void rampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY) {
+	ramp(TARGET_DUTY, MAX_DUTY, MIN_DUTY);
 }
