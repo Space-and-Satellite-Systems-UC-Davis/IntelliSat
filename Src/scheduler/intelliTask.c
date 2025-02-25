@@ -9,8 +9,28 @@
  * @date 9/8/23
  */
 
-#include "myTask.h"
+#include "intelliTask.h"
 
+
+/*
+    task_table - info. about all modes on satellite
+    (mode, timerDur, numInterrupts, & corresponding functions)
+*/
+/*  LowPower     0		Does the satellite need to enter low power?
+	Detumble     1		Does the satellite need to detumble?
+	Comms        2		Is there a downlink request?
+	ECC          3		Is it time to perform ECC?
+	Experiment	 4		Is an experiment ready to run?
+	IDLE		 5		Idle when no other mode is running
+*/
+intelli_task_t task_table[TASK_TABLE_LENGTH] = {
+    {5, "LOW_PWR",      60000,  low_pwr_time,    config_low_pwr,    low_pwr,    clean_low_pwr,      NULL, NULL},  // Func1 - N/A
+	{4, "DETUMBLE",     60000,  detumble_time,   config_detumble,   detumble,   clean_detumble,     NULL, NULL},  // Func1 - N/A
+	{3, "COMMS",        60000,  comms_time,      config_comms,      comms,      clean_comms,        NULL, NULL},  // Func1 - N/A
+    {2, "ECC",          60000,  ecc_time,        config_ecc,        ecc,        clean_ecc,          NULL, NULL},  // Func1 - N/A
+    {1, "EXPERIMENT",   60000,  experiment_time, config_experiment, experiment, clean_experiment,   NULL, NULL},  // Func1 - Experiment ID (0 for none)
+    {0, "IDLE",         0,      idle_time,       config_idle,       idle,       clean_idle,         NULL, NULL}   // Func1 - N/A
+}
 
 /* Scheduling methods */
 bool low_pwr_time() {
@@ -33,6 +53,9 @@ int experiment_time() {
 bool ecc_time() {
     // return !(rand() % 4);
     return false;
+}
+bool idle_time() {
+    return true;
 }
 
 

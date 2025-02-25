@@ -10,33 +10,34 @@
 
 #include <stdbool.h>
 
-typedef void (*FunctionPointer)();  // For mode functions
+#define TASK_TABLE_LEN 6
+
 
 /*
  * Task - a mode of execution on satellite
  * (note: uses preemption to interrupt running tasks)
  */
-struct task_t {
-    uint8_t task_id;            // PRIMARY_KEY
-    const char *task_name;		// Task name as string
-    uint32_t task_interrupts;   // times taskISR called, cancel mode/task after x reached
+typedef struct intellisat_task_t {
+    uint8_t id;                 // PRIMARY_KEY
+    const char *name;		    // Task name as string
+    uint32_t timeout;           // time before task times out (ms) 0 means no timeout
     bool (*ready_ptr)(void); 	// returns true when task should be run
-    FunctionPointer config_ptr; // configure timers, other mode info.
-    FunctionPointer run_ptr;    // the main func. for mode, via ADCS
-    FunctionPointer clean_ptr;  // reset timers, clear temp buffers, etc
+    void (*config_ptr)();       // configure timers, other mode info.
+    void (*run_ptr)();          // the main func. for mode, via ADCS
+    void (*clean_ptr)();        // reset timers, clear temp buffers, etc
     TaskHandle_t FreeRTOS_handle;// FreeRTOS task handle
     uint8_t func_1;             // Open functionality
-};
+} intelli_task_t;
 
-extern volatile struct task_t curr_task;
-extern struct task_t task_table[6];
+extern intelli_task_t task_table[TASK_TABLE_LEN];
 
 /* Scheduling methods */
 bool low_pwr_time(); // tautology (charging is idle mode)
 bool detumble_time();
 bool comms_time();
-int experiment_time();
+int  experiment_time();
 bool ecc_time();
+bool idle_time();
 bool pizza_time();
 
 /* Configure methods */

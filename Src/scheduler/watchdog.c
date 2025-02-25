@@ -10,12 +10,12 @@
 #include "FreeRTOS/Source/include/task.h"
 
 #include "task_manager.h"
-
-extern struct intellisat_task_t task_table[6];
-#define TASK_TABLE_LENGTH 6 //TODO: temporary
+#include "intelliTask.h"
 
 #define WATCHDOG_YIELD_TICKS 		pdMS_TO_TICKS(86400000) // 1 day TODO fix
 #define WATCHDOG_IDLE_PERIOD_TICKS 	pdMS_TO_TICKS(20000) // 1 minute TODO fix
+
+extern intelli_task_t task_table[TASK_TABLE_LEN];
 
 
 void watchdog(void *args) {
@@ -25,8 +25,8 @@ void watchdog(void *args) {
 	if (task_manager_handle != NULL) {
 		vTaskDelete(task_manager_handle);
 	}
-	for (int taskid = 0; taskid < TASK_TABLE_LENGTH; taskid++) {
-		task_t task = task_table[taskid];
+	for (int taskid = 0; taskid < TASK_TABLE_LEN; taskid++) {
+		intelli_task_t task = task_table[taskid];
 		if (task.FreeRTOS_handle != NULL) {
 			vTaskDelete(task.FreeRTOS_handle);
 		}
@@ -46,8 +46,8 @@ void watchdog(void *args) {
 	if (status != pdPASS) {
 		printMsg("OOM allocating task manager task\n");
 	}
-	for (int taskid = 0; taskid < TASK_TABLE_LENGTH; taskid++) {
-		task_t task = task_table[taskid];
+	for (int taskid = 0; taskid < TASK_TABLE_LEN; taskid++) {
+		intelli_task_t task = task_table[taskid];
 		status = xTaskCreate(	task.run_ptr,
 								task.task_name,
 								1000, //TODO: make task-specific
