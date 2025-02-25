@@ -1,5 +1,5 @@
 #pragma once
-#include "process.h"
+#include "../scheduler/process.h"
 
 /**
  * https://github.com/FreeRTOS/FreeRTOS-Kernel-Book/blob/main/ch05.md
