@@ -33,10 +33,15 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
+<<<<<<< HEAD
 		case 11:
 			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
+=======
+		case 10:
+			return testFunction_HDD;
+>>>>>>> 2912978 (Update testing definitions specifically for HDD.)
 		default:
 			return testFunction_Nothing;
 	}
