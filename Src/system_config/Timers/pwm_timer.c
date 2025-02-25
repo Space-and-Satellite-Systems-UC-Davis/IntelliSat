@@ -20,7 +20,7 @@ extern int core_MHz;	// from core_config.h
 
 void pwm_timer_gpio() {
 
-#if OP_REV == 2 || OP_REV == 3
+#if OP_REV == 2
 
 	/* OP R2 GPIO pinout
 	 * 		TIM CH1		GPIO A15	AF - 1
@@ -49,6 +49,26 @@ void pwm_timer_gpio() {
 	GPIOD->MODER  &= ~GPIO_MODER_MODE12_Msk;
 	GPIOD->MODER  |= (2U << GPIO_MODER_MODE12_Pos);
 	GPIOD->AFR[1] |= (2U << GPIO_AFRH_AFSEL12_Pos);
+
+#elif OP_REV == 3
+	/**
+	 * OPR3 GPIO pinout 
+	 * 
+	 * 
+	 */
+
+	// Clock setup
+	RCC->AHB2ENR  |= RCC_AHB2ENR_GPIOEEN;
+
+	// Reset pin state
+	GPIOE->MODER  &= ~GPIO_MODER_MODE9_Msk;
+	GPIOE->AFR[1] &= ~GPIO_AFRH_AFSEL9_Msk;
+
+	// Set pin mode
+	GPIOE->MODER  |= (GPIO_MODER_AlternateFunction << GPIO_MODER_MODE9_Pos);
+
+	// Set AF
+	GPIOE->AFR[1] |= (GPIO_AFRX_AF1 << GPIO_AFRH_AFSEL9_Pos);
 
 # endif
 
