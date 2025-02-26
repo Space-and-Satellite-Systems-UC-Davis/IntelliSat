@@ -31,16 +31,16 @@ static void wait(uint64_t time) {
     while (getSysTime() - timer < time) {}
 }
 
-static bool debug_cmp(char* expected, char* received) {
-    if (strcmp(expected, (char*)received) != 0) {
-        debugMsg("Failed. Expected:");
+static bool debug_cmp(char* expected, char* actual) {
+    if (strcmp(expected, (char*)actual) != 0) {
+        debugMsg("Failed. Expected message of length %d:", strlen(expected));
         debugMsg(expected);
-        debugMsg("Received instead:");
-        debugMsg((char*)received);
+        debugMsg("Received instead message of length %d:", strlen(actual));
+        debugMsg((char*)actual);
         return false;
     } else {
         debugMsg("SUCCESS! Received:");
-        debugMsg((char*)received);
+        debugMsg((char*)actual);
         return true;
     }
 }
@@ -136,12 +136,12 @@ static void test_tx() {
 }
 
 static void test_rx() {
-    //debugMsg("[Test receive] Sending Packet 48...");
-    //usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
-    //wait(tx_timeout);
-    //debugMsg("Updating PCP Device...");
-    //pcp_update_rx(&test_pcpdev);
-    //wait(tx_timeout);
+    debugMsg("[Test receive] Sending Packet 48...");
+    usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
+    wait(tx_timeout);
+    debugMsg("Updating PCP Device...");
+    pcp_update_rx(&test_pcpdev);
+    wait(tx_timeout);
     debugMsg("Checking results...");
     if (!debug_control_rx("<0>"))
         return;

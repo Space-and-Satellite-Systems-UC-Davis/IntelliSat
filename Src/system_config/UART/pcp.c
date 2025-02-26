@@ -29,7 +29,7 @@ size_t distance(SeqNum before, SeqNum after) {
 }
 
 static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
-    memcpy(buf->data, data, nbytes);
+    memcpy(buf->data + buf->len, data, nbytes);
     buf->len += nbytes;
 }
 
