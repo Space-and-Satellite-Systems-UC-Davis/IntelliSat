@@ -220,13 +220,13 @@ void pcp_update_rx(PCPDevice* dev) {
         const int offset =
             (distance(dev->rx_tail_seq, dev->rx_curr_seq) + dev->rx_tail) %
             RX_BUFSIZ;
-        PCPBuf* write_buf = dev->rx_bufs + offset;
+        PCPBuf* rx_buf = dev->rx_bufs + offset;
         // read_buf is escaped
         if (dev->rx_escaping) {
             if (read_buf != ESCAPE && read_buf != PACKET_END)
                 dev->rx_readnbytes = 0;
             else
-                append(write_buf, &read_buf, 1);
+                append(rx_buf, &read_buf, 1);
             continue;
         // Next read is escaping
         } else if (read_buf == ESCAPE) {
@@ -245,8 +245,9 @@ void pcp_update_rx(PCPDevice* dev) {
                 }
             }
             set_rx_waiting(dev);
+            continue;
         }
-        append(write_buf, &read_buf, 1);
+        append(rx_buf, &read_buf, 1);
 	}
 }
 
