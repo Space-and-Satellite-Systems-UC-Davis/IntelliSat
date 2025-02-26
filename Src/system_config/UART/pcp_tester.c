@@ -21,7 +21,10 @@ static USART_TypeDef* const pcpdev_bus = USART2;
 /** Send to and receive from pcpdev_bus */
 static USART_TypeDef* const control_bus = LPUART1;
 
-static const uint64_t timeout = 3000;
+/** Time between transmission and retransmission */
+static const uint64_t pcpdev_timeout = 3000;
+/** Maximum time between transmission and reception */
+static const uint64_t tx_timeout = 200;
 
 static void wait(uint64_t time) {
     uint64_t timer = getSysTime();
@@ -44,7 +47,7 @@ static bool debug_cmp(char* expected, char* received) {
 
 static bool debug_retransmission(char* expected) {
     debugMsg("Wait a bit to timeout transmission...");
-    wait(timeout);
+    wait(pcpdev_timeout);
     debugMsg("Retransmitting...");
     pcp_retransmit(&test_pcpdev);
     uint8_t received[RECV_NBYTES];
@@ -55,7 +58,9 @@ static bool debug_retransmission(char* expected) {
 
 static bool debug_control_rx(char* expected) {
     uint8_t received[RECV_NBYTES];
-    int readnbytes = usart_receiveBytes(control_bus, received, strlen(expected));
+    int readnbytes = 0;
+    while (usart_receiveBufferNotEmpty(control_bus))
+        readnbytes += usart_receiveBytes(control_bus, received, strlen(expected));
     received[readnbytes] = '\0';
     return debug_cmp(expected, (char*)received);
 }
@@ -65,11 +70,11 @@ static void test_init() {
 
     debugMsg("Initializing PCP Device bus...");
 	usart_init(pcpdev_bus, 9600);
-    wait(3000);
+    wait(tx_timeout);
     usart_flushrx(control_bus);
     usart_flushrx(pcpdev_bus);
     debugMsg("Initializing PCP Device...");
-    make_pcpdev_advanced(&test_pcpdev, pcpdev_bus, timeout, 200, 200, 3);
+    make_pcpdev_advanced(&test_pcpdev, pcpdev_bus, pcpdev_timeout, 200, 200, 3);
     debugMsg("Setting first sequence number to '0'...");
     test_pcpdev.tx_old_seq = '0';
     test_pcpdev.rx_tail_seq = '0';
@@ -131,12 +136,13 @@ static void test_tx() {
 }
 
 static void test_rx() {
-    debugMsg("[Test receive] Sending Packet 48");
-    usart_flushrx(control_bus);
-    usart_flushrx(pcpdev_bus);
-    usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
-    wait(500);
-    pcp_update_rx(&test_pcpdev);
+    //debugMsg("[Test receive] Sending Packet 48...");
+    //usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
+    //wait(tx_timeout);
+    //debugMsg("Updating PCP Device...");
+    //pcp_update_rx(&test_pcpdev);
+    //wait(tx_timeout);
+    debugMsg("Checking results...");
     if (!debug_control_rx("<0>"))
         return;
     char buf[RECV_NBYTES];
@@ -173,8 +179,8 @@ static void playground() {
 void testFunction_PCP() {
     test_init();
 
-    test_tx();
-    //test_rx();
+    //test_tx();
+    test_rx();
     //playground();
 
     debugMsg("PCP Tests complete. Entering interactive mode.");
