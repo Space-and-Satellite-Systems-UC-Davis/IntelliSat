@@ -22,7 +22,7 @@ const uint8_t ESCAPE = '\\';
  * Return the distance from `before` to `after`
  */
 size_t distance(SeqNum before, SeqNum after) {
-    if (after > before)
+    if (after >= before)
         return after - before;
     else
         return 255 - before + after;
