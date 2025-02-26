@@ -234,6 +234,7 @@ void pcp_update_rx(PCPDevice* dev) {
             continue;
         }
         if (read_buf == PACKET_END) {
+            acknowledge(dev, dev->rx_tail_seq);
             set_received(dev, dev->rx_curr_seq, true);
             if (dev->rx_curr_seq == dev->rx_tail_seq) {
                 while (dev->rx_received & 1) {
@@ -243,7 +244,6 @@ void pcp_update_rx(PCPDevice* dev) {
                     dev->rx_tail = (dev->rx_tail + 1) % RX_BUFSIZ;
                 }
             }
-            acknowledge(dev, dev->rx_tail_seq);
             set_rx_waiting(dev);
         }
         append(write_buf, &read_buf, 1);
