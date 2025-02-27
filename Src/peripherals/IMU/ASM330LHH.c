@@ -93,8 +93,6 @@ int16_t imu_spiReadHighLow(void *low_address) {
 
 #if OP_REV == 2
 
-#if OP_REV == 2
-
 	spi_startCommunication(IMU_SPI_CS);
 	spi_transmitReceive(IMU_SPI, &instruction, NULL, 1, false);
 	spi_transmitReceive(IMU_SPI, NULL, &datal, 1, false);
