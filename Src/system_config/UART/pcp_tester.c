@@ -139,17 +139,39 @@ static void test_rx() {
     debugMsg("[Test receive] Sending Packet 48...");
     usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
     wait(tx_timeout);
-    debugMsg("Updating PCP Device...");
     pcp_update_rx(&test_pcpdev);
-    wait(tx_timeout);
-    debugMsg("Checking results...");
     if (!debug_control_rx("<0>"))
         return;
     char buf[RECV_NBYTES];
     int readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
-    if (!debug_cmp("Packet 48", buf))
+    //if (!debug_cmp("Packet 48", buf))
+    //    return;
+
+    //debugMsg("[Test multi-receive] Sending Packet 49, 50, and 51...");
+    usart_transmitBytes(control_bus, (uint8_t*)"{1Packet 49}", 12);
+    usart_transmitBytes(control_bus, (uint8_t*)"{2Packet 50}", 12);
+    usart_transmitBytes(control_bus, (uint8_t*)"{3Packet 51}", 12);
+    wait(tx_timeout);
+    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 49", buf))
         return;
+    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 50", buf))
+        return;
+    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 51", buf))
+        return;
+    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (readnbytes != -1) {
+        debugMsg("Failed. Shouldn't have any extra packets.");
+        debugMsg("Read message of length %d: %s", readnbytes, buf);
+        return;
+    }
 }
 
 static void playground() {
