@@ -172,6 +172,8 @@ static void test_rx() {
         debugMsg("Read message of length %d: %s", readnbytes, buf);
         return;
     }
+    if (!debug_control_rx("<1><2><3>"))
+        return;
 }
 
 static void playground() {
