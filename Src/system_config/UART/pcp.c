@@ -241,7 +241,7 @@ void pcp_update_rx(PCPDevice* dev) {
                     dev->rx_tail_seq++;
                     dev->rx_received >>= 1;
                     dev->rx_tail++;
-                    dev->rx_tail = (dev->rx_tail + 1) % RX_BUFSIZ;
+                    dev->rx_tail = (dev->rx_tail) % RX_BUFSIZ;
                 }
             }
             set_rx_waiting(dev);
