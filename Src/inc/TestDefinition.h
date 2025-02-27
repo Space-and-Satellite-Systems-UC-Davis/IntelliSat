@@ -10,8 +10,12 @@ extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
+<<<<<<< HEAD
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
+=======
+extern void testFunction_HDD();
+>>>>>>> 5779b34 (Working PWM)
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
