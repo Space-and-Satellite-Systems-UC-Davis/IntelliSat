@@ -87,6 +87,7 @@ bool pwm_initTimer(uint32_t period) {
 	PWMTimer->EGR |= TIM_EGR_UG;
 	PWMTimer->CCMR1 = (TIM_CCMR1_OC1M_PWM_MODE_1 << TIM_CCMR1_OC1M_Pos);
 	PWMTimer->CCER |= TIM_CCER_CC1E;
+	PWMTimer->BDTR |= TIM_BDTR_MOE;
 
 	return true;
 }

@@ -34,7 +34,7 @@ void testFunction_HDD(){
 	const int PERIOD_US = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 	// init timer here does other initialization actions
-	led_d1(true);
+	led_d2(true);
 	pwm_initTimer(PERIOD_US); //This period time is in microseconds
 	pwm_setDutyCycle(10); //20% of the power
 	PWM_TIMER_ON();
