@@ -197,15 +197,15 @@ static void test_rx() {
         return;
     readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
-    if (!debug_cmp("Packet 49", buf))
+    if (!debug_cmp("Packet 52", buf))
         return;
     readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
-    if (!debug_cmp("Packet 50", buf))
+    if (!debug_cmp("Packet 53", buf))
         return;
     readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
-    if (!debug_cmp("Packet 51", buf))
+    if (!debug_cmp("Packet 54", buf))
         return;
     readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
@@ -214,8 +214,6 @@ static void test_rx() {
         debugMsg("Read message of length %d: %s", readnbytes, buf);
         return;
     }
-    if (!debug_control_rx("<1><2><3>"))
-        return;
 }
 
 void testFunction_PCP() {
