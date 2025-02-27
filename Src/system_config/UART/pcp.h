@@ -90,8 +90,10 @@ typedef struct PCPDevice {
      * first unreceived message.
      */
     PCPBuf* rx_bufs;
+    /** Indexes rx_bufs. Refers to the first packet that is received but not yet
+     * read. */
     int rx_head;
-    /** Exclusive */
+    /** Indexes rx_bufs. Refers to the first packet that is not yet received. */
     int rx_tail;
     bool rx_full;
     /** Sequence number of packet rx_bufs[rx_tail] */
@@ -156,7 +158,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes);
  * ([PAYLOAD_MAXBYTES]). Returns size of received payload if successfully read,
  * -1 if otherwise.
  */
-int pcp_receive(PCPDevice* dev, uint8_t* buf);
+int pcp_read(PCPDevice* dev, uint8_t* buf);
 
 /**
  * Transmit the oldest unacknowledged message if timeout is reached.
@@ -164,8 +166,16 @@ int pcp_receive(PCPDevice* dev, uint8_t* buf);
 void pcp_retransmit(PCPDevice* dev);
 
 /**
- * Flush `dev->bus`'s receive buffer into `dev` without retransmission. This
- * also transmits and receives acknowledgements.
+ * Flush `dev->bus`'s receive buffer into `dev` without retransmission and
+ * acknowledge any buffered messages.
+ *
+ * If the packet received is in order, the acknowledgement takes the form of
+ * "<`seq_num`>"A, where `seq_num` is the sequence number of the buffered
+ * packet.
+ *
+ * If the packet received is out of order, `seq_num` is the sequence number of
+ * the last in-order packet. For example, if packets 3 1 2 are received, the
+ * acknowledgements would be 0 1 3.
  *
  * In general, [pcp_retransmit] should be used. This function is useful for
  * flushing buffer during testing.

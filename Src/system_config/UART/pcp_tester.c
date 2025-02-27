@@ -143,29 +143,71 @@ static void test_rx() {
     if (!debug_control_rx("<0>"))
         return;
     char buf[RECV_NBYTES];
-    int readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    int readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
-    //if (!debug_cmp("Packet 48", buf))
-    //    return;
+    if (!debug_cmp("Packet 48", buf))
+        return;
 
-    //debugMsg("[Test multi-receive] Sending Packet 49, 50, and 51...");
+    debugMsg("[Test multi-receive] Sending Packet 49, 50, and 51...");
+    usart_flushrx(control_bus);
+    usart_flushrx(pcpdev_bus);
     usart_transmitBytes(control_bus, (uint8_t*)"{1Packet 49}", 12);
     usart_transmitBytes(control_bus, (uint8_t*)"{2Packet 50}", 12);
     usart_transmitBytes(control_bus, (uint8_t*)"{3Packet 51}", 12);
     wait(tx_timeout);
-    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
     if (!debug_cmp("Packet 49", buf))
         return;
-    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
     if (!debug_cmp("Packet 50", buf))
         return;
-    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
     if (!debug_cmp("Packet 51", buf))
         return;
-    readnbytes = pcp_receive(&test_pcpdev, (uint8_t*)buf);
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (readnbytes != -1) {
+        debugMsg("Failed. Shouldn't have any extra packets.");
+        debugMsg("Read message of length %d: %s", readnbytes, buf);
+        return;
+    }
+    if (!debug_control_rx("<1><2><3>"))
+        return;
+
+    debugMsg("[Test out-of-order send] Sending Packet 54, 53, and 52...");
+    usart_flushrx(control_bus);
+    usart_flushrx(pcpdev_bus);
+    usart_transmitBytes(control_bus, (uint8_t*)"{6Packet 54}", 12);
+    wait(tx_timeout);
+    pcp_update_rx(&test_pcpdev);
+    if (!debug_control_rx("<3>"))
+        return;
+    usart_transmitBytes(control_bus, (uint8_t*)"{5Packet 53}", 12);
+    wait(tx_timeout);
+    pcp_update_rx(&test_pcpdev);
+    if (!debug_control_rx("<3>"))
+        return;
+    usart_transmitBytes(control_bus, (uint8_t*)"{4Packet 52}", 12);
+    wait(tx_timeout);
+    pcp_update_rx(&test_pcpdev);
+    if (!debug_control_rx("<6>"))
+        return;
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 49", buf))
+        return;
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 50", buf))
+        return;
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
+    buf[readnbytes] = '\0';
+    if (!debug_cmp("Packet 51", buf))
+        return;
+    readnbytes = pcp_read(&test_pcpdev, (uint8_t*)buf);
     buf[readnbytes] = '\0';
     if (readnbytes != -1) {
         debugMsg("Failed. Shouldn't have any extra packets.");
@@ -176,36 +218,11 @@ static void test_rx() {
         return;
 }
 
-static void playground() {
-    //usart_transmitStr(control_bus, (uint8_t*)"Hello, world!");
-    //char buf;
-    //uint64_t last_pinged = getSysTime();
-    //while (true) {
-    //    // Ping tx every 3 seconds
-    //    if (getSysTime() - last_pinged > 3000) {
-    //        usart_transmitStr(control_bus, (uint8_t*)"hi!");
-    //        last_pinged = getSysTime();
-    //    }
-    //    // Echo rx to tx
-    //    if (usart_receiveBufferNotEmpty(control_bus)) {
-    //        usart_receiveBytes(control_bus, (uint8_t*)&buf, 1);
-    //        usart_transmitBytes(control_bus, (uint8_t*)&buf, 1);
-    //    }
-    //}
-    const int payload_len = 9;
-    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 48", payload_len);
-    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 49", payload_len);
-    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 50", payload_len);
-    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 51", payload_len);
-    pcp_transmit(&test_pcpdev, (uint8_t*)"Packet 52", payload_len);
-}
-
 void testFunction_PCP() {
     test_init();
 
     //test_tx();
     test_rx();
-    //playground();
 
     debugMsg("PCP Tests complete. Entering interactive mode.");
 

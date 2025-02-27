@@ -129,7 +129,7 @@ void pcp_retransmit(PCPDevice* dev) {
     }
 }
 
-int pcp_receive(PCPDevice* dev, uint8_t* buf) {
+int pcp_read(PCPDevice* dev, uint8_t* buf) {
     pcp_update_rx(dev);
     if (!dev->rx_full && dev->rx_head == dev->rx_tail)
         return -1;
@@ -190,7 +190,7 @@ void pcp_update_rx(PCPDevice* dev) {
         // read_buf is the sequence number
         if (dev->rx_readnbytes == 1) {
             if (dev->rx_acknowledging ||
-                distance(read_buf, dev->rx_tail_seq) <= dev->window_size) {
+                distance(dev->rx_tail_seq, read_buf) <= dev->window_size) {
                 dev->rx_readnbytes++;
                 dev->rx_curr_seq = read_buf;
             } else {
@@ -234,7 +234,6 @@ void pcp_update_rx(PCPDevice* dev) {
             continue;
         }
         if (read_buf == PACKET_END) {
-            acknowledge(dev, dev->rx_curr_seq);
             set_received(dev, dev->rx_curr_seq, true);
             if (dev->rx_curr_seq == dev->rx_tail_seq) {
                 while (dev->rx_received & 1) {
@@ -244,6 +243,7 @@ void pcp_update_rx(PCPDevice* dev) {
                     dev->rx_tail = (dev->rx_tail) % RX_BUFSIZ;
                 }
             }
+            acknowledge(dev, dev->rx_tail_seq - 1);
             set_rx_waiting(dev);
             continue;
         }
