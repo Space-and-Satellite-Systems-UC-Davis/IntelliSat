@@ -11,7 +11,7 @@
  *
  *	- May 14-16, 2023
  * 		Author       : Raphael, Darsh, Parteek
- *      Contributors : nithilsenthil, Huey, Raymond, Kevin
+ *      Contributors : nithinsenthil, Huey, Raymond, Kevin
  *      Log          : Enabled interrupts for the buttons
  *
  *  - May 22, 2023
@@ -32,9 +32,16 @@
 
 #include "core_config.h"
 
+#define RCC_PLLCFGR_PLLN_VAL 10
+#define RCC_PLLSAI1CFGR_PLLSAI1N_VAL 12
+
 // Global variable
 int core_MHz;
 
+bool is_LSI_not_ready() { return !(RCC->CSR & RCC_CSR_LSIRDY); }
+bool is_LSE_not_ready() { return !(RCC->BDCR & RCC_BDCR_LSERDY); }
+bool is_PLL_not_ready() { return !(RCC->CR & RCC_CR_PLLRDY); }
+bool is_PLLSAI1_not_ready() { return !(RCC->CR & RCC_CR_PLLSAI1RDY); }
 void init_coreClocks() {
 	// Flash (NOT the external NOR FLASH)
 	RCC->AHB1ENR |= RCC_AHB1ENR_FLASHEN;
@@ -42,7 +49,7 @@ void init_coreClocks() {
 		  FLASH_ACR_DCEN			// Flash data cache enable
 		| FLASH_ACR_ICEN			// Flash instruction cache enable
 		| FLASH_ACR_PRFTEN			// Flash prefetch enable
-		| FLASH_ACR_LATENCY_4WS;	// 4 HCLCK periods of latency in Flash access time
+		| FLASH_ACR_LATENCY_4WS;	// 4 HCLK periods of latency in Flash access time
 
 	RCC->AHB2ENR |=
 		  RCC_AHB2ENR_OTGFSEN	// enable OTG full speed
@@ -55,9 +62,9 @@ void init_coreClocks() {
 	// enable internal oscillators
 	RCC->CR |= RCC_CR_HSION; 					// enable HSI
 	RCC->CSR |= RCC_CSR_LSION;					// Turn on the LSI Oscillator
-	while (!(RCC->CSR & RCC_CSR_LSIRDY));		// wait for the LSI Oscillator to stabilize
+	wait_with_timeout(is_LSI_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSI Oscillator to stabilize
 	// RCC->BDCR |= RCC_BDCR_LSEON;				// Turn on the LSE Oscillator
-	// while (!(RCC->BDCR & RCC_BDCR_LSERDY));	// wait for the LSE Oscillator to stabilize
+	// wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSE Oscillator to stabilize
 
 	// configure Phased Lock Loop
 	RCC->PLLCFGR =
@@ -67,7 +74,7 @@ void init_coreClocks() {
 		| RCC_PLLCFGR_PLLQEN			// PLLQEN (PLL48M1CLK) output enabled
 		| 0 << RCC_PLLCFGR_PLLP_Pos 	// PLLP default
 		| 0 << RCC_PLLCFGR_PLLPEN_Pos 	// PLLSAI3 not enabled
-		| (10 << RCC_PLLCFGR_PLLN_Pos) 	// PLLN = 10
+		| (RCC_PLLCFGR_PLLN_VAL << RCC_PLLCFGR_PLLN_Pos) 	// PLLN = 10
 		| 0 << RCC_PLLCFGR_PLLM_Pos 	// PLLM = 1
 		| RCC_PLLCFGR_PLLSRC_HSI; 		// HSI16 as input clock to PLLs
 	RCC->PLLSAI1CFGR =
@@ -75,35 +82,35 @@ void init_coreClocks() {
 		| RCC_PLLSAI1CFGR_PLLSAI1REN 			// PLLADC1CLK output enable
 		| RCC_PLLSAI1CFGR_PLLSAI1Q_0 			// PLL48M2CLK division factor set to 4
 		| RCC_PLLSAI1CFGR_PLLSAI1QEN 			// PLL48M2CLK output enable
-		| 0 << RCC_PLLSAI1CFGR_PLLSAI1P_Pos		// PLLSAI1CLKC division factor set to 7
+		| 0 << RCC_PLLSAI1CFGR_PLLSAI1P_Pos		// PLLSAI1CLK division factor set to 7
 		| 0 << RCC_PLLSAI1CFGR_PLLSAI1PEN_Pos 	// PLLSAI1CLK output disabled
-		| 12 << RCC_PLLSAI1CFGR_PLLSAI1N_Pos; 	// VCO multiplication factor set to 12
+		| RCC_PLLSAI1CFGR_PLLSAI1N_VAL << RCC_PLLSAI1CFGR_PLLSAI1N_Pos; 	// VCO multiplication factor set to 12
 	// enable PLL and PLLSAI1
 	RCC->CR |= RCC_CR_PLLON | RCC_CR_PLLSAI1ON;
-	while (!(RCC->CR & RCC_CR_PLLRDY));
-	while (!(RCC->CR & RCC_CR_PLLSAI1RDY));
+	wait_with_timeout(is_PLL_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_PLLSAI1_not_ready, DEFAULT_TIMEOUT_MS);
 	RCC->CFGR = RCC_CFGR_SW;	// system clock to PLL
 
 	// configure UART to use HSI16
 	RCC->CCIPR |=
-		  (2U << RCC_CCIPR_LPUART1SEL_Pos)
-		| (2U << RCC_CCIPR_UART5SEL_Pos)
-		| (2U << RCC_CCIPR_UART4SEL_Pos)
-		| (2U << RCC_CCIPR_USART3SEL_Pos)
-		| (2U << RCC_CCIPR_USART2SEL_Pos)
-		| (2U << RCC_CCIPR_USART1SEL_Pos);
+		  (RCC_CCIPR_LPUART1SEL_HSI16 << RCC_CCIPR_LPUART1SEL_Pos)
+		| (RCC_CCIPR_UARTSEL_HSI16 << RCC_CCIPR_UART5SEL_Pos)
+		| (RCC_CCIPR_UARTSEL_HSI16 << RCC_CCIPR_UART4SEL_Pos)
+		| (RCC_CCIPR_UARTSEL_HSI16 << RCC_CCIPR_USART3SEL_Pos)
+		| (RCC_CCIPR_UARTSEL_HSI16 << RCC_CCIPR_USART2SEL_Pos)
+		| (RCC_CCIPR_UARTSEL_HSI16 << RCC_CCIPR_USART1SEL_Pos);
 
 	// configure APB clocks to be System_Clock / 16
 	RCC->CFGR |=
-		  (7U << RCC_CFGR_PPRE1_Pos)	// APB1
-		| (7U << RCC_CFGR_PPRE2_Pos);	// APB2
+		  (RCC_CFGR_PPRE_APB_HCLK_DIV_16 << RCC_CFGR_PPRE1_Pos)	// APB1
+		| (RCC_CFGR_PPRE_APB_HCLK_DIV_16 << RCC_CFGR_PPRE2_Pos);	// APB2
 
 	core_MHz = 80;
 
 
 	// clock all GPIO ports
 	// - GPIO ports being unclocked is a reason drivers don't work, and is hard to debug
-	PWR->CR2 |= 1 << 9; // VDDIO2 supply for port G
+	PWR->CR2 |= PWR_CR2_IOSV_Msk; // VDDIO2 supply for port G
 	RCC->AHB2ENR |=
 		  RCC_AHB2ENR_GPIOAEN
 		| RCC_AHB2ENR_GPIOBEN
@@ -113,13 +120,13 @@ void init_coreClocks() {
 		| RCC_AHB2ENR_GPIOFEN
 		| RCC_AHB2ENR_GPIOGEN;
 	// wait until each GPIO is clocked and ready
-	while (GPIOA->OTYPER == 0xFFFFFFFF);
-	while (GPIOB->OTYPER == 0xFFFFFFFF);
-	while (GPIOC->OTYPER == 0xFFFFFFFF);
-	while (GPIOD->OTYPER == 0xFFFFFFFF);
-	while (GPIOE->OTYPER == 0xFFFFFFFF);
-	while (GPIOF->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	wait_with_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOC_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOF_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 }
 
 

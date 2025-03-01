@@ -2,7 +2,7 @@
 #include <TestDefinition.h>
 #include "platform_init.h"
 
-#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
+#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 const Test test = TEST_NOTHING;
 
 #include <TestDefinition.h>
@@ -10,7 +10,6 @@ const Test test = TEST_NOTHING;
 int main() {
     init_init();
     init_platform(!RUN_TEST);
-    // ^ don't want to run the Scheduler in case we are running other tests
 
 #if (RUN_TEST==1)
 

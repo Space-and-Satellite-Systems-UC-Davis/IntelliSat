@@ -9,6 +9,7 @@
 typedef enum {
     TEST_NOTHING,
     TEST_IMU_ACEL_GYRO_READS,
+    TEST_IMU_DUPE_READS,
     TEST_MAG_READS,
     TEST_LOGTIMER_CALLBACK,
     TEST_PWMGENERATION,
@@ -23,6 +24,7 @@ extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_PCP();
 extern void testFunction_UART();
+extern void testFunction_IMU_Dupe_Reads();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -46,6 +48,8 @@ void (*getTestFunction(Test test))(void) {
 			return testFunction_PCP;
 		case TEST_UART:
 			return testFunction_UART;
+		case TEST_IMU_DUPE_READS:
+			return testFunction_IMU_Dupe_Reads;
 		default:
 			return testFunction_Nothing;
 	}
