@@ -137,6 +137,8 @@ static void test_tx() {
 
 static void test_rx() {
     debugMsg("[Test receive] Sending Packet 48...");
+    usart_flushrx(control_bus);
+    usart_flushrx(pcpdev_bus);
     usart_transmitBytes(control_bus, (uint8_t*)"{0Packet 48}", 12);
     wait(tx_timeout);
     pcp_update_rx(&test_pcpdev);
@@ -219,7 +221,7 @@ static void test_rx() {
 void testFunction_PCP() {
     test_init();
 
-    //test_tx();
+    test_tx();
     test_rx();
 
     debugMsg("PCP Tests complete. Entering interactive mode.");
