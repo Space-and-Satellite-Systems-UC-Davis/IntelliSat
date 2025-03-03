@@ -23,7 +23,7 @@
 #define FRAM_WRITE_DISABLE 0x04
 #define FRAM_READ 0x03
 #define FRAM_WRITE 0x02
-#define FRAM_MAX_BYTES 8000
+#define FRAM_MAX_BYTES 0x8000
 
 // FRAM Device ID
 void FRAM_read_deviceID(uint8_t *MISO);
