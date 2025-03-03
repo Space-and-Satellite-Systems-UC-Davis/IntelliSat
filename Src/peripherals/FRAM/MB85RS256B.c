@@ -33,12 +33,17 @@ bool FRAM_writeEnable() {
     spi_startCommunication(FRAM_SPI_CS);
 
     // Send WRITE_ENABLE command
-    bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
+    if (!spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return false;
+    }
     FRAM_wait();
-
     // End communication
     spi_stopCommunication(FRAM_SPI_CS);
-    return success;
+
+    // Confirm WEL is set
+    uint8_t status = FRAM_readStatusRegister();
+    return (status & 0x02) != 0;  // Check if WEL bit is set
 }
 
 bool FRAM_writeDisable() {
@@ -49,6 +54,7 @@ bool FRAM_writeDisable() {
 
     // Send WRITE_DISABLE command
     bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
+    FRAM_wait();
 
     // End communication
     spi_stopCommunication(FRAM_SPI_CS);
@@ -83,32 +89,70 @@ uint8_t FRAM_readStatusRegister() {
 
 bool FRAM_readData(uint16_t address, uint8_t *buffer)
 {
-
+    // Validate address
+    if (address >= FRAM_MAX_BYTES) {
+        return false;
+    }
     uint8_t command = FRAM_READ; 
-    uint8_t addresses[2];
+    uint8_t addresses[2] = {
+        (address >> 8) & 0x7F, // Mask MSB (bit 15)
+        address & 0xFF         // Low byte
+    };
 
-    addresses[1] = (address >> 16) & 0xFF; 
-    addresses[2] = (address >> 8) & 0xFF;  
+    spi_startCommunication(FRAM_SPI_CS);
+    // Send FRAM_READ opcode
+    if (!spi_transmitReceive(FRAM_SPI, &command, NULL, 1, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return false;
+    }
+    // Send address bytes
+    if (!spi_transmitReceive(FRAM_SPI, addresses, NULL, 2, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return false;
+    }
+
+    // Dummy read to handle timing/delay issues
+    uint8_t trash;
+    spi_transmitReceive(FRAM_SPI, NULL, &trash, 1, false);
+
+    // Read into buffer
+    if (!spi_transmitReceive(FRAM_SPI, NULL, buffer, 256, false)) {
+        spi_stopCommunication(FRAM_SPI_CS);
+        return false;
+    }
+    spi_stopCommunication(FRAM_SPI_CS);
+    return true;
+}
+
+bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
+    // Validate address
+    if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES) {
+        return false;
+    }
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        return false;
+    }
+
+    uint8_t MOSI[3] = {
+        FRAM_WRITE,
+        (address >> 8) & 0x7F, // Mask MSB (bit 15)
+        address & 0xFF
+    };
 
     spi_startCommunication(FRAM_SPI_CS);
 
-    if (address > FRAM_MAX_BYTES)
-    {
-        spi_transmitReceive(FRAM_SPI, &command, NULL, 1, false);
-    }
-
-    if (!spi_transmitReceive(FRAM_SPI, address, NULL, sizeof(command), false))
-    {
+    // Send the WRITE command and address
+    if (!spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 3, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
-
-    if (!spi_transmitReceive(FRAM_SPI, NULL, buffer, 256, false))
-    {
+    // Send data to write
+    if (!spi_transmitReceive(FRAM_SPI, data, NULL, size, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
-
+    FRAM_wait();
     spi_stopCommunication(FRAM_SPI_CS);
 
     return true;
@@ -116,12 +160,12 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer)
 
 static uint16_t pageToAddress(uint16_t page)
 {
-    return page * 256; 
+    return page * 256;
 }
 
 static uint16_t sectorToAddress(uint16_t sector)
 {
-    return sector * 4096; 
+    return sector * 4096;
 }
 
 bool FRAM_readPage(uint16_t page, uint8_t *buffer)
@@ -146,72 +190,4 @@ bool FRAM_writeSector(uint16_t sector, const uint8_t *data)
 {
     uint16_t address = sectorToAddress(sector);
     return FRAM_writeData(address, data, 4096);
-}
-
-/*
-bool FRAM_writeData(uint16_t address, const uint8_t *data, size_t length)
-{
-    uint8_t command = FRAM_WRITE; 
-    uint8_t addresses[2];
-
-    addresses[0] = (address >> 8) & 0xFF; 
-    addresses[1] = address & 0xFF;        
-
-    spi_startCommunication(FRAM_SPI_CS);
-
-    if (!spi_transmitReceive(FRAM_SPI, &command, NULL, 1, false))
-    {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-
-    if (!spi_transmitReceive(FRAM_SPI, addresses, NULL, 2, false))
-    {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-
-    if (!spi_transmitReceive(FRAM_SPI, data, NULL, length, false))
-    {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-
-    spi_stopCommunication(FRAM_SPI_CS);
-
-    return true;
-}
-*/
-
-bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
-    // Make sure starting address and size are within FRAM memory range : 32KB memory (0x8000 bytes)
-    if (address + size > 0x8000) {
-        return false;
-    }
-    // Enable write operations
-    if (!FRAM_writeEnable()) {
-        return false;
-    }
-
-    uint8_t MOSI[3];
-    MOSI[0] = FRAM_WRITE;             // Write command
-    MOSI[1] = (address >> 8) & 0xFF;  // High byte of address
-    MOSI[2] = address & 0xFF;         // Low byte of address
-    spi_startCommunication(FRAM_SPI_CS);
-
-    // Send the WRITE command and address
-    if (!spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 3, false)) {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-    // Send data to write
-    if (!spi_transmitReceive(FRAM_SPI, data, NULL, size, false)) {
-        spi_stopCommunication(FRAM_SPI_CS);
-        return false;
-    }
-    FRAM_wait();
-    // End SPI communication
-    spi_stopCommunication(FRAM_SPI_CS);
-    
-    return true;
 }
