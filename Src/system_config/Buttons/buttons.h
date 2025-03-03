@@ -1,13 +1,13 @@
 /*
  * buttons.h
  *
- * 	- January    6, 2024
- * 		Author	: Darsh
- * 		Log		: get_buttonStatus functions for button management
+ *  - January    6, 2024
+ *      Author  : Darsh
+ *      Log     : get_buttonStatus functions for button management
  *
  *  - September 23, 2023 (Creation)
- *  	Author	: Darsh
- *  	Log		: Moved all button related code in one place
+ *      Author  : Darsh
+ *      Log     : Moved all button related code in one place
  */
 
 #include <globals.h>
@@ -40,6 +40,14 @@ bool get_buttonStatus_0();
  */
 bool get_buttonStatus_1();
 
+/**
+ * Returns the status of whether Button SW1 has been pressed or not.
+ *
+ * @param   None
+ * @returns boolean for whether the button was pressed once
+ */
+bool get_buttonStatus_SW1();
+
 /************************* Button Interrupt Handlers *************************/
 
 /**
@@ -57,3 +65,14 @@ void Button0_Handler();
  * @returns None
  */
 void Button1_Handler();
+
+/**
+ * Interrupt Handler for Button SW1
+ *
+ * @param None
+ * @returns None
+ */
+void ButtonSW1_Handler();
+
+
+
