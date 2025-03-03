@@ -31,6 +31,10 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 7:
 			return testFunction_FRAM;
+		case 8:
+			return testFunction_IMU_Dupe_Reads;
+		case 12:
+			return testFunction_Diode_Reads;
 		default:
 			return testFunction_Nothing;
 	}
