@@ -12,13 +12,28 @@
 
 #include <I2C/i2c.h>
 #include <SPI/spi.h>
-
+#include <print_scan.h>
 //Macros
 #if   OP_REV == 1
 #define IMU_I2C GPIOF, 1, GPIOF, 0
-#elif OP_REV == 2
+#elif OP_REV == 2 //TODO: Make actual change for Rev3
+
 #define IMU_SPI    SPI3
 #define IMU_SPI_CS SPI3_CS
+
+#elif OP_REV == 3
+
+#define IMU1_SPI    SPI2
+#define IMU1_SPI_CS SPI2_CS
+#define IMU0_SPI    SPI3
+#define IMU0_SPI_CS SPI3_CS
+
+enum IMU_SELECT { IMU0, IMU1 };
+
+extern enum IMU_SELECT IMU_global;
+
+void set_IMU(enum IMU_SELECT select);
+
 #endif
 
 //Macros
@@ -44,6 +59,40 @@
 #define IMU_FS_1000_dps 	8
 #define IMU_FS_2000_dps 	12
 #define IMU_FS_4000_dps 	1
+
+#define IMU_SPI_RW 0x80 // 1 is read and 0 is write. By default spi uses MSB first, meaning bit 7 of the address is the first bit sent out, in contrast to 5.1.2 figure 4
+#define IMU_SPI_DATA_DI_Msk 0x7F // data DI(7:0) (write mode). This is the data that is written into the device (MSb first)
+
+#define IMU_CTRL1_XL_ODR_Msk 0xFF // Accelerometer ODR selection
+#define IMU_CTRL1_XL_FS_Msk 0xF // Accelerometer full-scale selection
+#define IMU_CTRL1_XL_LPF2_XL_EN 0x1 // Accelerometer high-resolution selection
+
+#define IMU_CTRL1_XL_ODR_SPAN 4U
+#define IMU_CTRL1_XL_FS_SPAN 2U
+#define IMU_CTRL1_XL_LPF2_XL_SPAN 1U
+
+#define IMU_CTRL2_G_Msk 0xFF // Gyroscope control register 2 (r/w)
+
+#define OUT_TEMP_L_Pos 0x20
+#define OUT_TEMP_H_Pos 0x21
+
+#define OUTX_L_G_Pos 0x22
+#define OUTX_H_G_Pos 0x23
+
+#define OUTY_L_G_Pos 0x24
+#define OUTY_H_G_Pos 0x25
+
+#define OUTZ_L_G_Pos 0x26
+#define OUTZ_H_G_Pos 0x27
+
+#define OUTX_L_A_Pos 0x28
+#define OUTX_H_A_Pos 0x29
+
+#define OUTY_L_A_Pos 0x2A
+#define OUTY_H_A_Pos 0x2B
+
+#define OUTZ_L_A_Pos 0x2C
+#define OUTZ_H_A_Pos 0x2D
 
 /**
  * Configures the accelerometer control register of an IMU device.
@@ -83,48 +132,70 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
  *
  * @returns The X-axis acceleration value as a 16-bit signed integer.
  */
-int16_t imu_readAcel_X();
+float imu_readAcel_X();
 
 /**
  * Reads the y-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis acceleration value as a 16-bit signed integer.
  */
-int16_t imu_readAcel_Y();
+float imu_readAcel_Y();
 
 /**
  * Reads the acceleration value of the z-axis from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The acceleration value of the z-axis.
  */
-int16_t imu_readAcel_Z();
+float imu_readAcel_Z();
 
 /**
  * Reads the X-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The X-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t imu_readGyro_X();
+float imu_readGyro_X();
 
 /**
  * Reads the y-axis gyroscope value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The y-axis gyroscope value as a 16-bit signed integer.
  */
-int16_t imu_readGyro_Y();
+float imu_readGyro_Y();
 
 /**
  * Reads the Z-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The Z-axis gyroscope data as a 16-bit signed integer.
  */
-int16_t imu_readGyro_Z();
+float imu_readGyro_Z();
 
 /**
  * Reads the temperature from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The temperature value in 16-bit signed integer format.
  */
-int16_t imu_readTemp();
+float imu_readTemp();
+
+/**
+ * Tests SPI communication using WHO_AM_I register
+ * 
+ * @returns if communication between PFC and IMU are working
+ */
+bool imu_isCommunicationWorking();
+
+/**
+ * Prints all values in gyro, accceleromter, and temperarture
+ */
+void imu_printAllValues(); 
+
+/**
+ * Checks if Z acceleration is roughly equal to gravity with board at rest
+ */
+bool imu_hasExpectedValuesAccel();
+
+/**
+ * Checks in X rotation is roughly zero with board at rest
+ */
+bool imu_hasExpectedValuesGyro();
 
 #endif /* REALOP1_PERIPHERALS_IMU_H_ */

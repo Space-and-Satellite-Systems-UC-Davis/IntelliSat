@@ -17,6 +17,28 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 
+enum rcc_lpuart1_clk_sources {
+    RCC_CCIPR_LPUART1SEL_PCLK,
+    RCC_CCIPR_LPUART1SEL_SYSCLK,
+    RCC_CCIPR_LPUART1SEL_HSI16,
+    RCC_CCIPR_LPUART1SEL_LSE
+};
+
+enum rcc_uart_and_usart_clk_sources {
+    RCC_CCIPR_UARTSEL_PCLK,
+    RCC_CCIPR_UARTSEL_SYSCLK,
+    RCC_CCIPR_UARTSEL_HSI16,
+    RCC_CCIPR_UARTSEL_LSE
+};
+
+enum rcc_cfgr_ppre_prescalers {
+    RCC_CFGR_PPRE_APB_HCLK_NO_DIV = 0,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_2 = 4,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_4 = 5,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_8 = 6,
+    RCC_CFGR_PPRE_APB_HCLK_DIV_16 = 7
+};
+
 /**
  * Initializes the clocks of the micro-controller.
  *
