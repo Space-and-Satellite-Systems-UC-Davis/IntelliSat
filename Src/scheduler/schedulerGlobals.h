@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
-// #include <stdbool.h>
 
 #include "./../integration/integration.h"
 

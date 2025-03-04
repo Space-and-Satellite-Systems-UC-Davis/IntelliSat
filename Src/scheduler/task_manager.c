@@ -18,7 +18,6 @@
 #define TASK_MANAGER_YIELD_TICKS pdMS_TO_TICKS(10000) //TODO: temporary 10 seconds
 
 extern intelli_task_t task_table[6];
-
 const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
