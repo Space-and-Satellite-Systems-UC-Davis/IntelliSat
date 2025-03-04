@@ -11,8 +11,6 @@
 
 #define TASK_MANAGER_PRIORITY 1
 
-volatile struct task_t currtask;
-
 /**@brief Handle task expiration and preemption.
  *
  * @param args Unused.

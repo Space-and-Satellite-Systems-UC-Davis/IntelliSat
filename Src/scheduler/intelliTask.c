@@ -23,14 +23,14 @@
 	Experiment	 4		Is an experiment ready to run?
 	IDLE		 5		Idle when no other mode is running
 */
-intelli_task_t task_table[TASK_TABLE_LENGTH] = {
+intelli_task_t task_table[TASK_TABLE_LEN] = {
     {5, "LOW_PWR",      60000,  low_pwr_time,    config_low_pwr,    low_pwr,    clean_low_pwr,      NULL, NULL},  // Func1 - N/A
 	{4, "DETUMBLE",     60000,  detumble_time,   config_detumble,   detumble,   clean_detumble,     NULL, NULL},  // Func1 - N/A
 	{3, "COMMS",        60000,  comms_time,      config_comms,      comms,      clean_comms,        NULL, NULL},  // Func1 - N/A
     {2, "ECC",          60000,  ecc_time,        config_ecc,        ecc,        clean_ecc,          NULL, NULL},  // Func1 - N/A
     {1, "EXPERIMENT",   60000,  experiment_time, config_experiment, experiment, clean_experiment,   NULL, NULL},  // Func1 - Experiment ID (0 for none)
     {0, "IDLE",         0,      idle_time,       config_idle,       idle,       clean_idle,         NULL, NULL}   // Func1 - N/A
-}
+};
 
 /* Scheduling methods */
 bool low_pwr_time() {

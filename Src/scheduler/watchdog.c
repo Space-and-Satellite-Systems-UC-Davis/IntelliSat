@@ -49,14 +49,14 @@ void watchdog(void *args) {
 	for (int taskid = 0; taskid < TASK_TABLE_LEN; taskid++) {
 		intelli_task_t task = task_table[taskid];
 		status = xTaskCreate(	task.run_ptr,
-								task.task_name,
+								task.name,
 								1000, //TODO: make task-specific
 								NULL, //no parameters
-								task.task_id,
+								task.id,
 								&(task.FreeRTOS_handle)
 							);
 		if (status != pdPASS) {
-			printMsg("OOM allocating %s task\n", task.task_name);
+			printMsg("OOM allocating %s task\n", task.name);
 		}
 	}
 

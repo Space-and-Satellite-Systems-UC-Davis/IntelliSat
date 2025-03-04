@@ -13,7 +13,6 @@
 #include <globals.h>
 #include "timers.h"
 #include <LED/led.h>
-#include "../../scheduler/scheduler.h"
 
 
 // Global (external) variables and functions

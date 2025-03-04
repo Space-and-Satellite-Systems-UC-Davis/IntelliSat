@@ -18,8 +18,7 @@
 #include "./scheduler/schedulerGlobals.h"
 
 /* File Includes */
-#include "scheduler/scheduler.h"
-#include "scheduler/myTask.h"
+#include "./scheduler/intelliTask.h"
 #include "scheduler/status.h"
 
 #include "../FreeRTOS/Source/include/FreeRTOS.h"
