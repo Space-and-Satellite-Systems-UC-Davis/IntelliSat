@@ -7,19 +7,16 @@
 // NOTE: These are ADCS scientific tests and NOT unit tests
 #include <TestDefinition.h>
 
-// NOTE: These are UNIT tests not related to ADCS
-int run_unit_tests() {
-	UNITY_BEGIN();
-
-	runAllTests();
-
-	return UNITY_END();
-}
+#define RUN_UNIT_TESTS	1
 
 int main() {
     init_init();
     init_platform(!RUN_TEST);
     // ^ don't want to run the Scheduler in case we are running other tests
+
+#if (RUN_UNIT_TESTS==1)
+    run_unit_tests();
+#endif
 
 #if (RUN_TEST==1)
 
