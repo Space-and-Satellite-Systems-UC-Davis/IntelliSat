@@ -2,20 +2,16 @@
 #include "platform_init.h"
 
 #define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	5	// ID of the test to run in case RUN_TEST = 1, or 0 to run all tests
+#define TEST_ID 	4	// ID of the test to run in case RUN_TEST = 1
 
+// NOTE: These are ADCS scientific tests and NOT unit tests
 #include <TestDefinition.h>
 
-int run_tests() {
+// NOTE: These are UNIT tests not related to ADCS
+int run_unit_tests() {
 	UNITY_BEGIN();
 
-	if (TEST_ID == 0) {
-		runAllTests();
-	} else {
-		void (*testFunc)();
-		testFunc = getTestFunction(TEST_ID);
-		testFunc();
-	}
+	runAllTests();
 
 	return UNITY_END();
 }
@@ -27,7 +23,9 @@ int main() {
 
 #if (RUN_TEST==1)
 
-    run_tests();
+	void (*testFunc)();
+	testFunc = getTestFunction(TEST_ID);
+	testFunc();
 
     #else
 
