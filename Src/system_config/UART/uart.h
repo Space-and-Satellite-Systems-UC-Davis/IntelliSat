@@ -70,4 +70,6 @@ bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
  */
 int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
 
+void usart_transmitChar(USART_TypeDef *bus, char c);
+
 #endif	// REALOP1_UART_H_
