@@ -15,21 +15,33 @@ static void sun_sensors_initializePanelConstants() {
     panelInfo0->adcDiode1 = ADC3;
     panelInfo0->diode0Channel = 6;
     panelInfo0->diode1Channel = 7;
+    panelInfo0->i2cPort = GPIOG;
+    panelInfo0->scl_pin = 13;
+    panelInfo0->sda_pin = 14;
 
     panelInfo1->adcDiode0 = ADC3;
     panelInfo1->adcDiode1 = ADC2;
     panelInfo1->diode0Channel = 12;
     panelInfo1->diode1Channel = 5;
+    panelInfo1->i2cPort = GPIOF;
+    panelInfo1->sda_pin = 11;
+    panelInfo1->scl_pin = 2;
 
     panelInfo2->adcDiode0 = ADC2;
     panelInfo2->adcDiode1 = ADC2;
     panelInfo2->diode0Channel = 6;
     panelInfo2->diode1Channel = 7;
+    panelInfo2->i2cPort = GPIOG;
+    panelInfo2->sda_pin = 0;
+    panelInfo2->scl_pin = 1;
 
     panelInfo3->adcDiode0 = ADC3;
     panelInfo3->adcDiode1 = ADC3;
     panelInfo3->diode0Channel = 10;
     panelInfo3->diode1Channel = 9;
+    panelInfo3->i2cPort = GPIOF;
+    panelInfo3->sda_pin = 4;
+    panelInfo3->scl_pin = 5;
 
 
     panelInfo4->adcDiode0 = ADC2;
@@ -64,6 +76,8 @@ static panel_t* sun_sensors_panelInfoSelect(PANELS panel) {
 void sun_sensor_init() {
     adc_init();
     sun_sensors_initializePanelConstants();
+    power_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, 68,30);
+    temp_sensor_init(RESOLUTION_12);
 }
 
 
@@ -83,6 +97,46 @@ float sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber) {
 
     return adc_readVoltage(adc_readChannel(adc, channel));
     
+}
+
+float read_shunt_voltage(PANELS panelNum) {
+    panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
+    return get_shunt_voltage(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+}
+
+float read_bus_voltage(PANELS panelNum) {
+    panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
+    return get_bus_voltage(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+}
+
+float read_power(PANELS panelNum) {
+    panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
+    return get_power(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+}
+
+float read_current(PANELS panelNum) {
+    panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
+    return get_current(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+}
+
+float read_temp(PANELS panelNum, TEMP tempNum) {
+    panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
+    int tempAddress = TMP0_ADDRESS;
+    if (tempNum == TEMP1) {
+        tempAddress = TMP1_ADDRESS;
+    }
+    return get_temp(panel->i2cPort, panel->scl_pin, panel->sda_pin, tempAddress);
+
+}
+
+void shutdown_all(){
+    power_set_mode(MODE_POWERED_DOWN);
+    shutdown(true);
+}
+
+void repower_all(){
+    power_set_mode(MODE_CONTINUOUS);
+    shutdown(false);
 }
 
 

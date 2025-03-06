@@ -12,6 +12,7 @@ extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_Sun_Sensor_Main();
+extern void testFunction_INA_TMP_Outputs();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -33,6 +34,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
+		case 11:
+			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
 		case 13:
