@@ -16,9 +16,6 @@
 
 static bool low_pwr_mode = false; // The state repersenting whether or not in low power mode.
 
-static TaskHandle_t *suspended_tasks = NULL; // The list of handles for the suspended task.
-static UBaseType_t num_suspended = 0;        // The length of suspended_tasks
-
 bool low_pwr_time();
 void config_low_pwr();
 void low_pwr();
