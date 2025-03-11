@@ -5,13 +5,25 @@
 
 void task_entry_wrapper(void *params) {
     intelli_task_t *task = (intelli_task_t *)params;
-    while (1) {
-        if (task->ready_ptr()) {
+    uint32_t notify_bits;
+    
+    while(1) {
+        if(task->ready_ptr()) {
             task->config_ptr();
-            task->run_ptr();
+            
+            // Persistent execution while task is ready
+            while(task->ready_ptr()) {
+                // Check for notifications
+                if(xTaskNotifyWait(0, ULONG_MAX, &notify_bits, 0)) {
+                    handle_task_notifications(task, notify_bits);
+                }
+                task->run_ptr();
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+            
             task->clean_ptr();
         }
-        vTaskDelay(pdMS_TO_TICKS(10)); // Small delay to prevent starvation
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
