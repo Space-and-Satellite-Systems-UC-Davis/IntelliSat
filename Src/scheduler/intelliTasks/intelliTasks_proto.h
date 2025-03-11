@@ -1,7 +1,30 @@
 #ifndef INTELLITASKS_PROTO_H_
 #define INTELLITASKS_PROTO_H_
 
-#include "../schedulerGlobals.h"
+#include "../intelliTask.h"
+
+void task_entry_wrapper(void *params) {
+    intelli_task_t *task = (intelli_task_t *)params;
+    while (1) {
+        if (task->ready_ptr()) {
+            task->config_ptr();
+            task->run_ptr();
+            task->clean_ptr();
+        }
+        vTaskDelay(pdMS_TO_TICKS(10)); // Small delay to prevent starvation
+    }
+}
+
+void create_task(intelli_task_t *task) {
+    xTaskCreate(
+        task_entry_wrapper,  // Wrapper that calls run_ptr()
+        task->name,
+        configMINIMAL_STACK_SIZE,
+        (void*)task,         // Pass task struct to wrapper
+        task->func_1,       // Priority
+        &task->FreeRTOS_handle
+    );
+}
 
 /* Scheduling methods */
 
