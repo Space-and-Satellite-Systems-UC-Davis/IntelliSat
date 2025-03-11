@@ -6,9 +6,6 @@
  * @date 1/27/2025
  */
 
-#include "FreeRTOS/Source/include/FreeRTOS.h"
-#include "FreeRTOS/Source/include/task.h"
-
 #include "task_manager.h"
 #include "intelliTask.h"
 
