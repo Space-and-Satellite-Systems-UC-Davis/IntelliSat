@@ -8,8 +8,8 @@
 
 #include "timers.h"
 
-#define timer_startupTimerOn()	StartupTimer->CR1 |=  TIM_CR1_CEN;
-#define timer_startupTimerOff()	StartupTimer->CR1 &= ~TIM_CR1_CEN;
+#define timer_startupTimerOn()	StartupTimer->CR1 |=  TIM_CR1_CEN
+#define timer_startupTimerOff()	StartupTimer->CR1 &= ~TIM_CR1_CEN
 
 
 #define MAX_STARTUP_COUNT (30 * 60)		// 30 minutes * 60 seconds per minute
@@ -24,7 +24,7 @@ void timer_initStartupTimer() {
 	// 		R   =  1			<-- 1 second
 	//		RCR =  0
 
-	// Prescalar
+	// Prescaler
 	uint32_t PSC = 1065;		// Random Number
 	// Auto Reload Counter
 	uint32_t ARR = 4695;		// (F/(R(PSC + 1)) - 1)
@@ -51,11 +51,12 @@ void timer_initStartupTimer() {
  *
  * @returns Boolean to indicate if the initialization was successful
  */
+bool is_startup_count_under_max() { return startup_count < MAX_STARTUP_COUNT; }
 void timer_waitStartupTime() {
 	timer_initStartupTimer();
 
 	timer_startupTimerOn();
-	while (startup_count < MAX_STARTUP_COUNT);
+	wait_with_timeout(is_startup_count_under_max, DEFAULT_TIMEOUT_MS);
 	timer_startupTimerOff();
 }
 

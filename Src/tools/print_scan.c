@@ -34,3 +34,19 @@ int printMsg(const char *message, ...) {
 
 	usart_transmitStr(ConsoleUART, buff);
 }
+
+int debugMsg(const char *message, ...) {
+	char buff[128];
+
+	va_list args;
+	va_start(args, message);
+	vsprintf(buff,message,args);
+
+    int now = getSysTime();
+    uint8_t str[64];
+    sprintf((char*)str, "%8d", now);
+    usart_transmitStr(ConsoleUART, (uint8_t*)"\n");
+    usart_transmitStr(ConsoleUART, str);
+    usart_transmitStr(ConsoleUART, (uint8_t*)":");
+    usart_transmitStr(ConsoleUART, (uint8_t*)buff);
+}

@@ -16,17 +16,69 @@
 
 #include "stm32l476xx.h"
 
+#define GPIO_MODER_BITS_SPAN 2U
+
+#define GPIO_OSPEEDR_BITS_SPAN 2U
+
+#define GPIO_PUPDR_BITS_SPAN 2U
+
+#define GPIO_PUPDR_PUPDx_MSK 3U
+
+#define GPIO_AFRx_AFSEL_BITS_LEN 4U // Bit# of GPIOx_AFRH_AFELx to be set can be obtain by $$(Pin - GPIO_AFRH_AFSEL_PIN_BIT_OFFSET) * GPIO_AFRx_AFSEL_BITS_LEN
+#define GPIO_AFRH_AFSEL_PIN_BIT_OFFSET 8U // Bit# of GPIOx_AFRH_AFELx to be set can be obtain by $$(Pin - GPIO_AFRH_AFSEL_PIN_BIT_OFFSET) * GPIO_AFRx_AFSEL_BITS_LEN
+
 enum gpio_modes {
-	GPIO_Input,
-	GPIO_Output,
-	GPIO_AlternateFunction,
-	GPIO_Analog
+	GPIO_MODER_Input,
+	GPIO_MODER_Output,
+	GPIO_MODER_AlternateFunction,
+	GPIO_MODER_Analog
 };
 
-enum gpio_pull_states {
-	GPIO_PullupPulldown,
-	GPIO_Pullup,
-	GPIO_Pulldown,
+enum gpio_out_states {
+	GPIO_OTYPER_PUSH_PULL,
+	GPIO_OTYPER_OPEN_DRAIN
+};
+
+enum gpio_pull_state {
+	GPIO_PUPDR_NO_PULL,
+	GPIO_PUPDR_PULL_UP,
+	GPIO_PUPDR_PULL_DOWN
+};
+
+enum gpio_alternate_func {
+	GPIO_AFRX_AF0,
+	GPIO_AFRX_AF1,
+	GPIO_AFRX_AF2,
+	GPIO_AFRX_AF3,
+	GPIO_AFRX_AF4,
+	GPIO_AFRX_AF5,
+	GPIO_AFRX_AF6,
+	GPIO_AFRX_AF7,
+	GPIO_AFRX_AF8,
+	GPIO_AFRX_AF9,
+	GPIO_AFRX_AF10,
+	GPIO_AFRX_AF11,
+	GPIO_AFRX_AF12,
+	GPIO_AFRX_AF13,
+	GPIO_AFRX_AF14,
+	GPIO_AFRX_AF15
+};
+
+enum gpio_out_speed {
+	GPIO_OSPEEDR_LOW,
+	GPIO_OSPEEDR_MED,
+	GPIO_OSPEEDR_HIGH,
+	GPIO_OSPEEDR_VERY_HIGH
+};
+
+enum gpio_odx_set {
+	GPIO_BSRR_BS_ODX_DN,
+	GPIO_BSRR_BS_ODX_SET
+};
+
+enum gpio_odx_reset {
+	GPIO_BSRR_BR_ODX_DN,
+	GPIO_BSRR_BR_ODX_RESET
 };
 
 /**

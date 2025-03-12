@@ -12,6 +12,11 @@
 #include <GPIO/gpio.h>
 #include "../../tools/print_scan.h"
 
+#define RCC_CCIPR_ADCSEL_SYSCLK (3 << RCC_CCIPR_ADCSEL_Pos)
+#define GPIO_MODER_MODE0_ANALOG (3 << GPIO_MODER_MODE0_Pos)
+#define ADC_SQR1_SQ1_CHAN18_AS_1st_CONV (18 << ADC_SQR1_SQ1_Pos)
+#define ADC_CHAN18_640_5_CLK_CYC (7 << ADC_SMPR2_SMP18_Pos)
+
 //CALL THESE IN ORDER
 
 //Initializes ADC clocks
@@ -36,18 +41,18 @@ void adc_setConstantGPIOValue();
  */
 uint16_t adc_singleConversion();
 
-/* Converts the adcVal to a milivolt value using 2.048 VREFINT (VREFBUF->CSR VRS bit is 0)
- * @returns: the milivolt value of an int
+/* Converts the adcVal to a millivolt value using 2.048 VREFINT (VREFBUF->CSR VRS bit is 0)
+ * @returns: the millivolt value of an int
  */
 uint16_t adc_adcToVolt1(uint16_t adcVal);
 
-/* Converts the adcVal to a milivolt value using 2.5 VREFINT (VREFBUF->CSR VRS bit is 1)
- * @returns: the milivolt value of an int
+/* Converts the adcVal to a millivolt value using 2.5 VREFINT (VREFBUF->CSR VRS bit is 1)
+ * @returns: the millivolt value of an int
  */
 uint16_t adc_adcToVolt2(uint16_t adcVal);
 
-/* Converts the adcVal to a milivolt value using the battery internal reference (idk why its different)
- * @returns: the milivolt value of an int
+/* Converts the adcVal to a millivolt value using the battery internal reference (idk why its different)
+ * @returns: the millivolt value of an int
  */
 uint16_t adc_adcToBatVolt(uint16_t adcVal);
 
