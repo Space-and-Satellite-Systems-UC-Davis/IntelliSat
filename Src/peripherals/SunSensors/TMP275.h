@@ -36,17 +36,6 @@
 
 
 
-typedef struct {
-    int ID;
-    GPIO_TypeDef* SDA_GPIO;
-    GPIO_TypeDef* SCL_GPIO;
-    int SDA_PIN;
-    int SCL_PIN;
-} SUN_SENSOR;
-
-
-
-
 /**
  * Initializes I2C communication and configures temp sensor with preferred resolution
  *
