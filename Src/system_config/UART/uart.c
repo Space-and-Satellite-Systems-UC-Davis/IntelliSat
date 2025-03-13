@@ -359,7 +359,7 @@ void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]) {
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Transfer each character one at a time
-	for (int i = 0; i < (int)strlen(message); i++){
+	for (int i = 0; i < (int)strlen((const char *) message); i++){
 		// wait until Data register is empty
 		uint64_t start_time = getSysTime(); //time in ms
 		while (!(bus->ISR & USART_ISR_TXE) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));
@@ -447,7 +447,7 @@ void USART1_IRQHandler() {
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ISR &= ~USART_ISR_RTOF;
-#if OP_REV == 1 || OP_REV == 2
+#if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
 		USART1_RxBuffer.timedout = true;
 #endif
 	}
