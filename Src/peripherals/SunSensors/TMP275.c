@@ -44,7 +44,7 @@ void temp_sensor_init(int res){
 }
 
 
-void shutdown(bool shutdown){
+void temp_sensor_shutdown(bool shutdown){
 
         int config = (initialConfig & ~3) | shutdown;
         softi2c_writeReg16(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN, TMP0_ADDRESS, 1, config);
@@ -63,7 +63,7 @@ void shutdown(bool shutdown){
 
 
 
-float get_temp(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address){
+float temp_sensor_getTemp(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address){
     int16_t temp = softi2c_readReg16(gpio, scl_pin, gpio, sda_pin, address, 0);
     return (temp >> (16-resolution))* resolution_conversion;
    

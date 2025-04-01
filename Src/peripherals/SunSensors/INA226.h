@@ -65,7 +65,7 @@
  *
  * @returns None
  */
-void power_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
+void pwrmon_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
 
 /**
  * Initial configuration of the sun sensor's config register and calibration register
@@ -78,7 +78,7 @@ void power_init(int averages, int bus_time, int shunt_time, int rshunt, int max_
  *
  * @returns None
  */
-void sensor_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
+void pwrmon_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
 
 
 /**
@@ -89,7 +89,7 @@ void sensor_config(int averages, int bus_time, int shunt_time, int rshunt, int m
  * 
  * @returns Voltage in mV 
  */
-float get_shunt_voltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float pwrmon_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
 
 
 /**
@@ -100,7 +100,7 @@ float get_shunt_voltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
  * 
  * @returns Voltage in Volts
  */
-float get_bus_voltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float pwrmon_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
 
 /**
  * Reads the power from the sun sensor
@@ -110,7 +110,7 @@ float get_bus_voltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
  * 
  * @returns Wattage as a 16 bit integer
  */
-float get_power(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float pwrmon_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
 
 /**
  * Reads the current from the sun sensor
@@ -120,7 +120,7 @@ float get_power(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
  * 
  * @returns Amps as a 16 bit integer
  */
-float get_current(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float pwrmon_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
 
 /**
  * Resets the mode of the sensors
@@ -128,7 +128,7 @@ float get_current(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
  * 
  * @returns None
  */
-void set_mode(int mode);
+void pwrmon_setMode(int mode);
 
 
 /**
