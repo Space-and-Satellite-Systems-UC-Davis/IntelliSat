@@ -51,7 +51,7 @@ float sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber);
  * @return shunt voltage in mV
  * 
  */
-float read_shunt_voltage(PANELS panelNum);
+float sun_sensors_readShuntVoltage(PANELS panelNum);
 
 /**
  * Read the bus voltage from power moniter
@@ -61,7 +61,7 @@ float read_shunt_voltage(PANELS panelNum);
  * @return bus voltage in V
  * 
  */
-float read_bus_voltage(PANELS panelNum);
+float sun_sensors_readBusVoltage(PANELS panelNum);
 
 
 /**
@@ -72,7 +72,7 @@ float read_bus_voltage(PANELS panelNum);
  * @return power in W
  * 
  */
-float read_power(PANELS panelNum);
+float sun_sensors_readPower(PANELS panelNum);
 
 /**
  * Read the current from power moniter
@@ -82,7 +82,7 @@ float read_power(PANELS panelNum);
  * @return current in A
  * 
  */
-float read_current(PANELS panelNum);
+float sun_sensors_readCurrent(PANELS panelNum);
 
 /**
  * Read the shunt voltage from power moniter
@@ -93,18 +93,18 @@ float read_current(PANELS panelNum);
  * @return temperature in Celsius
  * 
  */
-float read_temp(PANELS panelNum, TEMP tempNum);
+float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum);
 
 /**
  * Power down all temp sensors and power moniters
  * 
  */
-void power_down_all();
+void sun_sensors_shutdownAll();
 
 /**
  * Repower all temp sensors and power moniters into continuous mode
  * 
  */
-void repower_all();
+void sun_sensors_repowerAll();
 
 

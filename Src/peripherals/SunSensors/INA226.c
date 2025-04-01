@@ -8,17 +8,17 @@ int ceiling(float num){
     return num - (int)num > 0 ? (int)num + 1: (int)num;
 }
 
-void power_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current){
+void pwrmon_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current){
 
     softi2c_init(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN);
     softi2c_init(PAN1_GPIO, PAN1_SCL_PIN, PAN1_GPIO, PAN1_SDA_PIN);
     softi2c_init(PAN2_GPIO, PAN2_SCL_PIN, PAN2_GPIO, PAN2_SDA_PIN);
     softi2c_init(PAN3_GPIO, PAN3_SCL_PIN, PAN3_GPIO, PAN3_SDA_PIN);
 
-    sensor_config(averages, bus_time, shunt_time, rshunt, max_current);
+    pwrmon_config(averages, bus_time, shunt_time, rshunt, max_current);
 }
 
-void sensor_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current){
+void pwrmon_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current){
     config = averages << 9 | bus_time << 6 | shunt_time << 3 | MODE_CONTINUOUS;
     current_lsb = ceiling(max_current / 32768.0 * MICRO); //2^15
     int16_t cal = ceiling((0.00512 / (current_lsb * 1.0 /MICRO)) /(rshunt * 1.0 /MILLI)); //round to nearest integer above
@@ -51,32 +51,32 @@ void sensor_config(int averages, int bus_time, int shunt_time, int rshunt, int m
         set_mode(MODE_POWERED_DOWN, false);
 }*/
 
-float get_shunt_voltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
+float pwrmon_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
     int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, SENSOR_ADDRESS, 0x01);
 
     return output * .0025;
 }
 
 
-float get_bus_voltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
+float pwrmon_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
     int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, SENSOR_ADDRESS, 0x02);
     return output * 1.25/MILLI; 
 }
 
 
-float get_power(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
+float pwrmon_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
     int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, SENSOR_ADDRESS, 0x03);
     return output * current_lsb/(double)MICRO * 25; 
 }
 
 
-float get_current(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
+float pwrmon_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
     int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, SENSOR_ADDRESS, 0x04);
     return output * current_lsb / (double)MICRO;
 }
 
 
-void set_mode(int mode){
+void pwrmon_setMode(int mode){
     int16_t changed_config = (config & ~7) | mode;
 
     softi2c_writeReg16(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN, SENSOR_ADDRESS, 0, changed_config);

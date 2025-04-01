@@ -55,7 +55,7 @@ void temp_sensor_init(int resolution);
  *
  *  @return None
  */
-void shutdown(bool shutdown);
+void temp_sensor_shutdown(bool shutdown);
 
 
 /**
@@ -68,6 +68,6 @@ void shutdown(bool shutdown);
  * @return temperature in Celsius
  *
  */
-float get_temp(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
+float temp_sensor_getTemp(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 

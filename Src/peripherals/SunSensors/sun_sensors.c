@@ -76,7 +76,7 @@ static panel_t* sun_sensors_panelInfoSelect(PANELS panel) {
 void sun_sensor_init() {
     adc_init();
     sun_sensors_initializePanelConstants();
-    power_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, 68,30);
+    pwrmon_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, 68,30);
     temp_sensor_init(RESOLUTION_12);
 }
 
@@ -99,42 +99,42 @@ float sun_sensors_readVoltage(PANELS panelNumber, DIODES diodeNumber) {
     
 }
 
-float read_shunt_voltage(PANELS panelNum) {
+float sun_sensors_readShuntVoltage(PANELS panelNum) {
     panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
-    return get_shunt_voltage(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+    return pwrmon_getShuntVoltage(panel->i2cPort, panel->scl_pin, panel->sda_pin);
 }
 
-float read_bus_voltage(PANELS panelNum) {
+float sun_sensors_readBusVoltage(PANELS panelNum) {
     panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
-    return get_bus_voltage(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+    return pwrmon_getBusVoltage(panel->i2cPort, panel->scl_pin, panel->sda_pin);
 }
 
-float read_power(PANELS panelNum) {
+float sun_sensors_readPower(PANELS panelNum) {
     panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
-    return get_power(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+    return pwrmon_getPower(panel->i2cPort, panel->scl_pin, panel->sda_pin);
 }
 
-float read_current(PANELS panelNum) {
+float sun_sensors_readCurrent(PANELS panelNum) {
     panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
-    return get_current(panel->i2cPort, panel->scl_pin, panel->sda_pin);
+    return pwrmon_getCurrent(panel->i2cPort, panel->scl_pin, panel->sda_pin);
 }
 
-float read_temp(PANELS panelNum, TEMP tempNum) {
+float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum) {
     panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
     int tempAddress = TMP0_ADDRESS;
     if (tempNum == TEMP1) {
         tempAddress = TMP1_ADDRESS;
     }
-    return get_temp(panel->i2cPort, panel->scl_pin, panel->sda_pin, tempAddress);
+    return temp_sensor_getTemp(panel->i2cPort, panel->scl_pin, panel->sda_pin, tempAddress);
 
 }
 
-void shutdown_all(){
+void sun_sensors_shutdownAll(){
     power_set_mode(MODE_POWERED_DOWN);
     shutdown(true);
 }
 
-void repower_all(){
+void sun_sensors_repowerAll(){
     power_set_mode(MODE_CONTINUOUS);
     shutdown(false);
 }
