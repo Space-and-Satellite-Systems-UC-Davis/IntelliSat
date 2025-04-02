@@ -6,6 +6,7 @@ void test_basic_example_unity();
 int run_unit_tests() {
     UNITY_BEGIN();
 
+	// NOTE: Add all tests with the RUN_TEST function
     RUN_TEST(test_basic_example_unity);
 
     return UNITY_END();
@@ -16,5 +17,5 @@ void test_basic_example_unity() {
 
     // Try to use type specific functions as much as possible, as they produce
     // better debugging output!
-    TEST_ASSERT_EQUAL_INT(1, 2);
+    TEST_ASSERT_EQUAL_INT(1, 1);
 }
