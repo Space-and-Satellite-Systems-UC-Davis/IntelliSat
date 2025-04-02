@@ -40,6 +40,7 @@ bool low_pwr_time(void) {
 
 void config_low_pwr(void) {
     // Suspend lower priority tasks
+    // TODO Make the schduler do the task suspend
     for(int i = 0; i < TASK_TABLE_LEN; i++) {
         intelli_task_t *task = &task_table[i];
         if(task->func_1 < LOW_PWR_PRIORITY_THRESHOLD) {
