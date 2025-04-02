@@ -114,7 +114,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     dev->last_tx_time = getSysTime();
     dev->curr_window_sz++;
     usart_transmitBytes(dev->bus, tx_buf->data, tx_buf->len);
-    return true;
+    return 0;
 }
 
 void pcp_retransmit(PCPDevice* dev) {
