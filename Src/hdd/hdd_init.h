@@ -8,6 +8,8 @@
 #include <LED/led.h>
 #include <inttypes.h>
 
+#pragma once
+
 // if max should be calibrated, the min and max duty, and the max duty previous calibrated
 void calibrate(const bool CAL_MAX, const float MIN_DUTY, const float MAX_DUTY, const float MAX_START_DUTY);
 

@@ -2,9 +2,9 @@
  * hdd_training_test.c
  *
  *  Fill out the information below
- *  Created on:
- *  Updated on:
- *      Author: Chandrark Muddana
+ *  Created on: 4/02/2025
+ *  Updated on: 4/02/2025
+ *      Author: Nicholas Bianez
  *
  *  Information:
  *  	This file is the main hdd test function file and should
@@ -12,11 +12,11 @@
  *  	the go-ahead has been given for other members.
  */
 
-#include "hdd_init.c"
-#include "hdd_drive.c"
+#include "../hdd_drive.h"
+#include "../hdd_init.h"
 
 // runs the actual testing code
-void testFunctionMain_HDD2(){
+void testFunction_HDD1() {
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)

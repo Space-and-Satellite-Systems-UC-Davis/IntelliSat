@@ -12,17 +12,11 @@
  *  	the go-ahead has been given for other members.
  */
 
-#include "hdd_init.c"
-#include "hdd_drive.c"
-
-// the member id to use for test function execution
-void testFuncID_HDD() {
-	// return your id value to call your test function
-	return 0;
-}
+#include "../hdd_drive.h"
+#include "../hdd_init.h"
 
 // runs the actual testing code
-void testFunctionMain_HDD5(){
+void testFunctionMain_HDD6() {
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
