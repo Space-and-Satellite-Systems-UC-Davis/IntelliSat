@@ -1,4 +1,4 @@
-#include "PID.h"
+#include "pid.h"
 #include <stdint.h>
 
 double get_delta_t(int currTime, double prevTime) {
