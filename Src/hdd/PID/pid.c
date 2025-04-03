@@ -1,5 +1,5 @@
 #include "pid.h"
-#include <stdint.h>
+#include <limits.h>
 
 double get_delta_t(int currTime, double prevTime) {
     if (prevTime <= currTime) {
