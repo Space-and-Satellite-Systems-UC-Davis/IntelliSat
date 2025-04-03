@@ -10,7 +10,9 @@ void config_pizza() {
 }
 
 void pizza() {
-    printMsg("pizza run\n\r");
+    while (1) {
+        printMsg("pizza run\n\r");
+    }
 }
 
 void clean_pizza() {

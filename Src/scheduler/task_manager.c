@@ -15,7 +15,7 @@
 #include "task_manager.h"
 #include "intelliTask.h"
 
-#define TASK_MANAGER_YIELD_TICKS pdMS_TO_TICKS(10000) //TODO: temporary 10 seconds
+#define TASK_MANAGER_YIELD_TICKS pdMS_TO_TICKS(1000) //TODO: temporary 10 seconds 1\10
 
 extern intelli_task_t task_table[6];
 const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -142,52 +142,59 @@ const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0,
 
 
 void task_manager(void *args) {
+	printMsg("Task Manager started!\n\r");
 	static intelli_task_t current_task = null_task;
 	static uint32_t current_task_dur = 0;
 
-	bool cancel_current_task = false;
+	while(1) {
+		bool cancel_current_task = false;
 
-    // Initi current_task on boot
-    if (current_task.id == null_task.id) {
-        current_task = task_table[TASK_TABLE_LEN - 1];
-    }
+		// Initi current_task on boot
+		if (current_task.id == null_task.id) {
+			current_task = task_table[TASK_TABLE_LEN - 1];
+		}
 
-	current_task_dur += pdTICKS_TO_MS(TASK_MANAGER_YIELD_TICKS);
+		current_task_dur += pdTICKS_TO_MS(TASK_MANAGER_YIELD_TICKS);
 
-	// If expired, cancel. Else if preempted, cancel.
-	// TODO: check for current task yield via notif
-	if (current_task.timeout != 0 && /* current task has a timeout */
-		current_task_dur >= current_task.timeout /* and it expired */
-	) {
-		cancel_current_task = true;
-	} else {
-		for (int id = 0; id < current_task.id; id++) {
-			if ((task_table[id]).ready_ptr()) {
-				cancel_current_task = true;
-				break;
+		// If expired, cancel. Else if preempted, cancel.
+		// TODO: check for current task yield via notif
+		if (current_task.timeout != 0 && /* current task has a timeout */
+			current_task_dur >= current_task.timeout /* and it expired */
+		) {
+			cancel_current_task = true;
+		} else {
+			// Scan for ready task from the next-highest priority downwards
+			for (int id = current_task.id - 1; id >= 0; id--) {
+				if ((task_table[id]).ready_ptr()) {
+					cancel_current_task = true;
+					break;
+				}
 			}
 		}
-	}
 
-	if (cancel_current_task == false) {
-		vTaskResume(current_task.FreeRTOS_handle);
-	} else {
-		// Suspend current_task
-		vTaskSuspend(current_task.FreeRTOS_handle);
-		current_task.clean_ptr(); //clean must run after suspend!
-		current_task = null_task;
-		current_task_dur = 0;
+		if (cancel_current_task == false) {
+			vTaskResume(current_task.FreeRTOS_handle);
+		} else {
+			// Suspend current_task
+			if (current_task.id != null_task.id) {
+				vTaskSuspend(current_task.FreeRTOS_handle);
+				current_task.clean_ptr(); //clean must run after suspend!
+				current_task = null_task;
+				current_task_dur = 0;
+			}
 
-		// Schedule another task, highest priority first
-		for (int id = 0; id < TASK_TABLE_LEN; id++) {
-			if (task_table[id].ready_ptr()) {
-				current_task = task_table[id];
-				vTaskResume(current_task.FreeRTOS_handle);
-				//TODO: send the new task a start notification
-				break;
+			// Schedule another task, highest priority first
+			for (int id = 0; id < TASK_TABLE_LEN; id++) {
+				if (task_table[id].ready_ptr()) {
+					current_task = task_table[id];
+					current_task.config_ptr();
+					vTaskResume(current_task.FreeRTOS_handle);
+					//TODO: send the new task a start notification
+					break;
+				}
 			}
 		}
-	}
 
-	vTaskDelay((TickType_t) TASK_MANAGER_YIELD_TICKS);
+		vTaskDelay((TickType_t) TASK_MANAGER_YIELD_TICKS);
+	}
 }
