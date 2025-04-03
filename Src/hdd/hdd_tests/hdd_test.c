@@ -15,6 +15,11 @@
 #include "../hdd_drive.h"
 #include "../hdd_init.h"
 
+#include <Timers/timers.h>
+#include <ADC/adc.h>
+#include <LED/led.h>
+#include <inttypes.h>
+
 // the member id to use for test function execution
 void testFuncID_HDD() {
 	// return your id value to call your test function
@@ -29,7 +34,7 @@ void testFunction_HDD() {
 	const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 	// init timer here does other initialization actions
-	led_d2(true);
+	led_d2(1);
 	pwm_initTimer(PERIOD_uS); //This period time is in microseconds
 	pwm_setDutyCycle(10);
 	PWM_TIMER_ON();
