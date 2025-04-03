@@ -4,8 +4,6 @@
 // #include "s8254a.h"      // Protection IC
 
 static bool low_pwr_mode = false;
-static bool low_power_configuired = false;
-static bool low_pwr_cleaned = false;
 
 // IC Interface ============================================================
 static uint8_t read_battery_percent(void) {
@@ -18,7 +16,7 @@ static bool battery_is_low(void) {
 }
 
 static bool battery_is_recovered(void) {
-    return read_battery_percent() >= (LOW_BATTERY_THRESHOLD + BATT_HYSTERESIS);
+    return read_battery_percent() >= (HIGH_BATTERY_THRESHOLD + BATT_HYSTERESIS);
 }
 
 // Mode Management =========================================================
@@ -28,7 +26,7 @@ void low_pwr(void)
         while(low_pwr_time()) {
             low_pwr_main();
         }
-        if (!low_pwr_cleaned) clean_low_pwr();
+        clean_low_pwr();
         vTaskDelay(LOW_PWR_DELAY);
     }
 }
@@ -62,7 +60,6 @@ bool low_pwr_time(void) {
 void low_pwr_main(void)
 {
     enable_low_power_hardware();
-    low_pwr_cleaned = false;
 }
 
 void clean_low_pwr(void) {
@@ -70,7 +67,6 @@ void clean_low_pwr(void) {
     restore_normal_hardware();
     // eta3000_enable_autobalance(false);
     // s8254a_enable_protection(false);
-    low_pwr_cleaned = true;
 }
 
 // Hardware Control ========================================================
@@ -81,14 +77,10 @@ void enable_low_power_hardware(void) {
     // - Adjust voltage regulators
     // __HAL_RCC_GPIOB_CLK_DISABLE();
     // HAL_PWREx_EnableUltraLowPower();
-    if (low_power_configuired) return;
-    low_power_configuired = true;
 }
 
 void restore_normal_hardware(void) {
     // Restore full operational state
     // __HAL_RCC_GPIOB_CLK_ENABLE();
     // HAL_PWREx_DisableUltraLowPower();
-    if (!low_power_configuired) return;
-    low_power_configuired = false;
 }
