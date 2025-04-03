@@ -21,20 +21,25 @@ void rampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY
 void setSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_DUTY, const uint64_t TIME_MS);
 
 void setSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_DUTY, const uint64_t TIME_MS) {
-	uint64_t end_time = getSysTime() + TIME_MS;start_time
 	if (PERCENT >= 1) {
-
+		pwm_setDutyCycle(MIN_DUTY);
+		delay_ms(TIME_MS);
+		return;
 	}
+
+	uint64_t end_time = getSysTime() + TIME_MS;
 
 	// to retain smooth behavior, period must decrease as percent decreases
 	// since there will be much more of the period to lose speed on
 	// 125ms off time is a fairly smooth, so we adjust the period to reach this
-	uint64_t ON_TIME;
-	uin64_t OFF_TIME;
+	const uint64_t ON_TIME = PERCENT * 125 / (1 - PERCENT);
 	while(getSysTime() < end_time) {
+		pwm_setDutyCycle(MIN_DUTY);
+		delay_ms(ON_TIME);
 
+		pwm_setDutyCycle(ZERO_DUTY);
+		delay_ms(125);
 	}
-
 }
 
 void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY){
