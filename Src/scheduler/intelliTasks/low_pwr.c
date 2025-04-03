@@ -20,6 +20,13 @@ static bool battery_is_recovered(void) {
 }
 
 // Mode Management =========================================================
+// (void)xEventGroupWaitBits(
+//     events,
+//     (const EventBits_t) 0x1,
+//     true, //clear bit on exit
+//     false, //wait for all bits in bit mask to be true
+//     portMAX_DELAY);
+
 void low_pwr(void)
 {
     while(true) {
