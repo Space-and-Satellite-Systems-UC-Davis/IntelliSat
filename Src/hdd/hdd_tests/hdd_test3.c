@@ -14,25 +14,23 @@
 
 /*
  -----------vars-----------
-MAX_START_DUTY - percentage
+MAX_START_DUTY - raw percentage
 PERIOD_US - period in micro second (we have no mew symbol)
 
-		this is the range the PWM signal's "high time" must be in for the esc Electronic Speed Controller
-				 all ranges must be within 1 & 2(scaled proportionality to the PERIOD_US)
-	MIN_DUTY - minimum range of PWM signal without ?breaking? the hdd spin?
+
+	MIN_DUTY - minimum range of PWM signal without
 	MAX_DUTY - maximum range of PWM signal
+				this is the range the PWM signal's "high time" must be in for the esc Electronic Speed Controller
+				 all ranges must be within 1 & 2(scaled proportionally to the PERIOD_US)
 
 MID_DUTY - middle of range duty
 DUTY_STEP - how much the duty will increment
 DRIVE_DUTY - target duty value
 ZERO_DUTY - the PWM value that indicates no speed PWM
-
-
  -----------vars-----------
 
- ----------------- psedu ------------------
+----------------- pseudo ------------------
 includes
-proto funcs
 
 main / testing function
 	set vars
@@ -47,45 +45,28 @@ main / testing function
 	debug ramp function if selected
 
 	end prog by calling PWM timer off
- ----------------- psedu ------------------
-
- --------------questiosn?--------------
-what is duty
-what is duty step
-initialization functions
-setdutycycle(10) = 20% ??
-
-
+ ----------------- pseudo ------------------
  */
 
 
 //--------------- includes -----------------
-#include "hdd_init.c"
-#include "hdd_drive.c"
+#include "../hdd_drive.h"
+#include "../hdd_init.h"
 //--------------- includes -----------------
-
-
-//-------------- defunct function ?? ---------------------
-// the member id to use for test function execution
-void testFuncID_HDD() {
-	// return your id value to call your test function
-	return 0;
-}
-//-------------- defunct function ?? ---------------------
-
 
 //===================================================================================
 //================================ main test function ================================
 //===================================================================================
 // runs the actual testing code
-void testFunctionMain_HDD3(){
+void testFunctionMain_HDD3() {
 
 	//------------------- var inits part 1----------------------
+	const int PERIOD_uS = 20000;  //uS means mew seconds (microseconds) (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse)),,, 20ms
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
-	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
-	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
-	const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
+	const float MAX_DUTY = (2 * 1000 * 100) / PERIOD_uS;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
+	const float MIN_DUTY = (1 * 1000 * 100) / PERIOD_uS;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
 	//------------------- var inits part 1----------------------
+
 
 	//--------------------- initialization functions ---------------
 	// init timer here does other initialization actions
@@ -109,14 +90,15 @@ void testFunctionMain_HDD3(){
 	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
 	//--------------------- initialization functions ---------------
 
+
 	//------------------- var inits part 2----------------------
 	const float MID_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
 	const float DUTY_STEP = 0.5;
 	const float DRIVE_DUTY = MAX_DUTY;
 	//------------------- var inits part 2----------------------
 
-	//-------------------------------- calibration or arm ------------------------------
-	// calibrate or arm
+
+	//-------------------------------- calibration or arming ------------------------------
 	if (0) {
 		// calibration controls what PWM duty cycle the
 		// ESC considers as the maximums and minimums
@@ -133,7 +115,7 @@ void testFunctionMain_HDD3(){
 	} else {
 		arm(MIN_DUTY, MAX_DUTY);
 	}
-	//-------------------------------- calibration or arm ------------------------------
+	//-------------------------------- calibration or arming ------------------------------
 
 
 	//-------------------------------- simple tests ----------------------------
@@ -154,6 +136,7 @@ void testFunctionMain_HDD3(){
 	pwm_setDutyCycle(MAX_DUTY);
 	delay_ms(5000);
 	//-------------------------------- simple tests ----------------------------
+
 
 	//------------------------------ testing loop ----------------------------
 	// debug loop
@@ -182,6 +165,7 @@ void testFunctionMain_HDD3(){
 		break;
 	}
 	//------------------------------ testing loop ----------------------------
+
 
 	//--------------------------- end prog -------------------
 	printMsg("Ending program. \r\n");
