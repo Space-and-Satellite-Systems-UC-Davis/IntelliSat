@@ -50,15 +50,15 @@ main / testing function
 
 
 //--------------- includes -----------------
-#include "hdd_init.c"
-#include "hdd_drive.c"
+#include "../hdd_drive.h"
+#include "../hdd_init.h"
 //--------------- includes -----------------
 
 //===================================================================================
 //================================ main test function ================================
 //===================================================================================
 // runs the actual testing code
-void testFunctionMain_HDD3(){
+void testFunctionMain_HDD3() {
 
 	//------------------- var inits part 1----------------------
 	const int PERIOD_uS = 20000;  //uS means mew seconds (microseconds) (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse)),,, 20ms
