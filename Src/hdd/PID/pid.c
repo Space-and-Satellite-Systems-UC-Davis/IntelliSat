@@ -1,4 +1,13 @@
 #include "PID.h"
+#include <stdint.h>
+
+double get_delta_t(int currTime, double prevTime) {
+    if (prevTime <= currTime) {
+        return currTime - prevTime;
+    } else {
+        return (INT_MAX - prevTime) + currTime;
+    }
+}
 
 double PID_command(
 	double target,
