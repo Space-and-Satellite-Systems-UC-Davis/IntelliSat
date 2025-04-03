@@ -31,7 +31,7 @@ extern void testFunction_HDD6();
 extern void testFunction_HDD7();
 
 // add your id's test function below
-static void (*testFunctions_HDD[8])() = {
+static void (*testFunctions_HDD[8])(void) = {
 		testFunction_HDD,
 		testFunction_HDD1,
 		testFunction_HDD2,

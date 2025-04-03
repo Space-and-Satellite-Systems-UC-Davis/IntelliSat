@@ -70,21 +70,12 @@ void testFunction_HDD1() {
 	}
 
 	printMsg("Starting Execution. \r\n");
-	pwm_setDutyCycle(100);
-	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
-	delay_ms(1000);
-
-	printMsg("Testing minimum duty");
-	pwm_setDutyCycle(MIN_DUTY);
-	delay_ms(5000);
-
-	printMsg("Testing mid duty");
-	pwm_setDutyCycle(MID_DUTY);
-	delay_ms(5000);
-
-	printMsg("Testing max duty");
-	pwm_setDutyCycle(MAX_DUTY);
-	delay_ms(5000);
+	float percent = 1.0;
+	while (percent > 0) {
+		printMsg("Driving with percent: %f \r\n", percent);
+		setSubMinDuty(percent, MIN_DUTY, MID_DUTY, 5000);
+		percent -= 0.1;
+	}
 
 	// debug loop
 	while (0) {

@@ -21,7 +21,7 @@
 #include <inttypes.h>
 
 // the member id to use for test function execution
-void testFuncID_HDD() {
+int testFuncID_HDD() {
 	// return your id value to call your test function
 	return 1;
 }
