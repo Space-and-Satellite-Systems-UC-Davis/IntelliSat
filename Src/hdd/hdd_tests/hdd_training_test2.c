@@ -4,7 +4,7 @@
  *  Fill out the information below
  *  Created on:
  *  Updated on:
- *      Author:
+ *      Author: Chandrark Muddana
  *
  *  Information:
  *  	This file is the main hdd test function file and should
@@ -14,12 +14,6 @@
 
 #include "hdd_init.c"
 #include "hdd_drive.c"
-
-// the member id to use for test function execution
-void testFuncID_HDD() {
-	// return your id value to call your test function
-	return 0;
-}
 
 // runs the actual testing code
 void testFunctionMain_HDD2(){
