@@ -164,7 +164,7 @@ void task_manager(void *args) {
 			cancel_current_task = true;
 		} else {
 			// Scan for ready task from the next-highest priority downwards
-			for (int id = current_task.id - 1; id >= 0; id--) {
+			for (int id = task_table[TASK_TABLE_LEN - 1].id; id > current_task.id; id--) {
 				if ((task_table[id]).ready_ptr()) {
 					cancel_current_task = true;
 					break;
