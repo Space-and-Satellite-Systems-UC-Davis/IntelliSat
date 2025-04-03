@@ -12,18 +12,24 @@
  *  	the go-ahead has been given for other members.
  */
 
+#include <Timers/timers.h>
+#include <ADC/adc.h>
+#include <LED/led.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
 #include "../hdd_drive.h"
 #include "../hdd_init.h"
 
 // runs the actual testing code
-void testFunctionMain_HDD5() {
+void testFunction_HDD5() {
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
 	const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 	// init timer here does other initialization actions
-	led_d2(true);
+	led_d2(1);
 	pwm_initTimer(PERIOD_uS); //This period time is in microseconds
 	pwm_setDutyCycle(10);
 	PWM_TIMER_ON();

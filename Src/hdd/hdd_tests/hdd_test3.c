@@ -48,6 +48,10 @@ main / testing function
  ----------------- pseudo ------------------
  */
 
+#include <Timers/timers.h>
+#include <ADC/adc.h>
+#include <LED/led.h>
+#include <inttypes.h>
 
 //--------------- includes -----------------
 #include "../hdd_drive.h"
@@ -58,7 +62,7 @@ main / testing function
 //================================ main test function ================================
 //===================================================================================
 // runs the actual testing code
-void testFunctionMain_HDD3() {
+void testFunction_HDD3() {
 
 	//------------------- var inits part 1----------------------
 	const int PERIOD_uS = 20000;  //uS means mew seconds (microseconds) (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse)),,, 20ms
@@ -70,7 +74,7 @@ void testFunctionMain_HDD3() {
 
 	//--------------------- initialization functions ---------------
 	// init timer here does other initialization actions
-	led_d2(true);
+	led_d2(1);
 	pwm_initTimer(PERIOD_uS); //This period time is in microseconds //starts clock for pwm cycle
 	pwm_setDutyCycle(10);
 	PWM_TIMER_ON();
