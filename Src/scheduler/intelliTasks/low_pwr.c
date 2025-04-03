@@ -4,7 +4,8 @@
 // #include "s8254a.h"      // Protection IC
 
 static bool low_pwr_mode = false;
-static TaskHandle_t low_pwr_task = NULL;
+static bool low_power_configuired = false;
+static bool low_pwr_cleaned = false;
 
 // IC Interface ============================================================
 static uint8_t read_battery_percent(void) {
@@ -21,6 +22,17 @@ static bool battery_is_recovered(void) {
 }
 
 // Mode Management =========================================================
+void low_pwr(void)
+{
+    while(true) {
+        while(low_pwr_time()) {
+            low_pwr_main();
+        }
+        if (!low_pwr_cleaned) clean_low_pwr();
+        vTaskDelay(LOW_PWR_DELAY);
+    }
+}
+
 bool low_pwr_time(void) {
     static bool was_low = false;
     const bool is_low = battery_is_low();
@@ -38,54 +50,27 @@ bool low_pwr_time(void) {
     return low_pwr_mode;
 }
 
-void config_low_pwr(void) {
-    // Suspend lower priority tasks
-    // TODO Make the schduler do the task suspend
-    for(int i = 0; i < TASK_TABLE_LEN; i++) {
-        intelli_task_t *task = &task_table[i];
-        if(task->func_1 < LOW_PWR_PRIORITY_THRESHOLD) {
-            vTaskSuspend(task->FreeRTOS_handle);
-        }
-    }
+// void config_low_pwr(void) { 
+//     // Enable hardware low-power features
+//
     
-    // Enable hardware low-power features
-    enable_low_power_hardware();
-    
-    // Let dedicated ICs manage battery
-    // eta3000_enable_autobalance(true);
-    // s8254a_enable_protection(true);
-}
+//     // Let dedicated ICs manage battery
+//     // eta3000_enable_autobalance(true);
+//     // s8254a_enable_protection(true);
+// }
 
-void low_pwr(void) {
-    // Only needs to maintain state, ICs handle actual management
-    uint32_t notify_bits;
-    
-    // Handle external mode change requests
-    if(xTaskNotifyWait(0, ULONG_MAX, &notify_bits, 0)) {
-        if(notify_bits & LOW_PWR_NOTIFY_ENTER) {
-            low_pwr_mode = true;
-            config_low_pwr();
-        }
-        if(notify_bits & LOW_PWR_NOTIFY_EXIT) {
-            low_pwr_mode = false;
-            clean_low_pwr();
-        }
-    }
+void low_pwr_main(void)
+{
+    enable_low_power_hardware();
+    low_pwr_cleaned = false;
 }
 
 void clean_low_pwr(void) {
-    // Resume suspended tasks
-    for(int i = 0; i < TASK_TABLE_LEN; i++) {
-        intelli_task_t *task = &task_table[i];
-        if(task->func_1 < LOW_PWR_PRIORITY_THRESHOLD) {
-            vTaskResume(task->FreeRTOS_handle);
-        }
-    }
-    
     // Restore normal hardware operation
     restore_normal_hardware();
     // eta3000_enable_autobalance(false);
     // s8254a_enable_protection(false);
+    low_pwr_cleaned = true;
 }
 
 // Hardware Control ========================================================
@@ -96,10 +81,14 @@ void enable_low_power_hardware(void) {
     // - Adjust voltage regulators
     // __HAL_RCC_GPIOB_CLK_DISABLE();
     // HAL_PWREx_EnableUltraLowPower();
+    if (low_power_configuired) return;
+    low_power_configuired = true;
 }
 
 void restore_normal_hardware(void) {
     // Restore full operational state
     // __HAL_RCC_GPIOB_CLK_ENABLE();
     // HAL_PWREx_DisableUltraLowPower();
+    if (!low_power_configuired) return;
+    low_power_configuired = false;
 }
