@@ -63,6 +63,8 @@ void pwm_timer_gpio() {
 	GPIOA->AFR[1] |= (GPIO_AFRX_AF1 << GPIO_AFRH_AFSEL15_Pos);
 	
 
+	//aux2-gp0
+
 #elif OP_REV == 1
 
 	/* OP R1 GPIO pinout
