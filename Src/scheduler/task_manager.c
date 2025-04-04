@@ -142,11 +142,13 @@ const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0,
 
 
 void task_manager(void *args) {
-	printMsg("Task Manager started!\n\r");
+	printMsg(":) Hello from the Task Manager! <3\n\r");
+
 	static intelli_task_t current_task = null_task;
 	static uint32_t current_task_dur = 0;
 
 	while(1) {
+		printMsg("Running Task Manager\n\r");
 		bool cancel_current_task = false;
 
 		// Initi current_task on boot
