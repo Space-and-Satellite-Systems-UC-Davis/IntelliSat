@@ -9,6 +9,9 @@
 #ifndef SCHEDULER_TASK_MANAGER_H_
 #define SCHEDULER_TASK_MANAGER_H_
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #define TASK_MANAGER_PRIORITY 1
 
 /**@brief Handle task expiration and preemption.

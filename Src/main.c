@@ -15,17 +15,15 @@
 #include "system_config/LED/led.h"
 
 /* Globals */
-#include "./scheduler/schedulerGlobals.h"
+#include "scheduler/schedulerGlobals.h"
 
 /* File Includes */
-#include "./scheduler/watchdog.h"
-#include "./scheduler/intelliTask.h"
+#include "scheduler/watchdog.h"
+#include "scheduler/intelliTask.h"
 #include "scheduler/status.h"
 
-#include "../FreeRTOS/Source/include/FreeRTOS.h"
-#include "../FreeRTOS/Source/include/task.h"
-//#include "FreeRTOS.h"
-//#include "task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* Macros */
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
