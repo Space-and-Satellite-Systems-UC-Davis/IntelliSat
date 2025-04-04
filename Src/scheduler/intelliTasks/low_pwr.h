@@ -12,8 +12,8 @@
 #define HIGH_BATTERY_THRESHOLD     80
 #define BATT_HYSTERESIS            5
 #define LOW_PWR_DELAY 100 / portTICK_PERIOD_MS
-#define LOW_PWR_ON_EVENT_BIT 0x1
-#define LOW_PWR_CLEAN_EVENT_BIT 0x1
+#define LOW_PWR_ON_EVENT_BIT (0x1 << 0)
+#define LOW_PWR_CLEAN_EVENT_BIT (0x1 << 1)
 
 // Public API
 void low_pwr(void);

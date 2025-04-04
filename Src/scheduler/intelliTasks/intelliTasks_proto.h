@@ -3,6 +3,9 @@
 
 #include "../schedulerGlobals.h"
 
+// default to 32
+volatile extern EventGroupHandle_t events;
+
 /* Scheduling methods */
 
 bool low_pwr_time();

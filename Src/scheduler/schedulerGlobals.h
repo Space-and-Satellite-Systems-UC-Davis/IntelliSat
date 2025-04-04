@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include "event_groups.h"
 
 #include "../integration/integration.h"
 

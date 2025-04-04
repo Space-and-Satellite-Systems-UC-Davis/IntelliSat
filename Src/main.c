@@ -29,6 +29,8 @@
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
 #define BATTERY_THRESHOLD 20        // TODO: Min. battery voltage value, below which mode -> CHARGING
 
+volatile EventGroupHandle_t events_handler;
+
 /* Misc variables */
 int reboot_count;
 // volatile uint16_t flagBits = 0;     // Declared in status.h
@@ -115,6 +117,8 @@ static void led_task(void *args) {
  * there is no scheduler intervention.
  */
 int branch_main() {
+
+    events_handler = xEventGroupCreate();
 
     xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-2, NULL);
     xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-2, NULL);
