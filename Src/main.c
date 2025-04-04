@@ -1,5 +1,6 @@
 #include <print_scan.h>
 #include "platform_init.h"
+#include "testing/test.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
