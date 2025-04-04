@@ -1,6 +1,10 @@
-#include "./unity.h"
+#include "unity.h"
 
 void test_basic_example_unity();
+
+void setUp() { }
+
+void tearDown() { }
 
 // NOTE: These are UNIT tests not related to ADCS
 int run_unit_tests() {

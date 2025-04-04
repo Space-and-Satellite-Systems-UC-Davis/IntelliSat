@@ -2,8 +2,8 @@
 #include "platform_init.h"
 #include "testing/test.h"
 
-#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
+#define RUN_ADCS_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 		1	// ID of the test to run in case RUN_TEST = 1
 
 // NOTE: These are ADCS scientific tests and NOT unit tests
 #include <TestDefinition.h>
@@ -12,14 +12,14 @@
 
 int main() {
     init_init();
-    init_platform(!RUN_TEST);
+    init_platform(!RUN_ADCS_TEST);
     // ^ don't want to run the Scheduler in case we are running other tests
 
 #if (RUN_UNIT_TESTS==1)
     run_unit_tests();
 #endif
 
-#if (RUN_TEST==1)
+#if (RUN_ADCS_TEST==1)
 
 	void (*testFunc)();
 	testFunc = getTestFunction(TEST_ID);
