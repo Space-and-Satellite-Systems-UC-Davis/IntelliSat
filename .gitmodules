@@ -1,0 +1,3 @@
+[submodule "ADCS-Software"]
+	path = ADCS-Software
+	url = https://github.com/Space-and-Satellite-Systems-UC-Davis/ADCS-Software.git
