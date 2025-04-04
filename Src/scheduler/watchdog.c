@@ -22,7 +22,7 @@ void watchdog(void *args) {
 	printMsg(":) Hello from the Scheduler Watchdog! <3\n\r");
 
 	while (true) {
-		printMsg("Starting watchdog\r\n");
+		printMsg("Running watchdog\r\n");
 		static TaskHandle_t task_manager_handle = NULL;
 
 		//Tear down all tasks
@@ -42,7 +42,7 @@ void watchdog(void *args) {
 
 		//Pull up all tasks
 		BaseType_t status = xTaskCreate( task_manager,
-										":) Task Manager! <3",
+										"Task_Manager",
 										1000, //TODO change. # words in stack
 										NULL,
 										TASK_MANAGER_PRIORITY,
@@ -60,11 +60,11 @@ void watchdog(void *args) {
 									1000, //TODO: make task-specific
 									NULL, //no parameters
 									task.id,
-									&(task.FreeRTOS_handle)
+									&(task_table[taskid].FreeRTOS_handle)
 								);
 			// Make sure the task does not seize control right after \
 			// the watchdog and task manager yield
-			vTaskSuspend(task.FreeRTOS_handle);
+			vTaskSuspend(task_table[taskid].FreeRTOS_handle);
 			if (status != pdPASS) {
 				printMsg("OOM allocating %s task with error %d\n\r", task.name, status);
 				NVIC_SystemReset(); // If we OOM, ... (as above)
