@@ -7,7 +7,8 @@
 
  	while (1) {
          PWM_TIMER_ON();
-         pwm_setDutyCycle(1);
+         //pwm_setDutyCycle(PWM0, 1);
+         pwm_setDutyCycle(PWM1, 1);
          delay_ms(10000);
          PWM_TIMER_OFF();
          delay_ms(10000);

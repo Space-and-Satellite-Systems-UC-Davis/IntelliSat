@@ -47,6 +47,10 @@ enum pwm_timer_cap_comp_1_modes {
     TIM_CCMR1_OC1M_ASYMMETRIC_PWM_MODE_2 = 0xf,
 };
 
+typedef enum PWM_Channels {
+    PWM0, PWM1
+} PWM_Channels;
+
 /**
  * Configures the PWM timer registers to generate a signal at a given period.
  *
@@ -58,9 +62,10 @@ bool pwm_initTimer(uint32_t period);
  * Changes the Duty Cycle of the PWM signal... assumes the PWM is being generated already.
  * NOTE: Some percentages might not work properly due to integer math causing rounding errors
  * 
+ * @param pwm The pwm channel to se the duty cycle
  * @param percent A value between 0-100 to indicate 
 */
-void pwm_setDutyCycle(uint8_t percent);
+void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
