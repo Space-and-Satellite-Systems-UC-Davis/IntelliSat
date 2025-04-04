@@ -18,26 +18,31 @@
 // Global (external) variables and functions
 extern int core_MHz;	// from core_config.h
 
+
 void pwm_timer_gpio() {
 
 #if OP_REV == 2 || OP_REV == 3
 
 	/* OP R2 GPIO pinout
 	 * 		TIM CH1		GPIO A15	AF - 1
+	 *      TIM CH4     GPIO A3     AF - 1
 	 */
 
 	// Clock setup
 	RCC->AHB2ENR  |= RCC_AHB2ENR_GPIOAEN;
 
 	// Reset pin state
-	GPIOA->MODER  &= ~GPIO_MODER_MODE15_Msk;
+	GPIOA->MODER  &= ~(GPIO_MODER_MODE15_Msk | GPIO_MODER_MODE3_Msk);
 	GPIOA->AFR[1] &= ~GPIO_AFRH_AFSEL15_Msk;
+	GPIOA->AFR[0] &= ~GPIO_AFRL_AFSEL3_Msk;
 
 	// Set pin mode
 	GPIOA->MODER  |= (GPIO_MODER_AlternateFunction << GPIO_MODER_MODE15_Pos);
+	GPIOA->MODER |= GPIO_MODER_MODE3_1;
 
 	// Set AF
 	GPIOA->AFR[1] |= (GPIO_AFRX_AF1 << GPIO_AFRH_AFSEL15_Pos);
+	GPIOA->AFR[0] |= (GPIO_AFRX_AF1 << GPIO_AFRL_AFSEL3_Pos);
 
 #elif OP_REV == 1
 
@@ -66,12 +71,19 @@ bool pwm_initTimer(uint32_t period) {
 
 	PWMTimer->EGR |= TIM_EGR_UG;
 	PWMTimer->CCMR1 = (TIM_CCMR1_OC1M_PWM_MODE_1 << TIM_CCMR1_OC1M_Pos);
-	PWMTimer->CCER |= TIM_CCER_CC1E;
+	PWMTimer->CCMR2 |= TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2;
+	PWMTimer->CCER |= TIM_CCER_CC1E | TIM_CCER_CC4E;
 
 	return true;
 }
 
-void pwm_setDutyCycle(uint8_t percentage) {
+void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage) {
 	uint32_t period = PWMTimer->ARR;
-	PWMTimer->CCR1 = (int)(percentage * (period/100));
+	if(pwm == PWM0){
+		PWMTimer->CCR1 = (int)(percentage * (period/100));
+	}
+	else {
+		PWMTimer->CCR4 = (int)(percentage * (period/100));
+	}
+	
 }
