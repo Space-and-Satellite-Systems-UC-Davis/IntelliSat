@@ -17,6 +17,9 @@
  */
 #include "../ADCS-Software/virtual_intellisat.h"
 #include <print_scan.h>
+#include <globals.h>
+#include "peripherals/IMU/ASM330LHH.h"
+#include <Timers/timers.h>
 /**@brief Report the current date and time to second accuracy.
  *
  * @param year,month,day,hour,minute,second Return-by-reference ptrs.
@@ -32,7 +35,7 @@ vi_get_epoch(
     int *minute,
     int *second
 ){
-	return 0;
+	return GET_EPOCH_FAILURE;
 }
 
 
@@ -48,7 +51,8 @@ vi_get_curr_millis_status
 vi_get_curr_millis(
     int *curr_millis
 ){
-	return 0;
+	*curr_millis = getSysTime();
+	return GET_CURR_MILLIS_SUCCESS;
 }
 
 /**@brief Retrieve angular velocity data from the IMU.
@@ -65,7 +69,12 @@ vi_get_angvel(
     double *angvel_x,
     double *angvel_y,
     double *angvel_z
-);
+){
+	*angvel_x = imu_readGyro_X();
+	*angvel_y = imu_readGyro_Y();
+	*angvel_z = imu_readGyro_Z();
+	return GET_ANGVEL_SUCCESS;
+}
 
 
 
@@ -85,7 +94,8 @@ vi_hdd_command_status
 vi_hdd_command(
     double throttle
 ){
-	return 0;
+	pwm_setDutyCycle(throttle);
+	return HDD_COMMAND_SUCCESS;
 }
 
 
@@ -106,7 +116,7 @@ vi_get_sensor_calibration(
 	float *scalar,
 	float *filter_constant
 ){
-	return 0;
+	return GET_CONSTANT_FAILURE;
 }
 
 
@@ -137,7 +147,7 @@ vi_get_sensor_status(
 	vi_sensors sensor,
 	int *sensor_status
 ){
-	return 0;
+	return GET_CONSTANT_FAILURE;
 }
 
 /**@brief Get the current magnetic field value.
@@ -152,7 +162,7 @@ vi_get_mag(
 	double *mag_y,
 	double *mag_z
 ){
-	return 0;
+	return VI_GET_MAG_FAILURE;
 }
 
 
@@ -166,7 +176,13 @@ vi_delay_ms_status
 vi_delay_ms(
     int ms
 ){
-	return 0;
+	uint64_t current = getSysTime();
+	delay_ms(ms);
+	if (getSysTime() >= current + (uint64_t)(ms)){
+		return VI_DELAY_MS_SUCCESS;
+	} else {
+		return VI_DELAY_MS_FAILURE;
+	}
 }
 
 
@@ -187,6 +203,6 @@ vi_control_coil(
 	double command_y,
 	double command_z
 ){
-	return 0;
+	return VI_CONTROL_COIL_FAILURE;
 }
 
