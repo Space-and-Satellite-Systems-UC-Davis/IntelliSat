@@ -5,6 +5,7 @@
 #define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
 
 #include <TestDefinition.h>
+#include "ADCS.h"
 
 int main() {
     init_init();
@@ -22,6 +23,8 @@ int main() {
 	//if (first_time) {
 	//  init_first_time()
 	//}
+
+    ADCS_MAIN(ADCS_TESTING);
 
 	while (1) {
 		continue;
