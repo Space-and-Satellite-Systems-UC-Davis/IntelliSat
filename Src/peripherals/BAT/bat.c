@@ -31,6 +31,6 @@ bool bat_isCrit(){
 }
 
 bool bat_isSafe(){
-	return bat_getVoltageValue() > THRESHOLD_SAFE;
+	return bat_getVoltageValue() >= THRESHOLD_SAFE;
 }
 
