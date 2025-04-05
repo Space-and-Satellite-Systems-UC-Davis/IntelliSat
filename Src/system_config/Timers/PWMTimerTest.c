@@ -15,6 +15,5 @@
                 pwm_setDutyCycle(PWM1, 20);
                 delay_ms(10000);
                 pwm_timerOff(PWM1);
-                delay_ms(10000);
  	}
  }
