@@ -31,12 +31,13 @@ void pwm_timer_gpio() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 
 	// Reset pin state
-	GPIOA->MODER  &= ~(GPIO_MODER_MODE9_Msk | GPIO_MODER_MODE3_Msk);
-	GPIOA->AFR[1] &= ~GPIO_AFRH_AFSEL9_Msk;
+	GPIOE->MODER &= ~GPIO_MODER_MODE9_Msk;
+	GPIOA->MODER  &= ~GPIO_MODER_MODE3_Msk;
+	GPIOE->AFR[1] &= ~GPIO_AFRH_AFSEL9_Msk;
 	GPIOA->AFR[0] &= ~GPIO_AFRL_AFSEL3_Msk;
 
 	// Set pin mode
-	GPIOA->MODER |= (GPIO_MODER_AlternateFunction << GPIO_MODER_MODE9_Pos);
+	GPIOE->MODER |= (GPIO_MODER_AlternateFunction << GPIO_MODER_MODE9_Pos);
 	GPIOA->MODER |= GPIO_MODER_MODE3_1;
 
 	// Set AF
