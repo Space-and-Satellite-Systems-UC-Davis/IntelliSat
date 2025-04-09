@@ -22,14 +22,14 @@ const uint8_t ESCAPE = '\\';
  * Return the distance from `before` to `after`
  */
 size_t distance(SeqNum before, SeqNum after) {
-    if (after > before)
+    if (after >= before)
         return after - before;
     else
         return 255 - before + after;
 }
 
 static void append(PCPBuf* buf, uint8_t* data, int nbytes) {
-    memcpy(buf->data, data, nbytes);
+    memcpy(buf->data + buf->len, data, nbytes);
     buf->len += nbytes;
 }
 
@@ -114,11 +114,11 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
     dev->last_tx_time = getSysTime();
     dev->curr_window_sz++;
     usart_transmitBytes(dev->bus, tx_buf->data, tx_buf->len);
-    return true;
+    return 0;
 }
 
 void pcp_retransmit(PCPDevice* dev) {
-    update_rx(dev);
+    pcp_update_rx(dev);
     if (dev->curr_window_sz > 0
             && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
@@ -129,8 +129,8 @@ void pcp_retransmit(PCPDevice* dev) {
     }
 }
 
-int pcp_receive(PCPDevice* dev, uint8_t* buf) {
-    update_rx(dev);
+int pcp_read(PCPDevice* dev, uint8_t* buf) {
+    pcp_update_rx(dev);
     if (!dev->rx_full && dev->rx_head == dev->rx_tail)
         return -1;
     PCPBuf rx_buf = dev->rx_bufs[dev->rx_head];
@@ -162,7 +162,7 @@ static void acknowledge(PCPDevice *dev, SeqNum seq) {
  * Flush `dev->bus`'s receive buffer into `dev`. This also transmits and
  * receives acknowledgements.
  */
-void update_rx(PCPDevice* dev) {
+void pcp_update_rx(PCPDevice* dev) {
     if (dev->rx_full)
         return;
 
@@ -190,7 +190,7 @@ void update_rx(PCPDevice* dev) {
         // read_buf is the sequence number
         if (dev->rx_readnbytes == 1) {
             if (dev->rx_acknowledging ||
-                distance(read_buf, dev->rx_tail_seq) <= dev->window_size) {
+                distance(dev->rx_tail_seq, read_buf) <= dev->window_size) {
                 dev->rx_readnbytes++;
                 dev->rx_curr_seq = read_buf;
             } else {
@@ -220,13 +220,13 @@ void update_rx(PCPDevice* dev) {
         const int offset =
             (distance(dev->rx_tail_seq, dev->rx_curr_seq) + dev->rx_tail) %
             RX_BUFSIZ;
-        PCPBuf* write_buf = dev->rx_bufs + offset;
+        PCPBuf* rx_buf = dev->rx_bufs + offset;
         // read_buf is escaped
         if (dev->rx_escaping) {
             if (read_buf != ESCAPE && read_buf != PACKET_END)
                 dev->rx_readnbytes = 0;
             else
-                append(write_buf, &read_buf, 1);
+                append(rx_buf, &read_buf, 1);
             continue;
         // Next read is escaping
         } else if (read_buf == ESCAPE) {
@@ -240,13 +240,14 @@ void update_rx(PCPDevice* dev) {
                     dev->rx_tail_seq++;
                     dev->rx_received >>= 1;
                     dev->rx_tail++;
-                    dev->rx_tail = (dev->rx_tail + 1) % RX_BUFSIZ;
+                    dev->rx_tail = (dev->rx_tail) % RX_BUFSIZ;
                 }
             }
-            acknowledge(dev, dev->rx_tail_seq);
+            acknowledge(dev, dev->rx_tail_seq - 1);
             set_rx_waiting(dev);
+            continue;
         }
-        append(write_buf, &read_buf, 1);
+        append(rx_buf, &read_buf, 1);
 	}
 }
 

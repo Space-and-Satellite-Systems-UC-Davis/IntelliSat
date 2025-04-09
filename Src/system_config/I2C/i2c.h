@@ -18,6 +18,12 @@
 #include "stm32l476xx.h"
 #include <GPIO/gpio.h>
 
+#define GPIO_BSRR_BR_ODX_RESET 1U
+
+#define MSB_8BIT_Msk (1U << 7)
+
+#define _8th_BIT_OFFSET 7U
+
 /**
  * Sets the line mode of a GPIO pin for Software I2C communication.
  *

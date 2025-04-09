@@ -4,19 +4,18 @@
 #include "UART/uart.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
-const Test test = TEST_NOTHING;
+#define TEST_ID 1 // ID of the test to run in case RUN_TEST = 1
 
 #include <TestDefinition.h>
 
 int main() {
     init_init();
     init_platform(!RUN_TEST);
-    // ^ don't want to run the Scheduler in case we are running other tests
 
 #if (RUN_TEST==1)
 
     void (*testFunc)();
-    testFunc = getTestFunction(test);
+    testFunc = getTestFunction(TEST_ID);
     testFunc();
 
     #else

@@ -13,6 +13,7 @@
 
 #include "timers.h"
 #include <globals.h>
+#include "GPIO/gpio.h"
 
 // Global (external) variables and functions
 extern int core_MHz;	// from core_config.h
@@ -33,10 +34,10 @@ void pwm_timer_gpio() {
 	GPIOA->AFR[1] &= ~GPIO_AFRH_AFSEL15_Msk;
 
 	// Set pin mode
-	GPIOA->MODER  |= (2U << GPIO_MODER_MODE15_Pos);
+	GPIOA->MODER  |= (GPIO_MODER_AlternateFunction << GPIO_MODER_MODE15_Pos);
 
 	// Set AF
-	GPIOA->AFR[1] |= (1U << GPIO_AFRH_AFSEL15_Pos);
+	GPIOA->AFR[1] |= (GPIO_AFRX_AF1 << GPIO_AFRH_AFSEL15_Pos);
 
 #elif OP_REV == 1
 
@@ -64,7 +65,7 @@ bool pwm_initTimer(uint32_t period) {
 	PWMTimer->ARR = period;
 
 	PWMTimer->EGR |= TIM_EGR_UG;
-	PWMTimer->CCMR1 = (6 << TIM_CCMR1_OC1M_Pos);
+	PWMTimer->CCMR1 = (TIM_CCMR1_OC1M_PWM_MODE_1 << TIM_CCMR1_OC1M_Pos);
 	PWMTimer->CCER |= TIM_CCER_CC1E;
 
 	return true;
