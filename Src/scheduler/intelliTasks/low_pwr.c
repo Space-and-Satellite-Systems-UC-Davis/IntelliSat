@@ -35,7 +35,7 @@ void low_pwr(void)
     while (true)
     {
         if (xEventGroupWaitBits(
-                events,
+                events_handler,
                 (const EventBits_t)LOW_PWR_ON_EVENT_BIT,
                 true,
                 false,
@@ -68,14 +68,15 @@ bool low_pwr_time(void)
     return low_pwr_mode;
 }
 
-// void config_low_pwr(void) {
-//     // Enable hardware low-power features
-//
+void config_low_pwr(void)
+{
+    // Shouldn't actualy do anything
+    // Enable hardware low-power features
 
-//     // Let dedicated ICs manage battery
-//     // eta3000_enable_autobalance(true);
-//     // s8254a_enable_protection(true);
-// }
+    // Let dedicated ICs manage battery
+    // eta3000_enable_autobalance(true);
+    // s8254a_enable_protection(true);
+}
 
 void low_pwr_main(void)
 {
