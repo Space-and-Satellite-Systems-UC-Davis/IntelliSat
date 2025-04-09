@@ -1,14 +1,29 @@
 #pragma once
 
+#include <print_scan.h>
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+typedef enum {
+    TEST_NOTHING,
+    TEST_IMU_ACEL_GYRO_READS,
+    TEST_IMU_DUPE_READS,
+    TEST_MAG_READS,
+    TEST_LOGTIMER_CALLBACK,
+    TEST_PWMGENERATION,
+    TEST_PCP,
+    TEST_UART,
+} Test;
 
 extern void testFunction_Nothing();
 extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
+extern void testFunction_PCP();
+extern void testFunction_UART();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
@@ -18,20 +33,24 @@ extern void testFunction_INA_TMP_Outputs();
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // Function that returns a pointer to a void function
-void (*getTestFunction(int test_id))(void) {
+void (*getTestFunction(Test test))(void) {
 	//! Every case must return a void function
-	switch (test_id) {
-		case 0:
+	switch (test) {
+		case TEST_NOTHING:
 			return testFunction_Nothing;
-		case 1:
+		case TEST_IMU_ACEL_GYRO_READS:
 			return testFunction_IMU_AcelGyro_Reads;
-		case 2:
+		case TEST_MAG_READS:
 			return testFunction_MAG_Reads;
-		case 3:
+		case TEST_LOGTIMER_CALLBACK:
 			return testFunction_LogTimer_Callback;
-		case 4:
+		case TEST_PWMGENERATION:
 			return testerFunction_PWMGeneration;
-		case 8:
+		case TEST_PCP:
+			return testFunction_PCP;
+		case TEST_UART:
+			return testFunction_UART;
+		case TEST_IMU_DUPE_READS:
 			return testFunction_IMU_Dupe_Reads;
 		case 11:
 			return testFunction_INA_TMP_Outputs;
@@ -49,5 +68,6 @@ void (*getTestFunction(int test_id))(void) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 void testFunction_Nothing() {
+    printMsg("Hello, world");
 	while(1);
 }
