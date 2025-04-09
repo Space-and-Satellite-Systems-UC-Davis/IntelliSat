@@ -6,17 +6,6 @@
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-typedef enum {
-    TEST_NOTHING,
-    TEST_IMU_ACEL_GYRO_READS,
-    TEST_IMU_DUPE_READS,
-    TEST_MAG_READS,
-    TEST_LOGTIMER_CALLBACK,
-    TEST_PWMGENERATION,
-    TEST_PCP,
-    TEST_UART,
-} Test;
-
 extern void testFunction_Nothing();
 extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
@@ -31,24 +20,24 @@ extern void testFunction_IMU_Dupe_Reads();
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // Function that returns a pointer to a void function
-void (*getTestFunction(Test test))(void) {
+void (*getTestFunction(int test))(void) {
 	//! Every case must return a void function
 	switch (test) {
-		case TEST_NOTHING:
+		case 0:
 			return testFunction_Nothing;
-		case TEST_IMU_ACEL_GYRO_READS:
+		case 1:
 			return testFunction_IMU_AcelGyro_Reads;
-		case TEST_MAG_READS:
+		case 2:
 			return testFunction_MAG_Reads;
-		case TEST_LOGTIMER_CALLBACK:
+		case 3:
 			return testFunction_LogTimer_Callback;
-		case TEST_PWMGENERATION:
+		case 4:
 			return testerFunction_PWMGeneration;
-		case TEST_PCP:
+		case 5:
 			return testFunction_PCP;
-		case TEST_UART:
+		case 6:
 			return testFunction_UART;
-		case TEST_IMU_DUPE_READS:
+		case 7:
 			return testFunction_IMU_Dupe_Reads;
 		default:
 			return testFunction_Nothing;
