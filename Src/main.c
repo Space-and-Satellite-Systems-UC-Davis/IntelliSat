@@ -1,6 +1,7 @@
 #include <print_scan.h>
 #include <TestDefinition.h>
 #include "platform_init.h"
+#include "UART/pcp.h"
 #include "UART/uart.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
@@ -24,15 +25,19 @@ int main() {
 	//if (first_time) {
 	//  init_first_time()
 	//}
+    PCPDevice pcp;
+	make_pcpdev(&pcp, USART1);
 
-//    uint8_t buffer[1] = {111};
+    uint8_t buffer[2] = {13, 222};
 	while (1) {
-		printMsg("THIS WORKSSSSSS\n\r");
-		nop(1000);
-		printMsg("STILL DOES\n\r");
+		usart_transmitStr(USART1, "Hello");
+		//pcp_read(&pcp, buffer);
+		printMsg("Buffer value: %d \n\r", buffer[0]);
+		nop(1000000);
 //		int num_bytes = usart_receiveBytes(USART1, buffer, 1);
 //		continue;
 	}
+
 
 #endif
 

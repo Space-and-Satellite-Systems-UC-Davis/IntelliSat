@@ -7,6 +7,7 @@
 *****************************************************************************/
 
 #include "UART/pcp.h"
+#include "print_scan.h"
 #include <stdio.h>
 
 static void set_rx_waiting(PCPDevice* dev);
@@ -130,6 +131,7 @@ void pcp_retransmit(PCPDevice* dev) {
 }
 
 int pcp_read(PCPDevice* dev, uint8_t* buf) {
+
     pcp_update_rx(dev);
     if (!dev->rx_full && dev->rx_head == dev->rx_tail)
         return -1;
@@ -175,6 +177,8 @@ void pcp_update_rx(PCPDevice* dev) {
         }
 
         usart_receiveBytes(dev->bus, &read_buf, 1);
+
+    	printMsg("Updating\r\n");
 
         // New packet, identify type
         if (dev->rx_readnbytes == 0) {
