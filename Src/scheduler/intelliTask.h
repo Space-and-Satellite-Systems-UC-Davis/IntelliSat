@@ -31,14 +31,7 @@ typedef struct intellisat_task_t {
 
 extern intelli_task_t task_table[TASK_TABLE_LEN];
 
-void send_task_notification(uint8_t task_id, uint32_t bits) {
-    for(int i=0; i<TASK_TABLE_LEN; i++) {
-        if(task_table[i].id == task_id && task_table[i].FreeRTOS_handle) {
-            xTaskNotify(task_table[i].FreeRTOS_handle, bits, eSetBits);
-            break;
-        }
-    }
-}
+void send_task_notification(uint8_t task_id, uint32_t bits);
 
 // /* Scheduling methods */
 // bool low_pwr_time(); // tautology (charging is idle mode)
