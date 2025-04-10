@@ -71,8 +71,8 @@ vi_get_angvel(
     double *angvel_y,
     double *angvel_z
 ){
-	Mag_Selector imu_select = (imu == VI_IMU1) ? MAG0 : MAG1;
-	mag_select(imu_select);
+	enum IMU_SELECT imu_select = (imu == VI_IMU1) ? IMU0 : IMU1;
+	set_IMU(imu_select);
 
 	*angvel_x = imu_readGyro_X();
 	*angvel_y = imu_readGyro_Y();
