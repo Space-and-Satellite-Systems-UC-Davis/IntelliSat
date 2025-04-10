@@ -33,20 +33,6 @@ void testFunction_HDD1() {
 	pwm_setDutyCycle(10);
 	PWM_TIMER_ON();
 
-	adc_init();
-	printMsg("Initializing ADC\r\n");
-
-	adc_enable();
-	printMsg("Enabling ADC\r\n");
-
-	adc_configGPIO();
-	printMsg("Configuring GPIO Pin A2 for ADC\r\n");
-
-	//Right now it sets it pin A2, which is photodiode/sunsensor 0 (SOL-0)
-	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
-	adc_setChannel();
-	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
-
 	const float MID_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
 	const float DUTY_STEP = 0.5;
 	const float DRIVE_DUTY = MAX_DUTY;

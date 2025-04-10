@@ -10,16 +10,10 @@ extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
-<<<<<<< HEAD
-<<<<<<< HEAD
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
-=======
-=======
 extern int testFuncID_HDD();
->>>>>>> 927109c (Refactor hdd code to allow for better concurrent work.)
 extern void testFunction_HDD();
->>>>>>> 5779b34 (Working PWM)
 
 // if your id is not present, add it
 extern void testFunction_HDD1();
@@ -32,14 +26,14 @@ extern void testFunction_HDD7();
 
 // add your id's test function below
 static void (*testFunctions_HDD[8])(void) = {
-		testFunction_HDD,
-		testFunction_HDD1,
-		testFunction_HDD2,
-		testFunction_HDD3,
-		testFunction_HDD4,
-		testFunction_HDD5,
-		testFunction_HDD6,
-		testFunction_HDD7
+	testFunction_HDD,
+	testFunction_HDD1,
+	testFunction_HDD2,
+	testFunction_HDD3,
+	testFunction_HDD4,
+	testFunction_HDD5,
+	testFunction_HDD6,
+	testFunction_HDD7
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -62,19 +56,12 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
-<<<<<<< HEAD
 		case 11:
 			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
-=======
 		case 10:
-<<<<<<< HEAD
-			return testFunction_HDD;
->>>>>>> 2912978 (Update testing definitions specifically for HDD.)
-=======
 			return testFunctions_HDD[testFuncID_HDD()];
->>>>>>> 927109c (Refactor hdd code to allow for better concurrent work.)
 		default:
 			return testFunction_Nothing;
 	}

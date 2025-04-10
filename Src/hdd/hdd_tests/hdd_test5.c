@@ -28,26 +28,8 @@ void testFunction_HDD5() {
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
 	const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
-	// init timer here does other initialization actions
-	led_d2(1);
-	pwm_initTimer(PERIOD_uS); //This period time is in microseconds
-	pwm_setDutyCycle(10);
-	PWM_TIMER_ON();
-
-	adc_init();
-	printMsg("Initializing ADC\r\n");
-
-	adc_enable();
-	printMsg("Enabling ADC\r\n");
-
-	adc_configGPIO();
-	printMsg("Configuring GPIO Pin A2 for ADC\r\n");
-
 	//Right now it sets it pin A2, which is photodiode/sunsensor 0 (SOL-0)
 	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
-	adc_setChannel();
-	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
-
 	const float MID_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
 	const float DUTY_STEP = 0.5;
 	const float DRIVE_DUTY = MAX_DUTY;
