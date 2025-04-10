@@ -66,10 +66,14 @@ vi_get_curr_millis(
  */
 vi_get_angvel_status
 vi_get_angvel(
+	vi_IMU imu,
     double *angvel_x,
     double *angvel_y,
     double *angvel_z
 ){
+	Mag_Selector imu_select = (imu == VI_IMU1) ? MAG0 : MAG1;
+	mag_select(imu_select);
+
 	*angvel_x = imu_readGyro_X();
 	*angvel_y = imu_readGyro_Y();
 	*angvel_z = imu_readGyro_Z();
@@ -92,8 +96,10 @@ vi_get_angvel(
  */
 vi_hdd_command_status
 vi_hdd_command(
+	vi_HDD hdd,
     double throttle
 ){
+	//TODO add hdd selection
 	pwm_setDutyCycle(throttle);
 	return HDD_COMMAND_SUCCESS;
 }
@@ -111,7 +117,7 @@ vi_hdd_command(
  */
 vi_get_constant_status
 vi_get_sensor_calibration(
-	vi_sensors sensor,
+	vi_sensor sensor,
 	float *offset,
 	float *scalar,
 	float *filter_constant
@@ -144,7 +150,7 @@ vi_get_TLE(
  */
 vi_get_constant_status
 vi_get_sensor_status(
-	vi_sensors sensor,
+	vi_sensor sensor,
 	int *sensor_status
 ){
 	return GET_CONSTANT_FAILURE;
@@ -158,10 +164,12 @@ vi_get_sensor_status(
  */
 vi_get_mag_status
 vi_get_mag(
+	vi_MAG mag,
 	double *mag_x,
 	double *mag_y,
 	double *mag_z
 ){
+	//TODO add mag selection
 	return VI_GET_MAG_FAILURE;
 }
 
