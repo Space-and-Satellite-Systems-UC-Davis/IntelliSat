@@ -20,6 +20,7 @@
 #include <globals.h>
 #include "peripherals/IMU/ASM330LHH.h"
 #include <Timers/timers.h>
+#include "hdd/hdd_init.h"
 /**@brief Report the current date and time to second accuracy.
  *
  * @param year,month,day,hour,minute,second Return-by-reference ptrs.
@@ -80,7 +81,40 @@ vi_get_angvel(
 	return GET_ANGVEL_SUCCESS;
 }
 
+/**@brief Initiate the HDD
+ *
+ * @param hdd Which HDD to initiate.
+ *
+ * @return vi_hdd_initiate_status A return code.
+ */
+vi_hdd_initiate_status
+vi_hdd_initiate(
+    vi_HDD hdd
+){
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	hdd_init(channel);
+}
 
+/**@brief Either arms or calibrates the HDD.
+ *
+ * @param hdd Which HDD to command.
+ * @param arm_mode Decide whether arm (0) or calibrate (1).
+ *
+ * @return vi_hdd_arm_status A return code.
+ */
+vi_hdd_arm_status
+vi_hdd_arm(
+    vi_HDD hdd,
+    vi_HDD_arm arm_mode
+){
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	if (arm_mode = VI_HDD_ARM){
+		hdd_arm(channel);
+	} else {
+		hdd_calibrate(channel, 1);
+		hdd_calibrate(channel, 0);
+	}
+}
 
 /**@brief Send a throttle command to the HDD.
  *
@@ -99,8 +133,10 @@ vi_hdd_command(
 	vi_HDD hdd,
     double throttle
 ){
-	//TODO add hdd selection
-	pwm_setDutyCycle(PWM0, throttle);
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	pwm_setDutyCycle(channel, throttle);
+	pwm_setDutyCycle(channel, throttle);
+
 	return HDD_COMMAND_SUCCESS;
 }
 
