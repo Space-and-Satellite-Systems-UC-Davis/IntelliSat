@@ -12,17 +12,17 @@
 #include <stdbool.h>
 
 void calibrate(const bool CAL_MAX, const float MIN_DUTY, const float MAX_DUTY, const float MAX_START_DUTY) {
-	pwm_setDutyCycle(MAX_START_DUTY); // trigger calibration
+	pwm_setDutyCycle(PWM0, MAX_START_DUTY); // trigger calibration
 	printMsg("Min duty: %f, Max duty: %f, Max start duty: %f \r\n", MIN_DUTY, MAX_DUTY, MAX_START_DUTY);
 	delay_ms(1000);
 
 	if (CAL_MAX) {
 		printMsg("Feeding Maximum duty. \r\n");
-		pwm_setDutyCycle(MAX_DUTY);
+		pwm_setDutyCycle(PWM0, MAX_DUTY);
 		delay_ms(4000);
 	} else {
 		printMsg("Feeding minimum duty. \r\n");
-		pwm_setDutyCycle(MIN_DUTY);
+		pwm_setDutyCycle(PWM0, MIN_DUTY);
 		delay_ms(4000);
 	}
 }
@@ -41,12 +41,12 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 	currDuty -= DUTY_STEP; // go below max
 	printMsg("Ramping down. \r\n");
 	while (currDuty >= MIN_DUTY) {
-		pwm_setDutyCycle(currDuty);
+		pwm_setDutyCycle(PWM0, currDuty);
 		printMsg("Current duty: %f \r\n", currDuty);
 		delay_ms(250);
 		currDuty -= DUTY_STEP;
 	}
 
 	printMsg("Return to zero. \r\n");
-	pwm_setDutyCycle(MID_DUTY);
+	pwm_setDutyCycle(PWM0, MID_DUTY);
 }

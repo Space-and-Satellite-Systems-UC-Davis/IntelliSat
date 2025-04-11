@@ -13,7 +13,7 @@
 
 void setSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_DUTY, const uint64_t TIME_MS) {
 	if (PERCENT >= 1) {
-		pwm_setDutyCycle(MIN_DUTY);
+		pwm_setDutyCycle(PWM0, MIN_DUTY);
 		delay_ms(TIME_MS);
 		return;
 	}
@@ -25,10 +25,10 @@ void setSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_D
 	// 125ms off time is a fairly smooth, so we adjust the period to reach this
 	const uint64_t ON_TIME = PERCENT * 125 / (1 - PERCENT);
 	while(getSysTime() < end_time) {
-		pwm_setDutyCycle(MIN_DUTY);
+		pwm_setDutyCycle(PWM0, MIN_DUTY);
 		delay_ms(ON_TIME);
 
-		pwm_setDutyCycle(ZERO_DUTY);
+		pwm_setDutyCycle(PWM0, ZERO_DUTY);
 		delay_ms(125);
 	}
 }
@@ -43,7 +43,7 @@ void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY){
 	const float INIT_DUTY = MID_DUTY + DUTY_STEP;
 	float current_duty = INIT_DUTY;
 	while (current_duty <= TARGET_DUTY && current_duty <= MAX_DUTY){
-		pwm_setDutyCycle(current_duty);
+		pwm_setDutyCycle(PWM0, current_duty);
 		printMsg("Duty cycle: %f \r\n", current_duty);
 		current_duty += DUTY_STEP;
 		delay_ms(DELAY_MS);

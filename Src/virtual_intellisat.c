@@ -100,7 +100,7 @@ vi_hdd_command(
     double throttle
 ){
 	//TODO add hdd selection
-	pwm_setDutyCycle(throttle);
+	pwm_setDutyCycle(PWM0, throttle);
 	return HDD_COMMAND_SUCCESS;
 }
 

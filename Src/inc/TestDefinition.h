@@ -16,24 +16,24 @@ extern int testFuncID_HDD();
 extern void testFunction_HDD();
 
 // if your id is not present, add it
-extern void testFunction_HDD1();
+// extern void testFunction_HDD1();
 extern void testFunction_HDD2();
-extern void testFunction_HDD3();
-extern void testFunction_HDD4();
-extern void testFunction_HDD5();
-extern void testFunction_HDD6();
-extern void testFunction_HDD7();
+// extern void testFunction_HDD3();
+// extern void testFunction_HDD4();
+// extern void testFunction_HDD5();
+// extern void testFunction_HDD6();
+// extern void testFunction_HDD7();
 
 // add your id's test function below
 static void (*testFunctions_HDD[8])(void) = {
 	testFunction_HDD,
-	testFunction_HDD1,
+	//testFunction_HDD1,
 	testFunction_HDD2,
-	testFunction_HDD3,
+	/*testFunction_HDD3,
 	testFunction_HDD4,
 	testFunction_HDD5,
 	testFunction_HDD6,
-	testFunction_HDD7
+	testFunction_HDD7*/
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
