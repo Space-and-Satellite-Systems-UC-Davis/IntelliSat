@@ -14,3 +14,8 @@
  * @returns None
  */
 void watchdog_config();
+
+/**
+ * Periodically kick watchdog inside while loop
+ */
+void watchdog_kick();
