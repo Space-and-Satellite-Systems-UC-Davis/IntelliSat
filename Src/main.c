@@ -13,6 +13,7 @@ int main() {
     init_init();
     init_platform(!RUN_TEST);
 
+
 #if (RUN_TEST==1)
 
     void (*testFunc)();
@@ -20,6 +21,9 @@ int main() {
     testFunc();
 
     #else
+
+    usart_init(USART1, 9600);
+
 
 	//TODO: use RTC first_time flag.
 	//if (first_time) {
@@ -32,7 +36,7 @@ int main() {
 	while (1) {
 		usart_transmitStr(USART1, "Hello");
 		//pcp_read(&pcp, buffer);
-		printMsg("Buffer value: %d \n\r", buffer[0]);
+//		printMsg("Buffer value: %d \n\r", buffer[0]);
 		nop(1000000);
 //		int num_bytes = usart_receiveBytes(USART1, buffer, 1);
 //		continue;
