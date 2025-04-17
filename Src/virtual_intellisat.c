@@ -236,8 +236,8 @@ vi_delay_ms(
  *
  */
 
-void vi_print (const char* string){
-	printMsg(string);
+void vi_print (const char *message, ...){
+	printMsg(message);
 }
 
 

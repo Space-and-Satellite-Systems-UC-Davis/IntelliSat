@@ -52,7 +52,7 @@ void testFunction_HDD2() {
 		delay_ms(3000);
 		printMsg("Continuing. \r\n");
 	} else {
-		arm(MIN_DUTY, MAX_DUTY);
+//		arm(MIN_DUTY, MAX_DUTY);
 	}
 
 	printMsg("Starting Execution. \r\n");
