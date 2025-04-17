@@ -1,10 +1,10 @@
 /*
  * hdd_training_test.c
  *
- *  Fill out the information below
- *  Created on: 4/02/2025
- *  Updated on: 4/02/2025
- *      Author: Nicholas Bianez
+ *	Fill out the information below
+ *  Created on:
+ *  Updated on:
+ *      Author:
  *
  *  Information:
  *  	This file is the main hdd test function file and should
@@ -12,16 +12,17 @@
  *  	the go-ahead has been given for other members.
  */
 
-#include "../hdd_drive.h"
-#include "../hdd_init.h"
-
 #include <Timers/timers.h>
 #include <ADC/adc.h>
 #include <LED/led.h>
 #include <inttypes.h>
+#include <stdbool.h>
+
+#include "../hdd_drive.h"
+#include "../hdd_init.h"
 
 // runs the actual testing code
-void testFunction_HDD1() {
+void testFunction_HDD9() {
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
@@ -70,17 +71,21 @@ void testFunction_HDD1() {
 	}
 
 	printMsg("Starting Execution. \r\n");
+	pwm_setDutyCycle(100);
+	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
+	delay_ms(1000);
 
-	// spin up to speed
-	pwm_setDutyCycle(8);
-	delay_ms(500);
+	printMsg("Testing minimum duty");
+	pwm_setDutyCycle(MIN_DUTY);
+	delay_ms(5000);
 
-	float percent = 0.1;
-	while (percent > 0) {
-		printMsg("Driving with percent: %f \r\n", percent);
-		setSubMinDuty(percent, 8, MID_DUTY, 5000);
-		percent -= 0.01;
-	}
+	printMsg("Testing mid duty");
+	pwm_setDutyCycle(MID_DUTY);
+	delay_ms(5000);
+
+	printMsg("Testing max duty");
+	pwm_setDutyCycle(MAX_DUTY);
+	delay_ms(5000);
 
 	// debug loop
 	while (0) {

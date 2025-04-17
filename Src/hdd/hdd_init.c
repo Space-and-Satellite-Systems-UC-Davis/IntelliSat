@@ -49,4 +49,6 @@ void arm(const float MIN_DUTY, const float MAX_DUTY) {
 
 	printMsg("Return to zero. \r\n");
 	pwm_setDutyCycle(MID_DUTY);
+
+	delay_ms(5000);
 }
