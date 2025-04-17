@@ -32,14 +32,15 @@ int main() {
     PCPDevice pcp;
 	make_pcpdev(&pcp, USART1);
 
+	pcp_transmit(&pcp , "H", 2);
+
     uint8_t buffer[2] = {13, 222};
 	while (1) {
-		usart_transmitStr(USART1, "Hello");
 		//pcp_read(&pcp, buffer);
 //		printMsg("Buffer value: %d \n\r", buffer[0]);
 		nop(1000000);
-//		int num_bytes = usart_receiveBytes(USART1, buffer, 1);
-//		continue;
+
+		pcp_retransmit(&pcp);
 	}
 
 
