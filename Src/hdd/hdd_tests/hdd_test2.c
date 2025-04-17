@@ -29,23 +29,9 @@ void testFunction_HDD2() {
 
 	// init timer here does other initialization actions
 	led_d2(1);
-	pwm_initTimer(PERIOD_uS); //This period time is in microseconds
-	pwm_setDutyCycle(10);
-	PWM_TIMER_ON();
-
-	adc_init();
-	printMsg("Initializing ADC\r\n");
-
-	adc_enable();
-	printMsg("Enabling ADC\r\n");
-
-	adc_configGPIO();
-	printMsg("Configuring GPIO Pin A2 for ADC\r\n");
-
-	//Right now it sets it pin A2, which is photodiode/sunsensor 0 (SOL-0)
-	//Plug in TP2 to the bottommost wire on the connector and TP1 to the one above it
-	adc_setChannel();
-	printMsg("ADC1 channel 7, GPIO Pin A2 set\r\nBeginning to read values\r\n");
+	pwm_initTimer(PWM0, PERIOD_uS); //This period time is in microseconds
+	pwm_setDutyCycle(PWM0, 10);
+	pwm_timerOn(PWM0);
 
 	const float MID_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
 	const float DUTY_STEP = 0.5;
@@ -70,20 +56,20 @@ void testFunction_HDD2() {
 	}
 
 	printMsg("Starting Execution. \r\n");
-	pwm_setDutyCycle(100);
+	pwm_setDutyCycle(PWM0, 100);
 	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
 	delay_ms(1000);
 
 	printMsg("Testing minimum duty");
-	pwm_setDutyCycle(MIN_DUTY);
+	pwm_setDutyCycle(PWM0, MIN_DUTY);
 	delay_ms(5000);
 
 	printMsg("Testing mid duty");
-	pwm_setDutyCycle(MID_DUTY);
+	pwm_setDutyCycle(PWM0, MID_DUTY);
 	delay_ms(5000);
 
 	printMsg("Testing max duty");
-	pwm_setDutyCycle(MAX_DUTY);
+	pwm_setDutyCycle(PWM0, MAX_DUTY);
 	delay_ms(5000);
 
 	// debug loop
@@ -92,7 +78,7 @@ void testFunction_HDD2() {
 		printMsg("Preparing to start trial. \r\n");
 		float currDuty = MIN_DUTY;
 		while (currDuty < MID_DUTY) {
-			pwm_setDutyCycle(currDuty);
+			pwm_setDutyCycle(PWM0, currDuty);
 			printMsg("Duty: %f \r\n", currDuty);
 			delay_ms(500);
 			currDuty += DUTY_STEP;
@@ -101,7 +87,7 @@ void testFunction_HDD2() {
 		printMsg("Waiting to up duty cycle. \r\n");
 		delay_ms(5000);
 		while (currDuty <= MAX_DUTY) {
-			pwm_setDutyCycle(currDuty);
+			pwm_setDutyCycle(PWM0, currDuty);
 			printMsg("Duty: %f \r\n", currDuty);
 			delay_ms(500);
 			currDuty += DUTY_STEP;
@@ -113,5 +99,5 @@ void testFunction_HDD2() {
 	}
 
 	printMsg("Ending program. \r\n");
-	PWM_TIMER_OFF();
+	pwm_timerOff(PWM0);
 }

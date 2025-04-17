@@ -20,6 +20,7 @@
 #include <globals.h>
 #include "peripherals/IMU/ASM330LHH.h"
 #include <Timers/timers.h>
+#include "hdd/hdd_init.h"
 /**@brief Report the current date and time to second accuracy.
  *
  * @param year,month,day,hour,minute,second Return-by-reference ptrs.
@@ -66,17 +67,54 @@ vi_get_curr_millis(
  */
 vi_get_angvel_status
 vi_get_angvel(
+	vi_IMU imu,
     double *angvel_x,
     double *angvel_y,
     double *angvel_z
 ){
+	enum IMU_SELECT imu_select = (imu == VI_IMU1) ? IMU0 : IMU1;
+	set_IMU(imu_select);
+
 	*angvel_x = imu_readGyro_X();
 	*angvel_y = imu_readGyro_Y();
 	*angvel_z = imu_readGyro_Z();
 	return GET_ANGVEL_SUCCESS;
 }
 
+/**@brief Initiate the HDD
+ *
+ * @param hdd Which HDD to initiate.
+ *
+ * @return vi_hdd_initiate_status A return code.
+ */
+vi_hdd_initiate_status
+vi_hdd_initiate(
+    vi_HDD hdd
+){
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	hdd_init(channel);
+}
 
+/**@brief Either arms or calibrates the HDD.
+ *
+ * @param hdd Which HDD to command.
+ * @param arm_mode Decide whether arm (0) or calibrate (1).
+ *
+ * @return vi_hdd_arm_status A return code.
+ */
+vi_hdd_arm_status
+vi_hdd_arm(
+    vi_HDD hdd,
+    vi_HDD_arm arm_mode
+){
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	if (arm_mode = VI_HDD_ARM){
+		hdd_arm(channel);
+	} else {
+		hdd_calibrate(channel, 1);
+		hdd_calibrate(channel, 0);
+	}
+}
 
 /**@brief Send a throttle command to the HDD.
  *
@@ -92,9 +130,13 @@ vi_get_angvel(
  */
 vi_hdd_command_status
 vi_hdd_command(
+	vi_HDD hdd,
     double throttle
 ){
-	pwm_setDutyCycle(throttle);
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	pwm_setDutyCycle(channel, throttle);
+	pwm_setDutyCycle(channel, throttle);
+
 	return HDD_COMMAND_SUCCESS;
 }
 
@@ -111,7 +153,7 @@ vi_hdd_command(
  */
 vi_get_constant_status
 vi_get_sensor_calibration(
-	vi_sensors sensor,
+	vi_sensor sensor,
 	float *offset,
 	float *scalar,
 	float *filter_constant
@@ -144,7 +186,7 @@ vi_get_TLE(
  */
 vi_get_constant_status
 vi_get_sensor_status(
-	vi_sensors sensor,
+	vi_sensor sensor,
 	int *sensor_status
 ){
 	return GET_CONSTANT_FAILURE;
@@ -158,10 +200,12 @@ vi_get_sensor_status(
  */
 vi_get_mag_status
 vi_get_mag(
+	vi_MAG mag,
 	double *mag_x,
 	double *mag_y,
 	double *mag_z
 ){
+	//TODO add mag selection
 	return VI_GET_MAG_FAILURE;
 }
 
