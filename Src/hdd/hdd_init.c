@@ -60,4 +60,9 @@ void hdd_arm(PWM_Channels channel) {
 
 	printMsg("Return to zero. \r\n");
 	pwm_setDutyCycle(channel, MID_DUTY);
+
+	delay_ms(3000);
+	pwm_setDutyCycle(PWM0, 100);
+	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
+	delay_ms(1000);
 }

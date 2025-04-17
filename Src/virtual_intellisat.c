@@ -108,7 +108,7 @@ vi_hdd_arm(
     vi_HDD_arm arm_mode
 ){
 	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	if (arm_mode = VI_HDD_ARM){
+	if (arm_mode == VI_HDD_ARM){
 		hdd_arm(channel);
 	} else {
 		hdd_calibrate(channel, 1);
@@ -134,8 +134,14 @@ vi_hdd_command(
     double throttle
 ){
 	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	pwm_setDutyCycle(channel, throttle);
-	pwm_setDutyCycle(channel, throttle);
+	if (throttle > 10.0){
+		pwm_setDutyCycle(channel, 10.0);
+	} else if (throttle < 5.0){
+		pwm_setDutyCycle(channel, 5.0);
+	} else {
+		pwm_setDutyCycle(channel, throttle);
+	}
+
 
 	return HDD_COMMAND_SUCCESS;
 }
