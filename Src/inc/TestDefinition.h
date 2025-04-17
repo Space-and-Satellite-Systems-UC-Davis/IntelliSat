@@ -21,6 +21,8 @@ extern void testFunction_HDD4();
 extern void testFunction_HDD5();
 extern void testFunction_HDD6();
 extern void testFunction_HDD7();
+extern void testFunction_HDD8();
+extern void testFunction_HDD9();
 
 // add your id's test function below
 static void (*testFunctions_HDD[10])(void) = {

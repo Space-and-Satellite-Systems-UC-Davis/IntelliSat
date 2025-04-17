@@ -73,7 +73,7 @@ void testFunction_HDD1() {
 
 	// spin up to speed
 	pwm_setDutyCycle(8);
-	delay_ms(500);
+	delay_ms(1000);
 
 	float percent = 0.1;
 	while (percent > 0) {
