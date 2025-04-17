@@ -21,8 +21,8 @@ void (*getTestFunction(int test_id))(void) {
 	switch (test_id) {
 		case 0:
 			return testFunction_Nothing;
-		case 1:
-			return testFunction_IMU_AcelGyro_Reads;
+//		case 1:
+//			return testFunction_IMU_AcelGyro_Reads;
 		case 2:
 			return testFunction_MAG_Reads;
 		case 3:
@@ -31,10 +31,10 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 7:
 			return testFunction_FRAM;
-		case 8:
-			return testFunction_IMU_Dupe_Reads;
-		case 12:
-			return testFunction_Diode_Reads;
+		// case 8:
+		// 	return testFunction_IMU_Dupe_Reads;
+		// case 12:
+		// 	return testFunction_Diode_Reads;
 		default:
 			return testFunction_Nothing;
 	}

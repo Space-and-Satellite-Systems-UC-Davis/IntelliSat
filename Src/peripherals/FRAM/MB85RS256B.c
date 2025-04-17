@@ -87,7 +87,7 @@ uint8_t FRAM_readStatusRegister() {
     return status;  // Return the read status register value
 }
 
-bool FRAM_readData(uint16_t address, uint8_t *buffer)
+bool FRAM_readData(uint16_t address, uint8_t *buffer, uint16_t size)
 {
     // Validate address
     if (address >= FRAM_MAX_BYTES) {
@@ -116,7 +116,7 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer)
     spi_transmitReceive(FRAM_SPI, NULL, &trash, 1, false);
 
     // Read into buffer
-    if (!spi_transmitReceive(FRAM_SPI, NULL, buffer, 256, false)) {
+    if (!spi_transmitReceive(FRAM_SPI, NULL, buffer, size, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
@@ -126,7 +126,7 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer)
 
 bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     // Validate address
-    if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES) {
+    if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES || size == 0) {
         return false;
     }
     // Enable write operations
@@ -147,6 +147,11 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
+
+    // Dummy write to handle timing/delay issues
+    uint8_t dummy = 0xFF;
+    spi_transmitReceive(FRAM_SPI, &dummy, NULL, 1, false);
+
     // Send data to write
     if (!spi_transmitReceive(FRAM_SPI, data, NULL, size, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
@@ -171,13 +176,13 @@ static uint16_t sectorToAddress(uint16_t sector)
 bool FRAM_readPage(uint16_t page, uint8_t *buffer)
 {
     uint16_t address = pageToAddress(page);
-    return FRAM_readData(address, buffer);
+    return FRAM_readData(address, buffer, 256);
 }
 
 bool FRAM_readSector(uint16_t sector, uint8_t *buffer)
 {
     uint16_t address = sectorToAddress(sector);
-    return FRAM_readData(address, buffer);
+    return FRAM_readData(address, buffer, 4096);
 }
 
 bool FRAM_writePage(uint16_t page, const uint8_t *data)
@@ -186,8 +191,13 @@ bool FRAM_writePage(uint16_t page, const uint8_t *data)
     return FRAM_writeData(address, data, 256);
 }
 
-bool FRAM_writeSector(uint16_t sector, const uint8_t *data)
-{
-    uint16_t address = sectorToAddress(sector);
-    return FRAM_writeData(address, data, 4096);
+bool FRAM_writeSector(uint16_t sector, const uint8_t *data) {
+    uint16_t baseAddress = sectorToAddress(sector);
+    for (uint16_t offset = 0; offset < 4096; offset += 256) {
+        if (!FRAM_writeData(baseAddress + offset, data + offset, 256)) {
+            printMsg("fatal: Sector write failed at offset %u\n\r", offset);
+            return false;
+        }
+    }
+    return true;
 }
