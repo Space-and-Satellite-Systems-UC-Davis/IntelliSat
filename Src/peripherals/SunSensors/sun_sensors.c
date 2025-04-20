@@ -2,12 +2,12 @@
 
 panel_t panel0, panel1, panel2, panel3, panel4, panel5;
 
-panel_t* panelInfo0 = &panel0;
-panel_t* panelInfo1 = &panel1;
-panel_t* panelInfo2 = &panel2;
-panel_t* panelInfo3 = &panel3;
-panel_t* panelInfo4 = &panel4;
-panel_t* panelInfo5 = &panel5;
+panel_t* panelInfo0;
+panel_t* panelInfo1;
+panel_t* panelInfo2;
+panel_t* panelInfo3;
+panel_t* panelInfo4;
+panel_t* panelInfo5;
 
 
 static void sun_sensors_initializePanelConstants() {
@@ -75,7 +75,7 @@ static panel_t* sun_sensors_panelInfoSelect(PANELS panel) {
 
 void sun_sensor_init() {
     adc_init();
-    sun_sensors_initializePanelConstants();
+    //sun_sensors_initializePanelConstants();
     pwrmon_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, 68,30);
     temp_sensor_init(RESOLUTION_12);
 }
