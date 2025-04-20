@@ -9,6 +9,8 @@
 
 //Address
 #define SENSOR_ADDRESS 0x45
+#define CONFIG_REGISTER 0
+#define CAL_REGISTER 5
 
 //Macros for the Sunsensor pins
 #define PAN0_GPIO GPIOG
@@ -23,6 +25,11 @@
 #define PAN3_GPIO GPIOG
 #define PAN3_SDA_PIN 4
 #define PAN3_SCL_PIN 5
+
+//Battery monitor pins
+#define BATMON_GPIO GPIOH
+#define BATMON_SDA 0
+#define BATMON_SCL 1
 
 //number of averages
 #define AVERAGE_1   0

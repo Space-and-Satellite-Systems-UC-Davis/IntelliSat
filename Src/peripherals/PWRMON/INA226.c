@@ -14,6 +14,7 @@ void pwrmon_init(int averages, int bus_time, int shunt_time, int rshunt, int max
     softi2c_init(PAN1_GPIO, PAN1_SCL_PIN, PAN1_GPIO, PAN1_SDA_PIN);
     softi2c_init(PAN2_GPIO, PAN2_SCL_PIN, PAN2_GPIO, PAN2_SDA_PIN);
     softi2c_init(PAN3_GPIO, PAN3_SCL_PIN, PAN3_GPIO, PAN3_SDA_PIN);
+    softi2c_init(BATMON_GPIO, BATMON_SCL, BATMON_GPIO, BATMON_SDA);
 
     pwrmon_config(averages, bus_time, shunt_time, rshunt, max_current);
 }
@@ -24,17 +25,22 @@ void pwrmon_config(int averages, int bus_time, int shunt_time, int rshunt, int m
     int16_t cal = ceiling((0.00512 / (current_lsb * 1.0 /MICRO)) /(rshunt * 1.0 /MILLI)); //round to nearest integer above
 
     //sensor0
-    softi2c_writeReg16(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN, SENSOR_ADDRESS, 0, config); // configuration register
-    softi2c_writeReg16(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN, SENSOR_ADDRESS, 5, cal); //calibration register
+    softi2c_writeReg16(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER, config); // configuration register
+    softi2c_writeReg16(PAN0_GPIO, PAN0_SCL_PIN, PAN0_GPIO, PAN0_SDA_PIN, SENSOR_ADDRESS, CAL_REGISTER, cal); //calibration register
     //sensor1
-    softi2c_writeReg16(PAN1_GPIO, PAN1_SCL_PIN, PAN1_GPIO, PAN1_SDA_PIN, SENSOR_ADDRESS, 0, config);
-    softi2c_writeReg16(PAN1_GPIO, PAN1_SCL_PIN, PAN1_GPIO, PAN1_SDA_PIN, SENSOR_ADDRESS, 5, cal);
+    softi2c_writeReg16(PAN1_GPIO, PAN1_SCL_PIN, PAN1_GPIO, PAN1_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER, config);
+    softi2c_writeReg16(PAN1_GPIO, PAN1_SCL_PIN, PAN1_GPIO, PAN1_SDA_PIN, SENSOR_ADDRESS, CAL_REGISTER, cal);
     //sensor2
-    softi2c_writeReg16(PAN2_GPIO, PAN2_SCL_PIN, PAN2_GPIO, PAN2_SDA_PIN, SENSOR_ADDRESS, 0, config);
-    softi2c_writeReg16(PAN2_GPIO, PAN2_SCL_PIN, PAN2_GPIO, PAN2_SDA_PIN, SENSOR_ADDRESS, 5, cal);
+    softi2c_writeReg16(PAN2_GPIO, PAN2_SCL_PIN, PAN2_GPIO, PAN2_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER, config);
+    softi2c_writeReg16(PAN2_GPIO, PAN2_SCL_PIN, PAN2_GPIO, PAN2_SDA_PIN, SENSOR_ADDRESS, CAL_REGISTER, cal);
     //sensor3
-    softi2c_writeReg16(PAN3_GPIO, PAN3_SCL_PIN, PAN3_GPIO, PAN3_SDA_PIN, SENSOR_ADDRESS, 0, config);
-    softi2c_writeReg16(PAN3_GPIO, PAN3_SCL_PIN, PAN3_GPIO, PAN3_SDA_PIN, SENSOR_ADDRESS, 5, cal);
+    softi2c_writeReg16(PAN3_GPIO, PAN3_SCL_PIN, PAN3_GPIO, PAN3_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER, config);
+    softi2c_writeReg16(PAN3_GPIO, PAN3_SCL_PIN, PAN3_GPIO, PAN3_SDA_PIN, SENSOR_ADDRESS, CAL_REGISTER, cal);
+
+    //battery monitor
+    softi2c_writeReg16(BATMON_GPIO, BATMON_SCL, BATMON_GPIO, BATMON_SDA, SENSOR_ADDRESS, CONFIG_REGISTER, config);
+    softi2c_writeReg16(BATMON_GPIO, BATMON_SCL, BATMON_GPIO, BATMON_SDA, SENSOR_ADDRESS, CAL_REGISTER, cal);
+
 }
 
 //no need to trigger, only use continuous mode or power-down mode
