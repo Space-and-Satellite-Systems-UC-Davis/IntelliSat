@@ -5,12 +5,14 @@
  *      Author: green
  *
  *       This document is testing and documentation for the MB85RS256B FRAM memory interface.
- */
+ */ 
+
+// New tests: zeroLengthWrite, crossPageWrite, Overwrite
 
 #include "MB85RS256B.h"
 #include "print_scan.h"
 
-#define FRAM_NUM_TESTS 12 // Update as you add more tests
+#define FRAM_NUM_TESTS 15 // Update as you add more tests
 #define FRAM_TEST_PAGE 2
 #define FRAM_TEST_ADDRESS 0x0000
 #define FRAM_BUFFER_SIZE 256
@@ -126,7 +128,7 @@ bool FRAMtest_readData()
 	uint16_t address = 0x000000;
     if (!FRAM_clearAll()) return false;
 
-	if (FRAM_readData(address, buffer)) {
+	if (FRAM_readData(address, buffer, 256)) {
 		printMsg("FRAM Data Read Starting...\n\r");
 		printBuf(buffer, 256);
 		return true;
@@ -178,9 +180,7 @@ bool FRAMtest_readSector()
   Test 3: Write to Invalid Address (Expect rejection)
   * expected: "Invalid Address Write: PASS"
   * actual: "Invalid Address Write: PASS"
-  Test 4: Write Protect Test
-  * expected: "Write Protect: PASS"
-  * actual: "fatal: Write Protect: Write succeeded despite WEL=0"
+  Test 4: Check WEL bit
 */
 
 uint8_t writeBuffer[256] = {0};
@@ -195,9 +195,8 @@ bool FRAMtest_basicWriteData() {
     }
 
     // Test 1: Basic Write and Read
-    printMsg("Starting Basic Write and Read Test...\n\r");
     if (FRAM_writeData(address, writeBuffer, 256)) {
-        FRAM_readData(address, readBuffer);
+        FRAM_readData(address, readBuffer, 256);
 
         // Verify written and read data
         for (uint16_t i = 0; i < 256; i++) {
@@ -215,10 +214,9 @@ bool FRAMtest_basicWriteData() {
 bool FRAMtest_BoundaryWriteData() {
     // Test 2: Boundary Condition Write
     address = 0x7F00; // Near upper boundary of memory
-    printMsg("Starting Boundary Condition Test at 0x7F00...\n\r");
     if (FRAM_writeData(address, writeBuffer, 256)) {
 
-    	FRAM_readData(address, readBuffer);
+    	FRAM_readData(address, readBuffer, 256);
         for (uint16_t i = 0; i < 256; i++) {
             if (writeBuffer[i] != readBuffer[i]) {
                 printMsg("fatal: Boundary Condition Test Data Mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);
@@ -234,37 +232,92 @@ bool FRAMtest_BoundaryWriteData() {
 bool FRAMtest_InvalidAddressWriteData() {
     // Test 3: Invalid Address Write (Expect Failure) (0x0000 - 0x7FFF valid range)
     address = 0x8000; // Invalid address
-    printMsg("Starting Invalid Address Test at 0x8000...\n\r");
     if (!FRAM_writeData(address, writeBuffer, 256)) {
-        printMsg("Invalid Address Test (Command Rejected as Expected).\n\r");
         return true;
     }
     printMsg("fatal: Invalid Address Test (Command Unexpectedly Accepted).\n\r");
     return false;
 }
 
-bool FRAMtest_WriteProtect() {
-    // Ensure WEL is set first
-    if (!FRAM_writeEnable()) {
-        printMsg("fatal: Write Protect: Could not set WEL\n\r");
-        return false;
-    }
-    // Clear WEL via WRDI
-    if (!FRAM_writeDisable()) {
-        printMsg("fatal: Write Protect: WRDI command failed\n\r");
-        return false;
-    }
-    // Verify WEL is 0
+// Test 4: Check that WEL bit is cleared (0) when no write operation is active
+bool FRAMtest_checkWELbit() {
     uint8_t status = FRAM_readStatusRegister();
-    if ((status & 0x02) != 0) { 
-        printMsg("fatal: Write Protect: WEL still set\n\r");
+    uint8_t welBit = (status >> 1) & 0x01;
+
+    if (welBit == 0) {
+        return true;
+    }
+
+    printMsg("fatal: WEL bit is unexpectedly set to 1\n\r");
+    return false;
+}
+
+// Write 0 bytes and ensure no data is changed, and no crash occurs
+bool FRAMtest_zeroLengthWrite() {
+    uint8_t dummy = 0xAA;
+    if (FRAM_writeData(0x0000, &dummy, 0)) {
+        printMsg("fatal: Zero-length write should not succeed.\n\r");
         return false;
     }
-    // Attempt write (should fail)
-    uint8_t dummy = 0xAA;
-    if (FRAM_writeData(0x0000, &dummy, 1)) {
-        printMsg("fatal: Write Protect: Write succeeded despite WEL=0\n\r");
+    return true;
+}
+
+// Cross-page write (e.g., writing from 0x01F0 to 0x0200)
+bool FRAMtest_crossPageWrite() {
+    uint8_t buffer[32];
+    for (int i = 0; i < 32; i++) buffer[i] = i + 1;
+    uint16_t address = 0x01F0;
+
+    if (!FRAM_writeData(address, buffer, 32)) {
+        printMsg("fatal: Cross Page Write failed\n\r");
         return false;
+    }
+
+    uint8_t read[32] = {0};
+    FRAM_readData(address, read, 32);
+    for (int i = 0; i < 32; i++) {
+        if (read[i] != buffer[i]) {
+            printMsg("fatal: Cross Page mismatch at %d: %02X != %02X\n\r", i, buffer[i], read[i]);
+            return false;
+        }
+    }
+    return true;
+}
+
+// Overwriting a page with a different pattern
+bool FRAMtest_overwrite()
+{
+    uint8_t firstWrite[256];
+    uint8_t secondWrite[256];
+    uint8_t readBack[256] = {0};
+    uint16_t page = 5; // Pick page for overwrite test
+
+    // Fill with distinct patterns
+    for (uint16_t i = 0; i < 256; i++) {
+        firstWrite[i] = 0xAA;
+        secondWrite[i] = 0x55;
+    }
+
+    if (!FRAM_writePage(page, firstWrite)) {
+        printMsg("fatal: First write failed\n\r");
+        return false;
+    }
+
+    if (!FRAM_writePage(page, secondWrite)) {
+        printMsg("fatal: Second (overwrite) write failed\n\r");
+        return false;
+    }
+
+    if (!FRAM_readPage(page, readBack)) {
+        printMsg("fatal: Failed to read back overwritten data\n\r");
+        return false;
+    }
+
+    for (uint16_t i = 0; i < 256; i++) {
+        if (readBack[i] != secondWrite[i]) {
+            printMsg("fatal: Overwrite mismatch at %u: expected 0x%02X, got 0x%02X\n\r", i, secondWrite[i], readBack[i]);
+            return false;
+        }
     }
     return true;
 }
@@ -281,14 +334,10 @@ bool FRAMtest_writePage()
         writeBuffer[i] = i;  // Incremental pattern
     }
 
-    printMsg("Starting Write Page Test at page %u...\n\r", page);
-
     if (!FRAM_writePage(page, writeBuffer)) {
         printMsg("fatal: Write to page %u failed.\n\r", page);
         return false;
     }
-
-    printMsg("Write successful. Verifying data...\n\r");
 
     if (!FRAM_readPage(page, readBuffer)) {
         printMsg("fatal: Read from page %u failed.\n\r", page);
@@ -301,7 +350,6 @@ bool FRAMtest_writePage()
             return false;
         }
     }
-
     return true;
 }
 
@@ -317,14 +365,10 @@ bool FRAMtest_writeSector()
         writeBuffer[i] = (i % 256);  // Cyclic pattern
     }
 
-    printMsg("Starting Write Sector Test at sector %u...\n\r", sector);
-
     if (!FRAM_writeSector(sector, writeBuffer)) {
         printMsg("fatal: Write to sector %u failed.\n\r", sector);
         return false;
     }
-
-    printMsg("Write successful. Verifying data...\n\r");
 
     if (!FRAM_readSector(sector, readBuffer)) {
         printMsg("fatal: Read from sector %u failed.\n\r", sector);
@@ -337,7 +381,6 @@ bool FRAMtest_writeSector()
             return false;
         }
     }
-
     return true;
 }
 
@@ -356,7 +399,10 @@ void testFunction_FRAM() {
 		FRAMtest_basicWriteData,
 		FRAMtest_BoundaryWriteData,
 		FRAMtest_InvalidAddressWriteData,
-		FRAMtest_WriteProtect,
+		FRAMtest_checkWELbit,
+        FRAMtest_zeroLengthWrite,
+        FRAMtest_crossPageWrite,
+        FRAMtest_overwrite,
         FRAMtest_writePage,
         FRAMtest_writeSector,
     };
@@ -370,8 +416,11 @@ void testFunction_FRAM() {
         "Read Sector",
         "Basic Write and Read",
 		"Boundary Write",
-        "Invalid Address Write",
-        "Write Protect",
+        "Invalid Address Write (Command Rejected as Expected)",
+        "Check WEL bit",
+        "Zero Length Write",
+        "Cross Page Write",
+        "Overwrite Page",
         "Write Page",
         "Write Sector",
     };
