@@ -1,5 +1,6 @@
 #include "low_pwr.h"
 #include "task.h"
+#include "PWR_DIS/pwr_distribution.h"
 // #include "eta3000.h"     // Dedicated balancing IC
 // #include "s8254a.h"      // Protection IC
 
@@ -100,6 +101,9 @@ void enable_low_power_hardware(void)
     // - Adjust voltage regulators
     // __HAL_RCC_GPIOB_CLK_DISABLE();
     // HAL_PWREx_EnableUltraLowPower();
+        mgt_off();
+        hdd_off(0);
+        hdd_off(1);
 }
 
 void restore_normal_hardware(void)
