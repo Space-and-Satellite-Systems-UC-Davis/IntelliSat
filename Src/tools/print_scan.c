@@ -9,7 +9,6 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include "print_scan.h"
 #include <UART/uart.h>
 

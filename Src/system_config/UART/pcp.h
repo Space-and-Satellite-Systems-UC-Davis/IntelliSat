@@ -1,7 +1,7 @@
 /******************************************************************************
 * File:             pcp.h
 *
-* Author:           Eric Xu  
+* Author:           Eric Xu
 * Created:          2025-01-26 20:54
 * Description:      Peripheral control protocol (PCP) is a transmission protocol
 *                   built above UART that allows the sending and receiving of
