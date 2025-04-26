@@ -3,12 +3,10 @@
 #include <SunSensors/sun_sensors.h>
 
 void testFunction_watchdog() {
-    //int x = sun_sensors_readVoltage(PANEL0,DIODE0);
-    //printMsg("voltage: %f\n", x);
-    //RCC->CSR |= RCC_CSR_RMVF;
-    WWDG->CR |= WWDG_KICK;
+    whoReset();
     printMsg("start watchdog\n");
     led_d2(true);
-    watchdog_config();
+    watchdog_iwdg_config(410);
+    watchdog_wwdg_config(400);
     watchdog_kick();
 }
