@@ -2,12 +2,12 @@
 
 panel_t panel0, panel1, panel2, panel3, panel4, panel5;
 
-panel_t* panelInfo0;
-panel_t* panelInfo1;
-panel_t* panelInfo2;
-panel_t* panelInfo3;
-panel_t* panelInfo4;
-panel_t* panelInfo5;
+panel_t* panelInfo0 = &panel0;
+panel_t* panelInfo1 = &panel1;
+panel_t* panelInfo2 = &panel2;
+panel_t* panelInfo3 = &panel3;
+panel_t* panelInfo4 = &panel4;
+panel_t* panelInfo5 = &panel5;
 
 
 static void sun_sensors_initializePanelConstants() {
