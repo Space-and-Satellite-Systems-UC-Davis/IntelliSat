@@ -56,7 +56,9 @@ void timer_waitStartupTime() {
 	timer_initStartupTimer();
 
 	timer_startupTimerOn();
-	while (startup_count < MAX_STARTUP_COUNT);
+	while (startup_count < MAX_STARTUP_COUNT) {
+		nop(1);
+	}
 	timer_startupTimerOff();
 }
 
