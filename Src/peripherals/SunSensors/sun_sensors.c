@@ -75,7 +75,7 @@ static panel_t* sun_sensors_panelInfoSelect(PANELS panel) {
 
 void sun_sensor_init() {
     adc_init();
-    //sun_sensors_initializePanelConstants();
+    sun_sensors_initializePanelConstants();
     pwrmon_init(AVERAGE_1, CONVERT_1100, CONVERT_1100, 68,30);
     temp_sensor_init(RESOLUTION_12);
 }
