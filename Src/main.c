@@ -29,9 +29,13 @@ int main() {
     PCPDevice pcp;
 	make_pcpdev(&pcp, USART1);
 
-    uint8_t chunk[CHUNK_SIZE] = {'1', '2', '3', '4'};
+    uint8_t chunk[CHUNK_SIZE] = {'s'};
+
+    pcp_transmit(&pcp, chunk, CHUNK_SIZE);
+
+    //Make it so it does the transmit and loop only if button is pressed ?
 	while (1) {
-		pcp_read(&pcp, chunk);
+		pcp_retransmit(&pcp);
 
 //		usart_transmitChar(USART1, 'C');
 //		usart_transmitChar(USART1, 'C');
