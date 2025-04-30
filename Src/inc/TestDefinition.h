@@ -38,7 +38,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
-		case 22: 
+		case 14: 
 			return testFunction_watchdog;
 		default:
 			return testFunction_Nothing;
