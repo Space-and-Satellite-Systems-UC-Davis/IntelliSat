@@ -11,10 +11,17 @@
 #define IWDG_START 0x0000CCCC
 #define IWDG_ENABLE 0x00005555
 #define WWDG_CALCULATE_TIMEOUT 0.0065536
+#define APB1_FREQ 5 //MHz
+#define WATCHDOG_TIMER TIM3
 
-typedef struct{
-    int* one;
-} bad_struct;
+
+/**
+ * Configure both iwdg and wwdg watchdogs
+ * Also initiates hardware interrupt
+ * @param ms timeout time in ms, a number between 10 and 420
+ * 
+ */
+void watchdog_config(int ms);
 
 /**
  * Initialize the independent watchdog
@@ -35,8 +42,18 @@ void watchdog_wwdg_config(int ms);
  * 
  * @returns None
  */
-void watchdog_config();
+void watchdog_hardware_config();
 
+/**
+ * Configures the hardware interrupt for TIM3
+ * 
+ */
+void watchdog_interrupt_config();
+
+/**
+ * Configures what to do when the interrupt is called
+ */
+void TIM3_IRQHandler();
 /**
  * Periodically kick watchdog inside while loop
  */
