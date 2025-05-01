@@ -133,6 +133,7 @@ vi_hdd_command(
 	vi_HDD hdd,
     double throttle
 ){
+	throttle += 7.5;
 	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
 	if (throttle > 10.0){
 		pwm_setDutyCycle(channel, 10.0);
