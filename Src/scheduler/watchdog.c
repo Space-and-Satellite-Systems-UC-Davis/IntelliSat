@@ -54,15 +54,16 @@ void watchdog(void *args) {
 			intelli_task_t task = task_table[taskid];
 			status = xTaskCreate(	task.run_ptr,
 									task.name,
-									1000, //TODO: make task-specific
+									100, //TODO: make task-specific
 									NULL, //no parameters
 									task.id,
 									&(task_table[taskid].FreeRTOS_handle)
 								);
 			// Make sure the task does not seize control right after \
 			// the watchdog and task manager yield
-			vTaskSuspend(task_table[taskid].FreeRTOS_handle);
 			if (status != pdPASS) {
+				vTaskSuspend(task_table[taskid].FreeRTOS_handle);
+			} else {
 				printMsg("OOM allocating %s task with error %d\n\r", task.name, status);
 				NVIC_SystemReset(); // If we OOM, ... (as above)
 			}

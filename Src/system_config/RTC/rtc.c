@@ -24,7 +24,9 @@ void rtc_openWritingPriveledge() {
 
 	// Enter RTC Initialization mode, wait for confirmation of initialization mode
 	RTC->ISR |= RTC_ISR_INIT;
-	while (!(RTC->ISR & RTC_ISR_INITF));
+	while (!(RTC->ISR & RTC_ISR_INITF)) {
+		nop(1);
+	}
 }
 
 void rtc_closeWritingPriveledge() {

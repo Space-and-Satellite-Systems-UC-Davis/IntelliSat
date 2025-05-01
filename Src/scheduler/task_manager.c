@@ -14,7 +14,7 @@
 
 #define TASK_MANAGER_YIELD_TICKS pdMS_TO_TICKS(1000) //TODO: temporary 10 seconds 1\10
 
-extern intelli_task_t task_table[6];
+extern intelli_task_t task_table[TASK_TABLE_LEN];
 const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
@@ -163,7 +163,7 @@ void task_manager(void *args) {
 			cancel_current_task = true;
 		} else {
 			// Scan for ready task from the next-highest priority downwards
-			for (int id = task_table[TASK_TABLE_LEN - 1].id; id > current_task.id; id--) {
+			for (int id = task_table[0].id; id > current_task.id; id--) {
 				if ((task_table[id]).ready_ptr()) {
 					cancel_current_task = true;
 					break;

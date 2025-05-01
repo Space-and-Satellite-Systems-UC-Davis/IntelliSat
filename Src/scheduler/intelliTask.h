@@ -10,7 +10,7 @@
 
 #include <stdbool.h>
 
-#define TASK_TABLE_LEN 6
+#define TASK_TABLE_LEN 7
 
 
 /*

@@ -116,8 +116,8 @@ static void led_task(void *args) {
  */
 int branch_main() {
     
-    xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-2, NULL);
-    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-2, NULL);
+    xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-3, NULL);
+    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-3, NULL);
 
     xTaskCreate(watchdog, "Watchdog", 128, (void*)watchdog, configMAX_PRIORITIES-1, NULL);
 

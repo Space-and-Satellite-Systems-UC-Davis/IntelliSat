@@ -12,7 +12,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define TASK_MANAGER_PRIORITY 1
+#define TASK_MANAGER_PRIORITY (configMAX_PRIORITIES-2)
 
 /**@brief Handle task expiration and preemption.
  *
