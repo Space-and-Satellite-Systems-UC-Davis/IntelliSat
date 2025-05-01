@@ -62,10 +62,10 @@ void watchdog(void *args) {
 			// Make sure the task does not seize control right after \
 			// the watchdog and task manager yield
 			if (status != pdPASS) {
-				vTaskSuspend(task_table[taskid].FreeRTOS_handle);
-			} else {
 				printMsg("OOM allocating %s task with error %d\n\r", task.name, status);
 				NVIC_SystemReset(); // If we OOM, ... (as above)
+			} else {
+				vTaskSuspend(task_table[taskid].FreeRTOS_handle);
 			}
 		}
 
