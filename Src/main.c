@@ -33,14 +33,16 @@ int main() {
 
 	uint8_t chunk[CHUNK_SIZE];
 
+	const int CHUNK_LENGTH = 8;
+
 	while(1) {
-		int read_status = pcp_read(&pcp, buffer);
+		int read_status = pcp_read(&pcp, chunk);
 		if (read_status != -1) {
 			uint8_t n_chunks = chunk[1];
 
 			for (int i = 0; i < n_chunks; i++) {
 				while(1) {
-					int read_status = pcp_read(dev, chunk);
+					int read_status = pcp_read(&pcp, chunk);
 					if (read_status != -1) {
 						//ECHO
 			    		for (int j = 0; j < CHUNK_LENGTH; j++) {
