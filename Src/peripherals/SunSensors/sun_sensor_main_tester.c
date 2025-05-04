@@ -1,12 +1,18 @@
-
 #include <SunSensors/sun_sensors.h>
 #include <globals.h>
 #include <print_scan.h>
 #include <Buttons/buttons.h>
 
-void testFunction_Diode_Reads() {
-    printMsg("Starting Diode reading\r\n");
-	
+
+
+void testFunction_Sun_Sensor_Main(){
+    float n1[3] = {1.0, 1.0, 1.0};
+    float n2[3] = {1.0, 1.0, 1.0};
+    float n3[3] = {1.0, 1.0, 1.0};
+
+    int readings[6] = {0,0,0,0,0,0};
+
+    float vs[3] = {0.0,0.0,0.0};
 	while (1) {
 		if (get_buttonStatus_SW1()) {
             //for testing purposes: this will get readings from each diode on 3 panels
@@ -32,4 +38,6 @@ void testFunction_Diode_Reads() {
             printMsg("Voltage 2: %f\r\n", voltage41);
 		}
 	}
+    
+
 }
