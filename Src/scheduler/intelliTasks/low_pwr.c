@@ -1,26 +1,27 @@
 #include "low_pwr.h"
 #include "task.h"
 #include "PWR_DIS/pwr_distribution.h"
+#include "PWRMON/INA226.h"
 // #include "eta3000.h"     // Dedicated balancing IC
 // #include "s8254a.h"      // Protection IC
 
 static bool low_pwr_mode = false;
 
 // IC Interface ============================================================
-static uint8_t read_battery_percent(void)
-{
-    // Read from dedicated battery ICs
-    // return s8254a_read_battery_level();  // Example for S-8254A
-}
+// static uint8_t read_battery_percent(void)
+// {
+//     // Read from dedicated battery ICs
+//     return pwrmon_get();
+// }
 
 static bool battery_is_low(void)
 {
-    return read_battery_percent() <= LOW_BATTERY_THRESHOLD;
+    return pwrmon_getBusVoltage(BATMON_GPIO, BATMON_SCL, BATMON_SDA) <= LOW_BATTERY_VOLT_THRESHOLD;
 }
 
 static bool battery_is_recovered(void)
 {
-    return read_battery_percent() >= (HIGH_BATTERY_THRESHOLD + BATT_HYSTERESIS);
+    return pwrmon_getBusVoltage(BATMON_GPIO, BATMON_SCL, BATMON_SDA) >= (HIGH_BATTERY_VOLT_THRESHOLD + BATT_VOLT_HYSTERESIS);
 }
 
 // Mode Management =========================================================

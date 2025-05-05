@@ -8,9 +8,9 @@
 // #define LOW_PWR_NOTIFY_EXIT  (1 << 1)
 
 // Hardware thresholds (adjust based on IC specifications)
-#define LOW_BATTERY_THRESHOLD      20
-#define HIGH_BATTERY_THRESHOLD     80
-#define BATT_HYSTERESIS            5
+#define LOW_BATTERY_VOLT_THRESHOLD      2.7
+#define HIGH_BATTERY_VOLT_THRESHOLD     3.2
+#define BATT_VOLT_HYSTERESIS            0.05
 #define LOW_PWR_DELAY 100 / portTICK_PERIOD_MS
 #define LOW_PWR_ON_EVENT_BIT (0x1 << 0)
 #define LOW_PWR_CLEAN_EVENT_BIT (0x1 << 1)

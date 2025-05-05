@@ -145,4 +145,3 @@ void pwrmon_setMode(int mode);
  * @returns num rounded up
  */
 int ceiling(float num);
-
