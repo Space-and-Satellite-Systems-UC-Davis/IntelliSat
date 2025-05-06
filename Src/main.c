@@ -31,32 +31,7 @@
  #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
  #define BATTERY_THRESHOLD 20        // TODO: Min. battery voltage value, below which mode -> CHARGING
  
- /* Misc variables */
- int reboot_count;
- // volatile uint16_t flagBits = 0;     // Declared in status.h
- volatile struct operation_bits_t flag_bits = {0,0};
- 
- /* Testing Variables */
- int max_handler_count;
- int systick_handler_count;
- int is_unlimited_tick;
- 
- // Define signal handler and timer
- struct sigaction sysTick;
- struct itimerval sysTick_timer;
- 
- uint32_t main_stack_frame[32];
- volatile uint32_t main_PC;
- 
  static bool led_state = 0;
- 
- uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
- 
- /* Prototypes */
- void sysTick_handler(int signal);
- //jmp_buf to_mode_select;
- 
- 
  static const int led_delay_1 = 1111;
  static const int led_delay_2 = 789;
  
@@ -64,15 +39,13 @@
      led_d1(!led_state);
      led_state = !led_state;
  }
- 
+
  
  /**
   * 'Blink LED' task.
   */
  static void led_task(void *args) {
    int delay_ms = *(int*)args;
-   
- 
    while (1) {
      // Toggle the LED.
        int pin = 0;
