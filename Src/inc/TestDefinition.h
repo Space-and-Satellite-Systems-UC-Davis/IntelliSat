@@ -13,6 +13,7 @@ extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_Sun_Sensor_Main();
 extern void testFunction_INA_TMP_Outputs();
+extern void testFunction_Sun_Sensor_Main();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
