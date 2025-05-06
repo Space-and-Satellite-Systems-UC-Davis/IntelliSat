@@ -41,15 +41,18 @@
  */
 int branch_main()
 {
-  // ! Your training main code goes here
-  // TODO
+    // ! Your training main code goes here
+    // TODO
+    // Run LED 1-5, in that particular order, using features provided by FreeRTOS.
+    // The config is set up to use preemption already.
+    // configuring the config file is not a part of training though somthing you should learn eventually.
+    // Write your tasks in Src/scheduler/training/training_tasks.h.
+    // Remember to include the header!
+    while (1)
+    {
+    }
 
-  while (1)
-  {
-
-  }
-
-  return 0;
+    return 0;
 }
 
 #define RUN_TEST 0 // 0 = run IntelliSat, 1 = run a very specific test
@@ -59,15 +62,15 @@ int branch_main()
 
 int main()
 {
-  init_init();
+    init_init();
 
-  // TODO: use RTC first_time flag.
-  // if (first_time) {
-  init_first_time();
-  //}
+    // TODO: use RTC first_time flag.
+    // if (first_time) {
+    init_first_time();
+    //}
 
-  init_platform(!RUN_TEST);
-  // ^ don't want to run the Scheduler in case we are running other tests
+    init_platform(!RUN_TEST);
+    // ^ don't want to run the Scheduler in case we are running other tests
 
-  branch_main();
+    branch_main();
 }
