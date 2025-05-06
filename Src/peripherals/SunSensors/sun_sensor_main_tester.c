@@ -20,21 +20,21 @@ void testFunction_Sun_Sensor_Main(){
             printMsg("Reading Voltage\r\n");
 			float voltage00 = sun_sensors_readVoltage(PANEL0, DIODE0);
             printMsg("Voltage 1: %f\r\n", voltage00);
-            voltage01 = sun_sensors_readVoltage(PANEL0, DIODE1);
+            float voltage01 = sun_sensors_readVoltage(PANEL0, DIODE1);
             printMsg("Voltage 2: %f\r\n", voltage01);
 
             //prints voltage readings for panel 1 (side face)
             printMsg("Reading Voltage\r\n");
 			float voltage10 = sun_sensors_readVoltage(PANEL1, DIODE0);
             printMsg("Voltage 1: %f\r\n", voltage10);
-            voltage11 = sun_sensors_readVoltage(PANEL1, DIODE1);
+            float voltage11 = sun_sensors_readVoltage(PANEL1, DIODE1);
             printMsg("Voltage 2: %f\r\n", voltage11);
             
             //prints voltage readings for panel 4 (top face)
             printMsg("Reading Voltage\r\n");
 			float voltage40 = sun_sensors_readVoltage(PANEL4, DIODE0);
             printMsg("Voltage 1: %f\r\n", voltage40);
-            voltage41 = sun_sensors_readVoltage(PANEL4, DIODE1);
+            float voltage41 = sun_sensors_readVoltage(PANEL4, DIODE1);
             printMsg("Voltage 2: %f\r\n", voltage41);
 		}
 	}
