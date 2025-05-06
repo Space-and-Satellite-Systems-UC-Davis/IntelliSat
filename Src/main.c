@@ -31,35 +31,6 @@
 #define SYSTICK_DUR_U 10000  // Config. of systick timer in usec (1 ms)
 #define BATTERY_THRESHOLD 20 // TODO: Min. battery voltage value, below which mode -> CHARGING
 
-static bool led_state = 0;
-
-static const int led_delay_1 = 1111;
-static const int led_delay_2 = 789;
-
-void toggle_LED(int pin)
-{
-  led_d1(!led_state);
-  led_state = !led_state;
-}
-
-/**
- * 'Blink LED' task.
- */
-static void led_task(void *args)
-{
-  int delay_ms = *(int *)args;
-
-  while (1)
-  {
-    // Toggle the LED.
-    int pin = 0;
-    led_d1(!led_state);
-    led_state = !led_state;
-    // Delay for a second-ish.
-    vTaskDelay(pdMS_TO_TICKS(delay_ms));
-  };
-}
-
 /**
  * @brief The code inside the while loop will get run continuously until the reset button gets hit,
  * at which point the program will restart.
