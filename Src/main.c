@@ -23,13 +23,16 @@
 // #include "scheduler/status.h"
 
 #include "FreeRTOS.h"
-// TODO include training_tasks.h
+#include "training/training_tasks.h"
 
-// #include "task.h"
+#include "task.h"
 
 /* Macros */
 #define SYSTICK_DUR_U 10000  // Config. of systick timer in usec (1 ms)
 #define BATTERY_THRESHOLD 20 // TODO: Min. battery voltage value, below which mode -> CHARGING
+
+TaskHandle_t myTaskHandle1 = NULL;
+TaskHandle_t myTaskHandle2 = NULL;
 
 /**
  * @brief The code inside the while loop will get run continuously until the reset button gets hit,
@@ -43,13 +46,20 @@ int branch_main()
 {
     // ! Your training main code goes here
     // TODO
-    // Run LED 1-5, in that particular order, using features provided by FreeRTOS.
+    // Blink LED 1,3,5 simultaniously, then LED 2 and 4, or some other pattern repeatedly
+    // using features provided by FreeRTOS.
     // The config is set up to use preemption already.
     // configuring the config file is not a part of training though somthing you should learn eventually.
     // Write your tasks in Src/scheduler/training/training_tasks.h.
+    
     // Remember to include the header!
-    while (1)
+    xTaskCreate(vLedPattern1Task, "Led Pattern 1", 1028, (void*) NULL, configMAX_PRIORITIES - 10, (void *) myTaskHandle1);
+    xTaskCreate(vLedPattern2Task, "Led Pattern 2", 1028, (void*) NULL, configMAX_PRIORITIES - 10, (void *) myTaskHandle2);
+    vTaskStartScheduler();
+    // At this point the scheduler take over and you will never get into the loop
+    while (true)
     {
+
     }
 
     return 0;
