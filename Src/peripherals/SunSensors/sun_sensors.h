@@ -1,7 +1,7 @@
 
 #include <globals.h>
 #include <ADC/adc.h>
-#include <PWRMON/INA226.h>
+#include <INA226/INA226.h>
 #include "TMP275.h"
 
 typedef struct PANEL_STRUCT {
