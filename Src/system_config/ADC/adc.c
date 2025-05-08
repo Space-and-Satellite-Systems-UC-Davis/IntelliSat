@@ -219,4 +219,14 @@ float adc_readVoltage(uint16_t channelReading) {
     return (channelReading / MAX_12_BIT_READING) * INTERNAL_VOLTAGE_REFERENCE;
 }
 
+void set_continuous_dma(ADC_TypeDef* adc, int channel) {
+	adc->CR &= ~ADC_CR_ADSTART;
+	adc->SQR1 |= channel << ADC_SQR1_SQ1_Pos; //Set the channel in sequence to be converted
+
+	adc->CFGR  |=  ( ADC_CFGR_CONT ); //Continuous conversion
+	adc->CFGR  |=  ( ADC_CFGR_DMACFG ); //Enable DMA circular mode
+	adc->CFGR  |=  ( ADC_CFGR_DMAEN ); //Enable DMA
+	adc->CR  |=  ( ADC_CR_ADSTART ); //Start conversion
+}
+
 /** Public Functions */

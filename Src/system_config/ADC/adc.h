@@ -13,6 +13,7 @@
 
 uint16_t adc_readChannel(ADC_TypeDef* adc, int channel);
 float adc_readVoltage(uint16_t channelReading);
+void set_continuous_dma(ADC_TypeDef* adc, int channel);
 void adc_init();
 
 
