@@ -20,6 +20,8 @@ int main() {
 
     #else
 
+    DMA1_Channel1;
+
 	//TODO: use RTC first_time flag.
 	//if (first_time) {
 	//  init_first_time()
@@ -30,10 +32,11 @@ int main() {
 
 
     DMAConfig config;
-    config.channel = DMA1_Channel3;
+    config.channel = DMA_ADC3;
     config.length = 1;
     config.memory_addr = (uint32_t*)&test_buffer;
-//    config.peripheral_addr = &ADC3->DR;
+    config.peripheral_addr = &ADC3->DR;
+    config.circular = true;
 
     configure_channel(config);
     set_continuous_dma(ADC3, 6);
@@ -44,6 +47,7 @@ int main() {
 //		printMsg("THE FUNCTION: %u\r\n", adc_readChannel(ADC3, 6));
 		printMsg("THE ARRAY: %u\r\n", test_buffer[0]);
 
+		nop(5000000);
 
 	}
 
