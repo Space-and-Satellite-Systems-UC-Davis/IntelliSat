@@ -18,6 +18,11 @@
 //#define PDB_PWR_^_PORT GPIOx
 //#define PDB_PWR_^_PIN n
 
+//Battery monitor pins
+#define BATMON_GPIO GPIOH
+#define BATMON_SDA 0
+#define BATMON_SCL 1
+
 /**
  * Initialize power pins for output
  */

@@ -6,30 +6,18 @@
 
 #include <I2C/i2c.h>
 
-
 //Address
-#define SENSOR_ADDRESS 0x45
 #define CONFIG_REGISTER 0
 #define CAL_REGISTER 5
 
-//Macros for the Sunsensor pins
-#define PAN0_GPIO GPIOG
-#define PAN0_SDA_PIN 14
-#define PAN0_SCL_PIN 13
-#define PAN1_GPIO GPIOF
-#define PAN1_SDA_PIN 11
-#define PAN1_SCL_PIN 2
-#define PAN2_GPIO GPIOG
-#define PAN2_SDA_PIN 0
-#define PAN2_SCL_PIN 1
-#define PAN3_GPIO GPIOG
-#define PAN3_SDA_PIN 4
-#define PAN3_SCL_PIN 5
-
-//Battery monitor pins
-#define BATMON_GPIO GPIOH
-#define BATMON_SDA 0
-#define BATMON_SCL 1
+// general struct for containing I2C protocol ports and pins
+typedef struct {
+    GPIO_TypeDef * SCL_GPIO;
+    int SCL_pin;
+    GPIO_TypeDef * SDA_GPIO;
+    int SDA_pin;
+    int address;
+} INA226_I2C_Interface;
 
 //number of averages
 #define AVERAGE_1   0
@@ -59,11 +47,10 @@
 #define MICRO 1000000
 #define MILLI 1000
 
-
-
 /**
  * Initializes the sun sensor with I2c, and calls config function
  *
+ * @param interface A pointer to a struct containing the address, ports and pins of the INA226
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
@@ -72,11 +59,12 @@
  *
  * @returns None
  */
-void pwrmon_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
+void INA226_init(INA226_I2C_Interface * interface, int averages, int bus_time, int shunt_time, int rshunt, int max_current);
 
 /**
  * Initial configuration of the sun sensor's config register and calibration register
  *
+ * @param interface A pointer to a struct containing the address, ports and pins of the INA226
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
@@ -85,7 +73,7 @@ void pwrmon_init(int averages, int bus_time, int shunt_time, int rshunt, int max
  *
  * @returns None
  */
-void pwrmon_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
+void INA226_config(INA226_I2C_Interface * interface, int averages, int bus_time, int shunt_time, int rshunt, int max_current);
 
 
 /**
@@ -93,10 +81,11 @@ void pwrmon_config(int averages, int bus_time, int shunt_time, int rshunt, int m
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
+ * @param address: i2c address
  * 
  * @returns Voltage in mV 
  */
-float pwrmon_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float INA226_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 
 /**
@@ -104,38 +93,42 @@ float pwrmon_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
+ * @param address: i2c address
  * 
  * @returns Voltage in Volts
  */
-float pwrmon_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float INA226_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 /**
  * Reads the power from the sun sensor
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
+ * @param address: i2c address
  * 
  * @returns Wattage as a 16 bit integer
  */
-float pwrmon_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float INA226_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 /**
  * Reads the current from the sun sensor
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
+ * @param address: i2c address
  * 
  * @returns Amps as a 16 bit integer
  */
-float pwrmon_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float INA226_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 /**
  * Resets the mode of the sensors
+ * @param interface A pointer to a struct containing the address, ports and pins of the INA226
  * @param mode The mode of the sensor (ontinuous, powered down)
  * 
  * @returns None
  */
-void pwrmon_setMode(int mode);
+void INA226_setMode(INA226_I2C_Interface * interface, int mode);
 
 
 /**
