@@ -2,6 +2,8 @@
 #include "platform_init.h"
 #include "SunSensors/sun_sensors.h"
 #include "DMA/DMA.h"
+#include "IMU/ASM330LHH.h"
+#include "Buttons/buttons.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
@@ -20,7 +22,6 @@ int main() {
 
     #else
 
-    DMA1_Channel1;
 
 	//TODO: use RTC first_time flag.
 	//if (first_time) {
@@ -32,23 +33,24 @@ int main() {
 
 
     DMAConfig config;
-    config.channel = DMA_ADC3;
+    config.channel = (DMA_Channel_TypeDef*) DMA_SPI3_RX;
     config.length = 1;
     config.memory_addr = (uint32_t*)&test_buffer;
-    config.peripheral_addr = &ADC3->DR;
-    config.circular = true;
+    config.peripheral_addr = (uint32_t*) &(SPI3->DR);
+    config.circular = false;
+    config.on_by_default = false;
 
     configure_channel(config);
-    set_continuous_dma(ADC3, 6);
+    spi3_enable_dma();
 
 	while (1) {
-//		printMsg("THE VALUE: %f\r\n", sun_sensors_readVoltage(PANEL0, DIODE0));
-		printMsg("THE REGISTER: %u\r\n", ADC3->DR);
-//		printMsg("THE FUNCTION: %u\r\n", adc_readChannel(ADC3, 6));
-		printMsg("THE ARRAY: %u\r\n", test_buffer[0]);
+		if (get_buttonStatus_SW1()) {
+			imu_printAllValues();
+//			SPI3->SR |= SPI_SR_RXNE;
+			printMsg("REGISTER: %u\r\n", SPI3->DR);
+			printMsg("ARRAY: %u\r\n", test_buffer[0]);
 
-		nop(5000000);
-
+		}
 	}
 
 #endif
