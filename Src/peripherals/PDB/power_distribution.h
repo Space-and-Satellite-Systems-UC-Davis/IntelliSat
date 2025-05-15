@@ -48,9 +48,9 @@
 #define BATMON_SCL 1
 
 typedef enum {
-    PYRO,
-    MGT,
-    HDD
+    PDB_PERIPHERAL_PYRO,
+    PDB_PERIPHERAL_MGT,
+    PDB_PERIPHERAL_HDD
 } PDB_PERIPHERAL;
 
 /**

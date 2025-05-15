@@ -67,10 +67,9 @@ void pdb_init() {
  */
 void pdb_on(PDB_PERIPHERAL peripheral) {
     switch (peripheral) {
-        case PYRO: gpio_high(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
-        case MGT: gpio_high(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
-        case HDD: gpio_high(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
-        default: return;
+        case PDB_PERIPHERAL_PYRO: gpio_high(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
+        case PDB_PERIPHERAL_MGT: gpio_high(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
+        case PDB_PERIPHERAL_HDD: gpio_high(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
     }
 }
 
@@ -79,10 +78,9 @@ void pdb_on(PDB_PERIPHERAL peripheral) {
  */
 void pdb_off(PDB_PERIPHERAL peripheral) {
     switch (peripheral) {
-        case PYRO: gpio_low(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
-        case MGT: gpio_low(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
-        case HDD: gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
-        default: return;
+        case PDB_PERIPHERAL_PYRO: gpio_low(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
+        case PDB_PERIPHERAL_MGT: gpio_low(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
+        case PDB_PERIPHERAL_HDD: gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
     }
 }
 
@@ -93,10 +91,10 @@ void pdb_off(PDB_PERIPHERAL peripheral) {
 float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral) {
     PDB_PERIPHERAL * interface;
     switch (peripheral) {
-        case PYRO: interface = pdb_pyro;
-        case MGT: interface = pdb_mgt;
-        case HDD: interface = pdb_hdd;
-        default: return;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
+        default: return -1;
     }
     return INA226_getShuntVoltage(interface);
 }
@@ -108,10 +106,10 @@ float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral) {
 float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
     PDB_PERIPHERAL * interface;
     switch (peripheral) {
-        case PYRO: interface = pdb_pyro;
-        case MGT: interface = pdb_mgt;
-        case HDD: interface = pdb_hdd;
-        default: return;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
+        default: return -1;
     }
     return INA226_getBusVoltage(interface);
 }
@@ -123,10 +121,10 @@ float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
 float pdb_getPower(PDB_PERIPHERAL peripheral) {
     PDB_PERIPHERAL * interface;
     switch (peripheral) {
-        case PYRO: interface = pdb_pyro;
-        case MGT: interface = pdb_mgt;
-        case HDD: interface = pdb_hdd;
-        default: return;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
+        default: return -1;
     }
     return INA226_getPower(interface);
 }
@@ -138,10 +136,10 @@ float pdb_getPower(PDB_PERIPHERAL peripheral) {
 float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
     PDB_PERIPHERAL * interface;
     switch (peripheral) {
-        case PYRO: interface = pdb_pyro;
-        case MGT: interface = pdb_mgt;
-        case HDD: interface = pdb_hdd;
-        default: return;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
+        default: return -1;
     }
     return INA226_getCurrent(interface);
 }
@@ -155,10 +153,10 @@ float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
 void pdb_setMode(PDB_PERIPHERAL peripheral, int mode) {
     PDB_PERIPHERAL * interface;
     switch (peripheral) {
-        case PYRO: interface = pdb_pyro;
-        case MGT: interface = pdb_mgt;
-        case HDD: interface = pdb_hdd;
-        default: return;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
+        default: return -1;
     }
     INA226_setMode(interface, mode);
 }
