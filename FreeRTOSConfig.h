@@ -109,11 +109,11 @@
 
 /* Run time and task stats gathering related definitions. */
 
-#define configGENERATE_RUN_TIME_STATS                       0
+#define configGENERATE_RUN_TIME_STATS                       1
 
-#define configUSE_TRACE_FACILITY                            0
+#define configUSE_TRACE_FACILITY                            1
 
-#define configUSE_STATS_FORMATTING_FUNCTIONS                0
+#define configUSE_STATS_FORMATTING_FUNCTIONS                1
 
 
 /* Co-routine related definitions. */
@@ -220,7 +220,9 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 
 /* A header file that defines trace macro can be included here. */
-
+// ! Should not get call as we do the inits ourselves
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() 1
+#define portGET_RUN_TIME_COUNTER_VALUE() getSysTime()
 
 /* Redirect FreeRTOS post interrupts. */
 #define vPortSVCHandler                         SVC_Handler

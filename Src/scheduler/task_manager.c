@@ -16,7 +16,7 @@
 
 extern intelli_task_t task_table[TASK_TABLE_LEN];
 const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0, 0, 0, 0};
-
+static char debugBuffer[300];
 
 // /**
 //  * @brief Update mode bits
@@ -137,7 +137,6 @@ const intelli_task_t null_task = (intelli_task_t){TASK_TABLE_LEN, 0, 0, 0, 0, 0,
 // }
 //
 
-
 void task_manager(void *args) {
 	printMsg(":) Hello from the Task Manager! <3\n\r");
 
@@ -170,6 +169,10 @@ void task_manager(void *args) {
 				}
 			}
 		}
+
+		vTaskGetRunTimeStats(debugBuffer);
+
+		printMsg(debugBuffer);
 
 		if (cancel_current_task == false) {
 			vTaskResume(current_task.FreeRTOS_handle);
