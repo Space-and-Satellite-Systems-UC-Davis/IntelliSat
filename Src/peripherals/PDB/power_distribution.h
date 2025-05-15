@@ -47,6 +47,12 @@
 #define BATMON_SDA 0
 #define BATMON_SCL 1
 
+typedef enum {
+    PYRO,
+    MGT,
+    HDD
+} PDB_PERIPHERAL;
+
 /**
  * Initialize power pins for output
  */
@@ -55,125 +61,41 @@ void pdb_init();
 /**
  * Turn on burn wire
  */
-void pdb_pyro_on();
+void pdb_on(PDB_PERIPHERAL peripheral);
 
 /**
  * Turn off burn wire
  */
-void pdb_pyro_off();
+void pdb_off(PDB_PERIPHERAL peripheral);
 
 /**
  * Reads the shunt voltage from the burn wire's INA226
  * @returns Voltage in mV
  */
-float pdb_pyro_getShuntVoltage();
+float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral);
 
 /**
  * Reads the bus voltage from the burn wire's INA226
  * @returns Voltage in Volts
  */
-float pdb_pyro_getBusVoltage();
+float pdb_getBusVoltage(PDB_PERIPHERAL peripheral);
 
 /**
  * Reads the power from the burn wire's INA226
  * @returns Wattage as a 16 bit integer
  */
-float pdb_pyro_getPower();
+float pdb_getPower(PDB_PERIPHERAL peripheral);
 
 /**
  * Reads the current from the burn wire's INA226
  * @returns Amps as a 16 bit integer
  */
-float pdb_pyro_getCurrent();
+float pdb_getCurrent(PDB_PERIPHERAL peripheral);
 
 /**
- * Resets the mode of the burn wire's INA226
+ * Resets the mode of a peripheral's INA226
  * @param mode The mode of the sensor (continuous, powered down)
  * 
  * @returns None
  */
-void pdb_pyro_setMode(int mode);
-
-/**
- * Turn on magnetorquer
- */
-void pdb_mgt_on();
-
-/**
- * Turn off magnetorquer
- */
-void pdb_mgt_off();
-
-/**
- * Reads the shunt voltage from the magentorquer's INA226
- * @returns Voltage in mV
- */
-float pdb_mgt_getShuntVoltage();
-
-/**
- * Reads the bus voltage from the magentorquer's INA226
- * @returns Voltage in Volts
- */
-float pdb_mgt_getBusVoltage();
-
-/**
- * Reads the power from the magnetorquer's INA226
- * @returns Wattage as a 16 bit integer
- */
-float pdb_mgt_getPower();
-
-/**
- * Reads the current from the magnetorquer's INA226
- * @returns Amps as a 16 bit integer
- */
-float pdb_mgt_getCurrent();
-
-/**
- * Resets the mode of the magnetorquer's INA226
- * @param mode The mode of the sensor (continuous, powered down)
- * 
- * @returns None
- */
-void pdb_mgt_setMode(int mode);
-
-/**
- * Turn on HDDs
- */
-void pdb_hdd_on();
-
-/**
- * Turn off HDDs
- */
-void pdb_hdd_off();
-
-/**
- * Reads the shunt voltage from the HDD's INA226
- * @returns Voltage in mV
- */
-float pdb_hdd_getShuntVoltage();
-
-/**
- * Reads the bus voltage from the HDD's INA226
- * @returns Voltage in Volts
- */
-float pdb_hdd_getBusVoltage();
-
-/**
- * Reads the power from the HDD's INA226
- * @returns Wattage as a 16 bit integer
- */
-float pdb_hdd_getPower();
-
-/**
- * Reads the current from the HDD's INA226
- * @returns Amps as a 16 bit integer
- */
-float pdb_hdd_getCurrent();
-
-/**
- * Resets the mode of the HDD's INA226
- * @param mode The mode of the sensor (continuous, powered down)
- * 
- * @returns None
- */
-void pdb_hdd_setMode(int mode);
+void pdb_setMode(PDB_PERIPHERAL peripheral, int mode);

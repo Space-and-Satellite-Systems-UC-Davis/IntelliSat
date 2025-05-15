@@ -85,7 +85,7 @@ void INA226_config(INA226_I2C_Interface * interface, int averages, int bus_time,
  * 
  * @returns Voltage in mV 
  */
-float INA226_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
+float INA226_getShuntVoltage(INA226_I2C_Interface * interface);
 
 
 /**
@@ -97,7 +97,7 @@ float INA226_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int a
  * 
  * @returns Voltage in Volts
  */
-float INA226_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
+float INA226_getBusVoltage(INA226_I2C_Interface * interface);
 
 /**
  * Reads the power
@@ -108,7 +108,7 @@ float INA226_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int add
  * 
  * @returns Wattage as a 16 bit integer
  */
-float INA226_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
+float INA226_getPower(INA226_I2C_Interface * interface);
 
 /**
  * Reads the current
@@ -119,7 +119,7 @@ float INA226_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address)
  * 
  * @returns Amps as a 16 bit integer
  */
-float INA226_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
+float INA226_getCurrent(INA226_I2C_Interface * interface);
 
 /**
  * Resets the mode of the sensor

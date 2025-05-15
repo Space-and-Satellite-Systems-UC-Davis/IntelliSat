@@ -36,26 +36,26 @@ void INA226_config(INA226_I2C_Interface * interface, int averages, int bus_time,
         set_mode(MODE_POWERED_DOWN, false);
 }*/
 
-float INA226_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address){
-    int16_t output = softi2c_readReg16(gpio, scl_pin, gpio, sda_pin, address, 0x01);
+float INA226_getShuntVoltage(INA226_I2C_Interface * interface){
+    int16_t output = softi2c_readReg16(interface->SCL_GPIO, interface->SCL_GPIO, interface->SDA_GPIO, interface->SDA_pin, interface->address, 0x01);
     return output * .0025;
 }
 
 
-float INA226_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address){
-    int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, address, 0x02);
+float INA226_getBusVoltage(INA226_I2C_Interface * interface){
+    int16_t output = softi2c_readReg16(interface->SCL_GPIO, interface->SCL_GPIO, interface->SDA_GPIO, interface->SDA_pin, interface->address, 0x02);
     return output * 1.25/MILLI; 
 }
 
 
-float INA226_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address){
-    int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, address, 0x03);
+float INA226_getPower(INA226_I2C_Interface * interface){
+    int16_t output = softi2c_readReg16(interface->SCL_GPIO, interface->SCL_GPIO, interface->SDA_GPIO, interface->SDA_pin, interface->address, 0x03);
     return output * current_lsb/(double)MICRO * 25; 
 }
 
 
-float INA226_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address){
-    int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, address, 0x04);
+float INA226_getCurrent(INA226_I2C_Interface * interface){
+    int16_t output = softi2c_readReg16(interface->SCL_GPIO, interface->SCL_GPIO, interface->SDA_GPIO, interface->SDA_pin, interface->address, 0x04);
     return output * current_lsb / (double)MICRO;
 }
 

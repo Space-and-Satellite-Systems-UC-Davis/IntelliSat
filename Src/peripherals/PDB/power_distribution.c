@@ -63,161 +63,87 @@ void pdb_init() {
 }
 
 /**
- * Turn on burn wire
- */
-void pdb_pyro_on() {
-    gpio_high(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
-}
-
-/**
- * Turn off burn wire
- */
-void pdb_pyro_off() {
-    gpio_low(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
-}
-
-/**
- * Reads the shunt voltage from the burn wire's INA226
- * @returns Voltage in mV
- */
-float pdb_pyro_getShuntVoltage() {
-    return INA226_getShuntVoltage(PDB_PYRO_GPIO, PDB_PYRO_SCL_PIN, PDB_PYRO_SDA_PIN, PDB_PYRO_ADDRESS);
-}
-
-/**
- * Reads the bus voltage from the burn wire's INA226
- * @returns Voltage in Volts
- */
-float pdb_pyro_getBusVoltage() {
-    return INA226_getBusVoltage(PDB_PYRO_GPIO, PDB_PYRO_SCL_PIN, PDB_PYRO_SDA_PIN, PDB_PYRO_ADDRESS);
-}
-
-/**
- * Reads the power from the burn wire's INA226
- * @returns Wattage as a 16 bit integer
- */
-float pdb_pyro_getPower() {
-    return INA226_getPower(PDB_PYRO_GPIO, PDB_PYRO_SCL_PIN, PDB_PYRO_SDA_PIN, PDB_PYRO_ADDRESS);
-}
-
-/**
- * Reads the current from the burn wire's INA226
- * @returns Amps as a 16 bit integer
- */
-float pdb_pyro_getCurrent() {
-    return INA226_getCurrent(PDB_PYRO_GPIO, PDB_PYRO_SCL_PIN, PDB_PYRO_SDA_PIN, PDB_PYRO_ADDRESS);
-}
-
-/**
- * Resets the mode of the burn wire's INA226
- * @param mode The mode of the sensor (continuous, powered down)
- * 
- * @returns None
- */
-void pdb_pyro_setMode(int mode) {
-    INA226_setMode(pdb_pyro, mode);
-}
-
-/**
- * Turn on magnetorquer
- */
-void pdb_mgt_on() {
-    gpio_high(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
-}
-
-/**
- * Turn off magnetorquer
- */
-void pdb_mgt_off() {
-    gpio_low(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
-}
-
-/**
- * Reads the shunt voltage from the magnetorquer's INA226
- * @returns Voltage in mV
- */
-float pdb_mgt_getShuntVoltage() {
-    return INA226_getShuntVoltage(PDB_MGT_GPIO, PDB_MGT_SCL_PIN, PDB_MGT_SDA_PIN, PDB_MGT_ADDRESS);
-}
-
-/**
- * Reads the bus voltage from the magnetorquer's INA226
- * @returns Voltage in Volts
- */
-float pdb_mgt_getBusVoltage() {
-    return INA226_getBusVoltage(PDB_MGT_GPIO, PDB_MGT_SCL_PIN, PDB_MGT_SDA_PIN, PDB_MGT_ADDRESS);
-}
-
-/**
- * Reads the power from the magnetorquer's INA226
- * @returns Wattage as a 16 bit integer
- */
-float pdb_mgt_getPower() {
-    return INA226_getPower(PDB_MGT_GPIO, PDB_MGT_SCL_PIN, PDB_MGT_SDA_PIN, PDB_MGT_ADDRESS);
-}
-
-/**
- * Reads the current from the magnetorquer's INA226
- * @returns Amps as a 16 bit integer
- */
-float pdb_mgt_getCurrent() {
-    return INA226_getCurrent(PDB_MGT_GPIO, PDB_MGT_SCL_PIN, PDB_MGT_SDA_PIN, PDB_MGT_ADDRESS);
-}
-
-/**
- * Resets the mode of the magnetorquer's INA226
- * @param mode The mode of the sensor (continuous, powered down)
- * 
- * @returns None
- */
-void pdb_mgt_setMode(int mode) {
-    INA226_setMode(pdb_mgt, mode);
-}
-
-/**
  * Turn on HDDs
  */
-void pdb_hdd_on() {
-    gpio_high(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+void pdb_on(PDB_PERIPHERAL peripheral) {
+    switch (peripheral) {
+        case PYRO: gpio_high(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
+        case MGT: gpio_high(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
+        case HDD: gpio_high(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+        default: return;
+    }
 }
 
 /**
  * Turn off HDDs
  */
-void pdb_hdd_off() {
-    gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+void pdb_off(PDB_PERIPHERAL peripheral) {
+    switch (peripheral) {
+        case PYRO: gpio_low(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
+        case MGT: gpio_low(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
+        case HDD: gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+        default: return;
+    }
 }
 
 /**
- * Reads the shunt voltage from the HDD's INA226
+ * Reads the shunt voltage from a peripheral's INA226
  * @returns Voltage in mV
  */
-float pdb_hdd_getShuntVoltage() {
-    return INA226_getShuntVoltage(PDB_HDD_GPIO, PDB_HDD_SCL_PIN, PDB_HDD_SDA_PIN, PDB_HDD_ADDRESS);
+float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral) {
+    PDB_PERIPHERAL * interface;
+    switch (peripheral) {
+        case PYRO: interface = pdb_pyro;
+        case MGT: interface = pdb_mgt;
+        case HDD: interface = pdb_hdd;
+        default: return;
+    }
+    return INA226_getShuntVoltage(interface);
 }
 
 /**
  * Reads the bus voltage from the HDD's INA226
  * @returns Voltage in Volts
  */
-float pdb_hdd_getBusVoltage() {
-    return INA226_getBusVoltage(PDB_HDD_GPIO, PDB_HDD_SCL_PIN, PDB_HDD_SDA_PIN, PDB_HDD_ADDRESS);
+float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
+    PDB_PERIPHERAL * interface;
+    switch (peripheral) {
+        case PYRO: interface = pdb_pyro;
+        case MGT: interface = pdb_mgt;
+        case HDD: interface = pdb_hdd;
+        default: return;
+    }
+    return INA226_getBusVoltage(interface);
 }
 
 /**
  * Reads the power from the HDD's INA226
  * @returns Wattage as a 16 bit integer
  */
-float pdb_hdd_getPower() {
-    return INA226_getPower(PDB_HDD_GPIO, PDB_HDD_SCL_PIN, PDB_HDD_SDA_PIN, PDB_HDD_ADDRESS);
+float pdb_getPower(PDB_PERIPHERAL peripheral) {
+    PDB_PERIPHERAL * interface;
+    switch (peripheral) {
+        case PYRO: interface = pdb_pyro;
+        case MGT: interface = pdb_mgt;
+        case HDD: interface = pdb_hdd;
+        default: return;
+    }
+    return INA226_getPower(interface);
 }
 
 /**
  * Reads the current from the HDD's INA226
  * @returns Amps as a 16 bit integer
  */
-float pdb_hdd_getCurrent() {
-    return INA226_getCurrent(PDB_HDD_GPIO, PDB_HDD_SCL_PIN, PDB_HDD_SDA_PIN, PDB_HDD_ADDRESS);
+float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
+    PDB_PERIPHERAL * interface;
+    switch (peripheral) {
+        case PYRO: interface = pdb_pyro;
+        case MGT: interface = pdb_mgt;
+        case HDD: interface = pdb_hdd;
+        default: return;
+    }
+    return INA226_getCurrent(interface);
 }
 
 /**
@@ -226,6 +152,13 @@ float pdb_hdd_getCurrent() {
  * 
  * @returns None
  */
-void pdb_hdd_setMode(int mode) {
-    INA226_setMode(pdb_hdd, mode);
+void pdb_setMode(PDB_PERIPHERAL peripheral, int mode) {
+    PDB_PERIPHERAL * interface;
+    switch (peripheral) {
+        case PYRO: interface = pdb_pyro;
+        case MGT: interface = pdb_mgt;
+        case HDD: interface = pdb_hdd;
+        default: return;
+    }
+    INA226_setMode(interface, mode);
 }

@@ -77,7 +77,15 @@ void pwrmon_config(int averages, int bus_time, int shunt_time, int rshunt, int m
  * @returns Voltage in mV 
  */
 float pwrmon_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
-    return INA226_getShuntVoltage(gpio, scl_pin, sda_pin, PWRMON_SENSOR_ADDRESS);
+    INA226_I2C_Interface raw_interface;
+    INA226_I2C_Interface * interface = &raw_interface;
+
+    interface->address = PWRMON_SENSOR_ADDRESS;
+    interface->SCL_GPIO = gpio;
+    interface->SCL_pin = scl_pin;
+    interface->SDA_GPIO = gpio;
+    interface->SDA_pin = sda_pin;
+    return INA226_getShuntVoltage(interface);
 }
 
 
@@ -90,7 +98,15 @@ float pwrmon_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
  * @returns Voltage in Volts
  */
 float pwrmon_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
-    return INA226_getBusVoltage(gpio, scl_pin, sda_pin, PWRMON_SENSOR_ADDRESS);
+    INA226_I2C_Interface raw_interface;
+    INA226_I2C_Interface * interface = &raw_interface;
+
+    interface->address = PWRMON_SENSOR_ADDRESS;
+    interface->SCL_GPIO = gpio;
+    interface->SCL_pin = scl_pin;
+    interface->SDA_GPIO = gpio;
+    interface->SDA_pin = sda_pin;
+    return INA226_getBusVoltage(interface);
 }
 
 /**
@@ -102,7 +118,15 @@ float pwrmon_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
  * @returns Wattage as a 16 bit integer
  */
 float pwrmon_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
-    return INA226_getPower(gpio, scl_pin, sda_pin, PWRMON_SENSOR_ADDRESS);
+    INA226_I2C_Interface raw_interface;
+    INA226_I2C_Interface * interface = &raw_interface;
+
+    interface->address = PWRMON_SENSOR_ADDRESS;
+    interface->SCL_GPIO = gpio;
+    interface->SCL_pin = scl_pin;
+    interface->SDA_GPIO = gpio;
+    interface->SDA_pin = sda_pin;
+    return INA226_getPower(interface);
 }
 
 /**
@@ -114,7 +138,15 @@ float pwrmon_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
  * @returns Amps as a 16 bit integer
  */
 float pwrmon_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
-    return INA226_getCurrent(gpio, scl_pin, sda_pin, PWRMON_SENSOR_ADDRESS);
+    INA226_I2C_Interface raw_interface;
+    INA226_I2C_Interface * interface = &raw_interface;
+
+    interface->address = PWRMON_SENSOR_ADDRESS;
+    interface->SCL_GPIO = gpio;
+    interface->SCL_pin = scl_pin;
+    interface->SDA_GPIO = gpio;
+    interface->SDA_pin = sda_pin;
+    return INA226_getCurrent(interface);
 }
 
 /**
