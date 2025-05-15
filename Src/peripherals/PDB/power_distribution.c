@@ -161,7 +161,6 @@ void pdb_setMode(PDB_PERIPHERAL peripheral, int mode) {
         case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
         case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
         case PDB_PERIPHERAL_BATMON: interface = batmon;
-        default: return -1;
     }
     INA226_setMode(interface, mode);
 }
