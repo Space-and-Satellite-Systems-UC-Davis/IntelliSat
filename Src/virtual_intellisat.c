@@ -81,41 +81,6 @@ vi_get_angvel(
 	return GET_ANGVEL_SUCCESS;
 }
 
-/**@brief Initiate the HDD
- *
- * @param hdd Which HDD to initiate.
- *
- * @return vi_hdd_initiate_status A return code.
- */
-vi_hdd_initiate_status
-vi_hdd_initiate(
-    vi_HDD hdd
-){
-	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	hdd_init(channel);
-}
-
-/**@brief Either arms or calibrates the HDD.
- *
- * @param hdd Which HDD to command.
- * @param arm_mode Decide whether arm (0) or calibrate (1).
- *
- * @return vi_hdd_arm_status A return code.
- */
-vi_hdd_arm_status
-vi_hdd_arm(
-    vi_HDD hdd,
-    vi_HDD_arm arm_mode
-){
-	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	if (arm_mode == VI_HDD_ARM){
-		hdd_arm(channel);
-	} else {
-		hdd_calibrate(channel, 1);
-		hdd_calibrate(channel, 0);
-	}
-}
-
 /**@brief Send a throttle command to the HDD.
  *
  * @param throttle The desired throttle in the range [-1.0, 1.0].

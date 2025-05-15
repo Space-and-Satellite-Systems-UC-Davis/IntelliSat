@@ -24,6 +24,11 @@ int main() {
 	//  init_first_time()
 	//}
 
+    printMsg("Running PID experiment! \r\n");
+    printMsg("Called PID_experiment \r\n");
+	hdd_init(0);
+	hdd_arm(0, 0);
+	delay_ms(3000);
     ADCS_MAIN(ADCS_HDD_EXP_ANGVEL);
 
 	while (1) {
