@@ -1,4 +1,6 @@
+#include <print_scan.h>
 #include <stdbool.h>
+
 
 bool pizza_time() {
     printMsg("pizza time?\n\r");

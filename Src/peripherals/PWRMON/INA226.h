@@ -59,8 +59,6 @@
 #define MICRO 1000000
 #define MILLI 1000
 
-
-
 /**
  * Initializes the sun sensor with I2c, and calls config function
  *
@@ -131,7 +129,7 @@ float pwrmon_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
 
 /**
  * Resets the mode of the sensors
- * @param mode The mode of the sensor (ontinuous, powered down)
+ * @param mode The mode of the sensor (continuous, powered down)
  * 
  * @returns None
  */

@@ -7,6 +7,7 @@
 
    your application. */
 
+#include "Timers/timers.h"
 
 
 // Use kernal provided functions for managing memory (1)
@@ -221,7 +222,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 /* A header file that defines trace macro can be included here. */
 // ! Should not get call as we do the inits ourselves
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() 1
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portGET_RUN_TIME_COUNTER_VALUE() getSysTime()
 
 /* Redirect FreeRTOS post interrupts. */

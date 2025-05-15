@@ -96,7 +96,7 @@ int16_t mag_read_X() {
         int16_t x = softi2c_readRegHighLow(MAG_I2C_SCL, MAG_I2C_SDA, MAG_ADDR, 0x01, 0x00);
     #elif OP_REV == 3
         int16_t x = 0;
-        if (mag_select == MAG0)
+        if (current_mag_selected == MAG0)
             x = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, XOUT_MSB_ADDR, XOUT_LSB_ADDR);
         else
             x = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, XOUT_MSB_ADDR, XOUT_LSB_ADDR);
@@ -110,7 +110,7 @@ int16_t mag_read_Y() {
         int16_t y = softi2c_readRegHighLow(MAG_I2C_SCL, MAG_I2C_SDA, MAG_ADDR, 0x03, 0x02);
     #elif OP_REV == 3
         int16_t y = 0;
-        if (mag_select == MAG0)
+        if (current_mag_selected == MAG0)
             y = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, YOUT_MSB_ADDR, YOUT_LSB_ADDR);
         else 
             y = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, YOUT_MSB_ADDR, YOUT_LSB_ADDR);
@@ -124,7 +124,7 @@ int16_t mag_read_Z() {
         int16_t z = softi2c_readRegHighLow(MAG_I2C_SCL, MAG_I2C_SDA, MAG_ADDR, 0x05, 0x04);
     #elif OP_REV == 3
         int16_t z = 0;
-        if (mag_select == MAG0)
+        if (current_mag_selected == MAG0)
             z = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, ZOUT_MSB_ADDR, ZOUT_LSB_ADDR);
         else   
             z = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, ZOUT_MSB_ADDR, ZOUT_LSB_ADDR);
@@ -138,7 +138,7 @@ int16_t mag_readTemp() {
         int16_t temp = softi2c_readRegHighLow(MAG_I2C_SCL, MAG_I2C_SDA, MAG_ADDR, 0x07, 0x06);
     #elif OP_REV == 3
         int16_t temp = 0;
-        if (mag_select == MAG0)
+        if (current_mag_selected == MAG0)
             temp = softi2c_readRegHighLow(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, TOUT_MSB_ADDR, TOUT_LSB_ADDR);
         else
             temp = softi2c_readRegHighLow(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, TOUT_MSB_ADDR, TOUT_LSB_ADDR);

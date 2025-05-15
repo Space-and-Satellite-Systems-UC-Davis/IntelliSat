@@ -18,14 +18,14 @@
  * (note: uses preemption to interrupt running tasks)
  */
 typedef struct intellisat_task_t {
-    uint8_t id;                 // PRIMARY_KEY
     const char *name;		    // Task name as string
-    uint32_t timeout;           // time before task times out (ms) 0 means no timeout
     bool (*ready_ptr)(); 	    // returns true when task should be run
     void (*config_ptr)();       // configure timers, other mode info.
     void (*run_ptr)();          // the main func. for mode, via ADCS
     void (*clean_ptr)();        // reset timers, clear temp buffers, etc
     TaskHandle_t FreeRTOS_handle;// FreeRTOS task handle
+    uint32_t timeout;           // time before task times out (ms) 0 means no timeout
+    uint8_t id;                 // PRIMARY_KEY
     uint8_t func_1;             // Open functionality
 } intelli_task_t;
 

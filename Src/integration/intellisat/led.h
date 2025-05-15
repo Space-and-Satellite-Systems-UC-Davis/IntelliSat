@@ -10,7 +10,7 @@
 #ifndef REALOP1_LED_H_
 #define REALOP1_LED_H_
 
-#define OP_REV 1
+#define OP_REV 3
 
 // #include <globals.h>
 //#include <GPIO/gpio.h>

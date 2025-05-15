@@ -1,5 +1,6 @@
 #include <SunSensors/sun_sensors.h>
 #include <globals.h>
+#include "tools/print_scan.h"
 
 void testFunction_INA_TMP_Outputs()
 {
@@ -18,6 +19,12 @@ void testFunction_INA_TMP_Outputs()
         power = sun_sensors_readPower(PANEL0);
         current = sun_sensors_readCurrent(PANEL0);
         temp = sun_sensors_readTemp(PANEL0, TEMP0);
+        printMsg("Voltage: %f\r\n", voltage);
+        printMsg("Bus Voltage: %f\r\n", bus_voltage);
+        printMsg("Shunt Voltage: %f\r\n", shunt_voltage);
+        printMsg("Power: %f\r\n", power);
+        printMsg("Current: %f\r\n", current);
+        printMsg("Temperature: %f\r\n", temp);
     }
 
 

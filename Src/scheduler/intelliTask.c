@@ -43,11 +43,11 @@ typedef struct intellisat_task_t {
 */
 
 intelli_task_t task_table[TASK_TABLE_LEN] = {
-    {7, "LOW_PWR",      60000,  low_pwr_time,    config_low_pwr,    low_pwr,    clean_low_pwr,      NULL, NULL},  // Func1 - N/A
-	{6, "DETUMBLE",     60000,  detumble_time,   config_detumble,   detumble,   clean_detumble,     NULL, NULL},  // Func1 - N/A
-	{5, "COMMS",        60000,  comms_time,      config_comms,      comms,      clean_comms,        NULL, NULL},  // Func1 - N/A
-    {4, "ECC",          60000,  ecc_time,        config_ecc,        ecc,        clean_ecc,          NULL, NULL},  // Func1 - N/A
-    {3, "EXPERIMENT",   60000,  experiment_time, config_experiment, experiment, clean_experiment,   NULL, NULL},  // Func1 - Experiment ID (0 for none)
-    {2, "PIZZA_TIME",   60000,  pizza_time,      config_pizza,      pizza,      clean_pizza,        NULL, NULL},
-    {1, "SCHEDIDLE",        0,  idle_time,       config_idle,       idle,       clean_idle,         NULL, NULL}
+    {"LOW_PWR",    low_pwr_time,    config_low_pwr,    low_pwr,    clean_low_pwr,      NULL, 60000, 7, (uintmax_t) NULL},  // Func1 - N/A
+	{"DETUMBLE",   detumble_time,   config_detumble,   detumble,   clean_detumble,     NULL, 60000, 6, (uintmax_t) NULL},  // Func1 - N/A
+	{"COMMS",      comms_time,      config_comms,      comms,      clean_comms,        NULL, 60000, 5, (uintmax_t) NULL},  // Func1 - N/A
+    {"ECC",        ecc_time,        config_ecc,        ecc,        clean_ecc,          NULL, 60000, 4, (uintmax_t) NULL},  // Func1 - N/A
+    {"EXPERIMENT", experiment_time, config_experiment, experiment, clean_experiment,   NULL, 60000, 3, (uintmax_t) NULL},  // Func1 - Experiment ID (0 for none)
+    {"PIZZA_TIME", pizza_time,      config_pizza,      pizza,      clean_pizza,        NULL, 60000, 2, (uintmax_t) NULL},
+    {"SCHEDIDLE",  idle_time,       config_idle,       idle,       clean_idle,         NULL,     0, 1, (uintmax_t) NULL}
 };

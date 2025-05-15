@@ -59,7 +59,7 @@ void watchdog(void *args) {
 									task.id,
 									&(task_table[taskid].FreeRTOS_handle)
 								);
-			// Make sure the task does not seize control right after \
+			// Make sure the task does not seize control right after
 			// the watchdog and task manager yield
 			if (status != pdPASS) {
 				printMsg("OOM allocating %s task with error %d\n\r", task.name, status);

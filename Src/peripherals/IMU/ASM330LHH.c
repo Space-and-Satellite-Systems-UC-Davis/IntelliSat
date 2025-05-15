@@ -18,9 +18,9 @@
 #include "ASM330LHH.h"
 
 //GLOBAL VARIABLES
-#define ACCEL_RATE_REG 0x10
-#define GYRO_CTRL_REG  0x11
-#define IMU_RESET_REG  0x12
+#define ACCEL_RATE_REG (void*)0x10
+#define GYRO_CTRL_REG  (void*) 0x11
+#define IMU_RESET_REG  (void*)0x12
 
 // Sensitivity Values
 #define ASM330LHH_ACC_SENSITIVITY_FS_2G   		0.061f
@@ -287,12 +287,11 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 
 float imu_readAcel_X() {
 
-	uint8_t instructionHi = OUTX_H_A_Pos | IMU_SPI_RW ;	//Where we send Hi instruction
-	uint8_t instructionLow = OUTX_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
-
     int16_t data = 0;
 
 #if OP_REV == 1
+	uint8_t instructionHi = OUTX_H_A_Pos | IMU_SPI_RW ;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTX_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
@@ -308,12 +307,12 @@ float imu_readAcel_X() {
 
 float imu_readAcel_Y() {
 
-	uint8_t instructionHi = OUTY_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
-	uint8_t instructionLow = OUTY_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
-
     int16_t data = 0;
 
 #if OP_REV == 1
+
+	uint8_t instructionHi = OUTY_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTY_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
@@ -329,12 +328,12 @@ float imu_readAcel_Y() {
 
 float imu_readAcel_Z() {
 
-	uint8_t instructionHi = OUTZ_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
-	uint8_t instructionLow = OUTZ_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
-
     int16_t data = 0;
 
 #if OP_REV == 1
+
+	uint8_t instructionHi = OUTZ_H_A_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTZ_L_A_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
@@ -349,12 +348,11 @@ float imu_readAcel_Z() {
 
 float imu_readGyro_X() {
 
-	uint8_t instructionHi = OUTX_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
-	uint8_t instructionLow = OUTX_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
-
     int16_t data = 0;
 
 	#if OP_REV == 1
+	uint8_t instructionHi = OUTX_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTX_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
@@ -369,12 +367,12 @@ float imu_readGyro_X() {
 
 float imu_readGyro_Y() {
 
-	uint8_t instructionHi = OUTY_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
-	uint8_t instructionLow = OUTY_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
-
     int16_t data = 0;
 
 #if OP_REV == 1
+	uint8_t instructionHi = OUTY_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTY_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
+
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
@@ -389,12 +387,12 @@ float imu_readGyro_Y() {
 
 
 float imu_readGyro_Z() {
-	uint8_t instructionHi = OUTZ_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
-	uint8_t instructionLow = OUTZ_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
   int16_t data = 0;
 
 #if OP_REV == 1
+	uint8_t instructionHi = OUTZ_H_G_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUTZ_L_G_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 
@@ -409,12 +407,11 @@ float imu_readGyro_Z() {
 
 float imu_readTemp() {
 
-	uint8_t instructionHi = OUT_TEMP_H_Pos | IMU_SPI_RW;	//Where we send Hi instruction
-	uint8_t instructionLow = OUT_TEMP_L_Pos | IMU_SPI_RW;	//Where we send Low instruction
-
     int16_t data = 0;
 
 #if OP_REV == 1
+	uint8_t instructionHi = OUT_TEMP_H_Pos | IMU_SPI_RW;	//Where we send Hi instruction
+	uint8_t instructionLow = OUT_TEMP_L_Pos | IMU_SPI_RW;	//Where we send Low instruction
 
 	data = softi2c_readRegHighLow(IMU_I2C, IMU_ADDR, instructionHi, instructionLow);
 

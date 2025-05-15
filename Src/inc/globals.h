@@ -2,6 +2,8 @@
 #define REALOP1_GLOBALS_H_
 
 #include "stm32l476xx.h"
+#include <stdbool.h>
+#include <stddef.h>
 
 #define OP_REV 3	// the Orbital Platform revision being programmed
 
@@ -9,9 +11,6 @@
 #define UNUSED_GPIO             GPIOG, 1
 #define LOCK_UNUSED_GPIO_HIGH() GPIOG->PUPDR |= (1 << GPIO_PUPDR_PUPD1)
 #endif
-
-typedef enum {false, true} bool;
-#define NULL 0
 
 #define WILL_LOOPS_TIMEOUT false
 #define DEFAULT_TIMEOUT_MS 1000

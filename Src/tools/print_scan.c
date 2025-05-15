@@ -25,7 +25,7 @@ void printer_init() {
 	usart_init(ConsoleUART, UART_BAUDRATE);
 }
 
-int printMsg(const char *message, ...) {
+void printMsg(const char *message, ...) {
 	char buff[128];
 
 	va_list args;

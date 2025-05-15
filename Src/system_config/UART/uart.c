@@ -284,30 +284,30 @@ void uart_8bit_1stop(USART_TypeDef *bus, int baud_rate, bool rts_cts_control) {
 
 
 bool usart_init(USART_TypeDef *bus, int baud_rate) {
-	switch((int)bus) {
-		case (int)USART1:
+	switch((long)bus) {
+		case (long)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
 			uart_8bit_1stop(USART3, baud_rate, true);
 			break;
-		case (int)USART2:
+		case (long)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 			usart2_gpio_init();
 			break;
-		case (int)USART3:
+		case (long)USART3:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
 			usart3_gpio_init();
 			uart_8bit_1stop(USART3, baud_rate, false);
 			break;
-		case (int)UART4:
+		case (long)UART4:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART4EN;
 			uart4_gpio_init();
 			break;
-		case (int)UART5:
+		case (long)UART5:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_UART5EN;
 			uart4_gpio_init();
 			break;
-		case (int)LPUART1:
+		case (long)LPUART1:
 			RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN;
 			lpuart_gpio_init();
 			uart_8bit_1stop(LPUART1, baud_rate, false);
@@ -332,7 +332,7 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
 	while(!(bus->ISR & USART_ISR_TC) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));
 }
 
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
+void usart_transmitBytes(USART_TypeDef *bus, char message[]) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
@@ -371,7 +371,7 @@ bool usart_receiveBufferNotEmpty(USART_TypeDef *bus) {
 	return (rxbuff->front != rxbuff->rear);
 }
 
-int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
+int usart_receiveBytes(USART_TypeDef *bus, char buffer[], uint16_t size) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;

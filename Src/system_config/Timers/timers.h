@@ -17,7 +17,7 @@
 #define PWMTimer0_ClockEnable() 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN
 #define	PWMTimer0_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM4EN
 
-#elif OP_REV == 2 || OP_REV == 3
+#elif OP_REV == 2
 
 #define PWMTimer0 					TIM2
 #define PWMTimer0_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
@@ -74,6 +74,20 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
  * @param percent A value between 0-100 to indicate 
 */
 void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
+
+/**
+ * Turns a given PWM timer on.
+ * 
+ * @param pwm The pwm Timer to turn on
+ */
+void pwm_timerOn(PWM_Channels pwm);
+
+/**
+ * Turns a given PWM timer off.
+ * 
+ * @param pwm The pwm Timer to turn off
+ */
+void pwm_timerOff(PWM_Channels pwm);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
