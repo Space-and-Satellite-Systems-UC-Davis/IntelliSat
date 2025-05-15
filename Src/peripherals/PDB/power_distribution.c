@@ -67,9 +67,10 @@ void pdb_init() {
  */
 void pdb_on(PDB_PERIPHERAL peripheral) {
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: gpio_high(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
-        case PDB_PERIPHERAL_MGT: gpio_high(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
-        case PDB_PERIPHERAL_HDD: gpio_high(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+        case PDB_PERIPHERAL_PYRO: gpio_high(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN); break;
+        case PDB_PERIPHERAL_MGT: gpio_high(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN); break;
+        case PDB_PERIPHERAL_HDD: gpio_high(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN); break;
+        default: return;
     }
 }
 
@@ -78,9 +79,10 @@ void pdb_on(PDB_PERIPHERAL peripheral) {
  */
 void pdb_off(PDB_PERIPHERAL peripheral) {
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: gpio_low(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN);
-        case PDB_PERIPHERAL_MGT: gpio_low(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN);
-        case PDB_PERIPHERAL_HDD: gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+        case PDB_PERIPHERAL_PYRO: gpio_low(PDB_PWR_PYRO_PORT, PDB_PWR_PYRO_PIN); break;
+        case PDB_PERIPHERAL_MGT: gpio_low(PDB_PWR_MGT_PORT, PDB_PWR_MGT_PIN); break;
+        case PDB_PERIPHERAL_HDD: gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN); break;
+        default: return;
     }
 }
 
@@ -89,12 +91,12 @@ void pdb_off(PDB_PERIPHERAL peripheral) {
  * @returns Voltage in mV
  */
 float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral) {
-    PDB_PERIPHERAL * interface;
+    INA226_I2C_Interface * interface;
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
-        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
-        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
-        case PDB_PERIPHERAL_BATMON: interface = batmon;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro; break;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt; break;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd; break;
+        case PDB_PERIPHERAL_BATMON: interface = batmon; break;
         default: return -1;
     }
     return INA226_getShuntVoltage(interface);
@@ -105,12 +107,12 @@ float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral) {
  * @returns Voltage in Volts
  */
 float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
-    PDB_PERIPHERAL * interface;
+    INA226_I2C_Interface * interface;
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
-        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
-        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
-        case PDB_PERIPHERAL_BATMON: interface = batmon;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro; break;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt; break;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd; break;
+        case PDB_PERIPHERAL_BATMON: interface = batmon; break;
         default: return -1;
     }
     return INA226_getBusVoltage(interface);
@@ -121,12 +123,12 @@ float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
  * @returns Wattage as a 16 bit integer
  */
 float pdb_getPower(PDB_PERIPHERAL peripheral) {
-    PDB_PERIPHERAL * interface;
+    INA226_I2C_Interface * interface;
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
-        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
-        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
-        case PDB_PERIPHERAL_BATMON: interface = batmon;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro; break;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt; break;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd; break;
+        case PDB_PERIPHERAL_BATMON: interface = batmon; break;
         default: return -1;
     }
     return INA226_getPower(interface);
@@ -137,12 +139,12 @@ float pdb_getPower(PDB_PERIPHERAL peripheral) {
  * @returns Amps as a 16 bit integer
  */
 float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
-    PDB_PERIPHERAL * interface;
+    INA226_I2C_Interface * interface;
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
-        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
-        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
-        case PDB_PERIPHERAL_BATMON: interface = batmon;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro; break;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt; break;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd; break;
+        case PDB_PERIPHERAL_BATMON: interface = batmon; break;
         default: return -1;
     }
     return INA226_getCurrent(interface);
@@ -155,12 +157,13 @@ float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
  * @returns None
  */
 void pdb_setMode(PDB_PERIPHERAL peripheral, int mode) {
-    PDB_PERIPHERAL * interface;
+    INA226_I2C_Interface * interface;
     switch (peripheral) {
-        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro;
-        case PDB_PERIPHERAL_MGT: interface = pdb_mgt;
-        case PDB_PERIPHERAL_HDD: interface = pdb_hdd;
-        case PDB_PERIPHERAL_BATMON: interface = batmon;
+        case PDB_PERIPHERAL_PYRO: interface = pdb_pyro; break;
+        case PDB_PERIPHERAL_MGT: interface = pdb_mgt; break;
+        case PDB_PERIPHERAL_HDD: interface = pdb_hdd; break;
+        case PDB_PERIPHERAL_BATMON: interface = batmon; break;
+        default: return;
     }
     INA226_setMode(interface, mode);
 }
