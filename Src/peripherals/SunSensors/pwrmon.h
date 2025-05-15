@@ -16,7 +16,7 @@
 #define PWRMON_SENSOR_ADDRESS 0x45
 
 /**
- * Initializes the sun sensor with I2c, and calls config function
+ * Initializes the sun sensor with I2C, and calls config function
  *
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements

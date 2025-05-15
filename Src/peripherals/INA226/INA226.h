@@ -48,7 +48,7 @@ typedef struct {
 #define MILLI 1000
 
 /**
- * Initializes the sun sensor with I2c, and calls config function
+ * Initialize I2C and call config function
  *
  * @param interface A pointer to a struct containing the address, ports and pins of the INA226
  * @param averages Number of samples to collect and average
@@ -62,7 +62,7 @@ typedef struct {
 void INA226_init(INA226_I2C_Interface * interface, int averages, int bus_time, int shunt_time, int rshunt, int max_current);
 
 /**
- * Initial configuration of the sun sensor's config register and calibration register
+ * Initial configuration of the config register and calibration register
  *
  * @param interface A pointer to a struct containing the address, ports and pins of the INA226
  * @param averages Number of samples to collect and average
@@ -77,7 +77,7 @@ void INA226_config(INA226_I2C_Interface * interface, int averages, int bus_time,
 
 
 /**
- * Reads the shunt voltage from the sun sensor
+ * Reads the shunt voltage
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
@@ -89,7 +89,7 @@ float INA226_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int a
 
 
 /**
- * Reads the bus voltage from the sun sensor
+ * Reads the bus voltage
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
@@ -100,7 +100,7 @@ float INA226_getShuntVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int a
 float INA226_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 /**
- * Reads the power from the sun sensor
+ * Reads the power
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
@@ -111,7 +111,7 @@ float INA226_getBusVoltage(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int add
 float INA226_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 /**
- * Reads the current from the sun sensor
+ * Reads the current
  * @param gpio: i2c port for scl and sda
  * @param scl_pin: i2c scl pin
  * @param sda_pin: i2c sda_pin
@@ -122,7 +122,7 @@ float INA226_getPower(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address)
 float INA226_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin, int address);
 
 /**
- * Resets the mode of the sensors
+ * Resets the mode of the sensor
  * @param interface A pointer to a struct containing the address, ports and pins of the INA226
  * @param mode The mode of the sensor (ontinuous, powered down)
  * 

@@ -9,7 +9,7 @@
 #include <GPIO/gpio.h>
 
 /**
- * Initialize power pins for output
+ * Initialize I2C 
  */
 void pdb_init() {
     // PDB_PWR_^_PORT->MODER &= ~(GPIO_MODER_Analog << (PDB_PWR_^_PIN*GPIO_MODER_BITS_SPAN));
