@@ -60,35 +60,35 @@ typedef enum {
 void pdb_init();
 
 /**
- * Turn on burn wire
+ * Turn on a peripheral
  */
 void pdb_on(PDB_PERIPHERAL peripheral);
 
 /**
- * Turn off burn wire
+ * Turn off a peripheral
  */
 void pdb_off(PDB_PERIPHERAL peripheral);
 
 /**
- * Reads the shunt voltage from the burn wire's INA226
+ * Reads the shunt voltage from a peripheral's INA226
  * @returns Voltage in mV
  */
 float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral);
 
 /**
- * Reads the bus voltage from the burn wire's INA226
+ * Reads the bus voltage from a peripheral's INA226
  * @returns Voltage in Volts
  */
 float pdb_getBusVoltage(PDB_PERIPHERAL peripheral);
 
 /**
- * Reads the power from the burn wire's INA226
+ * Reads the power from a peripheral's INA226
  * @returns Wattage as a 16 bit integer
  */
 float pdb_getPower(PDB_PERIPHERAL peripheral);
 
 /**
- * Reads the current from the burn wire's INA226
+ * Reads the current from a peripheral's INA226
  * @returns Amps as a 16 bit integer
  */
 float pdb_getCurrent(PDB_PERIPHERAL peripheral);

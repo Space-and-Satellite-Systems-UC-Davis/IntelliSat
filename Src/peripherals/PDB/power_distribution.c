@@ -63,7 +63,7 @@ void pdb_init() {
 }
 
 /**
- * Turn on HDDs
+ * Turn on a peripheral
  */
 void pdb_on(PDB_PERIPHERAL peripheral) {
     switch (peripheral) {
@@ -75,7 +75,7 @@ void pdb_on(PDB_PERIPHERAL peripheral) {
 }
 
 /**
- * Turn off HDDs
+ * Turn off a peripheral
  */
 void pdb_off(PDB_PERIPHERAL peripheral) {
     switch (peripheral) {
@@ -103,7 +103,7 @@ float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral) {
 }
 
 /**
- * Reads the bus voltage from the HDD's INA226
+ * Reads the bus voltage from a peripheral's INA226
  * @returns Voltage in Volts
  */
 float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
@@ -119,7 +119,7 @@ float pdb_getBusVoltage(PDB_PERIPHERAL peripheral) {
 }
 
 /**
- * Reads the power from the HDD's INA226
+ * Reads the power from the a peripheral's INA226
  * @returns Wattage as a 16 bit integer
  */
 float pdb_getPower(PDB_PERIPHERAL peripheral) {
@@ -135,7 +135,7 @@ float pdb_getPower(PDB_PERIPHERAL peripheral) {
 }
 
 /**
- * Reads the current from the HDD's INA226
+ * Reads the current from the a peripheral's INA226
  * @returns Amps as a 16 bit integer
  */
 float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
@@ -151,7 +151,7 @@ float pdb_getCurrent(PDB_PERIPHERAL peripheral) {
 }
 
 /**
- * Resets the mode of the HDD's INA226
+ * Resets the mode of the a peripheral's INA226
  * @param mode The mode of the sensor (continuous, powered down)
  * 
  * @returns None
