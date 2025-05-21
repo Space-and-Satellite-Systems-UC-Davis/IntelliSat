@@ -1,6 +1,8 @@
 #include "DMA/DMA.h"
 
 void configure_channel(DMAConfig config) {
+	DMA_Channel_TypeDef* channel_ptr = config.peripheral.channel;
+
 	//Check what DMA controller we are working with
 	//DMA1_CSELR_BASE is simply the largest address in DMA1 controller
 	if ((uint32_t)config.channel <= DMA1_CSELR_BASE) { //The channel is in DMA1
