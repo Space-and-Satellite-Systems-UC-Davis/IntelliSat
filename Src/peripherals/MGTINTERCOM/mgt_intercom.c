@@ -32,9 +32,7 @@
     payload[5] = percentage / 10 + '0';
     payload[6] = percentage % 10 + '0';
     if (!pcp_transmit(device, payload, 7)) return 0;
-    // uint8_t buffer[256];
-    // if (!pcp_read(device, buffer)) return 0;
-    // return (buffer[0] == '<' && buffer[1] == 'A' && buffer[2] == '>');
+    return 1;
  }
 
  /**
@@ -45,7 +43,15 @@
   * 
   * @returns  the current in Amps (A)
   */
- float mgt_intercomm_get_current(PCPDevice * device, int coil_number);
+ float mgt_intercomm_get_current(PCPDevice * device, int coil_number) {
+    uint8_t payload[2];
+    payload[0] = 'C';
+    payload[1] = coil_number + '0';
+    pcp_transmit(device, payload, 2);
+    uint8_t buffer[256];
+    pcp_read(device, buffer);
+    return buffer[0];
+ }
 
  /**
   * Shut down all PWMs and timers on the MGT side
