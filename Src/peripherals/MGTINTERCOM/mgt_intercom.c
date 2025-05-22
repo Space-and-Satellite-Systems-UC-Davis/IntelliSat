@@ -20,7 +20,7 @@
   * @param pwm  1 or 0, for pwm 1 or 0
   * @param percent  The PWM percentage (0-100)
   * 
-  * @returns  Success (1) or failure (0)
+  * @returns  boolean successful
   */
  bool mgt_intercomm_set_coil_percent(PCPDevice * device, int coil_number, int pwm, int percentage) {
     uint8_t payload[7];
@@ -58,7 +58,7 @@
   * 
   * @param device  A pointer to the PCP device of the MGT
   * 
-  * @returns  success (1) or failure (0)
+  * @returns  boolean successful
   */
  bool mgt_intercomm_shutdown_all(PCPDevice * device) {
     uint8_t payload[1];
@@ -73,7 +73,7 @@
   * @param device  A pointer to the PCP device of the MGT
   * @param timer_number  The id of the timer to be turned off
   * 
-  * @returns Success (1) or failure (0)
+  * @returns  boolean successful
   */
  bool mgt_intercomm_shutdown_timer(PCPDevice * device, int timer_number) {
     uint8_t payload[2];
