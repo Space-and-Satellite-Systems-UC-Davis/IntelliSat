@@ -34,11 +34,11 @@ int main() {
 
 
     DMAConfig config;
-    config.peripheral = (DMAPeripheral*) DMA_ADC1;
+    config.selection = SELECT_SPI3_RX;
     config.length = 1;
     config.memory_addr = (uint32_t)&test_buffer;
     config.peripheral_addr = (uint32_t) &(SPI3->DR);
-    config.circular = false;
+    config.circular = true;
     config.on_by_default = false;
 
     configure_channel(config);

@@ -166,16 +166,16 @@ void spi1_gpioInit() {
 void spi_dma_disable(SPI_TypeDef *spi) {
 	switch ((uint32_t)spi) {
 		case (uint32_t)SPI1:
-			dma_disable_channel((DMA_Channel_TypeDef*) DMA_SPI1_RX);
-			dma_disable_channel((DMA_Channel_TypeDef*) DMA_SPI1_TX);
+			dma_disable_channel(SELECT_SPI1_RX);
+			dma_disable_channel(SELECT_SPI1_TX);
 			break;
 		case (uint32_t)SPI2:
-			dma_disable_channel((DMA_Channel_TypeDef*) DMA_SPI2_RX);
-			dma_disable_channel((DMA_Channel_TypeDef*) DMA_SPI2_TX);
+			dma_disable_channel(SELECT_SPI2_RX);
+			dma_disable_channel(SELECT_SPI2_TX);
 			break;
 		case (uint32_t)SPI3:
-			dma_disable_channel((DMA_Channel_TypeDef*) DMA_SPI3_RX);
-			dma_disable_channel((DMA_Channel_TypeDef*) DMA_SPI3_TX);
+			dma_disable_channel(SELECT_SPI3_RX);
+			dma_disable_channel(SELECT_SPI3_TX);
 			break;
 	}
 }
@@ -275,7 +275,7 @@ void spi3_enable_dma() {
 	SPI3->CR2 |= SPI_CR2_RXDMAEN;
 
 	//DMA is supposed to be configured but off
-	dma_enable_channel((DMA_Channel_TypeDef*) DMA_SPI3_RX);
+	dma_enable_channel(SELECT_SPI3_RX);
 
 	//If you want to enable TXDMAEN, you must do it after dma channel is enabled
 
@@ -325,19 +325,19 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
 		inner_start_time = getSysTime();
-		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+//		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
 
-		// read the reception line until it's empty
-		inner_start_time = getSysTime();
-		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
-			if (reception == NULL) {
-				spi->DR;
-			} else {
-				uint16_t value = spi->DR;
-				*reception = value;
-				reception++;
-			}
-		}
+//		// read the reception line until it's empty
+//		inner_start_time = getSysTime();
+//		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
+//			if (reception == NULL) {
+//				spi->DR;
+//			} else {
+//				uint16_t value = spi->DR;
+//				*reception = value;
+//				reception++;
+//			}
+//		}
 	}
 	return true;
 }
