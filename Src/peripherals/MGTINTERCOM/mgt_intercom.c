@@ -31,8 +31,8 @@
     payload[4] = ' ';
     payload[5] = percentage / 10 + '0';
     payload[6] = percentage % 10 + '0';
-    if (!pcp_transmit(device, payload, 7)) return 0;
-    return 1;
+    if (pcp_transmit(device, payload, 7)) return false;
+    return true;
  }
 
  /**
@@ -63,8 +63,8 @@
  bool mgt_intercomm_shutdown_all(PCPDevice * device) {
     uint8_t payload[1];
     payload[0] = 'D';
-    if (!pcp_transmit(device, payload, 1)) return 0;
-    return 1;
+    if (pcp_transmit(device, payload, 1)) return false;
+    return true;
  }
 
  /**
@@ -79,6 +79,6 @@
     uint8_t payload[2];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
-    if (!pcp_transmit(device, payload, 2)) return 0;
-    return 1;
+    if (pcp_transmit(device, payload, 2)) return false;
+    return true;
  }
