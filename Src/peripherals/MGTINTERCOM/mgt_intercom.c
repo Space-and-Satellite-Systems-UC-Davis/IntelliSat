@@ -60,7 +60,12 @@
   * 
   * @returns  success (1) or failure (0)
   */
- bool mgt_intercomm_shutdown_all(PCPDevice * device);
+ bool mgt_intercomm_shutdown_all(PCPDevice * device) {
+    uint8_t payload[1];
+    payload[0] = 'D';
+    if (!pcp_transmit(device, payload, 1)) return 0;
+    return 1;
+ }
 
  /**
   * Shut down a specific timer
