@@ -180,6 +180,55 @@ void spi_dma_disable(SPI_TypeDef *spi) {
 	}
 }
 
+//The order of dma_enable_channel matters
+void spi_dma_enable_rx(SPI_TypeDef *spi) {
+	switch ((uint32_t)spi) {
+		case (uint32_t)SPI1:
+			spi_disable(SPI1, SPI1_CS);
+			SPI1->CR2 |= SPI_CR2_RXDMAEN;
+			dma_enable_channel(SELECT_SPI1_RX);
+
+			break;
+		case (uint32_t)SPI2:
+			spi_disable(SPI2, SPI2_CS);
+			SPI2->CR2 |= SPI_CR2_RXDMAEN;
+			dma_enable_channel(SELECT_SPI2_RX);
+
+			break;
+		case (uint32_t)SPI3:
+			spi_disable(SPI3, SPI3_CS);
+			SPI3->CR2 |= SPI_CR2_RXDMAEN;
+			dma_enable_channel(SELECT_SPI3_RX);
+
+			break;
+	}
+
+	spi_enable(spi);
+}
+//The order of dma_enable_channel matters
+void spi_dma_enable_tx(SPI_TypeDef *spi) {
+	switch ((uint32_t)spi) {
+		case (uint32_t)SPI1:
+			spi_disable(SPI1, SPI1_CS);
+			SPI1->CR2 |= SPI_CR2_TXDMAEN;
+			dma_enable_channel(SELECT_SPI1_TX);
+			break;
+		case (uint32_t)SPI2:
+			spi_disable(SPI2, SPI2_CS);
+			dma_enable_channel(SELECT_SPI2_TX);
+			SPI2->CR2 |= SPI_CR2_TXDMAEN;
+			break;
+		case (uint32_t)SPI3:
+			spi_disable(SPI3, SPI3_CS);
+			dma_enable_channel(SELECT_SPI3_TX);
+			SPI3->CR2 |= SPI_CR2_TXDMAEN;
+			break;
+	}
+
+	spi_enable(spi);
+}
+
+
 //To close DMA communication it is mandatory to follow these steps in order:
 // 1. Disable DMA streams
 // 2. Disable SPI as normal
@@ -265,19 +314,6 @@ void spi3_config() {
 	SPI3->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| SPI_CR2_DS_8_BIT << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
-
-	spi_enable(SPI3);
-}
-
-void spi3_enable_dma() {
-	spi_disable(SPI3, SPI3_CS);
-
-	SPI3->CR2 |= SPI_CR2_RXDMAEN;
-
-	//DMA is supposed to be configured but off
-	dma_enable_channel(SELECT_SPI3_RX);
-
-	//If you want to enable TXDMAEN, you must do it after dma channel is enabled
 
 	spi_enable(SPI3);
 }

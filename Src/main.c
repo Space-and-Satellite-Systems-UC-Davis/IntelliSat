@@ -42,7 +42,7 @@ int main() {
     config.on_by_default = false;
 
     configure_channel(config);
-    spi3_enable_dma();
+    spi_dma_enable_rx(SPI3);
 
 	while (1) {
 		if (get_buttonStatus_SW1()) {

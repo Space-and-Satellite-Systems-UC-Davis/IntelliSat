@@ -63,13 +63,15 @@
 */
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin);
 
+void spi_dma_enable_rx(SPI_TypeDef *spi);
+void spi_dma_enable_tx(SPI_TypeDef *spi);
+
+void spi_dma_disable(SPI_TypeDef *spi);
+
 /**
  * Configures an SPI line to be able to transmit_receive() later
 */
 void spi_config(SPI_TypeDef *spi);
-
-//TEMPORARY, COMPLAIN TO ME IF THIS MAKE IT TO PR
-void spi3_enable_dma();
 
 /***************************** SPI COMMUNICATION *****************************/
 
