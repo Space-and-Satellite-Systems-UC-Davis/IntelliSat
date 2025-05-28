@@ -31,6 +31,16 @@
 bool usart_init(USART_TypeDef *bus, int baud_rate);
 
 /*
+ * Utilizes USART hardware transmitter to send a character
+ *
+ * @param bus       The USART Bus doing the transmission
+ * @param message   The string (character array) being sent
+ *
+ * @returns None
+ */
+void usart_transmitChar(USART_TypeDef *bus, char c);
+
+/*
  * Utilizes USART hardware transmitter to send a variable length string
  *
  * @param bus       The USART Bus doing the transmission
