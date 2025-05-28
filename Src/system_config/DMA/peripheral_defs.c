@@ -176,12 +176,12 @@ void DMA_initializePeripheralConstants() {
 	DMA_initWrapper(
 		struct_DMA_LPUART1_RX,
 		DMA2_Channel7,
-		0b0010
+		0b0100
 	);
 	DMA_initWrapper(
 		struct_DMA_LPUART1_TX,
 		DMA2_Channel6,
-		0b0010
+		0b0100
 	);
 }
 
