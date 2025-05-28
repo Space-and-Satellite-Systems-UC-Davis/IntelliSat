@@ -14,6 +14,12 @@ typedef enum enum_DMAPeripherals {
 	SELECT_SPI2_TX,
 	SELECT_SPI3_RX,
 	SELECT_SPI3_TX,
+	SELECT_USART1_RX,
+	SELECT_USART1_TX,
+	SELECT_USART2_RX,
+	SELECT_USART2_TX,
+	SELECT_LPUART1_RX,
+	SELECT_LPUART1_TX,
 } enum_DMAPeripherals;
 
 typedef struct DMAPeripheral {

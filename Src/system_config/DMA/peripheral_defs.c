@@ -42,12 +42,48 @@ void DMA_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, ui
 	peripheral->channel = channel;
 	peripheral->channel_select_value = cs;
 
-	if ((uint32_t)channel < (uint32_t)DMA2_Channel1_BASE) { //DMA1
+
+	if ((uint32_t)channel < (uint32_t)DMA1_CSELR_BASE) { //DMA1
 		peripheral->channel_select = DMA1_CSELR;
-		peripheral->channel_select_pos = DMA_CSELR_C1S_Pos;
 	} else { //DMA2
 		peripheral->channel_select = DMA2_CSELR;
-		peripheral->channel_select_pos = DMA_CSELR_C2S_Pos;
+	}
+
+	switch ((uint32_t) channel) {
+		case DMA1_Channel1_BASE:
+		case DMA2_Channel1_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C1S_Pos;
+			break;
+
+		case DMA1_Channel2_BASE:
+		case DMA2_Channel2_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C2S_Pos;
+			break;
+
+		case DMA1_Channel3_BASE:
+		case DMA2_Channel3_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C3S_Pos;
+			break;
+
+		case DMA1_Channel4_BASE:
+		case DMA2_Channel4_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C4S_Pos;
+			break;
+
+		case DMA1_Channel5_BASE:
+		case DMA2_Channel5_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C5S_Pos;
+			break;
+
+		case DMA1_Channel6_BASE:
+		case DMA2_Channel6_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C6S_Pos;
+			break;
+
+		case DMA1_Channel7_BASE:
+		case DMA2_Channel7_BASE:
+			peripheral->channel_select_pos = DMA_CSELR_C7S_Pos;
+			break;
 	}
 }
 
@@ -160,6 +196,12 @@ DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals selection) {
 		case SELECT_SPI2_TX: return struct_DMA_SPI2_TX;
 		case SELECT_SPI3_RX: return struct_DMA_SPI3_RX;
 		case SELECT_SPI3_TX: return struct_DMA_SPI3_TX;
+		case SELECT_USART1_RX: return struct_DMA_USART1_RX;
+		case SELECT_USART1_TX: return struct_DMA_USART1_TX;
+		case SELECT_USART2_RX: return struct_DMA_USART2_RX;
+		case SELECT_USART2_TX: return struct_DMA_USART2_TX;
+		case SELECT_LPUART1_RX: return struct_DMA_LPUART1_RX;
+		case SELECT_LPUART1_TX: return struct_DMA_LPUART1_TX;
 	}
 
 	return NULL;
