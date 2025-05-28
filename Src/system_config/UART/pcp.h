@@ -32,6 +32,10 @@
 #define PCP_HEAD_NBYTES 3
 // Number of packets in rx buffer
 #define RX_BUFSIZ 32
+// Max window size (max(sequence number) / 2)
+#define MAX_WINDOW_SIZE 128
+// Maximum size in bytes for incoming and outgoing payloads
+#define MAX_BYTES 128 - PCP_HEAD_NBYTES
 
 
 /**
@@ -41,7 +45,7 @@
 typedef uint8_t SeqNum;
 
 typedef struct {
-    uint8_t* data;
+    uint8_t data[MAX_BYTES];
     size_t len;
 } PCPBuf;
 
