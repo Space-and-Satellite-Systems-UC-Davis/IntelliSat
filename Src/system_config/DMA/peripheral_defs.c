@@ -42,7 +42,6 @@ void DMA_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, ui
 	peripheral->channel = channel;
 	peripheral->channel_select_value = cs;
 
-
 	if ((uint32_t)channel < (uint32_t)DMA1_CSELR_BASE) { //DMA1
 		peripheral->channel_select = DMA1_CSELR;
 	} else { //DMA2

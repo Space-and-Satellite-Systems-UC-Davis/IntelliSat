@@ -220,7 +220,7 @@ float adc_readVoltage(uint16_t channelReading) {
 }
 
 void set_continuous_dma(ADC_TypeDef* adc, int channel) {
-	adc->CR &= ~ADC_CR_ADSTART;
+	adc->CR &= ~ADC_CR_ADSTART; //Pause
 	adc->SQR1 |= channel << ADC_SQR1_SQ1_Pos; //Set the channel in sequence to be converted
 
 	adc->CFGR  |=  ( ADC_CFGR_CONT ); //Continuous conversion

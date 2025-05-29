@@ -210,8 +210,8 @@ void spi_dma_enable_tx(SPI_TypeDef *spi) {
 	switch ((uint32_t)spi) {
 		case (uint32_t)SPI1:
 			spi_disable(SPI1, SPI1_CS);
-			SPI1->CR2 |= SPI_CR2_TXDMAEN;
 			dma_enable_channel(SELECT_SPI1_TX);
+			SPI1->CR2 |= SPI_CR2_TXDMAEN;
 			break;
 		case (uint32_t)SPI2:
 			spi_disable(SPI2, SPI2_CS);
@@ -228,6 +228,49 @@ void spi_dma_enable_tx(SPI_TypeDef *spi) {
 	spi_enable(spi);
 }
 
+void spi_dma_configure(SPI_TypeDef *spi, uint8_t rx_buffer[], uint8_t tx_buffer[], uint16_t size) {
+
+    DMAConfig rx_config;
+    DMAConfig tx_config;
+
+	switch ((uint32_t)spi) {
+		case (uint32_t)SPI1:
+			rx_config.selection = SELECT_SPI1_RX;
+			tx_config.selection = SELECT_SPI1_TX;
+			break;
+		case (uint32_t)SPI2:
+			rx_config.selection = SELECT_SPI2_RX;
+			tx_config.selection = SELECT_SPI2_TX;
+			break;
+		case (uint32_t)SPI3:
+			rx_config.selection = SELECT_SPI3_RX;
+			tx_config.selection = SELECT_SPI3_TX;
+			break;
+	}
+
+	rx_config.length = size;
+	rx_config.memory_addr = (uint32_t)rx_buffer;
+    rx_config.peripheral_addr = (uint32_t) &(spi->DR);
+    rx_config.pdata_size = sizeof(uint8_t);
+    rx_config.mdata_size = sizeof(uint8_t);
+    rx_config.circular = false;
+    rx_config.peripheral_to_memory = true;
+    rx_config.peripheral_increment = false;
+    rx_config.memory_increment = true;
+
+	tx_config.length = size;
+	tx_config.memory_addr = (uint32_t)tx_buffer;
+    tx_config.peripheral_addr = (uint32_t) &(spi->DR);
+    rx_config.pdata_size = sizeof(uint8_t);
+    rx_config.mdata_size = sizeof(uint8_t);
+    tx_config.circular = false;
+    tx_config.peripheral_to_memory = false;
+    tx_config.peripheral_increment = false;
+    tx_config.memory_increment = true;
+
+    configure_channel(rx_config);
+    configure_channel(tx_config);
+}
 
 //To close DMA communication it is mandatory to follow these steps in order:
 // 1. Disable DMA streams

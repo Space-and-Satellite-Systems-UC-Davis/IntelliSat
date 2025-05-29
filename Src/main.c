@@ -29,7 +29,7 @@ int main() {
 	//  init_first_time()
 	//}
     printMsg("START\r\n");
-
+//IRQHandler
 	uint16_t test_buffer[255] = {99};
 
 
@@ -39,7 +39,6 @@ int main() {
     config.memory_addr = (uint32_t)&test_buffer;
     config.peripheral_addr = (uint32_t) &(SPI3->DR);
     config.circular = true;
-    config.on_by_default = false;
 
     configure_channel(config);
     spi_dma_enable_rx(SPI3);

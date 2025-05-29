@@ -34,8 +34,12 @@ typedef struct {
 	uint32_t peripheral_addr;
 	uint32_t memory_addr;
 	uint16_t length;
+	uint8_t pdata_size;
+	uint8_t mdata_size;
 	bool circular;
-	bool on_by_default;
+	bool peripheral_to_memory;
+	bool peripheral_increment;
+	bool memory_increment;
 } DMAConfig;
 
 void configure_channel(
