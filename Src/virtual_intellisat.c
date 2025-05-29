@@ -50,7 +50,7 @@ vi_get_epoch(
  */
 vi_get_curr_millis_status
 vi_get_curr_millis(
-    int *curr_millis
+	uint64_t *curr_millis
 ){
 	*curr_millis = getSysTime();
 	return GET_CURR_MILLIS_SUCCESS;
