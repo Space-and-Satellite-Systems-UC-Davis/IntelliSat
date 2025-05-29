@@ -4,6 +4,7 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 
+//No options for some uart because they aren't implemented
 typedef enum enum_DMAPeripherals {
 	SELECT_ADC1,
 	SELECT_ADC2,

@@ -5,10 +5,10 @@ void configure_channel(DMAConfig config) {
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
 	//Check what DMA controller we are working with
-	//DMA1_CSELR_BASE is simply the largest address in DMA1 controller
-	if ((uint32_t)channel_ptr <= DMA1_CSELR_BASE) { //The channel is in DMA1
+	//DMA1_Channel7_BASE is simply the largest address in DMA1 controller that may be passed
+	if ((uint32_t)channel_ptr <= DMA1_Channel7_BASE) { //The channel is in DMA1
 		RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
-	} else {
+	} else { //DMA2
 		RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 	}
 
@@ -25,22 +25,22 @@ void configure_channel(DMAConfig config) {
 	);
 
 	//Configure channel
+
+	//Priority is explicitly not an option. We did not yet coordinate what gets what priority yet
 	channel_ptr->CCR |= ( 0x1 << DMA_CCR_PL_Pos ); //0b01 Medium priority
 
 	switch (config.mdata_size) {
 		case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_MSIZE_Pos ); break; //0b00 8 bits
 		case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_MSIZE_Pos ); break; //0b01 16 bits
 		case 4: channel_ptr->CCR |= ( (0b10) << DMA_CCR_MSIZE_Pos ); break; //0b10 32 bits
-
 	}
 	switch (config.pdata_size) {
 		case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_PSIZE_Pos ); break; //0b00 8 bits
 		case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_PSIZE_Pos ); break; //0b01 16 bits
 		case 4: channel_ptr->CCR |= ( (0b10) << DMA_CCR_PSIZE_Pos ); break; //0b10 32 bits
-
 	}
 
-	if (config.peripheral_increment == true) { channel_ptr->CCR |= DMA_CCR_PINC; } //Increment memory
+	if (config.peripheral_increment == true) { channel_ptr->CCR |= DMA_CCR_PINC; } //Increment peripheral
 	if (config.memory_increment == true) { channel_ptr->CCR |= DMA_CCR_MINC; } //Increment memory
 
 	if (config.peripheral_to_memory == true) {
@@ -53,7 +53,7 @@ void configure_channel(DMAConfig config) {
 	//But this also reads easier
 	if (config.circular == true) { channel_ptr->CCR |= DMA_CCR_CIRC; }
 
-	// Set src and dist. Currently set to peripheral -> memory
+	// Set src and dist
 	//Not cast to pointer because pointer could be something other than uint32_t??
 	//^^^If this comment is still here I haven't tested what goes wrong otherwise
 	channel_ptr->CMAR  = (uint32_t)config.memory_addr;
@@ -61,8 +61,7 @@ void configure_channel(DMAConfig config) {
 	channel_ptr->CNDTR = (uint16_t)config.length;
 }
 
-
-//For use by peripherals
+//Actually turn the DMA on
 void dma_enable_channel(enum_DMAPeripherals selection) {
 	DMAPeripheral* peripheral = DMA_selectPeripheral(selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;

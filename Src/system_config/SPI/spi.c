@@ -180,6 +180,32 @@ void spi_dma_disable(SPI_TypeDef *spi) {
 	}
 }
 
+//To close DMA communication it is mandatory to follow these steps in order:
+// 1. Disable DMA streams
+// 2. Disable SPI as normal
+// 3. Clear the TXDMAEN and RXDMAEN bits
+void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
+	spi_dma_disable(spi);
+
+	uint64_t start_time = getSysTime(); //time in ms
+	while((spi->SR & SPI_SR_FTLVL) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till there is no data to transmit
+
+	start_time = getSysTime();
+	while((spi->SR & SPI_SR_BSY) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till last data frame is processed
+
+	spi_stopCommunication(cs_port, cs_pin);
+	spi->CR1 &= ~SPI_CR1_SPE;
+
+	spi->CR2 &= ~(SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN); //Disable the DMA flags
+
+	start_time = getSysTime();
+	uint8_t temp;
+	while(spi->SR & SPI_SR_FRLVL && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))){
+		// Wait till all data is received
+		temp = spi->DR;
+	}
+}
+
 //The order of dma_enable_channel matters
 void spi_dma_enable_rx(SPI_TypeDef *spi) {
 	switch ((uint32_t)spi) {
@@ -270,32 +296,6 @@ void spi_dma_configure(SPI_TypeDef *spi, uint8_t rx_buffer[], uint8_t tx_buffer[
 
     configure_channel(rx_config);
     configure_channel(tx_config);
-}
-
-//To close DMA communication it is mandatory to follow these steps in order:
-// 1. Disable DMA streams
-// 2. Disable SPI as normal
-// 3. Clear the TXDMAEN and RXDMAEN bits
-void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
-	spi_dma_disable(spi);
-
-	uint64_t start_time = getSysTime(); //time in ms
-	while((spi->SR & SPI_SR_FTLVL) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till there is no data to transmit
-
-	start_time = getSysTime();
-	while((spi->SR & SPI_SR_BSY) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till last data frame is processed
-
-	spi_stopCommunication(cs_port, cs_pin);
-	spi->CR1 &= ~SPI_CR1_SPE;	
-
-	spi->CR2 &= ~(SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN); //Disable the DMA flags
-
-	start_time = getSysTime();
-	uint8_t temp;
-	while(spi->SR & SPI_SR_FRLVL && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))){
-		// Wait till all data is received
-		temp = spi->DR;
-	}
 }
 
 void spi1_config() {

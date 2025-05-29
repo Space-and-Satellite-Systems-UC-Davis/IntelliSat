@@ -203,5 +203,5 @@ DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals selection) {
 		case SELECT_LPUART1_TX: return struct_DMA_LPUART1_TX;
 	}
 
-	return NULL;
+	return NULL; //We ought to have a result/error type...
 }
