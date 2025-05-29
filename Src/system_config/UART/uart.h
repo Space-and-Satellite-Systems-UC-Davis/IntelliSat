@@ -31,16 +31,6 @@
 bool usart_init(USART_TypeDef *bus, int baud_rate);
 
 /*
- * Utilizes USART hardware transmitter to send a character
- *
- * @param bus       The USART Bus doing the transmission
- * @param message   The string (character array) being sent
- *
- * @returns None
- */
-void usart_transmitChar(USART_TypeDef *bus, char c);
-
-/*
  * Utilizes USART hardware transmitter to send a variable length string
  *
  * @param bus       The USART Bus doing the transmission
@@ -48,17 +38,16 @@ void usart_transmitChar(USART_TypeDef *bus, char c);
  *
  * @returns None
  */
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
-
-/**
- * Utilizes USART hardware transmitter to send a fixed-length string
- * 
+void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]);
+/*
+ * Utilizes USART hardware transmitter to send a fixed length byte stream
+ *
  * @param bus       The USART Bus doing the transmission
  * @param message   The string (character array) being sent
- * 
+ *
  * @returns None
  */
-void usart_transmitChunk(USART_TypeDef *bus, uint8_t message[], int nbytes);
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 /*
  * Returns the status of the USART receiver's FIFO buffer
@@ -80,5 +69,12 @@ bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
  * @returns			The number of bytes actually received and stored ( <= `size`)
  */
 int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
+
+/*
+ * Empties the receive buffer.
+ *
+ * @param bus		The USART Bus that will be receiving
+ */
+void usart_flushrx(USART_TypeDef* bus);
 
 #endif	// REALOP1_UART_H_

@@ -4,8 +4,8 @@
 void testFunction_mgtIntercom() {
     // usart_init(USART1, 9600);
     while (1) {
-        // usart_transmitBytes(USART2, "HELP!!!");
-        printMsg("!"); // 0x40008000
+        usart_transmitBytes(USART2, "HELP!!!");
+        // printMsg("!"); // 0x40008000
         delay_ms(1000);
     }
 }
