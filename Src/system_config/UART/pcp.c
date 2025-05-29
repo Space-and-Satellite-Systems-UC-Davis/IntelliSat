@@ -1,7 +1,7 @@
 /******************************************************************************
 * File:             pcp.c
 *
-* Author:           Eric Xu
+* Author:           Eric Xu  
 * Created:          2025-01-26 20:54
 * Description:      See pcp.h
 *****************************************************************************/
@@ -49,20 +49,15 @@ int make_pcpdev_advanced(PCPDevice* out,
     if (window_size > 128) {
         return -E_INVALID;
     }
-    PCPBuf tx_bufs[MAX_WINDOW_SIZE];
+    PCPBuf* tx_bufs = calloc(window_size, sizeof(PCPBuf));
     for (int i = 0; i < window_size; ++i) {
-        // Clearing the memory might be unecessary, but the original implementation did it (via calloc)
-        for (int j = 0; j < 2*(MAX_BYTES+PCP_HEAD_NBYTES); ++j) {
-            tx_bufs[i].data[j] = 0;
-        }
+        tx_bufs[i].data = calloc(2 * (outgoing_payload_maxbytes + PCP_HEAD_NBYTES),
+                                 sizeof(uint8_t));
         tx_bufs[i].len = 0;
     }
-    PCPBuf rx_bufs[MAX_WINDOW_SIZE];
+    PCPBuf* rx_bufs = calloc(RX_BUFSIZ, sizeof(PCPBuf));
     for (int i = 0; i < RX_BUFSIZ; ++i) {
-        // Again, might be unecessary
-        for (int j = 0; j < 2 * MAX_BYTES; ++j) {
-            rx_bufs[i].data[j] = 0;
-        }
+        rx_bufs[i].data = calloc(2 * incoming_payload_maxbytes, sizeof(uint8_t));
         rx_bufs[i].len = 0;
     }
     PCPDevice dev = (PCPDevice){
@@ -118,8 +113,7 @@ int pcp_transmit(PCPDevice *dev, uint8_t *payload, int nbytes) {
 
     dev->last_tx_time = getSysTime();
     dev->curr_window_sz++;
-    usart_transmitChunk(dev->bus, tx_buf->data, tx_buf->len);
-
+    usart_transmitBytes(dev->bus, tx_buf->data, tx_buf->len);
     return 0;
 }
 
@@ -129,7 +123,7 @@ void pcp_retransmit(PCPDevice* dev) {
             && getSysTime() - dev->last_tx_time > (uint64_t)dev->timeout_ms) {
         dev->last_tx_time = getSysTime();
         PCPBuf* tx_buf = dev->tx_bufs + (dev->tx_old_seq % dev->window_size);
-        usart_transmitChunk(dev->bus,
+        usart_transmitBytes(dev->bus,
                        tx_buf->data,
                        tx_buf->len);
     }
@@ -161,7 +155,7 @@ static void set_received(PCPDevice* dev, SeqNum seq, bool val) {
 
 static void acknowledge(PCPDevice *dev, SeqNum seq) {
     uint8_t buf[3] = {ACK_START, seq, ACK_END};
-    usart_transmitChunk(dev->bus, buf, 3);
+    usart_transmitBytes(dev->bus, buf, 3);
 }
 
 /**

@@ -1,7 +1,7 @@
 /******************************************************************************
 * File:             pcp.h
 *
-* Author:           Eric Xu
+* Author:           Eric Xu  
 * Created:          2025-01-26 20:54
 * Description:      Peripheral control protocol (PCP) is a transmission protocol
 *                   built above UART that allows the sending and receiving of
@@ -17,7 +17,7 @@
 
 
 #include <globals.h>
-#include <stm32l476xx.h> //has to be different from PFC
+#include <stm32l476xx.h>
 #include <UART/uart.h>
 #include <stdarg.h>
 #include <Timers/timers.h>
@@ -32,10 +32,6 @@
 #define PCP_HEAD_NBYTES 3
 // Number of packets in rx buffer
 #define RX_BUFSIZ 32
-// Max window size (max(sequence number) / 2)
-#define MAX_WINDOW_SIZE 128
-// Maximum size in bytes for incoming and outgoing payloads
-#define MAX_BYTES 128 - PCP_HEAD_NBYTES
 
 
 /**
@@ -45,7 +41,7 @@
 typedef uint8_t SeqNum;
 
 typedef struct {
-    uint8_t data[MAX_BYTES];
+    uint8_t* data;
     size_t len;
 } PCPBuf;
 

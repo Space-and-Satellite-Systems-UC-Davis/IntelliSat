@@ -12,7 +12,16 @@
  #include <globals.h>
  #include <UART/pcp.h>
 
-void mgt_intercomm_init();
+#define PFC2MGT_BAUDRATE 9600
+
+/**
+ * Intialize the PFC->MGT Intercom PCP device
+ * 
+ * @param pcp  A pointer to an empty pcp device
+ * 
+ * @returns None
+ */
+void mgt_intercom_init(PCPDevice *pcp);
 
  /**
   * Set the PWM for a coil
@@ -24,7 +33,7 @@ void mgt_intercomm_init();
   * 
   * @returns  boolean successful
   */
- bool mgt_intercomm_set_coil_percent(PCPDevice * device, int coil_number, int pwm, int percentage);
+ bool mgt_intercom_set_coil_percent(PCPDevice * device, int coil_number, int pwm, int percentage);
 
  /**
   * Get the current through a coil
@@ -34,7 +43,7 @@ void mgt_intercomm_init();
   * 
   * @returns  the current in Amps (A)
   */
- float mgt_intercomm_get_current(PCPDevice * device, int coil_number);
+ float mgt_intercom_get_current(PCPDevice * device, int coil_number);
 
  /**
   * Shut down all PWMs and timers on the MGT side
@@ -43,7 +52,7 @@ void mgt_intercomm_init();
   * 
   * @returns  boolean successful
   */
- bool mgt_intercomm_shutdown_all(PCPDevice * device);
+ bool mgt_intercom_shutdown_all(PCPDevice * device);
 
  /**
   * Shut down a specific timer
@@ -53,4 +62,4 @@ void mgt_intercomm_init();
   * 
   * @returns boolean successful
   */
- bool mgt_intercomm_shutdown_timer(PCPDevice * device, int timer_number);
+ bool mgt_intercom_shutdown_timer(PCPDevice * device, int timer_number);

@@ -10,7 +10,19 @@
  */
 
  #include <globals.h>
- #include <UART/pcp.h>
+ #include <MGTINTERCOM/mgt_intercom.h>
+
+/**
+ * Intialize the PFC->MGT Intercom PCP device
+ * 
+ * @param pcp  A pointer to an empty pcp device
+ * 
+ * @returns None
+ */
+void mgt_intercom_init(PCPDevice *pcp) {
+   usart_init(USART2, PFC2MGT_BAUDRATE);
+   make_pcpdev(pcp, USART2);
+}
 
  /**
   * Set the PWM for a coil
@@ -22,7 +34,7 @@
   * 
   * @returns  boolean successful
   */
- bool mgt_intercomm_set_coil_percent(PCPDevice * device, int coil_number, int pwm, int percentage) {
+ bool mgt_intercom_set_coil_percent(PCPDevice * device, int coil_number, int pwm, int percentage) {
     uint8_t payload[7];
     payload[0] = 'S';
     payload[1] = coil_number + '0';
@@ -43,7 +55,7 @@
   * 
   * @returns  the current in Amps (A)
   */
- float mgt_intercomm_get_current(PCPDevice * device, int coil_number) {
+ float mgt_intercom_get_current(PCPDevice * device, int coil_number) {
     uint8_t payload[2];
     payload[0] = 'C';
     payload[1] = coil_number + '0';
@@ -60,7 +72,7 @@
   * 
   * @returns  boolean successful
   */
- bool mgt_intercomm_shutdown_all(PCPDevice * device) {
+ bool mgt_intercom_shutdown_all(PCPDevice * device) {
     uint8_t payload[1];
     payload[0] = 'D';
     if (pcp_transmit(device, payload, 1)) return false;
@@ -75,7 +87,7 @@
   * 
   * @returns  boolean successful
   */
- bool mgt_intercomm_shutdown_timer(PCPDevice * device, int timer_number) {
+ bool mgt_intercom_shutdown_timer(PCPDevice * device, int timer_number) {
     uint8_t payload[2];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
