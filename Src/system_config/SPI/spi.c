@@ -404,19 +404,19 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
 		inner_start_time = getSysTime();
-//		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
 
-//		// read the reception line until it's empty
-//		inner_start_time = getSysTime();
-//		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
-//			if (reception == NULL) {
-//				spi->DR;
-//			} else {
-//				uint16_t value = spi->DR;
-//				*reception = value;
-//				reception++;
-//			}
-//		}
+		// read the reception line until it's empty
+		inner_start_time = getSysTime();
+		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
+			if (reception == NULL) {
+				spi->DR;
+			} else {
+				uint16_t value = spi->DR;
+				*reception = value;
+				reception++;
+			}
+		}
 	}
 	return true;
 }
