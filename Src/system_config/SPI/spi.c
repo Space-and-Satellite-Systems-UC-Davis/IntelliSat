@@ -185,7 +185,7 @@ void spi_dma_disable(SPI_TypeDef *spi) {
 // 2. Disable SPI as normal
 // 3. Clear the TXDMAEN and RXDMAEN bits
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
-	spi_dma_disable(spi);
+	spi_dma_disable(spi); // 1.
 
 	uint64_t start_time = getSysTime(); //time in ms
 	while((spi->SR & SPI_SR_FTLVL) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till there is no data to transmit
@@ -194,9 +194,10 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	while((spi->SR & SPI_SR_BSY) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till last data frame is processed
 
 	spi_stopCommunication(cs_port, cs_pin);
-	spi->CR1 &= ~SPI_CR1_SPE;
+	spi->CR1 &= ~SPI_CR1_SPE; // 2.
 
-	spi->CR2 &= ~(SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN); //Disable the DMA flags
+	//Disable the DMA flags
+	spi->CR2 &= ~(SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN); // 3.
 
 	start_time = getSysTime();
 	uint8_t temp;
