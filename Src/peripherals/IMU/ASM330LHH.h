@@ -176,6 +176,9 @@ float imu_readGyro_Z();
  */
 float imu_readTemp();
 
+//If there is no comments here, yell at me in PR
+void imu_continuous_dma(uint16_t rx_buffer[7]);
+
 /**
  * Tests SPI communication using WHO_AM_I register
  * 

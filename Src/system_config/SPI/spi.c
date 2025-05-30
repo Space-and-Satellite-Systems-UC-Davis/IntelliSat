@@ -255,7 +255,36 @@ void spi_dma_enable_tx(SPI_TypeDef *spi) {
 	spi_enable(spi);
 }
 
-void spi_dma_configure(SPI_TypeDef *spi, uint8_t rx_buffer[], uint8_t tx_buffer[], uint16_t size) {
+//The order of dma_enable_channel matters
+void spi_dma_enable_rtx(SPI_TypeDef *spi) {
+	switch ((uint32_t)spi) {
+		case (uint32_t)SPI1:
+			spi_disable(SPI1, SPI1_CS);
+			SPI1->CR2 |= SPI_CR2_RXDMAEN;
+			dma_enable_channel(SELECT_SPI1_RX);
+			dma_enable_channel(SELECT_SPI1_TX);
+			SPI1->CR2 |= SPI_CR2_TXDMAEN;
+			break;
+		case (uint32_t)SPI2:
+			spi_disable(SPI2, SPI2_CS);
+			SPI2->CR2 |= SPI_CR2_RXDMAEN;
+			dma_enable_channel(SELECT_SPI2_RX);
+			dma_enable_channel(SELECT_SPI2_TX);
+			SPI2->CR2 |= SPI_CR2_TXDMAEN;
+			break;
+		case (uint32_t)SPI3:
+			spi_disable(SPI3, SPI3_CS);
+			SPI3->CR2 |= SPI_CR2_RXDMAEN;
+			dma_enable_channel(SELECT_SPI3_RX);
+			dma_enable_channel(SELECT_SPI3_TX);
+			SPI3->CR2 |= SPI_CR2_TXDMAEN;
+			break;
+	}
+
+	spi_enable(spi);
+}
+
+void spi_dma_configure(SPI_TypeDef *spi, uint8_t tx_buffer[], uint16_t rx_buffer[], uint16_t size) {
 
     DMAConfig rx_config;
     DMAConfig tx_config;
@@ -278,9 +307,9 @@ void spi_dma_configure(SPI_TypeDef *spi, uint8_t rx_buffer[], uint8_t tx_buffer[
 	rx_config.length = size;
 	rx_config.memory_addr = (uint32_t)rx_buffer;
     rx_config.peripheral_addr = (uint32_t) &(spi->DR);
-    rx_config.pdata_size = sizeof(uint8_t);
-    rx_config.mdata_size = sizeof(uint8_t);
-    rx_config.circular = false;
+    rx_config.pdata_size = sizeof(uint16_t);
+    rx_config.mdata_size = sizeof(uint16_t);
+    rx_config.circular = true;
     rx_config.peripheral_to_memory = true;
     rx_config.peripheral_increment = false;
     rx_config.memory_increment = true;
@@ -294,6 +323,7 @@ void spi_dma_configure(SPI_TypeDef *spi, uint8_t rx_buffer[], uint8_t tx_buffer[
     tx_config.peripheral_to_memory = false;
     tx_config.peripheral_increment = false;
     tx_config.memory_increment = true;
+
 
     configure_channel(rx_config);
     configure_channel(tx_config);
@@ -420,4 +450,10 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		}
 	}
 	return true;
+}
+
+void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint16_t* reception) {
+	spi_dma_configure(spi, transmission, reception, 1);
+
+	spi_dma_enable_rtx(spi);
 }

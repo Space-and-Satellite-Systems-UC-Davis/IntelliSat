@@ -114,4 +114,6 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
 */
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma);
 
+void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint16_t* reception);
+
 #endif	// REALOP1_SPI_H_

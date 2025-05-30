@@ -219,7 +219,7 @@ float adc_readVoltage(uint16_t channelReading) {
     return (channelReading / MAX_12_BIT_READING) * INTERNAL_VOLTAGE_REFERENCE;
 }
 
-void set_continuous_dma(ADC_TypeDef* adc, int channel) {
+void adc_continuous_dma(ADC_TypeDef* adc, int channel) {
 	adc->CR &= ~ADC_CR_ADSTART; //Pause
 	adc->SQR1 |= channel << ADC_SQR1_SQ1_Pos; //Set the channel in sequence to be converted
 

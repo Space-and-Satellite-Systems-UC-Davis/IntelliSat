@@ -472,3 +472,32 @@ void imu_printAllValues() {
 	printMsg("Z: %f\r\n", imu_readAcel_Z());
 	printMsg("%f\r\n", imu_readTemp());
 }
+
+//Add an individual XYZ later?
+//Make this a struct?
+//Included frequency?
+//Put values in global variables here and the functions simply return them?
+void imu_continuous_dma(uint16_t rx_buffer[7]) {
+
+	//Put all instructions into a tx_buffer for DMA?
+	//Currently set as gyro X
+	uint8_t instruction = (uint8_t)((uint8_t*)0x22) | IMU_SPI_RW;
+
+	uint8_t dummy[1] = {SPI_DUMMY_BYTE};
+
+	if (IMU_global == IMU0) {
+		spi_startCommunication(IMU0_SPI_CS);
+
+		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
+		spi_continuous_dma(IMU0_SPI, dummy, rx_buffer);
+	} else {
+		spi_startCommunication(IMU1_SPI_CS);
+		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
+		spi_continuous_dma(IMU1_SPI, dummy, rx_buffer);
+	}
+}
+
+void imu_continuous_stop(float rx_buffer[7]) {
+
+}
+

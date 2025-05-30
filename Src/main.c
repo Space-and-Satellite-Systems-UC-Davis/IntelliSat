@@ -29,24 +29,13 @@ int main() {
 	//  init_first_time()
 	//}
     printMsg("START\r\n");
-//IRQHandler
-	uint16_t test_buffer[255] = {99};
 
-
-    DMAConfig config;
-    config.selection = SELECT_SPI3_RX;
-    config.length = 1;
-    config.memory_addr = (uint32_t)&test_buffer;
-    config.peripheral_addr = (uint32_t) &(SPI3->DR);
-    config.circular = true;
-
-    configure_channel(config);
-    spi_dma_enable_rx(SPI3);
+    uint16_t test_buffer[7] = {};
+    imu_continuous_dma(test_buffer);
 
 	while (1) {
 		if (get_buttonStatus_SW1()) {
-			imu_printAllValues();
-//			SPI3->SR |= SPI_SR_RXNE;
+//			imu_printAllValues();
 			printMsg("REGISTER: %u\r\n", SPI3->DR);
 			printMsg("ARRAY: %u\r\n", test_buffer[0]);
 
