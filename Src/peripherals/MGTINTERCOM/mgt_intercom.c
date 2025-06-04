@@ -13,7 +13,7 @@
  #include <MGTINTERCOM/mgt_intercom.h>
 
 /**
- * Intialize the PFC->MGT Intercom PCP device
+ * Intialize the PFC->MGT Intercom USART and PCP devices
  * 
  * @param pcp  A pointer to an empty pcp device
  * 
