@@ -60,7 +60,7 @@ void mgt_intercom_init(PCPDevice *pcp) {
     payload[0] = 'C';
     payload[1] = coil_number + '0';
     pcp_transmit(device, payload, 2);
-    uint8_t buffer[256];
+    float buffer[64];
     pcp_read(device, buffer);
     return buffer[0];
  }

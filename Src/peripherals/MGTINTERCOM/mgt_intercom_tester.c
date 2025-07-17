@@ -9,9 +9,17 @@ void testFunction_mgtIntercom() {
     mgt_intercom_set_coil_percent(&pcp, 1, 3, 10);
     mgt_intercom_shutdown_all(&pcp);
     mgt_intercom_shutdown_timer(&pcp, 6);
+    uint8_t data[256];
     while (1) {
+        for (int i = 0; i < 100; i++) {
         // mgt_intercomm_get_current(&pcp, 1);
         pcp_retransmit(&pcp);
         delay_ms(100);
+        pcp_read(&pcp, &data);
+        }
+        mgt_intercom_get_current(&pcp, 1);
+        mgt_intercom_set_coil_percent(&pcp, 1, 3, 10);
+        mgt_intercom_shutdown_all(&pcp);
+        mgt_intercom_shutdown_timer(&pcp, 6);        
     }
 }
