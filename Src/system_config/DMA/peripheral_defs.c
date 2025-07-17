@@ -140,17 +140,6 @@ void DMA_initializePeripheralConstants() {
 	);
 
 	DMA_initWrapper(
-		struct_DMA_SPI3_TX,
-		DMA2_Channel2,
-		0b0011
-	);
-	DMA_initWrapper(
-		struct_DMA_SPI3_TX,
-		DMA2_Channel2,
-		0b0011
-	);
-
-	DMA_initWrapper(
 		struct_DMA_USART1_RX,
 		DMA1_Channel5,
 		0b0010

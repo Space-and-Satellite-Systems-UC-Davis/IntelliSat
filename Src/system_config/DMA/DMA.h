@@ -41,6 +41,7 @@ typedef struct {
 	bool peripheral_to_memory;
 	bool peripheral_increment;
 	bool memory_increment;
+	bool transfer_interrupt;
 } DMAConfig;
 
 void configure_channel(

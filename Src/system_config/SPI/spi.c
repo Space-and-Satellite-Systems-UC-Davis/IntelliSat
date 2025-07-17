@@ -284,8 +284,7 @@ void spi_dma_enable_rtx(SPI_TypeDef *spi) {
 	spi_enable(spi);
 }
 
-void spi_dma_configure(SPI_TypeDef *spi, uint8_t tx_buffer[], uint16_t rx_buffer[], uint16_t size) {
-
+void spi_dma_configure(SPI_TypeDef *spi, uint8_t tx_buffer[], uint8_t rx_buffer[], uint16_t size) {
     DMAConfig rx_config;
     DMAConfig tx_config;
 
@@ -307,22 +306,24 @@ void spi_dma_configure(SPI_TypeDef *spi, uint8_t tx_buffer[], uint16_t rx_buffer
 	rx_config.length = size;
 	rx_config.memory_addr = (uint32_t)rx_buffer;
     rx_config.peripheral_addr = (uint32_t) &(spi->DR);
-    rx_config.pdata_size = sizeof(uint16_t);
-    rx_config.mdata_size = sizeof(uint16_t);
-    rx_config.circular = true;
+    rx_config.pdata_size = sizeof(tx_buffer[0]);
+    rx_config.mdata_size = sizeof(tx_buffer[0]);
+    rx_config.circular = false;
     rx_config.peripheral_to_memory = true;
     rx_config.peripheral_increment = false;
     rx_config.memory_increment = true;
+    rx_config.transfer_interrupt = true;
 
 	tx_config.length = size;
 	tx_config.memory_addr = (uint32_t)tx_buffer;
     tx_config.peripheral_addr = (uint32_t) &(spi->DR);
-    rx_config.pdata_size = sizeof(uint8_t);
-    rx_config.mdata_size = sizeof(uint8_t);
+    rx_config.pdata_size = sizeof(rx_buffer[0]);
+    rx_config.mdata_size = sizeof(rx_buffer[0]);
     tx_config.circular = false;
     tx_config.peripheral_to_memory = false;
     tx_config.peripheral_increment = false;
-    tx_config.memory_increment = true;
+    tx_config.memory_increment = false;
+    tx_config.transfer_interrupt = true;
 
 
     configure_channel(rx_config);
@@ -452,8 +453,32 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 	return true;
 }
 
-void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint16_t* reception) {
+void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint8_t* reception) {
 	spi_dma_configure(spi, transmission, reception, 1);
 
-	spi_dma_enable_rtx(spi);
+//	spi_dma_enable_rtx(spi);
+	spi_dma_enable_tx(spi);
+//	spi_dma_enable_rx(spi);
+}
+
+
+
+//INTERRUPTS ARE HERE FOR NOW AS SPI IS THE ONLY ONE USING THEM
+
+//Pseudo circular. Required for the DMA to not have spooky race conditions
+//SPI3_RX
+void DMA2_CH1_IRQHandler() {
+	//In case this is used elsewhere, check that this is being called by SPI
+	if ((SPI3->CR2 & SPI_CR2_RXDMAEN_Msk) != 0) {
+		dma_disable_channel(SELECT_SPI3_RX);
+		dma_enable_channel(SELECT_SPI3_TX);
+	}
+}
+//SPI3_TX
+void DMA2_CH2_IRQHandler() {
+	//In case this is used elsewhere, check that this is being called by SPI
+	if ((SPI3->CR2 & SPI_CR2_TXDMAEN_Msk) != 0) {
+		dma_disable_channel(SELECT_SPI3_TX);
+		dma_enable_channel(SELECT_SPI3_RX);
+	}
 }

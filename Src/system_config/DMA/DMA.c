@@ -53,6 +53,8 @@ void configure_channel(DMAConfig config) {
 	//But this also reads easier
 	if (config.circular == true) { channel_ptr->CCR |= DMA_CCR_CIRC; }
 
+	if (config.transfer_interrupt == true) { channel_ptr->CCR |= DMA_CCR_TCIE; }
+
 	// Set src and dist
 	//Not cast to pointer because pointer could be something other than uint32_t??
 	//^^^If this comment is still here I haven't tested what goes wrong otherwise

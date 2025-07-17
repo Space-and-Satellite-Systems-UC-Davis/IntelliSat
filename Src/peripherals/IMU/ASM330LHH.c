@@ -477,9 +477,9 @@ void imu_printAllValues() {
 //Make this a struct?
 //Included frequency?
 //Put values in global variables here and the functions simply return them?
-void imu_continuous_dma(uint16_t rx_buffer[7]) {
+void imu_continuous_dma(uint8_t rx_buffer[7]) {
 
-	//Put all instructions into a tx_buffer for DMA?
+	//Put all instructions into a tx_buffxer for DMA?
 	//Currently set as gyro X
 	uint8_t instruction = (uint8_t)((uint8_t*)0x22) | IMU_SPI_RW;
 
@@ -488,8 +488,21 @@ void imu_continuous_dma(uint16_t rx_buffer[7]) {
 	if (IMU_global == IMU0) {
 		spi_startCommunication(IMU0_SPI_CS);
 
-		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
-		spi_continuous_dma(IMU0_SPI, dummy, rx_buffer);
+		spi_transmitReceive(IMU0_SPI, &instruction, rx_buffer, 1, false);
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = instruction;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+
+
+//		spi_continuous_dma(IMU0_SPI, dummy, rx_buffer);
+
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
+//		*((volatile uint8_t*) &(IMU0_SPI->DR)) = SPI_DUMMY_BYTE;
 	} else {
 		spi_startCommunication(IMU1_SPI_CS);
 		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
