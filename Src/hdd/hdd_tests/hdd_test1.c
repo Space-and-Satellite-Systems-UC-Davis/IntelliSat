@@ -4,12 +4,12 @@
  *  Fill out the information below
  *  Created on: 2025-07-22
  *  Updated on: 2025-07-22
- *      Authors: Chandrark Muddana
+ *      Author: Nicholas Bianez
  *
  *
  *  Information:
  *  	This file is designate for personal testing
- *  	to the active HDD member with ID 2.
+ *  	to the active HDD member with ID 1.
  */
 
 #include "../hdd_drive.h"
@@ -21,7 +21,7 @@
 #include <inttypes.h>
 
 // runs the actual testing code
-void testFunction_HDD2() {
+void testFunction_HDD1() {
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
