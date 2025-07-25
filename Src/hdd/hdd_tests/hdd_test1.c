@@ -19,9 +19,11 @@
 #include <ADC/adc.h>
 #include <LED/led.h>
 #include <inttypes.h>
+#include <print_scan.h>
 
 // runs the actual testing code
 void testFunction_HDD1() {
+	printMsg("Starting HDD1 test function execution.\r\n");
 	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
 	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
@@ -29,6 +31,7 @@ void testFunction_HDD1() {
 
 	// init timer here does other initialization actions
 	led_d2(1);
+	led_d3(0);
 	pwm_initTimer(PWM0, PERIOD_uS); //This period time is in microseconds
 	pwm_setDutyCycle(PWM0, 10);
 	pwm_timerOn(PWM0);
@@ -55,6 +58,8 @@ void testFunction_HDD1() {
 //		arm(MIN_DUTY, MAX_DUTY);
 	}
 
+	led_d2(1);
+	led_d3(1);
 	printMsg("Starting Execution. \r\n");
 	pwm_setDutyCycle(PWM0, 100);
 	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
@@ -72,8 +77,10 @@ void testFunction_HDD1() {
 	pwm_setDutyCycle(PWM0, MAX_DUTY);
 	delay_ms(5000);
 
+	led_d2(0);
+	led_d3(1);
 	// debug loop
-	while (0) {
+	while (1) {
 		// rapidly increase until max is hit
 		printMsg("Preparing to start trial. \r\n");
 		float currDuty = MIN_DUTY;
@@ -97,6 +104,9 @@ void testFunction_HDD1() {
 
 		break;
 	}
+
+	led_d2(0);
+	led_d3(0);
 
 	printMsg("Ending program. \r\n");
 	pwm_timerOff(PWM0);

@@ -19,10 +19,12 @@
 #include <ADC/adc.h>
 #include <LED/led.h>
 #include <inttypes.h>
+#include <print_scan.h>
 
 // the member id to use for test function execution
 int testFuncID_HDD() {
 	// return your id value to call your test function
+	printMsg("Returning test function id. \r\n");
 	return 1;
 }
 

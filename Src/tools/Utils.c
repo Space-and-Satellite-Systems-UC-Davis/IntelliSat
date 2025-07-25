@@ -22,7 +22,6 @@ void while_timeout(void (*do_work)(), bool (*should_continue)(), uint64_t timeou
 }
 
 
-
 //Many loops just stall until should_continue is false, so this is used
 void empty_function() {
     return;
