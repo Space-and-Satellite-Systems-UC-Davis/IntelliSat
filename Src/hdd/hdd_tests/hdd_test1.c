@@ -24,10 +24,10 @@
 // runs the actual testing code
 void testFunction_HDD1() {
 	printMsg("Starting HDD1 test function execution.\r\n");
-	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
-	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
-	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
-	const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
+	const float MAX_START_DUTY = 100;  // previous max duty to trigger calibration
+	const float MAX_DUTY = 100;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
+	const float MIN_DUTY = 64;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
+	const int PERIOD_uS = 2000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 	// init timer here does other initialization actions
 	led_d2(1);
