@@ -1,5 +1,6 @@
 #include <print_scan.h>
 #include "platform_init.h"
+#include "PWR/sleep.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
@@ -23,7 +24,17 @@ int main() {
 	//  init_first_time()
 	//}
 
+//    PWR_enterLPRunMode();
+
+    PWR_enterLPSleepMode();
+	__disable_irq();
+	__DSB();
+	__WFI();
+	__WFE();
+
+
 	while (1) {
+		printMsg("adsadasdas");
 		continue;
 	}
 
