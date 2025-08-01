@@ -1,10 +1,11 @@
 #include <print_scan.h>
 #include "platform_init.h"
 
-#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
+#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	10	// ID of the test to run in case RUN_TEST = 1
 
 #include <TestDefinition.h>
+#include "../ADCS-Software/control/experiment/PID_experiment.h"
 #include "../ADCS-Software/ADCS.h"
 
 int main() {
@@ -24,12 +25,19 @@ int main() {
 	//  init_first_time()
 	//}
 
-    printMsg("Running PID experiment! \r\n");
-    printMsg("Called PID_experiment \r\n");
+    led_d2(1);
+    led_d3(0);
+    printMsg("Begin HDD setup for PID experiment \r\n");
 	hdd_init(0);
 	hdd_arm(0, 0);
 	delay_ms(3000);
-    ADCS_MAIN(ADCS_HDD_EXP_ANGVEL);
+	printMsg("Finished preparation; running PID experiment \r\n");
+    PID_status expResult = ADCS_MAIN(ADCS_HDD_EXP_ANGVEL);
+    printMsg("Called PID_Experiment with result ");
+    printMsg(expResult == PID_EXPERIMENT_SUCCESS ? "SUCCESS" : "FAILURE");
+    printMsg("\r\n");
+    led_d2(0);
+    led_d3(1);
 
 	while (1) {
 		continue;

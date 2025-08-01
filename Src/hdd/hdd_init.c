@@ -11,10 +11,11 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
-const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
-const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
-const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
+const float MAX_START_DUTY = 100;  // previous max duty to trigger calibration
+const float MAX_DUTY = 100;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
+const float MID_DUTY = 50;
+const float MIN_DUTY = 0;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
+const int PERIOD_uS = 2000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 void hdd_init(const PWM_Channels channel){
 	pwm_initTimer(channel, PERIOD_uS);
@@ -39,11 +40,10 @@ void hdd_calibrate(const PWM_Channels channel, const bool CAL_MAX) {
 }
 
 void hdd_arm(PWM_Channels channel) {
-	const float MID_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
 	const float DUTY_STEP = (MAX_DUTY - MID_DUTY) / 8;
 	float currDuty = MID_DUTY;
 
-	printMsg("Arming with the following parameters: \n");
+	printMsg("Arming with the following parameters: \r\n");
 	printMsg("Min duty: %f, Max duty: %f, Zero duty: %f, Duty step: %f \r\n", MIN_DUTY, MAX_DUTY, MID_DUTY, DUTY_STEP);
 
 	// The ESC needs to detect some signal, then to drop to minimum

@@ -30,9 +30,9 @@ int testFuncID_HDD() {
 
 // runs the actual testing code
 void testFunction_HDD() {
-	const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
-	const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
-	const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
+	//const float MAX_START_DUTY = 10;  // previous max duty to trigger calibration
+	//const float MAX_DUTY = 10;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
+	//const float MIN_DUTY = 5;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
 	const int PERIOD_uS = 20000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 	// init timer here does other initialization actions

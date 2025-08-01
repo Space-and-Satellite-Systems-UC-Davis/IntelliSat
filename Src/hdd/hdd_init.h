@@ -13,6 +13,7 @@
 
 extern const float MAX_START_DUTY;
 extern const float MAX_DUTY;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
+extern const float MID_DUTY;
 extern const float MIN_DUTY;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
 extern const int PERIOD_uS;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 

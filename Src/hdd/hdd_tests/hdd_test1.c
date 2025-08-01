@@ -65,15 +65,15 @@ void testFunction_HDD1() {
 	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
 	delay_ms(1000);
 
-	printMsg("Testing minimum duty");
+	printMsg("Testing minimum duty \r\n");
 	pwm_setDutyCycle(PWM0, MIN_DUTY);
 	delay_ms(5000);
 
-	printMsg("Testing mid duty");
+	printMsg("Testing mid duty \r\n");
 	pwm_setDutyCycle(PWM0, MID_DUTY);
 	delay_ms(5000);
 
-	printMsg("Testing max duty");
+	printMsg("Testing max duty \r\n");
 	pwm_setDutyCycle(PWM0, MAX_DUTY);
 	delay_ms(5000);
 
