@@ -13,7 +13,9 @@
 #define WWDG_CALCULATE_TIMEOUT 0.0065536
 #define APB1_FREQ 5 //MHz
 #define WATCHDOG_TIMER TIM3
-
+#define T_LSI (.03125 * 4)
+#define IWDG_MAX_TIMEOUT 32768 //ms
+#define WWDG_MAX 420
 
 /**
  * Configure both iwdg and wwdg watchdogs
@@ -21,12 +23,12 @@
  * @param ms timeout time in ms, a number between 10 and 420
  * 
  */
-void watchdog_config(int ms);
+void watchdog_init(int ms);
 
 /**
- * Initialize the independent watchdog
+ * Initializes the iwdg
  * 
- * @param ms timeout time in ms, a number between 10 and 2048 (2.048 second)
+ * @param ms timeout in ms between 10ms and 32768 (MAX) seconds
  */
 void watchdog_iwdg_config(int ms);
 
@@ -46,15 +48,17 @@ void watchdog_hardware_config();
 
 /**
  * Configures the hardware interrupt for TIM3
- * 
+ * @param ms the time in ms in between interrupts
  */
-void watchdog_interrupt_config();
+void watchdog_interrupt_config(int ms);
 
 /**
  * Configures what to do when the interrupt is called
  */
 void TIM3_IRQHandler();
+
 /**
- * Periodically kick watchdog inside while loop
+ * Changes timeout time for IWDG
+ * @param ms new time in ms of IWDG
  */
-void watchdog_kick();
+void watchdog_changeIWDGTimeout(int ms);
