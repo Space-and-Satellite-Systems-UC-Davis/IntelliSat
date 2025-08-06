@@ -140,10 +140,10 @@ vi_hdd_command(
 
 	// resolve channel, apply duty, and store resulting duty
 	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	pwm_setDutyCycle(channel, throttle);
+	pwm_setDutyCycle(channel, resultDuty);
 	(*targetedDuty) = resultDuty;
 
-	return HDD_COMMAND_SUCCESS;
+	return resultDuty; //HDD_COMMAND_SUCCESS;
 }
 
 
