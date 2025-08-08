@@ -11,6 +11,10 @@
 #include <globals.h>
 #include "RTC/rtc.h"
 
+typedef enum OperatingMode {
+	RUN, LPRUN, LPSLEEP
+} OperatingMode;
+
 void PWR_enterLPRunMode();
 void PWR_exitLPRunMode();
 

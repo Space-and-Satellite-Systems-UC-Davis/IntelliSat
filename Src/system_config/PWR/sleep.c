@@ -8,6 +8,7 @@
 #include <print_scan.h>
 
 bool IRQ_states[82];
+OperatingMode mode = RUN;
 
 void PWR_enterLPRunMode() {
 	//Optionally, we could power down flash here
@@ -18,6 +19,7 @@ void PWR_enterLPRunMode() {
 	RCC->CFGR |= RCC_CFGR_HPRE_DIV64;
 
 	PWR->CR1 |= PWR_CR1_LPR;
+	mode = LPRUN;
 }
 bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
 void PWR_exitLPRunMode() {
@@ -26,6 +28,7 @@ void PWR_exitLPRunMode() {
 	wait_with_timeout(is_REGLPF_not_clear, DEFAULT_TIMEOUT_MS);
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
+	mode = RUN;
 }
 
 void PWR_enterLPSleepMode(uint16_t seconds) {
@@ -40,21 +43,25 @@ void PWR_enterLPSleepMode(uint16_t seconds) {
 	// Disabling all external interrupts doesn't apply to SysTick
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
-
 	rtc_wakeUp(seconds);
 
 	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
-    __DSB();
-	__WFI();
+	mode = LPSLEEP;
+	// I don't this potential loop is avoidable with timeout
+	// Wake up interrupt can trigger prior to getting out of LPSleep
+	while(mode != RUN) {
+	    __DSB();
+		__WFI();
+	}
 }
 
 void PWR_exitLPSleepMode() {
-	PWR_exitLPRunMode();
-
 	//Set the interrupts back
 	for (int i = 0; i < 82; i++) {
 		(IRQ_states[i]) ? (NVIC_EnableIRQ(i)) : (NVIC_DisableIRQ(i));
 	}
 
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+
+	PWR_exitLPRunMode();
 }
