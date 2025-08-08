@@ -365,14 +365,18 @@ void rtc_wakeUp(uint16_t seconds) {
 	rtc_closeWritingPrivilege();
 }
 
+//Watchdog will be mad if we don't notify it every 32 seconds
+uint32_t sleep_cycles = 0;
 //Will wake up and turn off itself
 void RTC_WKUP_IRQHandler() {
+	RTC->ISR &= ~(RTC_ISR_WUTF); //Acknowledged
+
+
+
 	rtc_openWritingPrivilege();
 
-	RTC->ISR &= ~(RTC_ISR_WUTF); //Acknowledged
 	RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
     NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off interrupt
-
     PWR_exitLPSleepMode();
 
 	rtc_closeWritingPrivilege();

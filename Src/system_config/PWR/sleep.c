@@ -7,6 +7,8 @@
 
 #include <print_scan.h>
 
+bool IRQ_states[82];
+
 void PWR_enterLPRunMode() {
 	//Optionally, we could power down flash here
 
@@ -29,18 +31,30 @@ void PWR_exitLPRunMode() {
 void PWR_enterLPSleepMode(uint16_t seconds) {
 	PWR_enterLPRunMode();
 
-	//Could disable all interrupts here
+	//Store previous interrupt state and disable interrupts
+	for (int i = 0; i < 82; i++) {
+		(NVIC_GetEnableIRQ(i)) ? (IRQ_states[i] = true) : (IRQ_states[i] = false);
+		NVIC_DisableIRQ(i);
+	}
 
 	// Disabling all external interrupts doesn't apply to SysTick
-	SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+
 
 	rtc_wakeUp(seconds);
 
-	SCB->SCR &= ~(SCB_SCR_SLEEPDEEP_Msk);
+	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
     __DSB();
 	__WFI();
 }
 
 void PWR_exitLPSleepMode() {
 	PWR_exitLPRunMode();
+
+	//Set the interrupts back
+	for (int i = 0; i < 82; i++) {
+		(IRQ_states[i]) ? (NVIC_EnableIRQ(i)) : (NVIC_DisableIRQ(i));
+	}
+
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 }
