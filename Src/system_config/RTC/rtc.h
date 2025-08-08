@@ -17,6 +17,7 @@
 #include <globals.h>
 #include <stdint.h>
 #include <core_config.h>
+#include "PWR/sleep.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 

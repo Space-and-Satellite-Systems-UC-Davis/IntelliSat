@@ -14,6 +14,7 @@
 void PWR_enterLPRunMode();
 void PWR_exitLPRunMode();
 
-void PWR_enterLPSleepMode();
+void PWR_enterLPSleepMode(uint16_t seconds);
+void PWR_exitLPSleepMode();
 
 #endif /* SYSTEM_CONFIG_PWR_SLEEP_H_ */

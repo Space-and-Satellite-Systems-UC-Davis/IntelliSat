@@ -345,26 +345,37 @@ void rtc_wakeUp(uint16_t seconds) {
 	//Can't access WUCKSEL/WUT otherwise
 	wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
 
+	//Set auto-reload to number of seconds we wait
 	RTC->WUTR &= ~(RTC_WUTR_WUT);
 	RTC->WUTR |= (seconds) << RTC_WUTR_WUT_Pos;
+
+	//Select the 1Hz clock
 	RTC->CR &= ~(RTC_CR_WUCKSEL);
 	RTC->CR |= (0b100) << RTC_CR_WUCKSEL_Pos;
 
+	//Configure interrupt
 	RTC->ISR &= ~(RTC_ISR_WUTF);
     EXTI->IMR1 |= EXTI_IMR1_IM20;
     EXTI->RTSR1 |= EXTI_RTSR1_RT20;
+	RTC->CR |= RTC_CR_WUTIE;
     NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
-	RTC->CR |= RTC_CR_WUTIE; // Enable interrupt
 	RTC->CR |= RTC_CR_WUTE; // Enable wakeup
 
 	rtc_closeWritingPrivilege();
 }
 
+//Will wake up and turn off itself
 void RTC_WKUP_IRQHandler() {
+	rtc_openWritingPrivilege();
+
 	RTC->ISR &= ~(RTC_ISR_WUTF); //Acknowledged
 	RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
     NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off interrupt
+
+    PWR_exitLPSleepMode();
+
+	rtc_closeWritingPrivilege();
 }
 
 
