@@ -21,6 +21,7 @@
 #include "peripherals/IMU/ASM330LHH.h"
 #include <Timers/timers.h>
 #include "hdd/hdd_init.h"
+#include "hdd/hdd_drive.h"
 #include "math.h"
 /**@brief Report the current date and time to second accuracy.
  *
@@ -97,53 +98,16 @@ vi_get_angvel(
 vi_hdd_command_status
 vi_hdd_command(
 	vi_HDD hdd,
-    double throttle,
-	double *targetedDuty
+	int8_t throttle,
+	int8_t doPrint
 ){
-	// special handling for functions using this w/o the checks
-	if (targetedDuty == NULL) {
-		// offset by middle duty
-		throttle += MID_DUTY;
-
-		// perform bounds check
-		if (throttle < MIN_DUTY) {
-			throttle = MIN_DUTY;
-		} else if (throttle > MAX_DUTY){
-			throttle = MAX_DUTY;
-		}
-
-		// resolve channel and apply duty
-		PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-		pwm_setDutyCycle(channel, throttle);
-
-		return HDD_COMMAND_SUCCESS;
-	}
-
-	float resultDuty = -1;
-	// clamp the throttle to what is possible
-	if (throttle < 0) {
-		// if we are going to go below the mid duty, clamp to mid
-		if (fabs(throttle) > (*targetedDuty) - MID_DUTY) {
-			resultDuty = MID_DUTY;
-		}
-	} else {
-		// if we are going to go above max duty, clamp to max
-		if (throttle > MAX_DUTY - (*targetedDuty)) {
-			resultDuty = MAX_DUTY;
-		}
-	}
-
-	// if we didn't clamp, figure out the result duty
-	if (resultDuty == -1) {
-		resultDuty = (*targetedDuty) + throttle;
-	}
-
-	// resolve channel, apply duty, and store resulting duty
+	// we assume the passed throttle is valid
 	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	pwm_setDutyCycle(channel, resultDuty);
-	(*targetedDuty) = resultDuty;
+	float resultDuty = throttle + (float) pwm_getDutyCycle(channel);
+	hddDrive(channel, resultDuty, doPrint);
+	//pwm_setDutyCycle(channel, resultDuty);
 
-	return resultDuty; //HDD_COMMAND_SUCCESS;
+	return HDD_COMMAND_SUCCESS;
 }
 
 

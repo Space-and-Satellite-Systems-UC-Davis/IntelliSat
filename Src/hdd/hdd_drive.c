@@ -5,13 +5,10 @@
  *      Author: nmain
  */
 
-#include <Timers/timers.h>
-#include <ADC/adc.h>
-#include <LED/led.h>
-#include <inttypes.h>
-#include <stdbool.h>
+#include "hdd_drive.h"
+#include "../system_config/Timers/timers.h"
 
-void setSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_DUTY, const uint64_t TIME_MS) {
+void hddSetSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_DUTY, const uint64_t TIME_MS) {
 	if (PERCENT >= 1) {
 		pwm_setDutyCycle(PWM0, MIN_DUTY);
 		delay_ms(TIME_MS);
@@ -33,23 +30,51 @@ void setSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZERO_D
 	}
 }
 
-void ramp(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY){
-	printMsg("Starting Execution. \r\n");
-	const float MID_DUTY = (MAX_DUTY + MIN_DUTY) / 2;
-	const float DUTY_STEP = (MAX_DUTY - MID_DUTY) / 10;
-	const int DELAY_MS = 250;  // time between ramps
+void hddRamp(const PWM_Channels pwm, const uint8_t TARGET_DUTY, int8_t doPrint) {
+	if (doPrint) { printMsg("Ramping to %u. \r\n", TARGET_DUTY); }
+	const uint8_t DUTY_STEP = 1;
+	const uint32_t DELAY_MS = 50;  // time between ramps
 
 	// start at the middle duty + some base speed, then slowly increase
-	const float INIT_DUTY = MID_DUTY + DUTY_STEP;
-	float current_duty = INIT_DUTY;
-	while (current_duty <= TARGET_DUTY && current_duty <= MAX_DUTY){
-		pwm_setDutyCycle(PWM0, current_duty);
-		printMsg("Duty cycle: %f \r\n", current_duty);
-		current_duty += DUTY_STEP;
+	uint8_t currDuty = pwm_getDutyCycle(pwm) + DUTY_STEP;
+	if (doPrint) { printMsg("Taking first duty step to %u. \r\n", currDuty); }
+	while (currDuty <= TARGET_DUTY && currDuty <= MAX_DUTY){
+		// set the duty
+		pwm_setDutyCycle(pwm, currDuty);
+		//if (doPrint) { printMsg("Duty cycle: %u \r\n", currDuty); }
+
+		// exit if we just set pwm to the target, otherwise increment
+		if (currDuty == TARGET_DUTY) { break; }
+		currDuty += DUTY_STEP;
+
+		// make sure a loop with currDuty == TARGET_DUTY always happens
+		if (currDuty > TARGET_DUTY) { currDuty = TARGET_DUTY; }
 		delay_ms(DELAY_MS);
 	}
+
+	if (doPrint) { printMsg("Ramped to %u. \r\n", TARGET_DUTY); }
 }
 
-void rampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY) {
-	ramp(TARGET_DUTY, MAX_DUTY, MIN_DUTY);
+void hddDrive(const PWM_Channels pwm, const uint8_t TARGET_DUTY, int8_t doPrint) {
+	if (TARGET_DUTY <= SLIP_DUTY) {
+		if (doPrint) { printMsg("Drove to %u without slip handling.\r\n", TARGET_DUTY); }
+		pwm_setDutyCycle(pwm, TARGET_DUTY);
+		return;
+	}
+
+	// if we would slip going straight to target, ramp instead
+	uint8_t currDuty = pwm_getDutyCycle(pwm);
+	if (doPrint) { printMsg("Driving to %u with slip handling.\r\n", TARGET_DUTY); }
+	pwm_setDutyCycle(pwm, SLIP_DUTY);
+
+	// wait for speed up, then begin ramp
+	uint32_t delayTimeMs = currDuty <= MID_DUTY ? SLIP_TIME_MS : JUMP_TIME_MS;
+	currDuty = pwm_getDutyCycle(pwm);
+	if (doPrint) { printMsg("Delaying for %u with currDuty %u\r\n", delayTimeMs, currDuty); }
+	delay_ms(delayTimeMs);
+	hddRamp(pwm, TARGET_DUTY, doPrint);
+}
+
+void hddRampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY) {
+	//ramp(TARGET_DUTY, MAX_DUTY, MIN_DUTY);
 }

@@ -5,16 +5,16 @@
  *      Author: nmain
  */
 
-#include <Timers/timers.h>
-#include <ADC/adc.h>
-#include <LED/led.h>
-#include <inttypes.h>
-#include <stdbool.h>
+#include "hdd_init.h"
+#include "../system_config/Timers/timers.h"
 
-const float MAX_START_DUTY = 100;  // previous max duty to trigger calibration
-const float MAX_DUTY = 100;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
-const float MID_DUTY = 50;
-const float MIN_DUTY = 0;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
+const dutyType MAX_START_DUTY = 100;  // previous max duty to trigger calibration
+const dutyType SLIP_DUTY = 70;  // last valid duty that will not cause any slipping
+const dutyType MAX_DUTY = 100;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
+const dutyType MID_DUTY = 50;
+const dutyType MIN_DUTY = 0;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
+const uint32_t SLIP_TIME_MS = 750;  // safe amount of time to wait to go from mid to slip duty
+const uint32_t JUMP_TIME_MS = 250;  // safe amount of time to wait to go from >mid to <= slip duty
 const int PERIOD_uS = 2000;  // period is microseconds (5% duty -> min (1ms pulse), 10% duty -> max (2ms pulse))
 
 void hdd_init(const PWM_Channels channel){
@@ -23,7 +23,7 @@ void hdd_init(const PWM_Channels channel){
 	pwm_timerOn(channel);
 }
 
-void hdd_calibrate(const PWM_Channels channel, const bool CAL_MAX) {
+void hdd_calibrate(const PWM_Channels channel, const int CAL_MAX) {
 	pwm_setDutyCycle(channel, MAX_START_DUTY); // trigger calibration
 	printMsg("Min duty: %f, Max duty: %f, Max start duty: %f \r\n", MIN_DUTY, MAX_DUTY, MAX_START_DUTY);
 	delay_ms(1000);
@@ -49,7 +49,6 @@ void hdd_arm(PWM_Channels channel) {
 	// The ESC needs to detect some signal, then to drop to minimum
 	// the zero/mid duty is just half way between max and minimum,
 	// so it should count as some signal. From here, we ramp down to 0
-	currDuty -= DUTY_STEP; // go below max
 	printMsg("Ramping down. \r\n");
 	while (currDuty >= MIN_DUTY) {
 		pwm_setDutyCycle(channel, currDuty);
@@ -61,8 +60,5 @@ void hdd_arm(PWM_Channels channel) {
 	printMsg("Return to zero. \r\n");
 	pwm_setDutyCycle(channel, MID_DUTY);
 
-	delay_ms(3000);
-	pwm_setDutyCycle(PWM0, 100);
-	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
-	delay_ms(1000);
+	delay_ms(5000);
 }

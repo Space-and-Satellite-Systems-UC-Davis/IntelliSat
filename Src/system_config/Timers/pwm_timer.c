@@ -148,6 +148,19 @@ void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage) {
 	
 }
 
+uint8_t pwm_getDutyCycle(PWM_Channels pwm) {
+	TIM_TypeDef * PWMTimer = PWMTimer0;
+	uint32_t period = PWMTimer->ARR;
+	uint32_t timeOn = PWMTimer->CCR1;
+
+	if (pwm == PWM1) {
+		PWMTimer = PWMTimer1;
+		timeOn = PWMTimer->CCR4;
+	}
+
+	return timeOn / (period / 100);
+}
+
 void pwm_timerOn(PWM_Channels pwm) {
 	if (pwm == PWM0) {
 		PWMTimer0->CR1 |=  TIM_CR1_CEN;

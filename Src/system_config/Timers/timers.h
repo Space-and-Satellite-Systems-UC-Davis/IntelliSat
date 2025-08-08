@@ -82,6 +82,14 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
 */
 void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 
+/**
+ * Gets the duty cycle of a pwm channel
+ * NOTE: uint8_t is used for percentages, so integer percentages are all that is allowed
+ *
+ * @param pwm The pwm channel to get the duty percentage from
+*/
+uint8_t pwm_getDutyCycle(PWM_Channels pwm);
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
