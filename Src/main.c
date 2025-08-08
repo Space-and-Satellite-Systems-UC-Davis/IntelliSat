@@ -25,12 +25,8 @@ int main() {
 	//}
 
 //    PWR_enterLPRunMode();
-
     PWR_enterLPSleepMode();
-	__disable_irq();
-	__DSB();
-	__WFI();
-	__WFE();
+//	rtc_wakeUp(10);
 
 
 	while (1) {

@@ -9,6 +9,7 @@
 
 #include "stm32l476xx.h"
 #include <globals.h>
+#include "RTC/rtc.h"
 
 void PWR_enterLPRunMode();
 void PWR_exitLPRunMode();

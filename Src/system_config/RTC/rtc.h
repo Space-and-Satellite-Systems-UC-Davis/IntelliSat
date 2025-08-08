@@ -14,6 +14,7 @@
 #define REALOP1_RTC_H_
 
 #include "stm32l476xx.h"
+#include <globals.h>
 #include <stdint.h>
 #include <core_config.h>
 
@@ -120,5 +121,15 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second);
  */
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
 
+/**
+ * Activates an alarm which will trigger the interrupt after given
+ * amount of time.
+ * Used for waking up from sleep mode
+ *
+ * @param seconds  Number of seconds before the alarm triggers
+ *
+ * @returns None
+ */
+void rtc_wakeUp(uint16_t seconds);
 
 #endif // REALOP1_RTC_H_

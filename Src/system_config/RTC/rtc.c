@@ -12,6 +12,8 @@
 
 #include "rtc.h"
 
+#include <print_scan.h>
+
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
 
@@ -328,3 +330,41 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		*second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
 	}
 }
+
+bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
+void rtc_wakeUp(uint16_t seconds) {
+	// If we could enter Stop mode, we would need to
+	// Check here that clock is LSE/LSI, OR ELSE
+
+	// It appears that the timer waits an extra ~1.5 seconds?
+
+	rtc_openWritingPrivilege();
+
+	RTC->CR &= ~(RTC_CR_WUTE); //clear
+
+	//Can't access WUCKSEL/WUT otherwise
+	wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+
+	RTC->WUTR &= ~(RTC_WUTR_WUT);
+	RTC->WUTR |= (seconds) << RTC_WUTR_WUT_Pos;
+	RTC->CR &= ~(RTC_CR_WUCKSEL);
+	RTC->CR |= (0b100) << RTC_CR_WUCKSEL_Pos;
+
+	RTC->ISR &= ~(RTC_ISR_WUTF);
+    EXTI->IMR1 |= EXTI_IMR1_IM20;
+    EXTI->RTSR1 |= EXTI_RTSR1_RT20;
+    NVIC_EnableIRQ(RTC_WKUP_IRQn);
+
+	RTC->CR |= RTC_CR_WUTIE; // Enable interrupt
+	RTC->CR |= RTC_CR_WUTE; // Enable wakeup
+
+	rtc_closeWritingPrivilege();
+}
+
+void RTC_WKUP_IRQHandler() {
+	RTC->ISR &= ~(RTC_ISR_WUTF); //Acknowledged
+	RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
+    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off interrupt
+}
+
+
