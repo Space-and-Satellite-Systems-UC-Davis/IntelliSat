@@ -130,7 +130,7 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  *
  * @param seconds  Number of seconds before the alarm triggers
  *
- * @returns false if called with HSI as RTC clock
+ * @returns false if called with an RTC clock other than LSE/LSI
  */
 bool rtc_wakeUp(uint16_t seconds);
 
