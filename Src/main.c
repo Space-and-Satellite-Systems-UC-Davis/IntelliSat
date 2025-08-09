@@ -25,7 +25,7 @@ int main() {
 	//}
 
 //    PWR_enterLPRunMode();
-    PWR_enterLPSleepMode(23);
+    PWR_enterLPSleepMode(1);
 //	rtc_wakeUp(10);
 
 

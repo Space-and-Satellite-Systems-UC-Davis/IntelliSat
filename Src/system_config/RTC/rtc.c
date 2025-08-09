@@ -334,7 +334,7 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 //Watchdog will be mad if we don't notify it every 32 seconds
 uint32_t sleep_cycles = 0;
 uint16_t sleep_remainder = 0;
-const MAX_SLEEP = 5; // in seconds
+const uint16_t MAX_SLEEP = 5; // in seconds
 bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
 void rtc_wakeUp(uint16_t seconds) {
 	// If we could enter Stop mode, we would need to
@@ -378,9 +378,12 @@ void rtc_wakeUp(uint16_t seconds) {
 //Will wake up and turn off itself when done with cycles
 void RTC_WKUP_IRQHandler() {
 	rtc_openWritingPrivilege();
-	RTC->ISR &= ~(RTC_ISR_WUTF); //Acknowledged
+	//Acknowledged
+	RTC->ISR &= ~(RTC_ISR_WUTF);
+	EXTI->PR1 |= EXTI_PR1_PIF20;
+	IWDG->KR = 0x0000AAAA; //Keep watchdog from reset
 
-	if (sleep_cycles == 0) {
+	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
 	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off interrupt
 	    PWR_exitLPSleepMode();
@@ -391,13 +394,13 @@ void RTC_WKUP_IRQHandler() {
 		//Can't access WUCKSEL/WUT otherwise
 		wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
 
+		RTC->WUTR &= ~(RTC_WUTR_WUT);
 		RTC->WUTR |= (sleep_remainder) << RTC_WUTR_WUT_Pos;
 		RTC->CR |= RTC_CR_WUTE;
 	}
 
 	sleep_cycles--;
 	rtc_closeWritingPrivilege();
-
 }
 
 
