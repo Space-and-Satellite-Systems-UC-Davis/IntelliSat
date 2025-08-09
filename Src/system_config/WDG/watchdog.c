@@ -8,10 +8,10 @@ static int IWDG_timeout;
 void watchdog_init(int ms){
     IWDG_timeout = ms;
     watchdog_iwdg_config(ms);
-    // if(ms > WWDG_MAX){
-    //     ms = WWDG_MAX;
-    // }
-    // watchdog_wwdg_config(ms);
+    if(ms > WWDG_MAX){
+        ms = WWDG_MAX;
+    }
+    watchdog_wwdg_config(ms);
     watchdog_interrupt_config(ms);
 }
 
@@ -118,7 +118,7 @@ void TIM3_IRQHandler(){
     }
     IWDG->KR |= IWDG_KICK; //kick iwdg
     WWDG->CR |= WWDG_CR_T_6 | WWDG_timeout; //kick wwdg
-    printMsg("KICKED");
+    // printMsg("KICKED");
     //test timeout time
     /*int time = getSysTime();
     int diff = time-lastTime;
@@ -126,6 +126,15 @@ void TIM3_IRQHandler(){
     printMsg("%d, kicked!\n", diff);*/
 }
 
+void watchdog_IWDGSleepMode()
+{
+    watchdog_changeIWDGTimeout(IWDG_MAX_TIMEOUT);
+}
+
+void watchdog_IWDGWakeUp()
+{
+    watchdog_changeIWDGTimeout(IWDG_timeout);
+}
 
 void watchdog_changeIWDGTimeout(int ms){
     if(ms > IWDG_timeout){//if interval gets longer, configure iwdg before interrupt

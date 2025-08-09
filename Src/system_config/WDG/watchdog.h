@@ -15,7 +15,9 @@
 #define WATCHDOG_TIMER TIM3
 #define T_LSI (.03125 * 4)
 #define IWDG_MAX_TIMEOUT 32768 //ms
-#define WWDG_MAX 420
+#define WWDG_MAX 420 //ms
+
+#define WWDG_TIMEOUT_TIME 420 //can change if needed
 
 /**
  * Configure both iwdg and wwdg watchdogs
@@ -58,7 +60,19 @@ void watchdog_interrupt_config(int ms);
 void TIM3_IRQHandler();
 
 /**
- * Changes timeout time for IWDG
+ * Configure the IWDG timeout to be the max possible (32 s) for sleep mode (call before entering)
+ * 
+ */
+void watchdog_IWDGSleepMode();
+
+/**
+ * Function to be called when waking up from sleep, reset the IWDG timeout to what it was before sleeping
+ * 
+ */
+void watchdog_IWDGWakeUp();
+
+/**
+ * Changes timeout time for IWDG, used for getting in and out of sleep
  * @param ms new time in ms of IWDG
  */
 void watchdog_changeIWDGTimeout(int ms);
