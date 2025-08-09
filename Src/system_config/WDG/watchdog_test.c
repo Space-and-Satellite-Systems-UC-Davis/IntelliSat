@@ -4,7 +4,6 @@
 
 void testFunction_watchdog() {
     printMsg("start watchdog\n");
-    led_d2(true);
     int count = 0;
     while(1){
         delay_ms(1000);

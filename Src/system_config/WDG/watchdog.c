@@ -1,6 +1,5 @@
 #include "watchdog.h"
 #include <SunSensors/sun_sensors.h>
-#include <print_scan.h>
 
 static int WWDG_timeout;
 static int IWDG_timeout;
@@ -118,12 +117,6 @@ void TIM3_IRQHandler(){
     }
     IWDG->KR |= IWDG_KICK; //kick iwdg
     WWDG->CR |= WWDG_CR_T_6 | WWDG_timeout; //kick wwdg
-    // printMsg("KICKED");
-    //test timeout time
-    /*int time = getSysTime();
-    int diff = time-lastTime;
-    lastTime = time;
-    printMsg("%d, kicked!\n", diff);*/
 }
 
 void watchdog_IWDGSleepMode()
