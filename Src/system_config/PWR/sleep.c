@@ -31,7 +31,7 @@ void PWR_exitLPRunMode() {
 	mode = RUN;
 }
 
-void PWR_enterLPSleepMode(uint16_t seconds) {
+bool PWR_enterLPSleepMode(uint16_t seconds) {
 	PWR_enterLPRunMode();
 
 	//Store previous interrupt state and disable interrupts
@@ -43,16 +43,18 @@ void PWR_enterLPSleepMode(uint16_t seconds) {
 	// Disabling all external interrupts doesn't apply to SysTick
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
-	rtc_wakeUp(seconds);
+	bool result = rtc_wakeUp(seconds);
+	if (result == false) return false;
 
 	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
 	mode = LPSLEEP;
-	// I don't this potential loop is avoidable with timeout
+	// I don't think this loop is avoidable with timeout
 	// Wake up interrupt can trigger prior to getting out of LPSleep
 	while(mode != RUN) {
 	    __DSB();
 		__WFI();
 	}
+	return true;
 }
 
 void PWR_exitLPSleepMode() {

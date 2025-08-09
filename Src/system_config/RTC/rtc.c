@@ -334,15 +334,24 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 //Watchdog will be mad if we don't notify it every 32 seconds
 uint32_t sleep_cycles = 0;
 uint16_t sleep_remainder = 0;
-const uint16_t MAX_SLEEP = 5; // in seconds
+const uint16_t MAX_SLEEP = 2; // in seconds, must be under 32
 bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
-void rtc_wakeUp(uint16_t seconds) {
-	// If we could enter Stop mode, we would need to
-	// Check here that clock is LSE/LSI, OR ELSE
 
-	// It appears that the timer waits an extra ~1.5 seconds?
-
-	// There are ways to allow it to wait longer
+// There are ways to allow it to wait longer
+bool rtc_wakeUp(uint16_t seconds) {
+	// Only LSI and LSE will be on for Stop modes
+	uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
+	uint16_t clk_per_sec; //Clock cycles per second
+	switch (current_source >> 8) {
+		case 0b01:
+			clk_per_sec = 2048;
+			break;
+		case 0b10:
+			clk_per_sec = 2000;
+			break;
+		default:
+			return false;
+	}
 
 	sleep_cycles = seconds / MAX_SLEEP;
 	sleep_remainder = seconds % MAX_SLEEP;
@@ -356,12 +365,13 @@ void rtc_wakeUp(uint16_t seconds) {
 	//Set auto-reload to number of seconds we wait
 	RTC->WUTR &= ~(RTC_WUTR_WUT);
 	(seconds > MAX_SLEEP) ?
-			(RTC->WUTR |= (MAX_SLEEP) << RTC_WUTR_WUT_Pos)
-			: (RTC->WUTR |= (seconds) << RTC_WUTR_WUT_Pos);
+			(RTC->WUTR |= (MAX_SLEEP * clk_per_sec) << RTC_WUTR_WUT_Pos)
+			: (RTC->WUTR |= (seconds * clk_per_sec) << RTC_WUTR_WUT_Pos);
 
-	//Select the 1Hz clock
+	//Select the clock divisor
+	//ck_spre appears to cause ~1.3s delay every interrupt?? Avoid
 	RTC->CR &= ~(RTC_CR_WUCKSEL);
-	RTC->CR |= (0b100) << RTC_CR_WUCKSEL_Pos;
+	RTC->CR |= (0b0) << RTC_CR_WUCKSEL_Pos;
 
 	//Configure interrupt
 	RTC->ISR &= ~(RTC_ISR_WUTF);
@@ -373,6 +383,8 @@ void rtc_wakeUp(uint16_t seconds) {
 	RTC->CR |= RTC_CR_WUTE; // Enable wakeup
 
 	rtc_closeWritingPrivilege();
+
+	return true;
 }
 
 //Will wake up and turn off itself when done with cycles
@@ -387,15 +399,27 @@ void RTC_WKUP_IRQHandler() {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
 	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off interrupt
 	    PWR_exitLPSleepMode();
-
 		return;
 	} else if (sleep_cycles == 1) {
 		RTC->CR &= ~(RTC_CR_WUTE);
 		//Can't access WUCKSEL/WUT otherwise
 		wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
 
+		uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
+		uint16_t clk_per_sec; //Clock cycles per second
+		switch (current_source >> 8) {
+			case 0b01:
+				clk_per_sec = 2048;
+				break;
+			case 0b10:
+				clk_per_sec = 2000;
+				break;
+			default:
+				return; //Should never happen
+		}
+
 		RTC->WUTR &= ~(RTC_WUTR_WUT);
-		RTC->WUTR |= (sleep_remainder) << RTC_WUTR_WUT_Pos;
+		RTC->WUTR |= (sleep_remainder * clk_per_sec) << RTC_WUTR_WUT_Pos;
 		RTC->CR |= RTC_CR_WUTE;
 	}
 

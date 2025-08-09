@@ -129,8 +129,8 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  *
  * @param seconds  Number of seconds before the alarm triggers
  *
- * @returns None
+ * @returns false if called with HSI as RTC clock
  */
-void rtc_wakeUp(uint16_t seconds);
+bool rtc_wakeUp(uint16_t seconds);
 
 #endif // REALOP1_RTC_H_
