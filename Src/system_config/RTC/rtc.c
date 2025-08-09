@@ -334,7 +334,7 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 //Watchdog will be mad if we don't notify it every 32 seconds
 uint32_t sleep_cycles = 0;
 uint16_t sleep_remainder = 0;
-const uint16_t MAX_SLEEP = 2; // in seconds, must be under 32
+const uint16_t MAX_SLEEP = 3; // in seconds, must be under 32
 bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
 
 // There are ways to allow it to wait longer
@@ -390,10 +390,13 @@ bool rtc_wakeUp(uint16_t seconds) {
 //Will wake up and turn off itself when done with cycles
 void RTC_WKUP_IRQHandler() {
 	rtc_openWritingPrivilege();
-	//Acknowledged
+	//Acknowledged, clear interrupt flags
 	RTC->ISR &= ~(RTC_ISR_WUTF);
 	EXTI->PR1 |= EXTI_PR1_PIF20;
-	IWDG->KR = 0x0000AAAA; //Keep watchdog from reset
+
+	//Keep watchdog from resetting
+	//"KICK" ;(
+	IWDG->KR |= IWDG_KICK;
 
 	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up

@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <core_config.h>
 #include "PWR/sleep.h"
+#include "WDG/watchdog.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
