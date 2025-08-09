@@ -24,13 +24,7 @@ int main() {
 	//  init_first_time()
 	//}
 
-//    PWR_enterLPRunMode();
-    PWR_enterLPSleepMode(40);
-//	rtc_wakeUp(10);
-
-
 	while (1) {
-		printMsg("adsadasdas");
 		continue;
 	}
 

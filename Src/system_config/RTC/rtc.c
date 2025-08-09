@@ -12,8 +12,6 @@
 
 #include "rtc.h"
 
-#include <print_scan.h>
-
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
 

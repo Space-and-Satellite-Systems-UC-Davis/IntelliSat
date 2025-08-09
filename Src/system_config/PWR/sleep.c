@@ -5,8 +5,6 @@
  */
 #include "sleep.h"
 
-#include <print_scan.h>
-
 bool IRQ_states[82];
 OperatingMode mode = RUN;
 
