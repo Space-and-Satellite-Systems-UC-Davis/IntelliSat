@@ -72,7 +72,8 @@ void hddDrive(const PWM_Channels pwm, const uint8_t TARGET_DUTY, int8_t doPrint)
 	currDuty = pwm_getDutyCycle(pwm);
 	if (doPrint) { printMsg("Delaying for %u with currDuty %u\r\n", delayTimeMs, currDuty); }
 	delay_ms(delayTimeMs);
-	hddRamp(pwm, TARGET_DUTY, doPrint);
+	pwm_setDutyCycle(pwm, TARGET_DUTY);  // try to make next complete jump
+	//hddRamp(pwm, TARGET_DUTY, doPrint);
 }
 
 void hddRampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY) {
