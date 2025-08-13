@@ -409,10 +409,10 @@ void RTC_WKUP_IRQHandler() {
 		uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
 		uint16_t clk_per_sec; //Clock cycles per second
 		switch (current_source >> 8) {
-			case 0b01:
+			case RTCSEL_LSE:
 				clk_per_sec = 2048;
 				break;
-			case 0b10:
+			case RTCSEL_LSI:
 				clk_per_sec = 2000;
 				break;
 			default:

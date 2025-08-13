@@ -60,6 +60,14 @@
 #define RTC_WPR_WRITE_PROTECT_ON_2 0x53 // RTC_WPR_WRITE_ON_1 and RTC_WPR_WRITE_ON_2 must be used together in the order they are presented
 #define RTC_WPR_WRITE_PROTECT_OFF 0xFF
 
+// Enum enumerating all possible RCC_BDCR_RTCSEL options
+typedef enum RTCSEL {
+	RTCSEL_NONE,
+	RTCSEL_LSE,
+	RTCSEL_LSI,
+	RTCSEL_HSE
+} RTCSEL;
+
 /**
  * Enables the RTC's Clock. Sets the appropriate pre-scalers
  * based on the oscillator source of the RTC.
