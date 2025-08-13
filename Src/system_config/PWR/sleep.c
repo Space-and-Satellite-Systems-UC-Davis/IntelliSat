@@ -5,8 +5,13 @@
  */
 #include "sleep.h"
 
-bool IRQ_states[82];
+#define IRQ_LENGTH 82
+bool IRQ_states[IRQ_LENGTH];
 OperatingMode mode = RUN;
+
+void storeAllIRQ() {
+
+}
 
 void PWR_enterLPRunMode() {
 	//Optionally, we could power down flash here
@@ -32,13 +37,14 @@ void PWR_exitLPRunMode() {
 bool PWR_enterLPSleepMode(uint16_t seconds) {
 	PWR_enterLPRunMode();
 
-	//Store previous interrupt state and disable interrupts
-	for (int i = 0; i < 82; i++) {
-		(NVIC_GetEnableIRQ(i)) ? (IRQ_states[i] = true) : (IRQ_states[i] = false);
-		NVIC_DisableIRQ(i);
+	//Clear stored
+	for (int i = 0; i < IRQ_LENGTH; i++) {
+		IRQ_states[i] = NVIC_GetEnableIRQ(i);
 	}
 
-	// Disabling all external interrupts doesn't apply to SysTick
+	// Disable Watchdog pet sitter
+	NVIC_DisableIRQ(TIM3_IRQn);
+	// SysTick is not handled by NVIC
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
 	bool result = rtc_wakeUp(seconds);
@@ -56,8 +62,8 @@ bool PWR_enterLPSleepMode(uint16_t seconds) {
 }
 
 void PWR_exitLPSleepMode() {
-	//Set the interrupts back
-	for (int i = 0; i < 82; i++) {
+	// Restore interrupts
+	for (int i = 0; i < IRQ_LENGTH; i++) {
 		(IRQ_states[i]) ? (NVIC_EnableIRQ(i)) : (NVIC_DisableIRQ(i));
 	}
 

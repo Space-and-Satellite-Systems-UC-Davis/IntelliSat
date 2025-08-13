@@ -13,6 +13,7 @@ extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
 extern void testFunction_watchdog();
+extern void testFunction_LPSleep();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -40,6 +41,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Diode_Reads;
 		case 14: 
 			return testFunction_watchdog;
+		case 15:
+			return testFunction_LPSleep;
 		default:
 			return testFunction_Nothing;
 	}
