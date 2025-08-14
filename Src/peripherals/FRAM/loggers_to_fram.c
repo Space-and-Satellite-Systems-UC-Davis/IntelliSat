@@ -1,33 +1,36 @@
 #include <stdint.h>
 #include <string.h>
-#include <MB85RS256B.h>
+#include "loggers_to_fram.h"
 
-#define FRAM_PAGE_SIZE 256
 
-void FRAM_fetchData(uint16_t page, void *data, size_t data_size)
-{
-    uint8_t MISO[FRAM_PAGE_SIZE];
+bool FRAM_fetch(uint16_t page, size_t data_size, void *data) {
+    if (data_size > FRAM_PAGE_SIZE) {
+        return false;
+    }
 
-    if (!flash_readPage(page, MISO))
-    {
+    uint8_t page_buffer[FRAM_PAGE_SIZE];
+
+    if (!FRAM_readPage(page, page_buffer)) {
         memset(data, 0xFF, data_size);
-        return;
+        return false;
     }
+    memcpy(data, page_buffer, data_size);
 
-    memcpy(data, MISO, data_size);
+    return true;
 }
 
-uint8_t FRAM_pushData(uint16_t page, void *data, size_t data_size)
-{
-    uint8_t buffer[FRAM_PAGE_SIZE];
-
-    if (data_size > FRAM_PAGE_SIZE)
-    {
-        return 1;
+bool FRAM_push(uint16_t page, size_t data_size, void *data) {
+    if (data_size > FRAM_PAGE_SIZE) {
+        return false;
     }
 
-    memcpy(buffer, data, data_size);
-    FRAM_writePage(page, buffer);
+    uint8_t page_buffer[FRAM_PAGE_SIZE];
+    memcpy(page_buffer, data, data_size);
 
-    return 0;
+    if (!FRAM_writePage(page, page_buffer)) {
+        return false;
+    }
+
+    return true;
 }
+
