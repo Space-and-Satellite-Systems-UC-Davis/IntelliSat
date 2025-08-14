@@ -72,6 +72,8 @@ typedef enum RTCSEL {
  * Enables the RTC's Clock. Sets the appropriate pre-scalers
  * based on the oscillator source of the RTC.
  * NOTE : The selected Oscillator must be turned on beforehand.
+ * WARNING: Backup Domain excluding RTC_BDCR will be reset
+ * WARNING: LSI may deviate by 3+%. Not good real time source.
  *
  * @param  clock_source   Predefined options in clock_nvic_config.h
  * @param  forced_config  Setting this to 'false' results in the configuration not taking place in case the RTC is pre-initialized

@@ -6,7 +6,7 @@
 #include "sleep.h"
 
 #define IRQ_LENGTH 82
-bool IRQ_states[IRQ_LENGTH];
+//bool IRQ_states[IRQ_LENGTH];
 OperatingMode mode = RUN;
 
 void storeAllIRQ() {
@@ -37,11 +37,6 @@ void PWR_exitLPRunMode() {
 bool PWR_enterLPSleepMode(uint16_t seconds) {
 	PWR_enterLPRunMode();
 
-	//Clear stored
-	for (int i = 0; i < IRQ_LENGTH; i++) {
-		IRQ_states[i] = NVIC_GetEnableIRQ(i);
-	}
-
 	// Disable Watchdog pet sitter
 	NVIC_DisableIRQ(TIM3_IRQn);
 	// SysTick is not handled by NVIC
@@ -54,19 +49,20 @@ bool PWR_enterLPSleepMode(uint16_t seconds) {
 	mode = LPSLEEP;
 	// I don't think this loop is avoidable with timeout
 	// Wake up interrupt can trigger prior to getting out of LPSleep
-	while(mode != RUN) {
-	    __DSB();
+	// Loop will end unless explicitly ordered to continue
+	while(mode == LPSLEEP) {
+		mode = LPRUN;
+		__DSB();
 		__WFI();
 	}
 	return true;
 }
+void PWR_maintainLPSleep() {
+	mode = LPSLEEP;
+}
 
 void PWR_exitLPSleepMode() {
-	// Restore interrupts
-	for (int i = 0; i < IRQ_LENGTH; i++) {
-		(IRQ_states[i]) ? (NVIC_EnableIRQ(i)) : (NVIC_DisableIRQ(i));
-	}
-
+	NVIC_EnableIRQ(TIM3_IRQn);
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
 	PWR_exitLPRunMode();

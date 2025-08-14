@@ -8,7 +8,7 @@ static int lastTime = 0;
 
 void watchdog_config(int ms){
     watchdog_iwdg_config(ms);
-    watchdog_wwdg_config(ms);
+//    watchdog_wwdg_config(ms);
     watchdog_interrupt_config(ms);
 }
 
@@ -16,12 +16,22 @@ void watchdog_iwdg_config(int ms){
     //configure IWDG registers
     IWDG->KR = IWDG_START;
     IWDG->KR = IWDG_ENABLE;
-    IWDG->PR = IWDG_PR_PR_1; 
+
+    float pr = ms / T_LSI / (IWDG_RLR_RL + 1);
+
+    int count = 0;
+    while(pr > 1){
+        count ++;
+        pr /= 2;
+    }
+
+    IWDG->PR = count;
+
 
     //calculate reload value
-    int rlr = ms * 2 - 1; 
+    int rlr = ms / T_LSI / (1<<count) - 1;
+    IWDG->RLR = rlr;
 
-    IWDG->RLR = rlr; 
     while(FLASH->SR & FLASH_SR_BSY_Msk);
     IWDG->KR = IWDG_KICK;
 }

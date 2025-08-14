@@ -41,6 +41,7 @@ void rtc_closeWritingPrivilege() {
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
+bool is_BDRST_not_set() { return (RCC->BDCR & RCC_BDCR_BDRST) == 0; }
 void rtc_config(char clock_source, int forced_config) {
 	// do nothing if clock is already configured
 	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
@@ -50,10 +51,13 @@ void rtc_config(char clock_source, int forced_config) {
 	backup_domain_controlEnable();
 
 	// store the current clock configuration, in case of bad input
-	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
+	uint32_t backup = RCC->BDCR & ~RCC_BDCR_RTCSEL;
+	uint32_t backup_rtcsel = RCC->BDCR & RCC_BDCR_RTCSEL;
 
 	// reset the clock
-	RCC->BDCR &= ~RCC_BDCR_RTCSEL;
+	RCC->BDCR |= RCC_BDCR_BDRST;
+	wait_with_timeout(is_BDRST_not_set, DEFAULT_TIMEOUT_MS);
+	RCC->BDCR &= ~RCC_BDCR_BDRST;
 
 	// Select the RTC clock source
 	switch (clock_source) {
@@ -67,10 +71,12 @@ void rtc_config(char clock_source, int forced_config) {
 			RCC->BDCR |= RCC_BDCR_RTCSEL_Msk;
 			break;
 		default:
-			RCC->BDCR |= temp;	// restore the original configuration
+			RCC->BDCR |= backup_rtcsel;	// restore the original configuration
 			break;
 	}
 
+	//Restore from reset
+	RCC->BDCR |= backup;
 	// Enable the RTC Clock
 	RCC->BDCR |= RCC_BDCR_RTCEN;
 
@@ -425,6 +431,7 @@ void RTC_WKUP_IRQHandler() {
 	}
 
 	sleep_cycles--;
+	PWR_maintainLPSleep();
 	rtc_closeWritingPrivilege();
 }
 

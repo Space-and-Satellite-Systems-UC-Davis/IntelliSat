@@ -35,4 +35,14 @@ void PWR_exitLPRunMode();
 bool PWR_enterLPSleepMode(uint16_t seconds);
 void PWR_exitLPSleepMode();
 
+/**
+ * By default, program will exit LPSleep upon interrupt
+ * If you don't want that for yours, call this function
+ *
+ * @param None
+ *
+ * @returns None
+ */
+void PWR_maintainLPSleep();
+
 #endif /* SYSTEM_CONFIG_PWR_SLEEP_H_ */
