@@ -13,6 +13,7 @@
 
 #include "experiment_logger.h"
 #include "logger_to_flash.h"
+#include "loggers_to_fram.h"
 #include <globals.h>
 #include <print_scan.h>
 
@@ -21,8 +22,9 @@
 
 // Test parameters
 #define LOGGERS_NUM_TESTS      5
-#define FAKE_EXP_NUM_SECTORS   2  // # of sectors of fake data that should be generated for this test
+#define FAKE_EXP_NUM_SECTORS   2  // # of sectors of fake data generated for this test
 #define FAKE_EXP_TIME          (FAKE_EXP_NUM_SECTORS * 15 * 1000) // num * s * ms/s
+
 
 // ========================================================================= //
 //                             HELPER FUNCTIONS                              //
@@ -120,7 +122,7 @@ void printHeader(struct FlashHeader* header) {
 }
 
 // ========================================================================= //
-//                            FUNCTIONALITY TESTS                            //
+//                               HEADER TESTS                                //
 // ========================================================================= //
 
 
@@ -196,6 +198,10 @@ bool test_headerUpdate() {
 	return true;
 }
 
+
+// ========================================================================= //
+//                               FLASH TESTS                                 //
+// ========================================================================= //
 
 // test_loggerToFlash, 2024.11.25
 // Status: OK
@@ -286,26 +292,62 @@ bool test_fetchExp() {
 
 
 // ========================================================================= //
-//                             testFunction Core                             //
+//                                FRAM TESTS                                 //
 // ========================================================================= //
 
-// TODO: do memcpy() need true/false verification?
+void test_ADCS_constants() {
+    // Make up some recognizable sun sensors data
+    uint8_t sun_stuff_out[FRAM_SUNSENSORS_SIZE];
+    for (uint16_t i = 0; i < FRAM_SUNSENSORS_SIZE; ++i) {
+        sun_stuff_out[i] = i;
+    }
 
-void testFunction_loggers() {
+    // Push it
+    FRAM_writeData(FRAM_SUNSENSORS_PAGE, FRAM_SUNSENSORS_SIZE, sun_stuff_out);
+
+    // See it
+    uint8_t sun_stuff_validation[FRAM_PAGE_SIZE];
+    FRAM_readPage(FRAM_SUNSENSORS_PAGE, sun_stuff_validation);
+    for (uint16_t i = 0; i < FRAM_PAGE_SIZE; ++i) {
+        printMsg("%u ", sun_stuff_validation[i]);
+    }
+
+    // Pull it and see it
+    uint8_t sun_stuff_in[FRAM_SUNSENSORS_SIZE];
+    FRAM_pullData(FRAM_SUNSENSORS_PAGE, FRAM_SUNSENSORS_SIZE, sun_stuff_in);
+    for (uint16_t i = 0; i < FRAM_SUNSENSORS_SIZE; ++i) {
+        printMsg("%u ", sun_stuff_in[i]);
+    }
+
+    // Check it
+    for (uint16_t i = 0; i < FRAM_SUNSENSORS_SIZE; ++i) {
+        if (sun_stuff_in[i] != sun_stuff_out[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+// ========================================================================= //
+//                             testFunction Cores                            //
+// ========================================================================= //
+
+void testFunction_flashloggers() {
 	log_fake_exp();
 
-	/*
     bool (*testFunctions[LOGGERS_NUM_TESTS])() = { test_fetchExp };
-
     const char *testNames[LOGGERS_NUM_TESTS] = { "fetchExp" };
-
 
     printMsg("\r\n\nLoggers core tests\n");
 
     for (uint8_t i = 0; i < LOGGERS_NUM_TESTS; ++i) {
         printMsg("\n\r%s: %s", testNames[i], testFunctions[i]() ? "OK" : "FAIL");
     }
-    */
 
 	printMsg("\n\rtest_headerUpdate: %s", test_headerUpdate() ? "OK" : "FAIL");
+}
+
+void testFunction_framloggers() {
+    test_ADCS_constants();
 }
