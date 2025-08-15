@@ -6,12 +6,7 @@
 #include "sleep.h"
 
 #define IRQ_LENGTH 82
-//bool IRQ_states[IRQ_LENGTH];
 OperatingMode mode = RUN;
-
-void storeAllIRQ() {
-
-}
 
 void PWR_enterLPRunMode() {
 	//Optionally, we could power down flash here
@@ -37,10 +32,12 @@ void PWR_exitLPRunMode() {
 bool PWR_enterLPSleepMode(uint16_t seconds) {
 	PWR_enterLPRunMode();
 
-	// Disable Watchdog pet sitter
+	// Disable Watchdog pet sitter and tell it we are in sleep
+	watchdog_IWDGSleepMode();
 	NVIC_DisableIRQ(TIM3_IRQn);
 	// SysTick is not handled by NVIC
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+
 
 	bool result = rtc_wakeUp(seconds);
 	if (result == false) return false;
@@ -55,6 +52,7 @@ bool PWR_enterLPSleepMode(uint16_t seconds) {
 		__DSB();
 		__WFI();
 	}
+	PWR_exitLPSleepMode();
 	return true;
 }
 void PWR_maintainLPSleep() {
@@ -62,7 +60,9 @@ void PWR_maintainLPSleep() {
 }
 
 void PWR_exitLPSleepMode() {
+	watchdog_IWDGWakeUp();
 	NVIC_EnableIRQ(TIM3_IRQn);
+
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
 	PWR_exitLPRunMode();

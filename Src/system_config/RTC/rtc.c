@@ -347,10 +347,10 @@ bool rtc_wakeUp(uint16_t seconds) {
 	uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
 	uint16_t clk_per_sec; //Clock cycles per second
 	switch (current_source >> 8) {
-		case 0b01:
+		case RTCSEL_LSE:
 			clk_per_sec = 2048;
 			break;
-		case 0b10:
+		case RTCSEL_LSI:
 			clk_per_sec = 2000;
 			break;
 		default:
@@ -405,7 +405,6 @@ void RTC_WKUP_IRQHandler() {
 	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
 	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off interrupt
-	    PWR_exitLPSleepMode();
 		return;
 	} else if (sleep_cycles == 1) {
 		RTC->CR &= ~(RTC_CR_WUTE);
@@ -434,5 +433,3 @@ void RTC_WKUP_IRQHandler() {
 	PWR_maintainLPSleep();
 	rtc_closeWritingPrivilege();
 }
-
-

@@ -2,13 +2,15 @@
 #include <SunSensors/sun_sensors.h>
 
 static int WWDG_timeout;
+static int IWDG_timeout;
 
-static int lastTime = 0;
-
-
-void watchdog_config(int ms){
+void watchdog_init(int ms){
+    IWDG_timeout = ms;
     watchdog_iwdg_config(ms);
-//    watchdog_wwdg_config(ms);
+    if(ms > WWDG_MAX){
+        ms = WWDG_MAX;
+    }
+    watchdog_wwdg_config(ms);
     watchdog_interrupt_config(ms);
 }
 
@@ -39,7 +41,7 @@ void watchdog_iwdg_config(int ms){
 void watchdog_wwdg_config(int ms){
     //configure WWDG
     RCC->APB1ENR1 |= RCC_APB1ENR1_WWDGEN;
-    RCC->APB1SMENR1 |= RCC_APB1SMENR1_WWDGSMEN;
+    RCC->APB1SMENR1 &= ~RCC_APB1SMENR1_WWDGSMEN; //disable during sleep
     WWDG->CFR |= WWDG_CFR_WDGTB;
     float seconds = ms / 1000.0;
     WWDG_timeout = seconds / WWDG_CALCULATE_TIMEOUT - 1;
@@ -115,30 +117,25 @@ void TIM3_IRQHandler(){
     }
     IWDG->KR |= IWDG_KICK; //kick iwdg
     WWDG->CR |= WWDG_CR_T_6 | WWDG_timeout; //kick wwdg
-
-    //test timeout time
-    /*int time = getSysTime();
-    int diff = time-lastTime;
-    lastTime = time;
-    printMsg("%d, kicked!\n", diff);*/
 }
 
+void watchdog_IWDGSleepMode()
+{
+    watchdog_changeIWDGTimeout(IWDG_MAX_TIMEOUT);
+}
 
+void watchdog_IWDGWakeUp()
+{
+    watchdog_changeIWDGTimeout(IWDG_timeout);
+}
 
-void watchdog_kick(){
-	int count = 0;
-	while(1){
-		IWDG->KR |= IWDG_KICK;
-        WWDG->CR |= WWDG_CR_T_6 | WWDG_timeout;
-		//printMsg("%d\n", count++);
-        //count++;
-        //if(count > 1000000){
-            //printMsg("uh oh\n");
-            //delay_ms(400);
-            //count = 0;
-            //int x = sun_sensors_readVoltage(PANEL0,DIODE0);
-            //printMsg("voltage: %f\n", x);
-            //while(1);
-        //}
-	}
+void watchdog_changeIWDGTimeout(int ms){
+    if(ms > IWDG_timeout){//if interval gets longer, configure iwdg before interrupt
+        watchdog_iwdg_config(ms);
+        watchdog_interrupt_config(ms);
+    }else{ //if interval gets shorter, configure interrupt before iwdg
+        watchdog_interrupt_config(ms);
+        watchdog_iwdg_config(ms);
+    }
+
 }
