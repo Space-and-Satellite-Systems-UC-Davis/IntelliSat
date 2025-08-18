@@ -1,16 +1,15 @@
 #include "watchdog.h"
-#include <SunSensors/sun_sensors.h>
 
 static int WWDG_timeout;
 static int IWDG_timeout;
 
 void watchdog_init(int ms){
-    IWDG_timeout = ms;
-    watchdog_iwdg_config(ms);
-    if(ms > WWDG_MAX){
-        ms = WWDG_MAX;
-    }
-    watchdog_wwdg_config(ms);
+     IWDG_timeout = ms;
+     watchdog_iwdg_config(ms);
+     if(ms > WWDG_MAX){
+         ms = WWDG_MAX;
+     }
+     watchdog_wwdg_config(ms);
     watchdog_interrupt_config(ms);
 }
 
@@ -91,9 +90,9 @@ void watchdog_hardware_config() {
 void watchdog_interrupt_config(int ms){
 
     ms -= 10; //give some time before the actual timeout time just in case
-
-    uint16_t PSC = 999; //To make calculating ARR easier because divide by 1000
-    uint16_t ARR = APB1_FREQ * ms * 2 - 1 ; //ARR = (5MgHz(ms)/(PSC+1))-1 = 5*ms*10^3/1000 - 1 = 5*ms - 1
+    
+    uint16_t PSC = FREQOFF * APB1_FREQ * MS_TO_S * ms / ARR_MAX - 1; 
+    uint16_t ARR = FREQOFF * APB1_FREQ * MS_TO_S * ms / PSC - 1; 
     
     RCC->APB1ENR1 |= RCC_APB1ENR1_TIM3EN; //Enable Tim 3
     WATCHDOG_TIMER->CR1 &= ~TIM_CR1_CEN; //Disable timer from control register
