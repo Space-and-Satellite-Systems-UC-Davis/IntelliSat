@@ -63,17 +63,17 @@ void hddDrive(const PWM_Channels pwm, const uint8_t TARGET_DUTY, int8_t doPrint)
 	}
 
 	// if we would slip going straight to target, ramp instead
-	uint8_t currDuty = pwm_getDutyCycle(pwm);
 	if (doPrint) { printMsg("Driving to %u with slip handling.\r\n", TARGET_DUTY); }
 	pwm_setDutyCycle(pwm, SLIP_DUTY);
+	uint8_t currDuty = pwm_getDutyCycle(pwm);
 
 	// wait for speed up, then begin ramp
 	uint32_t delayTimeMs = currDuty <= MID_DUTY ? SLIP_TIME_MS : JUMP_TIME_MS;
 	currDuty = pwm_getDutyCycle(pwm);
 	if (doPrint) { printMsg("Delaying for %u with currDuty %u\r\n", delayTimeMs, currDuty); }
 	delay_ms(delayTimeMs);
-	pwm_setDutyCycle(pwm, TARGET_DUTY);  // try to make next complete jump
-	//hddRamp(pwm, TARGET_DUTY, doPrint);
+	//pwm_setDutyCycle(pwm, TARGET_DUTY);  // try to make next complete jump
+	hddRamp(pwm, TARGET_DUTY, doPrint);
 }
 
 void hddRampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY) {

@@ -103,8 +103,15 @@ vi_hdd_command(
 ){
 	// we assume the passed throttle is valid
 	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
-	float resultDuty = throttle + (float) pwm_getDutyCycle(channel);
-	hddDrive(channel, resultDuty, doPrint);
+
+	// calculate the result duty while avoiding overflow issues
+	int32_t resultDuty = (int32_t) pwm_getDutyCycle(channel) + (int32_t) throttle;
+
+	// clamp and apply the result duty
+	if (resultDuty < MID_DUTY) { resultDuty = MID_DUTY; }  // clamp the duty
+	if (resultDuty > MAX_DUTY) { resultDuty = MAX_DUTY; }
+	if (doPrint) { printMsg("Got post clamp result duty of %d\r\n", resultDuty); }
+	hddDrive(channel, (uint8_t) resultDuty, doPrint);
 	//pwm_setDutyCycle(channel, resultDuty);
 
 	return HDD_COMMAND_SUCCESS;

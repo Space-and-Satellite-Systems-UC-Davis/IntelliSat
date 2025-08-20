@@ -34,3 +34,7 @@ int printMsg(const char *message, ...) {
 
 	usart_transmitBytes(ConsoleUART, buff);
 }
+
+int readMsg(uint8_t dest[], uint16_t size) {
+	return usart_receiveBytes(ConsoleUART, dest, size);
+}
