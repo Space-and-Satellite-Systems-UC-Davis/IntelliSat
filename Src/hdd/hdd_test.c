@@ -1,12 +1,8 @@
 /*
- * hdd_training_test.c
- *
- *  Created on: Sep 25, 2024
- *  Updated on: Feb 18, 2025
- *      Authors: Chandrark Muddana
- *      		 Nicholas Bianez
- *
- *  Information:
+ * 	TestID: 10
+ *  Date: 2025-08-20
+ *  Author: Nicholas Bianez
+ *  Notes:
  *  	This file contains your test code, with
  *  	testFunction_HDD being called when Intellisat is run.
  *  	You can explore how and where this is called by
@@ -58,7 +54,6 @@ void armESC() {
 
 // runs the actual testing code
 void testFunction_HDD() {
-
 	// init timer here does other initialization actions
 	led_d2(1);  // toggle the state of the LED labeled "D2" on the board
 	pwm_initTimer(PWM0, PERIOD_uS);  // Initialize the PWM timer to allow PWM signals to work

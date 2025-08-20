@@ -12,7 +12,9 @@ extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
+extern void testFunction_TR25Proj();
 extern void testFunction_HDD();
+extern void testFunction_SS();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -32,17 +34,22 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogTimer_Callback;
 		case 4:
 			return testerFunction_PWMGeneration;
+		case 7:
+			return testFunction_TR25Proj;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
+		case 9:
+			return testFunction_SS;
+		case 10:
+			return testFunction_HDD;
 		case 11:
 			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
-		case 10:
-			return testFunction_HDD;
 		default:
 			return testFunction_Nothing;
 	}
+
 	return testFunction_Nothing;
 }
 
