@@ -11,8 +11,12 @@
  *		changes, go to TestDefinition.h under Src/inc.
  */
 
-#include "../hdd/hdd_test.c"
-#include "../sun_sensors/ss_test.c"
+// below are some useful libraries
+#include <Timers/timers.h>
+#include <ADC/adc.h>
+#include <LED/led.h>
+#include <inttypes.h>
+#include <print_scan.h>
 
 void testFunction_TR25Proj() {
 
