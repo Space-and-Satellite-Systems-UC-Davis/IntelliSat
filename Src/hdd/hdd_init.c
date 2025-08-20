@@ -9,7 +9,7 @@
 #include "../system_config/Timers/timers.h"
 
 const dutyType MAX_START_DUTY = 100;  // previous max duty to trigger calibration
-const dutyType SLIP_DUTY = 70;  // last valid duty that will not cause any slipping
+const dutyType SLIP_DUTY = 75;  // last valid duty that will not cause any slipping
 const dutyType MAX_DUTY = 100;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 const dutyType MID_DUTY = 50;
 const dutyType MIN_DUTY = 0;  // targeted current min duty (should be no lower than 5 for 1ms pulses)

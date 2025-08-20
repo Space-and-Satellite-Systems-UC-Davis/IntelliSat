@@ -9,6 +9,8 @@
 #ifndef REALOP1_PRINT_SCAN_H_
 #define REALOP1_PRINT_SCAN_H_
 
+#include <stdint.h>
+
 /**
  * Initializes the internal systems needed for Console Printing
  *
@@ -26,5 +28,15 @@ void printer_init();
  * @returns None
  */
 int printMsg(const char *message, ...);
+
+/**
+ * Reads a variable length string from UART Tx
+ *
+ * @param destination array, size of destination
+ *
+ * @returns num chars read
+ */
+int readMsg(uint8_t dest[], uint16_t size);
+
 
 #endif // REALOP1_PRINT_SCAN_H_

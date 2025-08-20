@@ -53,7 +53,6 @@ void testFunction_HDD1() {
 		hdd_arm(PWM0);
 	}
 
-
 	printMsg("Testing slipping.\r\n");
 	pwm_setDutyCycle(PWM0, SLIP_DUTY);
 	delay_ms(5000);
@@ -88,7 +87,7 @@ void testFunction_HDD1() {
 	led_d2(0);
 	led_d3(1);
 	// debug loop
-	while (1) {
+	while (0) {
 		// rapidly increase until max is hit
 		printMsg("Preparing to start trial. \r\n");
 		float currDuty = MIN_DUTY;
