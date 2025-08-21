@@ -17,6 +17,10 @@
 #define IWDG_MAX_TIMEOUT 32768 //ms
 #define WWDG_MAX 420 //ms
 
+#define ARR_MAX (1 << 15)
+#define MS_TO_S 1000
+#define FREQOFF 2 //actualy idk but off by 2
+
 #define WWDG_TIMEOUT_TIME 420 //can change if needed
 
 /**
