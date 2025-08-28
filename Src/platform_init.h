@@ -26,6 +26,7 @@
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
+#include <DMA/DMA.h>
 #include <print_scan.h>
 #include <SunSensors/sun_sensors.h>
 
@@ -76,6 +77,8 @@ void init_first_time() {
  * @returns None
  */
 void init_platform(bool run_scheduler) {
+
+    DMA_initializePeripheralConstants();
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
