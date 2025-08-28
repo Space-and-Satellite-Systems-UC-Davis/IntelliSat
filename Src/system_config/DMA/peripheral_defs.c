@@ -178,18 +178,18 @@ DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals selection) {
 		case SELECT_ADC1: return struct_DMA_ADC1;
 		case SELECT_ADC2: return struct_DMA_ADC2;
 		case SELECT_ADC3: return struct_DMA_ADC3;
-		case SELECT_SPI1_RX: return struct_DMA_SPI1_RX;
-		case SELECT_SPI1_TX: return struct_DMA_SPI1_TX;
-		case SELECT_SPI2_RX: return struct_DMA_SPI2_RX;
-		case SELECT_SPI2_TX: return struct_DMA_SPI2_TX;
-		case SELECT_SPI3_RX: return struct_DMA_SPI3_RX;
-		case SELECT_SPI3_TX: return struct_DMA_SPI3_TX;
-		case SELECT_USART1_RX: return struct_DMA_USART1_RX;
-		case SELECT_USART1_TX: return struct_DMA_USART1_TX;
-		case SELECT_USART2_RX: return struct_DMA_USART2_RX;
-		case SELECT_USART2_TX: return struct_DMA_USART2_TX;
-		case SELECT_LPUART1_RX: return struct_DMA_LPUART1_RX;
-		case SELECT_LPUART1_TX: return struct_DMA_LPUART1_TX;
+//		case SELECT_SPI1_RX: return struct_DMA_SPI1_RX;
+//		case SELECT_SPI1_TX: return struct_DMA_SPI1_TX;
+//		case SELECT_SPI2_RX: return struct_DMA_SPI2_RX;
+//		case SELECT_SPI2_TX: return struct_DMA_SPI2_TX;
+//		case SELECT_SPI3_RX: return struct_DMA_SPI3_RX;
+//		case SELECT_SPI3_TX: return struct_DMA_SPI3_TX;
+//		case SELECT_USART1_RX: return struct_DMA_USART1_RX;
+//		case SELECT_USART1_TX: return struct_DMA_USART1_TX;
+//		case SELECT_USART2_RX: return struct_DMA_USART2_RX;
+//		case SELECT_USART2_TX: return struct_DMA_USART2_TX;
+//		case SELECT_LPUART1_RX: return struct_DMA_LPUART1_RX;
+//		case SELECT_LPUART1_TX: return struct_DMA_LPUART1_TX;
 	}
 
 	return NULL; //We ought to have a result/error type...

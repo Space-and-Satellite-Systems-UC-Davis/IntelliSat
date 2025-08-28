@@ -22,20 +22,13 @@ int main() {
 
     #else
 
-    DMA_initializePeripheralConstants();
 
-	//TODO: use RTC first_time flag.
-	//if (first_time) {
-	//  init_first_time()
-	//}
     printMsg("START\r\n");
 
-    //IRQ
-
-    uint16_t test_buffer[7] = {};
+    uint16_t test_buffer[1] = {42};
 
     DMAConfig config;
-    config.selection = SELECT_SPI3_RX;
+    config.selection = SELECT_ADC1;
     config.length = 1;
     config.memory_addr = (uint32_t)&test_buffer;
     config.peripheral_addr = (uint32_t) &(SPI3->DR);
