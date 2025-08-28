@@ -163,30 +163,7 @@ void spi1_gpioInit() {
 
 /**************************** SPI INITIALIZATIONS ****************************/
 
-void spi_dma_disable(SPI_TypeDef *spi) {
-	switch ((uint32_t)spi) {
-		case (uint32_t)SPI1:
-			dma_disable_channel(SELECT_SPI1_RX);
-			dma_disable_channel(SELECT_SPI1_TX);
-			break;
-		case (uint32_t)SPI2:
-			dma_disable_channel(SELECT_SPI2_RX);
-			dma_disable_channel(SELECT_SPI2_TX);
-			break;
-		case (uint32_t)SPI3:
-			dma_disable_channel(SELECT_SPI3_RX);
-			dma_disable_channel(SELECT_SPI3_TX);
-			break;
-	}
-}
-
-//To close DMA communication it is mandatory to follow these steps in order:
-// 1. Disable DMA streams
-// 2. Disable SPI as normal
-// 3. Clear the TXDMAEN and RXDMAEN bits
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
-	spi_dma_disable(spi); // 1.
-
 	uint64_t start_time = getSysTime(); //time in ms
 	while((spi->SR & SPI_SR_FTLVL) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till there is no data to transmit
 
@@ -194,10 +171,7 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	while((spi->SR & SPI_SR_BSY) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till last data frame is processed
 
 	spi_stopCommunication(cs_port, cs_pin);
-	spi->CR1 &= ~SPI_CR1_SPE; // 2.
-
-	//Disable the DMA flags
-	spi->CR2 &= ~(SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN); // 3.
+	spi->CR1 &= ~SPI_CR1_SPE;
 
 	start_time = getSysTime();
 	uint8_t temp;
@@ -205,129 +179,6 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 		// Wait till all data is received
 		temp = spi->DR;
 	}
-}
-
-//The order of dma_enable_channel matters
-void spi_dma_enable_rx(SPI_TypeDef *spi) {
-	switch ((uint32_t)spi) {
-		case (uint32_t)SPI1:
-			spi_disable(SPI1, SPI1_CS);
-			SPI1->CR2 |= SPI_CR2_RXDMAEN;
-			dma_enable_channel(SELECT_SPI1_RX);
-
-			break;
-		case (uint32_t)SPI2:
-			spi_disable(SPI2, SPI2_CS);
-			SPI2->CR2 |= SPI_CR2_RXDMAEN;
-			dma_enable_channel(SELECT_SPI2_RX);
-
-			break;
-		case (uint32_t)SPI3:
-			spi_disable(SPI3, SPI3_CS);
-			SPI3->CR2 |= SPI_CR2_RXDMAEN;
-			dma_enable_channel(SELECT_SPI3_RX);
-
-			break;
-	}
-
-	spi_enable(spi);
-}
-//The order of dma_enable_channel matters
-void spi_dma_enable_tx(SPI_TypeDef *spi) {
-	switch ((uint32_t)spi) {
-		case (uint32_t)SPI1:
-			spi_disable(SPI1, SPI1_CS);
-			dma_enable_channel(SELECT_SPI1_TX);
-			SPI1->CR2 |= SPI_CR2_TXDMAEN;
-			break;
-		case (uint32_t)SPI2:
-			spi_disable(SPI2, SPI2_CS);
-			dma_enable_channel(SELECT_SPI2_TX);
-			SPI2->CR2 |= SPI_CR2_TXDMAEN;
-			break;
-		case (uint32_t)SPI3:
-			spi_disable(SPI3, SPI3_CS);
-			dma_enable_channel(SELECT_SPI3_TX);
-			SPI3->CR2 |= SPI_CR2_TXDMAEN;
-			break;
-	}
-
-	spi_enable(spi);
-}
-
-//The order of dma_enable_channel matters
-void spi_dma_enable_rtx(SPI_TypeDef *spi) {
-	switch ((uint32_t)spi) {
-		case (uint32_t)SPI1:
-			spi_disable(SPI1, SPI1_CS);
-			SPI1->CR2 |= SPI_CR2_RXDMAEN;
-			dma_enable_channel(SELECT_SPI1_RX);
-			dma_enable_channel(SELECT_SPI1_TX);
-			SPI1->CR2 |= SPI_CR2_TXDMAEN;
-			break;
-		case (uint32_t)SPI2:
-			spi_disable(SPI2, SPI2_CS);
-			SPI2->CR2 |= SPI_CR2_RXDMAEN;
-			dma_enable_channel(SELECT_SPI2_RX);
-			dma_enable_channel(SELECT_SPI2_TX);
-			SPI2->CR2 |= SPI_CR2_TXDMAEN;
-			break;
-		case (uint32_t)SPI3:
-			spi_disable(SPI3, SPI3_CS);
-			SPI3->CR2 |= SPI_CR2_RXDMAEN;
-			dma_enable_channel(SELECT_SPI3_RX);
-			dma_enable_channel(SELECT_SPI3_TX);
-			SPI3->CR2 |= SPI_CR2_TXDMAEN;
-			break;
-	}
-
-	spi_enable(spi);
-}
-
-void spi_dma_configure(SPI_TypeDef *spi, uint8_t tx_buffer[], uint8_t rx_buffer[], uint16_t size) {
-    DMAConfig rx_config;
-    DMAConfig tx_config;
-
-	switch ((uint32_t)spi) {
-		case (uint32_t)SPI1:
-			rx_config.selection = SELECT_SPI1_RX;
-			tx_config.selection = SELECT_SPI1_TX;
-			break;
-		case (uint32_t)SPI2:
-			rx_config.selection = SELECT_SPI2_RX;
-			tx_config.selection = SELECT_SPI2_TX;
-			break;
-		case (uint32_t)SPI3:
-			rx_config.selection = SELECT_SPI3_RX;
-			tx_config.selection = SELECT_SPI3_TX;
-			break;
-	}
-
-	rx_config.length = size;
-	rx_config.memory_addr = (uint32_t)rx_buffer;
-    rx_config.peripheral_addr = (uint32_t) &(spi->DR);
-    rx_config.pdata_size = sizeof(tx_buffer[0]);
-    rx_config.mdata_size = sizeof(tx_buffer[0]);
-    rx_config.circular = false;
-    rx_config.peripheral_to_memory = true;
-    rx_config.peripheral_increment = false;
-    rx_config.memory_increment = true;
-    rx_config.transfer_interrupt = true;
-
-	tx_config.length = size;
-	tx_config.memory_addr = (uint32_t)tx_buffer;
-    tx_config.peripheral_addr = (uint32_t) &(spi->DR);
-    rx_config.pdata_size = sizeof(rx_buffer[0]);
-    rx_config.mdata_size = sizeof(rx_buffer[0]);
-    tx_config.circular = false;
-    tx_config.peripheral_to_memory = false;
-    tx_config.peripheral_increment = false;
-    tx_config.memory_increment = false;
-    tx_config.transfer_interrupt = true;
-
-
-    configure_channel(rx_config);
-    configure_channel(tx_config);
 }
 
 void spi1_config() {
@@ -451,34 +302,4 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		}
 	}
 	return true;
-}
-
-void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint8_t* reception) {
-	spi_dma_configure(spi, transmission, reception, 1);
-
-//	spi_dma_enable_rtx(spi);
-	spi_dma_enable_tx(spi);
-//	spi_dma_enable_rx(spi);
-}
-
-
-
-//INTERRUPTS ARE HERE FOR NOW AS SPI IS THE ONLY ONE USING THEM
-
-//Pseudo circular. Required for the DMA to not have spooky race conditions
-//SPI3_RX
-void DMA2_CH1_IRQHandler() {
-	//In case this is used elsewhere, check that this is being called by SPI
-	if ((SPI3->CR2 & SPI_CR2_RXDMAEN_Msk) != 0) {
-		dma_disable_channel(SELECT_SPI3_RX);
-		dma_enable_channel(SELECT_SPI3_TX);
-	}
-}
-//SPI3_TX
-void DMA2_CH2_IRQHandler() {
-	//In case this is used elsewhere, check that this is being called by SPI
-	if ((SPI3->CR2 & SPI_CR2_TXDMAEN_Msk) != 0) {
-		dma_disable_channel(SELECT_SPI3_TX);
-		dma_enable_channel(SELECT_SPI3_RX);
-	}
 }

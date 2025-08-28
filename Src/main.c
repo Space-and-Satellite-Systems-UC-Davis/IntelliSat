@@ -1,6 +1,7 @@
 #include <print_scan.h>
 #include "platform_init.h"
 #include "SunSensors/sun_sensors.h"
+#include "ADC/adc.h"
 #include "DMA/DMA.h"
 #include "IMU/ASM330LHH.h"
 #include "Buttons/buttons.h"
@@ -28,22 +29,18 @@ int main() {
     uint16_t test_buffer[1] = {42};
 
     DMAConfig config;
-    config.selection = SELECT_ADC1;
+    config.selection = SELECT_ADC3;
     config.length = 1;
     config.memory_addr = (uint32_t)&test_buffer;
-    config.peripheral_addr = (uint32_t) &(SPI3->DR);
+    config.peripheral_addr = (uint32_t) &(ADC3->DR);
     config.circular = true;
 
     configure_channel(config);
-
+    adc_continuous_dma(ADC3, 6);
+    dma_enable_channel(SELECT_ADC3);
 
 	while (1) {
-		if (get_buttonStatus_SW1()) {
-//			imu_printAllValues();
-//			printMsg("REGISTER: %u\r\n", SPI3->DR);
-			printMsg("ARRAY: %u\r\n", test_buffer[0]);
-
-		}
+		printMsg("ARRAY: %u\r\n", test_buffer[0]);
 	}
 
 #endif

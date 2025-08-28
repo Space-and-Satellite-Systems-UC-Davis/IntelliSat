@@ -226,7 +226,7 @@ void adc_continuous_dma(ADC_TypeDef* adc, int channel) {
 	adc->CFGR  |=  ( ADC_CFGR_CONT ); //Continuous conversion
 	adc->CFGR  |=  ( ADC_CFGR_OVRMOD ); //If haven't read DR in time, overwrite
 	adc->CFGR  |=  ( ADC_CFGR_DMACFG ); //Enable DMA circular mode
-	adc->CFGR  |=  ( ADC_CFGR_DMAEN ); //Enable DMA
+	adc->CFGR  |=  ( ADC_CFGR_DMAEN ); //Enable DMA, ADC-side
 	adc->CR  |=  ( ADC_CR_ADSTART ); //Start conversion
 }
 
