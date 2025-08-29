@@ -16,7 +16,7 @@
 
 
 // Global (external) variables and functions
-extern int core_MHz;	// from core_config.h
+extern int core_Hz;	// from core_config.h
 
 uint64_t systick_time = 0;
 
@@ -36,15 +36,24 @@ uint64_t getSysTime() {
 
 bool _run_scheduler;
 
+void systick_adjust_reload() {
+	// configure for 1 ms period
+	// frequency/1000 = cycles/ms
+	// frequenchy = AHB/8 = SYSCLK/8 = coreHz/8
+	SysTick->LOAD = core_Hz/8/1000;
+}
+
 void systick_init(bool run_scheduler) {
 	// configure for 1 ms period
-	SysTick->LOAD = (core_MHz / 8) * 1000;
-	// use AHB/8 as input clock, and enable counter interrupt
+	systick_adjust_reload();
 
+	// use AHB/8 as input clock, and enable counter interrupt
 	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
 	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;	// CLKSOURCE of 0 uses AHB/8
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
+	// SysTick isn't controlled by NVIC in this way
+	// I don't know why this is here
 	NVIC_EnableIRQ(SysTick_IRQn);
 
 	_run_scheduler = run_scheduler;

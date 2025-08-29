@@ -10,6 +10,7 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 #include "RTC/rtc.h"
+#include "Timers/timers.h"
 
 typedef enum OperatingMode {
 	RUN, LPRUN, LPSLEEP

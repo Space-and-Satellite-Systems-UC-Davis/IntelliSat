@@ -9,10 +9,12 @@
 #include "WDG/watchdog.h"
 #include <print_scan.h>
 
-bool is_DBP_not_set() { return PWR->CR1 & PWR_CR1_DBP == 0; }
+bool is_DBP_not_set() { return (PWR->CR1 & PWR_CR1_DBP) == 0; }
 //Remember that using breakpoints may introduce delay
 void testFunction_LPSleep() {
     printMsg("\r\nSleep Test Start. If you are seeing this multiple times, watchdog triggered reset\r\n");
+
+
 
 	backup_domain_controlEnable();
 	wait_with_timeout(is_DBP_not_set, DEFAULT_TIMEOUT_MS);

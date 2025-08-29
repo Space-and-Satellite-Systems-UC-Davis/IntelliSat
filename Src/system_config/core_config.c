@@ -36,7 +36,7 @@
 #define RCC_PLLSAI1CFGR_PLLSAI1N_VAL 12
 
 // Global variable
-int core_MHz;
+int core_Hz = 80000000;
 
 bool is_LSI_not_ready() { return !(RCC->CSR & RCC_CSR_LSIRDY); }
 bool is_LSE_not_ready() { return !(RCC->BDCR & RCC_BDCR_LSERDY); }
@@ -105,7 +105,7 @@ void init_coreClocks() {
 		  (RCC_CFGR_PPRE_APB_HCLK_DIV_16 << RCC_CFGR_PPRE1_Pos)	// APB1
 		| (RCC_CFGR_PPRE_APB_HCLK_DIV_16 << RCC_CFGR_PPRE2_Pos);	// APB2
 
-	core_MHz = 80;
+	core_Hz = 80000000;
 
 
 	// clock all GPIO ports

@@ -35,7 +35,7 @@ char qspi_getStatus() {
 #define qspi_dma_inuse()  (qspi_details &   0b0100000)
 
 // Global (external) variables and functions
-extern int core_MHz;	// from core_config.h
+extern int core_Hz;	// from core_config.h
 
 void qspi_gpioInit() {
 
@@ -147,7 +147,7 @@ void qspi_config(
 	qspi_disable();
 	QUADSPI->CR = QSPI_REG_RESET;
 	QUADSPI->CR |=
-		  ((core_MHz-1) << QUADSPI_CR_PRESCALER_Pos)
+		  ((core_Hz-1000000) << QUADSPI_CR_PRESCALER_Pos)
 		| QUADSPI_CR_SSHIFT
 		| QUADSPI_CR_APMS;
 	QUADSPI->DCR = QSPI_REG_RESET;

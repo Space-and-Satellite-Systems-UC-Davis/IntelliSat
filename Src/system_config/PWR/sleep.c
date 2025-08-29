@@ -5,6 +5,9 @@
  */
 #include "sleep.h"
 
+// Global (external) variables and functions
+extern int core_Hz;	// from core_config.h
+
 //Stores current mode globally*
 OperatingMode mode = RUN;
 
@@ -15,6 +18,10 @@ void PWR_enterLPRunMode() {
 	// Divide SYSCLK by 64. 80MHz -> 1.25MHz
 	// Assuming PLL 80MHz SYSCLK
 	RCC->CFGR |= RCC_CFGR_HPRE_DIV64;
+	core_Hz = 1250000;
+
+	// Tell systick the frequency changed
+	systick_adjust_reload();
 
 	PWR->CR1 |= PWR_CR1_LPR;
 	mode = LPRUN;
@@ -26,6 +33,8 @@ void PWR_exitLPRunMode() {
 	wait_with_timeout(is_REGLPF_not_clear, DEFAULT_TIMEOUT_MS);
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
+	core_Hz = 80000000;
+
 	mode = RUN;
 }
 

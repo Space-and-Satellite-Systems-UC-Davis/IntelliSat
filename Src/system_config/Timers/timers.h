@@ -79,6 +79,14 @@ void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 /**
+ * Adjusts the reload value according to core_Hz
+ * Needs to be called if core_Hz is modified prior to systick_init
+ *
+ * @returns none
+*/
+void systick_adjust_reload();
+
+/**
  * Initializes the Heartbeat LED Timer (the Systick). 
  * Configures it to tick every ms.
  *
