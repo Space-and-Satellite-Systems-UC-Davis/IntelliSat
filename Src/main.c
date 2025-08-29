@@ -30,8 +30,10 @@ int main() {
     led_d2(1);
     led_d3(0);
     printMsg("Begin HDD setup for PID experiment \r\n");
-	hdd_init(0);
-	hdd_arm(0);
+	hdd_init(PWM0);
+	hdd_init(PWM1);
+	hdd_arm(PWM0);
+	hdd_arm(PWM1);
 	delay_ms(3000);
 	printMsg("Finished preparation; running PID experiment \r\n");
     PID_status expResult = ADCS_MAIN(ADCS_HDD_EXP_ANGVEL);
