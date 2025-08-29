@@ -36,8 +36,10 @@ bool PWR_enterLPSleepMode(uint16_t seconds);
 void PWR_exitLPSleepMode();
 
 /**
- * By default, program will exit LPSleep upon interrupt
- * If you don't want that for yours, call this function
+ * By default, program will exit LPSleep upon interrupt.
+ * If you don't want that, call this function at the end of
+ * the interrupt.
+ * See RTC_WKUP_IRQHandler as example
  *
  * @param None
  *

@@ -5,7 +5,7 @@
  */
 #include "sleep.h"
 
-#define IRQ_LENGTH 82
+//Stores current mode globally*
 OperatingMode mode = RUN;
 
 void PWR_enterLPRunMode() {
@@ -13,7 +13,7 @@ void PWR_enterLPRunMode() {
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE);
 	// Divide SYSCLK by 64. 80MHz -> 1.25MHz
-	// Assuming PLL
+	// Assuming PLL 80MHz SYSCLK
 	RCC->CFGR |= RCC_CFGR_HPRE_DIV64;
 
 	PWR->CR1 |= PWR_CR1_LPR;
@@ -38,7 +38,7 @@ bool PWR_enterLPSleepMode(uint16_t seconds) {
 	// SysTick is not handled by NVIC
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
-
+	// Set alarm to wake us up later
 	bool result = rtc_wakeUp(seconds);
 	if (result == false) return false;
 

@@ -68,6 +68,17 @@ typedef enum RTCSEL {
 	RTCSEL_HSE
 } RTCSEL;
 
+// Enumerates all possible RTC_CR_WUCKSEL options
+typedef enum WUCKSEL {
+	WUCKSEL_RTC_DIV16,
+	WUCKSEL_RTC_DIV8,
+	WUCKSEL_RTC_DIV4,
+	WUCKSEL_RTC_DIV2,
+	WUCKSEL_ck_spre,
+	WUCKSEL_ck_spre_EXTENDED_WUT,
+
+} WUCKSEL;
+
 /**
  * Enables the RTC's Clock. Sets the appropriate pre-scalers
  * based on the oscillator source of the RTC.
@@ -132,6 +143,8 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second);
  * @returns None
  */
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
+
+/********************************* RTC ALARMS ********************************/
 
 /**
  * Activates a timer which will trigger RTC_WKUP_IRQHandler after
