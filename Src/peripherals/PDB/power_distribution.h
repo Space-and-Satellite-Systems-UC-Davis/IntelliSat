@@ -18,37 +18,85 @@
 //#define PDB_PWR_^_PORT GPIOx
 //#define PDB_PWR_^_PIN n
 
+// Main INA226 bus access data
+#define PDB_GPIO GPIOC
+#define PDB_SCL_PIN 7
+#define PDB_SDA_PIN 8
+
+// Pyro specific access data
+#define PDB_PYRO_ADDRESS 0x45 // TODO
+#define PDB_PYRO_GPIO PDB_GPIO
+#define PDB_PYRO_SCL_PIN PDB_SCL_PIN
+#define PDB_PYRO_SDA_PIN PDB_SDA_PIN
+
+// MGT specific access data
+#define PDB_MGT_ADDRESS 0x45 // TODO
+#define PDB_MGT_GPIO PDB_GPIO
+#define PDB_MGT_SCL_PIN PDB_SCL_PIN
+#define PDB_MGT_SDA_PIN PDB_SDA_PIN
+
+// HDD specific access data
+#define PDB_HDD_ADDRESS 0x45 // TODO
+#define PDB_HDD_GPIO PDB_GPIO
+#define PDB_HDD_SCL_PIN PDB_SCL_PIN
+#define PDB_HDD_SDA_PIN PDB_SDA_PIN
+
+// Battery monitor pins
+#define BATMON_ADDRESS 0x45 // TODO
+#define BATMON_GPIO GPIOH
+#define BATMON_SDA 0
+#define BATMON_SCL 1
+
+typedef enum {
+    PDB_PERIPHERAL_PYRO,
+    PDB_PERIPHERAL_MGT,
+    PDB_PERIPHERAL_HDD,
+    PDB_PERIPHERAL_BATMON
+} PDB_PERIPHERAL;
+
 /**
  * Initialize power pins for output
  */
 void pdb_init();
 
 /**
- * Turn on burn wire
+ * Turn on a peripheral
  */
-void pdb_pyro_on();
+void pdb_on(PDB_PERIPHERAL peripheral);
 
 /**
- * Turn off burn wire
+ * Turn off a peripheral
  */
-void pdb_pyro_off();
+void pdb_off(PDB_PERIPHERAL peripheral);
 
 /**
- * Turn on magnetorquer
+ * Reads the shunt voltage from a peripheral's INA226
+ * @returns Voltage in mV
  */
-void pdb_mgt_on();
+float pdb_getShuntVoltage(PDB_PERIPHERAL peripheral);
 
 /**
- * Turn off magnetorquer
+ * Reads the bus voltage from a peripheral's INA226
+ * @returns Voltage in Volts
  */
-void pdb_mgt_off();
+float pdb_getBusVoltage(PDB_PERIPHERAL peripheral);
 
 /**
- * Turn on HDDs
+ * Reads the power from a peripheral's INA226
+ * @returns Wattage as a 16 bit integer
  */
-void pdb_hdd_on();
+float pdb_getPower(PDB_PERIPHERAL peripheral);
 
 /**
- * Turn off HDDs
+ * Reads the current from a peripheral's INA226
+ * @returns Amps as a 16 bit integer
  */
-void pdb_hdd_off();
+float pdb_getCurrent(PDB_PERIPHERAL peripheral);
+
+/**
+ * Resets the mode of a peripheral's INA226
+ * @param mode The mode of the sensor (continuous, powered down)
+ * 
+ * @returns None
+ */
+void pdb_setMode(PDB_PERIPHERAL peripheral, int mode);
