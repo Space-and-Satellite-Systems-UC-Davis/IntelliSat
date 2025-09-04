@@ -17,7 +17,6 @@
 #include <globals.h>
 #include <stdint.h>
 #include <core_config.h>
-#include "PWR/sleep.h"
 #include "WDG/watchdog.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
@@ -143,18 +142,5 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second);
  * @returns None
  */
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
-
-/********************************* RTC ALARMS ********************************/
-
-/**
- * Activates a timer which will trigger RTC_WKUP_IRQHandler after
- * given amount of time.
- * Used for waking up from sleep mode
- *
- * @param seconds  Number of seconds before the alarm triggers
- *
- * @returns false if called with an RTC clock other than LSE/LSI
- */
-bool rtc_wakeUp(uint16_t seconds);
 
 #endif // REALOP1_RTC_H_

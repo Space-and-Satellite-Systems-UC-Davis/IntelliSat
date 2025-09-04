@@ -14,7 +14,6 @@
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
-
 void rtc_openWritingPrivilege() {
 	// Allow Backup Domain Writing Access
 	backup_domain_controlEnable();
@@ -333,106 +332,4 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		*second  = 10 * ((RTC->TR & RTC_TR_ST_Msk)  >> RTC_TR_ST_Pos);
 		*second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
 	}
-}
-
-//Watchdog will be mad if we don't notify it every ~32 seconds
-uint32_t sleep_cycles = 0;
-uint16_t sleep_remainder = 0;
-const uint16_t MAX_SLEEP = 30; // in seconds, must be under 32
-bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
-
-// There are ways to allow it to wait longer if we need to
-bool rtc_wakeUp(uint16_t seconds) {
-	// Only LSI and LSE will be on for Stop modes.
-	// Stop modes not currently implemented
-	uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
-	uint16_t clk_per_sec; //Clock cycles per second
-	switch (current_source >> 8) {
-		case RTCSEL_LSE:
-			clk_per_sec = 2048;
-			break;
-		case RTCSEL_LSI:
-			clk_per_sec = 2000;
-			break;
-		default:
-			return false;
-	}
-
-	sleep_cycles = seconds / MAX_SLEEP;
-	sleep_remainder = seconds % MAX_SLEEP;
-
-	rtc_openWritingPrivilege();
-
-	RTC->CR &= ~(RTC_CR_WUTE); //clear
-	//Can't access WUCKSEL/WUT otherwise
-	wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
-
-	//Set auto-reload to number of seconds we wait
-	RTC->WUTR &= ~(RTC_WUTR_WUT);
-	(seconds > MAX_SLEEP) ?
-			(RTC->WUTR |= (MAX_SLEEP * clk_per_sec) << RTC_WUTR_WUT_Pos)
-			: (RTC->WUTR |= (seconds * clk_per_sec) << RTC_WUTR_WUT_Pos);
-
-	//Select the clock divisor
-	//ck_spre appears to cause ~1.3s delay every interrupt?? Avoid
-	RTC->CR &= ~(RTC_CR_WUCKSEL);
-	RTC->CR |= (WUCKSEL_RTC_DIV16) << RTC_CR_WUCKSEL_Pos;
-
-	//Configure interrupt
-	RTC->ISR &= ~(RTC_ISR_WUTF);
-    EXTI->IMR1 |= EXTI_IMR1_IM20;
-    EXTI->RTSR1 |= EXTI_RTSR1_RT20;
-	RTC->CR |= RTC_CR_WUTIE;
-    NVIC_EnableIRQ(RTC_WKUP_IRQn);
-
-	RTC->CR |= RTC_CR_WUTE; // Enable wakeup
-
-	rtc_closeWritingPrivilege();
-
-	return true;
-}
-
-//Will wake up and turn off itself when done with cycles
-void RTC_WKUP_IRQHandler() {
-	rtc_openWritingPrivilege();
-	//Acknowledged, clear interrupt flags
-	RTC->ISR &= ~(RTC_ISR_WUTF);
-	EXTI->PR1 |= EXTI_PR1_PIF20;
-
-	//Keep watchdog from resetting
-	//"KICK" ;(
-	IWDG->KR |= IWDG_KICK;
-
-	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
-		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
-	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off wake-up interrupt
-		return; // Do not maintain sleep
-	} else if (sleep_cycles == 1) {
-		RTC->CR &= ~(RTC_CR_WUTE);
-		//Can't access WUCKSEL/WUT otherwise
-		wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
-
-		uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
-		uint16_t clk_per_sec; //Clock cycles per second
-		switch (current_source >> 8) {
-			case RTCSEL_LSE:
-				clk_per_sec = 2048;
-				break;
-			case RTCSEL_LSI:
-				clk_per_sec = 2000;
-				break;
-			default:
-				return; //Should never happen
-		}
-
-		// Sleep for the remaining seconds
-		RTC->WUTR &= ~(RTC_WUTR_WUT);
-		RTC->WUTR |= (sleep_remainder * clk_per_sec) << RTC_WUTR_WUT_Pos;
-		RTC->CR |= RTC_CR_WUTE;
-	}
-
-	sleep_cycles--;
-	PWR_maintainLPSleep();
-
-	rtc_closeWritingPrivilege();
 }
