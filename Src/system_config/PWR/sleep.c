@@ -47,17 +47,12 @@ bool PWR_enterLPSleepMode(uint16_t seconds) {
 	// SysTick is not handled by NVIC
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
-	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
-
 	// Set alarm to wake us up later
 	bool result = rtc_wakeUp(seconds);
-	if (result == false) {
-		PWR_exitLPSleepMode();
-		return false;
-	}
+	if (result == false) return false;
 
+	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
 	mode = LPSLEEP;
-
 	// I don't think this loop is avoidable with timeout
 	// Wake up interrupt can trigger prior to getting out of LPSleep
 	// Loop will end unless explicitly ordered to continue
