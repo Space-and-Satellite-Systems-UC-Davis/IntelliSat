@@ -14,8 +14,11 @@
 #define REALOP1_RTC_H_
 
 #include "stm32l476xx.h"
+#include <globals.h>
 #include <stdint.h>
 #include <core_config.h>
+#include "PWR/sleep.h"
+#include "WDG/watchdog.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
@@ -57,10 +60,31 @@
 #define RTC_WPR_WRITE_PROTECT_ON_2 0x53 // RTC_WPR_WRITE_ON_1 and RTC_WPR_WRITE_ON_2 must be used together in the order they are presented
 #define RTC_WPR_WRITE_PROTECT_OFF 0xFF
 
+// Enumerates all possible RCC_BDCR_RTCSEL options
+typedef enum RTCSEL {
+	RTCSEL_NONE,
+	RTCSEL_LSE,
+	RTCSEL_LSI,
+	RTCSEL_HSE
+} RTCSEL;
+
+// Enumerates all possible RTC_CR_WUCKSEL options
+typedef enum WUCKSEL {
+	WUCKSEL_RTC_DIV16,
+	WUCKSEL_RTC_DIV8,
+	WUCKSEL_RTC_DIV4,
+	WUCKSEL_RTC_DIV2,
+	WUCKSEL_ck_spre,
+	WUCKSEL_ck_spre_EXTENDED_WUT,
+
+} WUCKSEL;
+
 /**
  * Enables the RTC's Clock. Sets the appropriate pre-scalers
  * based on the oscillator source of the RTC.
  * NOTE : The selected Oscillator must be turned on beforehand.
+ * WARNING: Backup Domain excluding RTC_BDCR will be reset
+ * WARNING: LSI may deviate by 3+%. Not good real time source.
  *
  * @param  clock_source   Predefined options in clock_nvic_config.h
  * @param  forced_config  Setting this to 'false' results in the configuration not taking place in case the RTC is pre-initialized
@@ -120,5 +144,17 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second);
  */
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
 
+/********************************* RTC ALARMS ********************************/
+
+/**
+ * Activates a timer which will trigger RTC_WKUP_IRQHandler after
+ * given amount of time.
+ * Used for waking up from sleep mode
+ *
+ * @param seconds  Number of seconds before the alarm triggers
+ *
+ * @returns false if called with an RTC clock other than LSE/LSI
+ */
+bool rtc_wakeUp(uint16_t seconds);
 
 #endif // REALOP1_RTC_H_
