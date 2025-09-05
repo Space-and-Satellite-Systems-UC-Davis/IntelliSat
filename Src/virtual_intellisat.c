@@ -83,6 +83,29 @@ vi_get_angvel(
 	return GET_ANGVEL_SUCCESS;
 }
 
+/**@brief Retrieve angular velocity data from the IMU for only the z-axis.
+ *
+ * @param imu Which inertial measurement unit to read from.
+ * @param angvel_z Return-by-reference ptrs.
+ *
+ * The sign of the angular velocity values must adhere to the
+ *   Right-Hand-Rule as defined by the satellite's positive axes.
+ *   Retrieval of only one axis is used for optimizing HDD PID.
+ *
+ * @return vi_get_angvel_status A return code.
+ */
+vi_get_angvel_status
+vi_get_angvel_z(
+	vi_IMU imu,
+    double *angvel_z
+){
+	enum IMU_SELECT imu_select = (imu == VI_IMU1) ? IMU0 : IMU1;
+	set_IMU(imu_select);
+
+	*angvel_z = imu_readGyro_Z();
+	return GET_ANGVEL_SUCCESS;
+}
+
 /**@brief Send a throttle command to the HDD.
  *
  * @param throttle The desired throttle in the range [-1.0, 1.0].
@@ -111,7 +134,8 @@ vi_hdd_command(
 	if (resultDuty < MID_DUTY) { resultDuty = MID_DUTY; }  // clamp the duty
 	if (resultDuty > MAX_DUTY) { resultDuty = MAX_DUTY; }
 	if (doPrint) { printMsg("Got post clamp result duty of %d\r\n", resultDuty); }
-	hddDrive(channel, (uint8_t) resultDuty, doPrint);
+	hddDriveNB(channel, (uint8_t) resultDuty);
+	//hddDrive(channel, (uint8_t) resultDuty, doPrint);
 	//pwm_setDutyCycle(channel, resultDuty);
 
 	return HDD_COMMAND_SUCCESS;

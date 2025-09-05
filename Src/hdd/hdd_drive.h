@@ -13,6 +13,9 @@ void hddRamp(const PWM_Channels pwm, const dutyType TARGET_DUTY, int8_t doPrint)
 // will drive to the targeted duty without slipping; will ramp as needed
 void hddDrive(const PWM_Channels pwm, const dutyType TARGET_DUTY, int8_t doPrint);
 
+// tries to avoid slipping while not blocking program execution
+void hddDriveNB(const PWM_Channels pwm, dutyType TARGET_DUTY);
+
 // reverse ramp
 void hddRampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY);
 
