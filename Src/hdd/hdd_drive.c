@@ -33,7 +33,7 @@ void hddSetSubMinDuty(const float PERCENT, const float MIN_DUTY, const float ZER
 void hddRamp(const PWM_Channels pwm, const uint8_t TARGET_DUTY, int8_t doPrint) {
 	if (doPrint) { printMsg("Ramping to %u. \r\n", TARGET_DUTY); }
 	const uint8_t DUTY_STEP = 1;
-	const uint32_t DELAY_MS = 25;  // time between ramps
+	const uint32_t DELAY_MS = 50;  // time between ramps
 
 	// start at the middle duty + some base speed, then slowly increase
 	uint8_t currDuty = pwm_getDutyCycle(pwm) + DUTY_STEP;
@@ -79,10 +79,13 @@ void hddDrive(const PWM_Channels pwm, const uint8_t TARGET_DUTY, int8_t doPrint)
 void hddDriveNB(const PWM_Channels pwm, dutyType TARGET_DUTY) {
 	// limit the targeted duty if we would slip trying to immediately jump
 	if (TARGET_DUTY > SLIP_DUTY && pwm_getDutyCycle(pwm) < SLIP_DUTY) {
-		TARGET_DUTY = SLIP_DUTY;
+		pwm_setDutyCycle(pwm, SLIP_DUTY);
+		delay_ms(50);
+		hddRamp(pwm, TARGET_DUTY, 0);
+		return;
 	}
 
-	hddRamp(pwm, TARGET_DUTY, 0);
+	pwm_setDutyCycle(pwm, TARGET_DUTY);
 }
 
 void hddRampRev(const float TARGET_DUTY, const float MIN_DUTY, const float MAX_DUTY) {

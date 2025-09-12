@@ -26,9 +26,10 @@ void testFunction_HDD1() {
 	printMsg("Starting HDD1 test function execution.\r\n");
 
 	// init timer here does other initialization actions
+	const int targetPWM = PWM1;
 	led_d2(1);
 	led_d3(0);
-	hdd_init(PWM0);
+	hdd_init(targetPWM);
 	//pwm_initTimer(PWM0, PERIOD_uS); //This period time is in microseconds
 	//pwm_setDutyCycle(PWM0, 10);
 	//pwm_timerOn(PWM0);
@@ -40,48 +41,49 @@ void testFunction_HDD1() {
 		// calibration controls what PWM duty cycle the
 		// ESC considers as the maximums and minimums
 		printMsg("Calibrating max duty. \r\n");
-		hdd_calibrate(PWM0, 1);
+		hdd_calibrate(targetPWM, 1);
 
 		printMsg("Calibrating min duty in 3 seconds. \r\n");
 		delay_ms(3000);
-		hdd_calibrate(PWM0, 0);
+		hdd_calibrate(targetPWM, 0);
 
 		printMsg("Calibration completed; 3 seconds until calibration concludes \r\n.");
 		delay_ms(3000);
 		printMsg("Continuing. \r\n");
-	} else {
-		hdd_arm(PWM0);
 	}
 
+	hdd_arm(targetPWM);
 	printMsg("Testing slipping.\r\n");
-	pwm_setDutyCycle(PWM0, SLIP_DUTY);
+	pwm_setDutyCycle(targetPWM, SLIP_DUTY);
 	delay_ms(5000);
-	pwm_setDutyCycle(PWM0, MID_DUTY);
+	pwm_setDutyCycle(targetPWM, MID_DUTY);
 	delay_ms(5000);
 
+	led_d2(0);
+	led_d3(1);
 	printMsg("Testing driving.\r\n");
-	hddDrive(PWM0, 95, 1);
-	uint8_t duty = pwm_getDutyCycle(PWM0);
+	hddDrive(targetPWM, 95, 1);
+	uint8_t duty = pwm_getDutyCycle(targetPWM);
 	printMsg("Set duty to %u and got duty %u\r\n", 95, duty);
 	delay_ms(10000);
 
 	led_d2(1);
 	led_d3(1);
 	printMsg("Starting Execution. \r\n");
-	pwm_setDutyCycle(PWM0, 100);
+	pwm_setDutyCycle(targetPWM, 100);
 	//ramp(DRIVE_DUTY, MIN_DUTY, MAX_DUTY);
 	delay_ms(1000);
 
 	printMsg("Testing minimum duty \r\n");
-	pwm_setDutyCycle(PWM0, MIN_DUTY);
+	pwm_setDutyCycle(targetPWM, MIN_DUTY);
 	delay_ms(5000);
 
 	printMsg("Testing mid duty \r\n");
-	pwm_setDutyCycle(PWM0, MID_DUTY);
+	pwm_setDutyCycle(targetPWM, MID_DUTY);
 	delay_ms(5000);
 
 	printMsg("Testing max duty \r\n");
-	pwm_setDutyCycle(PWM0, MAX_DUTY);
+	pwm_setDutyCycle(targetPWM, MAX_DUTY);
 	delay_ms(5000);
 
 	led_d2(0);
@@ -92,7 +94,7 @@ void testFunction_HDD1() {
 		printMsg("Preparing to start trial. \r\n");
 		float currDuty = MIN_DUTY;
 		while (currDuty < MID_DUTY) {
-			pwm_setDutyCycle(PWM0, currDuty);
+			pwm_setDutyCycle(targetPWM, currDuty);
 			printMsg("Duty: %f \r\n", currDuty);
 			delay_ms(500);
 			currDuty += DUTY_STEP;
@@ -101,7 +103,7 @@ void testFunction_HDD1() {
 		printMsg("Waiting to up duty cycle. \r\n");
 		delay_ms(5000);
 		while (currDuty <= MAX_DUTY) {
-			pwm_setDutyCycle(PWM0, currDuty);
+			pwm_setDutyCycle(targetPWM, currDuty);
 			printMsg("Duty: %f \r\n", currDuty);
 			delay_ms(500);
 			currDuty += DUTY_STEP;
@@ -116,5 +118,5 @@ void testFunction_HDD1() {
 	led_d3(0);
 
 	printMsg("Ending program. \r\n");
-	pwm_timerOff(PWM0);
+	pwm_timerOff(targetPWM);
 }
