@@ -27,9 +27,12 @@ void testFunction_HDD1() {
 
 	// init timer here does other initialization actions
 	const int targetPWM = PWM1;
+	const int secondPWM = (targetPWM + 1) % 2;
+	printMsg("Testing HDD%d\r\n", targetPWM);
 	led_d2(1);
 	led_d3(0);
 	hdd_init(targetPWM);
+	hdd_init(secondPWM);
 	//pwm_initTimer(PWM0, PERIOD_uS); //This period time is in microseconds
 	//pwm_setDutyCycle(PWM0, 10);
 	//pwm_timerOn(PWM0);
@@ -43,8 +46,9 @@ void testFunction_HDD1() {
 		printMsg("Calibrating max duty. \r\n");
 		hdd_calibrate(targetPWM, 1);
 
+		pwm_setDutyCycle(targetPWM, MID_DUTY);
+
 		printMsg("Calibrating min duty in 3 seconds. \r\n");
-		delay_ms(3000);
 		hdd_calibrate(targetPWM, 0);
 
 		printMsg("Calibration completed; 3 seconds until calibration concludes \r\n.");
@@ -53,6 +57,12 @@ void testFunction_HDD1() {
 	}
 
 	hdd_arm(targetPWM);
+	hdd_arm(secondPWM);
+	pwm_setDutyCycle(targetPWM, 90);
+	pwm_setDutyCycle(secondPWM, MAX_DUTY);
+	delay_ms(10000);
+
+	pwm_setDutyCycle(secondPWM, 60);
 	printMsg("Testing slipping.\r\n");
 	pwm_setDutyCycle(targetPWM, SLIP_DUTY);
 	delay_ms(5000);

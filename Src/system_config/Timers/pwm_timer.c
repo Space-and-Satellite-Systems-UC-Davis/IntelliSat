@@ -155,6 +155,7 @@ uint8_t pwm_getDutyCycle(PWM_Channels pwm) {
 
 	if (pwm == PWM1) {
 		PWMTimer = PWMTimer1;
+		period = PWMTimer->ARR;  // the periods are not always the same
 		timeOn = PWMTimer->CCR4;
 	}
 

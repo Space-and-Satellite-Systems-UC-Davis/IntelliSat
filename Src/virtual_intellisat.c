@@ -125,7 +125,7 @@ vi_hdd_command(
 	int8_t doPrint
 ){
 	// we assume the passed throttle is valid
-	PWM_Channels channel = (hdd == VI_HDD1) ? PWM0 : PWM1;
+	PWM_Channels channel = (hdd == VI_HDD1) ? PWM1 : PWM0;
 
 	// calculate the result duty while avoiding overflow issues
 	int32_t resultDuty = (int32_t) pwm_getDutyCycle(channel) + (int32_t) throttle;

@@ -19,13 +19,13 @@ const int PERIOD_uS = 2000;  // period is microseconds (5% duty -> min (1ms puls
 
 void hdd_init(const PWM_Channels channel){
 	pwm_initTimer(channel, PERIOD_uS);
-	pwm_setDutyCycle(channel, 100);
+	pwm_setDutyCycle(channel, 50);
 	pwm_timerOn(channel);
 }
 
 void hdd_calibrate(const PWM_Channels channel, const int CAL_MAX) {
 	pwm_setDutyCycle(channel, MAX_START_DUTY); // trigger calibration
-	printMsg("Min duty: %f, Max duty: %f, Max start duty: %f \r\n", MIN_DUTY, MAX_DUTY, MAX_START_DUTY);
+	printMsg("Min duty: %u, Max duty: %u, Max start duty: %u \r\n", MIN_DUTY, MAX_DUTY, MAX_START_DUTY);
 	delay_ms(1000);
 
 	if (CAL_MAX) {
