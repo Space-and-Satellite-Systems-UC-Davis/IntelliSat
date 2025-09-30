@@ -1,4 +1,6 @@
 #include "intelliTasks_proto.h"
+#include "peripherals/PDB/power_distribution.h"
+
 //#include "ADCS.h"
 
 bool detumble_time() {
@@ -7,8 +9,8 @@ bool detumble_time() {
 }
 
 void config_detumble() {
-    //Enable coils board
     //Logging is handled within the ADCS software
+    pdb_mgt_on();
 }
 
 void detumble() {
@@ -29,5 +31,5 @@ void detumble() {
 }
 
 void clean_detumble() {
-    //Disable coils board
+    pdb_mgt_off();
 }
