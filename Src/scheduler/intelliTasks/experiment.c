@@ -1,4 +1,5 @@
 #include "intelliTasks_proto.h"
+#include "peripherals/PDB/power_distribution.h"
 
 //#include "ADCS.h"
 
@@ -8,8 +9,8 @@ bool experiment_time() {
 }
 
 void config_experiment() {
-    // Enable HDD
     // Logging is handled within the ADCS software
+    pdb_hdd_on();
 }
 
 void experiment() {
@@ -30,5 +31,5 @@ void experiment() {
 }
 
 void clean_experiment() {
-    // Disable HDD
+    pdb_hdd_off();
 }
