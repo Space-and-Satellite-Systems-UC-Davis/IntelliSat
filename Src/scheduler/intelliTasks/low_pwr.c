@@ -2,6 +2,7 @@
 #include "task.h"
 #include "PWR_DIS/pwr_distribution.h"
 #include "PWRMON/INA226.h"
+#include "../system_config/PWR/sleep.h"
 // #include "eta3000.h"     // Dedicated balancing IC
 // #include "s8254a.h"      // Protection IC
 
@@ -82,7 +83,7 @@ void config_low_pwr(void)
 
 void low_pwr_main(void)
 {
-    enable_low_power_hardware();
+    enable_low_power_hardware(5);
 }
 
 void clean_low_pwr(void)
@@ -94,7 +95,7 @@ void clean_low_pwr(void)
 }
 
 // Hardware Control ========================================================
-void enable_low_power_hardware(void)
+void enable_low_power_hardware(uint16_t IdleTime)
 {
     // Implementation-specific low-power modes:
     // - Reduce clock speeds
@@ -102,9 +103,19 @@ void enable_low_power_hardware(void)
     // - Adjust voltage regulators
     // __HAL_RCC_GPIOB_CLK_DISABLE();
     // HAL_PWREx_EnableUltraLowPower();
-        mgt_off();
-        hdd_off(0);
-        hdd_off(1);
+	mgt_off();
+	        hdd_off(0);
+	        hdd_off(1);
+	        low_pwr_mode = true;
+	     vTaskSuspendAll();
+	     
+		PWR_enterLPModeUntilConditionMet(&battery_is_recovered, 1800);
+		
+		xTaskResumeAll();
+		restore_normal_hardware();
+		low_pwr_mode = false;
+		/*
+        */
 }
 
 void restore_normal_hardware(void)

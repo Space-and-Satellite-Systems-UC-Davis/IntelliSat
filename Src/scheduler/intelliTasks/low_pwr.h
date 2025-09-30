@@ -22,7 +22,7 @@ void low_pwr_main(void);
 void clean_low_pwr(void);
 
 // Hardware control
-void enable_low_power_hardware(void);
+void enable_low_power_hardware(uint16_t IdleTime);
 void restore_normal_hardware(void);
 
 #endif // LOW_PWR_H

@@ -58,3 +58,6 @@ release
 
 # Launch file
 *.launch
+
+.vscode
+settings.json

@@ -19,7 +19,8 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION                     0
 
 // TODO: Power saving mode test with (1)
-#define configUSE_TICKLESS_IDLE                                     0
+// User-defined Macro Setting Enabled
+#define configUSE_TICKLESS_IDLE	                               		  2
 
 // ... DON'T MODIFY
 #define configCPU_CLOCK_HZ                                          80000000

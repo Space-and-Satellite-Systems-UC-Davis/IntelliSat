@@ -13,6 +13,8 @@
 
 #define TASK_NOTIFY_ALL 0xFFFFFFFF
 
+#define portSUPPRESS_TICKS_AND_SLEEP(xIdleTime) enable_low_power_hardware(xIdleTime)
+
 /*
  * Task - a mode of execution on satellite
  * (note: uses preemption to interrupt running tasks)
