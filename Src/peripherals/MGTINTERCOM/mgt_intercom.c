@@ -13,7 +13,7 @@
  #include <MGTINTERCOM/mgt_intercom.h>
 
 /**
- * Intialize the PFC->MGT Intercom USART and PCP devices
+ * Intialize the PFC->MGT Intercom USART devices
  * 
  * @returns None
  */
@@ -47,7 +47,6 @@
  /**
   * Get the current through a coil
   * 
-  * @param device  A pointer to the PCP device of the MGT
   * @param coil_number  the number of the coil
   * 
   * @returns  the current in Amps (A), or -1 if nothing was read
