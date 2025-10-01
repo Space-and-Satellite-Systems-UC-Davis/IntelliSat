@@ -15,8 +15,6 @@
 /**
  * Intialize the PFC->MGT Intercom USART and PCP devices
  * 
- * @param pcp  A pointer to an empty pcp device
- * 
  * @returns None
  */
  void mgt_intercom_init() {
@@ -26,12 +24,13 @@
  /**
   * Set the PWM for a coil
   * 
-  * @param device  A pointer to the PCP device of the MGT
   * @param coil_number  The number of the coil whose PWM is being set
   * @param pwm  1 or 0, for pwm 1 or 0
   * @param percent  The PWM percentage (0-100)
+  * 
+  * @returns Boolean denoting whether the MGT side responded
   */
- void mgt_intercom_set_coil_percent(int coil_number, int pwm, int percentage) {
+ bool mgt_intercom_set_coil_percent(int coil_number, int pwm, int percentage) {
     uint8_t payload[7];
     payload[0] = 'S';
     payload[1] = coil_number + '0';
@@ -41,6 +40,8 @@
     payload[5] = percentage / 10 + '0';
     payload[6] = percentage % 10 + '0';
     crc_transmit(MGT_USART_BUS, payload, 7);
+    crc_read(MGT_USART_BUS, payload);
+    return payload[0] == 'A';
  }
 
  /**
@@ -49,7 +50,7 @@
   * @param device  A pointer to the PCP device of the MGT
   * @param coil_number  the number of the coil
   * 
-  * @returns  the current in Amps (A)
+  * @returns  the current in Amps (A), or -1 if nothing was read
   */
  float mgt_intercom_get_current(int coil_number) {
     uint8_t payload[2];
@@ -57,30 +58,35 @@
     payload[1] = coil_number + '0';
     crc_transmit(MGT_USART_BUS, payload, 2);
     float buffer[64];
-    crc_read(MGT_USART_BUS, buffer);
+    if (crc_read(MGT_USART_BUS, buffer) < 0) return -1;
     return buffer[0];
  }
 
  /**
   * Shut down all PWMs and timers on the MGT side
   * 
-  * @param device  A pointer to the PCP device of the MGT
+  * @returns Boolean denoting whether the MGT side responded
   */
- void mgt_intercom_shutdown_all() {
+ bool mgt_intercom_shutdown_all() {
     uint8_t payload[1];
     payload[0] = 'D';
     crc_transmit(MGT_USART_BUS, payload, 1);
+    crc_read(MGT_USART_BUS, payload);
+    return payload[0] == 'A';
  }
 
  /**
   * Shut down a specific timer
   * 
-  * @param device  A pointer to the PCP device of the MGT
   * @param timer_number  The id of the timer to be turned off
+  * 
+  * @returns Boolean denoting whether the MGT side responded
   */
- void mgt_intercom_shutdown_timer(int timer_number) {
+ bool mgt_intercom_shutdown_timer(int timer_number) {
     uint8_t payload[2];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
     crc_transmit(MGT_USART_BUS, payload, 2);
+    crc_read(MGT_USART_BUS, payload);
+    return payload[0] == 'A';
  }
