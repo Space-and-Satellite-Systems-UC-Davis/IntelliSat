@@ -14,19 +14,15 @@ void config_detumble() {
 }
 
 void detumble() {
-    while (true)
-    {
-        if (xEventGroupWaitBits(
-                events_handler,
-                (const EventBits_t)DETUMBLE_ON_EVENT_BIT,
-                true,
-                false,
-                DETUMBLE_DELAY))
-        {
-            ADCS_MAIN(ADCS_DETUMBLE);
-        }
+    while (true) {
+        // Wait for start notification
+        ulTaskNotifyTake(pdTrue, portMAX_DELAY);
+
+        // Do not preempt
+        taskENTER_CRITICAL();
+        ADCS_MAIN(ADCS_DETUMBLE);
         clean_detumble();
-        vTaskDelay(LOW_PWR_DELAY); // Yield
+        taskEXIT_CRITICAL();
     }
 }
 
