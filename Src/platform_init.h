@@ -28,6 +28,7 @@
 #include <MAG/QMC5883L.h>
 #include <print_scan.h>
 #include <SunSensors/sun_sensors.h>
+#include <WDG/watchdog.h>
 
 #define SCB_CPACR_CP10_POS 20U
 #define SCB_CPACR_CP11_POS 22U
@@ -99,6 +100,7 @@ void init_platform(bool run_scheduler) {
 	buttons_init();
 	printer_init();
 	systick_init(run_scheduler);
+    watchdog_init(WWDG_TIMEOUT_TIME);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
