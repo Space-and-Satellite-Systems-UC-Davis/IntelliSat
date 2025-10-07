@@ -1,10 +1,7 @@
 #ifndef _TASK_H_
 #define _TASK_H_
-
-#include "schedulerGlobals.h"
 // #include "./../integration/integration.h"
 
-#include "status.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
