@@ -15,18 +15,14 @@ void config_experiment() {
 
 void experiment() {
     while (true)
-    {
-        if (xEventGroupWaitBits(
-                events_handler,
-                (const EventBits_t)EXPERIMENT_ON_EVENT_BIT,
-                true,
-                false,
-                EXPERIMENT_DELAY))
-        {
-            ADCS_MAIN(ADCS_recommend_mode());
-        }
+        // Wait for start notification
+        ulTaskNotifyTake(pdTrue, portMAX_DELAY);
+
+        // Do not preempt
+        taskENTER_CRITICAL();
+        ADCS_MAIN(ADCS_recommend_mode());
         clean_experiment();
-        vTaskDelay(EXPERIMENT_DELAY); // Yield
+        taskEXIT_CRITICAL();
     }
 }
 
