@@ -12,6 +12,10 @@
 
 #include "rtc.h"
 
+//REMOVE
+#include "print_scan.h"
+
+
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
 void rtc_openWritingPrivilege() {
@@ -303,8 +307,8 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		while (
 			((*hour != temp_hour) || 
 			(*minute != temp_minute) || 
-			(*second != temp_second)) &&
-			is_time_out(start_time, DEFAULT_TIMEOUT_MS)
+			(*second != temp_second))
+//			&& is_time_out(start_time, DEFAULT_TIMEOUT_MS)
 		) {
 			// read the values once
 			*hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);
@@ -333,3 +337,67 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		*second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
 	}
 }
+
+/******************************** RTC SET ALARM ******************************/
+
+//Alarm A - one shot
+//Alarm B - continuous
+//Largely arbitrary decision. Could work on one
+void rtc_setAlarm(uint8_t seconds, bool continuous, void (*callback)()) {
+	rtc_openWritingPrivilege();
+
+	// Configure interrupt
+	if (continuous) {
+		RTC->ISR &= ~(RTC_ISR_ALRBF);
+		RTC->CR |= RTC_CR_ALRBIE;
+	} else {
+		RTC->ISR &= ~(RTC_ISR_ALRAF);
+		RTC->CR |= RTC_CR_ALRAIE;
+	}
+    EXTI->IMR1 |= EXTI_IMR1_IM18;
+    EXTI->RTSR1 |= EXTI_RTSR1_RT18;
+    NVIC_EnableIRQ(RTC_Alarm_IRQn);
+
+    // Program time to trigger
+    uint8_t hour = 5;
+    uint8_t minute = 5;
+    uint8_t second = 5;
+    rtc_getTime(&hour,&minute, &second);
+    second += 2;
+    printMsg("%d:%d:%d\n\r", hour, minute, second);
+    if (continuous) {
+
+    } else {
+    	RTC->ALRMAR |= (
+    		  (hour / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
+    		| (hour % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
+    		| (minute / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
+    		| (minute % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
+    		| (second / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
+    		| (second % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
+    	);
+    	// For some reason the initial date is not the same as the date we get in ALRMAR
+    	RTC->ALRMAR |= RTC_ALRMAR_MSK4;
+    }
+
+    // Enable alarm
+	if (continuous) {
+		RTC->CR |= RTC_CR_ALRBE;
+	} else {
+		RTC->CR |= RTC_CR_ALRAE;
+	}
+
+	rtc_closeWritingPrivilege();
+}
+
+void RTC_ALARM_IRQHandler() {
+	rtc_openWritingPrivilege();
+	//Acknowledged, clear interrupt flags
+	RTC->ISR &= ~(RTC_ISR_ALRAF);
+	EXTI->PR1 |= EXTI_PR1_PIF18;
+
+	printMsg("adsdasdadsad\n\r");
+
+	rtc_closeWritingPrivilege();
+}
+

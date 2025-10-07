@@ -99,7 +99,7 @@ void init_platform(bool run_scheduler) {
 	led_init();
 	buttons_init();
 	systick_init(run_scheduler);
-    watchdog_init(WWDG_TIMEOUT_TIME);
+//    watchdog_init(WWDG_TIMEOUT_TIME);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
