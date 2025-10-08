@@ -1,3 +1,5 @@
 #pragma once
+#include "print_scan.h"
+#include "globals.h"
 
-void assert_equal(int actual, int expected);
+bool assert_equal(int actual, int expected);
