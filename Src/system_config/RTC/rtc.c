@@ -340,10 +340,55 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 
 /******************************** RTC SET ALARM ******************************/
 
+#define NULL_ID UINT32_MAX
+
+// Solution using a typedef: Define a pointer to a function which is taking
+// two floats and returns a float
+typedef void(*timer_callback)();
+
+// Callbacks for the timers are stored here
+timer_callback callbacks[TIMER_CALLBACK_ARRAY_SIZE];
+uint32_t callback_ids[TIMER_CALLBACK_ARRAY_SIZE];
+//Incremted every time a callback is added to be unique. Not index.
+uint32_t id_counter = 0;
+
+uint32_t insert_callback(timer_callback callback) {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		if (callbacks[i] = NULL) {
+			callbacks[i] = callback;
+			callback_ids = id_counter;
+			id_counter++;
+		}
+	}
+}
+
+//TODO: Create an error enum
+uint32_t delete_callback(uint32_t id) {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		if (callback_ids[i] = id) {
+			callbacks[i] = NULL;
+			callback_ids[i] = NULL_ID;
+		}
+	}
+}
+
+timer_callback getCallback(uint32_t id) {
+	for(int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		if (callback_ids[i] == id) return callbacks[i];
+	}
+}
+
+
 //Alarm A - one shot
 //Alarm B - continuous
 //Largely arbitrary decision. Could work on one
-void rtc_setAlarm(uint8_t seconds, bool continuous, void (*callback)()) {
+void rtc_setAlarm(
+		uint8_t d_seconds,
+		uint8_t d_minutes,
+		uint8_t d_hours,
+		bool continuous,
+		void (*callback)())
+{
 	rtc_openWritingPrivilege();
 
 	// Configure interrupt
@@ -359,22 +404,37 @@ void rtc_setAlarm(uint8_t seconds, bool continuous, void (*callback)()) {
     NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
     // Program time to trigger
-    uint8_t hour = 5;
-    uint8_t minute = 5;
-    uint8_t second = 5;
+    uint8_t hour, minute, second;
     rtc_getTime(&hour,&minute, &second);
-    second += 2;
-    printMsg("%d:%d:%d\n\r", hour, minute, second);
+
+    //We assume we don't get more than delta 24 hours for now
+    uint32_t unix_time = 0;
+    unix_time += second + d_seconds;
+    unix_time += (minute + d_minutes) * 60;
+    unix_time += (hour + d_hours) * 60 * 60;
+
+    uint8_t adjusted_hours = unix_time / (60 * 60);
+    unix_time -= (adjusted_hours * 60 * 60);
+
+    uint8_t adjusted_minutes = unix_time / 60;
+    unix_time -= (adjusted_minutes * 60);
+
+    uint8_t adjusted_seconds = unix_time;
+
+    printMsg("%d:%d:%d\n\r", adjusted_hours, adjusted_minutes, adjusted_seconds);
+
+
+
     if (continuous) {
 
     } else {
     	RTC->ALRMAR |= (
-    		  (hour / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
-    		| (hour % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
-    		| (minute / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
-    		| (minute % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
-    		| (second / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
-    		| (second % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
+    		  (adjusted_hours / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
+    		| (adjusted_hours % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
+    		| (adjusted_minutes / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
+    		| (adjusted_minutes % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
+    		| (adjusted_seconds / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
+    		| (adjusted_seconds % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
     	);
     	// For some reason the initial date is not the same as the date we get in ALRMAR
     	RTC->ALRMAR |= RTC_ALRMAR_MSK4;

@@ -10,7 +10,7 @@ void do_something() { printMsg("Do something callback called \n\r"); }
 void testFunction_RTC_Alarm() {
 	printMsg("Starting RTC alarm test \n\r");
 
-	rtc_setAlarm(1, false, do_something);
+	rtc_setAlarm(5, 0, 0, false, do_something);
 
 	while (true) {
 		continue;

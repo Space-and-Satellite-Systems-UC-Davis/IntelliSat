@@ -150,6 +150,12 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  *
  * @returns None
  */
-void rtc_setAlarm(uint8_t seconds, bool continuous, void (*callback)());
+void rtc_setAlarm(
+	uint8_t d_seconds,
+	uint8_t d_minutes,
+	uint8_t d_hours,
+	bool continuous,
+	void (*callback)()
+);
 
 #endif // REALOP1_RTC_H_
