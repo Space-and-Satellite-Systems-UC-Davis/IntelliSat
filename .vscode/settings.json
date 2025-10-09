@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "globals.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
