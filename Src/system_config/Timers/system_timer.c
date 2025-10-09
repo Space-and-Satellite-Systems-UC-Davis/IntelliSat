@@ -50,7 +50,6 @@ void systick_init(bool run_scheduler) {
 	_run_scheduler = run_scheduler;
 }
 
-#ifdef FREERTOS_CONFIG_H
 /**
  * Interrupt handler for the SysTick timer.
  * Increments the systick_time variable and
@@ -66,4 +65,3 @@ void SysTick_Handler() {
 		// scheduler();
 	}
 }
-#endif

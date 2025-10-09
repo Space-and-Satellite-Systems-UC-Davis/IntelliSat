@@ -1,3 +1,4 @@
+#include "include/intelliTasks.h"
 #include <print_scan.h>
 #include <stdbool.h>
 

@@ -1,4 +1,4 @@
-#include "intelliTasks_proto.h"
+#include "include/intelliTasks.h"
 
 bool low_pwr_time() {
     return false;

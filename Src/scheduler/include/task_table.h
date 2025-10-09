@@ -1,17 +1,24 @@
-/**
- * @file task.c
- * @brief All task related methods
- *
- * Contains methods pertaining run, clean,
- * and scheduling logic.
- *
- * @authors Nithin Senthil, Parteek Singh, Jacob Tkeo
- * @date 9/8/23
+#include "intelliTasks.h"
+
+#define TASK_TABLE_LEN 7
+
+/*
+ * Task - a mode of execution on satellite
+ * (note: uses preemption to interrupt running tasks)
  */
+typedef struct intellisat_task_t {
+    const char *name;		    // Task name as string
+    bool (*ready_ptr)(); 	    // returns true when task should be run
+    void (*config_ptr)();       // configure timers, other mode info.
+    void (*run_ptr)();          // the main func. for mode, via ADCS
+    void (*clean_ptr)();        // reset timers, clear temp buffers, etc
+    TaskHandle_t FreeRTOS_handle;// FreeRTOS task handle
+    uint32_t timeout;           // time before task times out (ms) 0 means no timeout
+    uint8_t id;                 // PRIMARY_KEY
+    uint8_t func_1;             // Open functionality
+} intelli_task_t;
 
-#include "intelliTask.h"
-#include "intelliTasks/intelliTasks_proto.h"
-
+extern intelli_task_t task_table[TASK_TABLE_LEN];
 
 /*
     task_table - info. about all modes on satellite
@@ -46,8 +53,6 @@ intelli_task_t task_table[TASK_TABLE_LEN] = {
     {"LOW_PWR",    low_pwr_time,    config_low_pwr,    low_pwr,    clean_low_pwr,      NULL, 60000, 7, (uintmax_t) NULL},  // Func1 - N/A
 	{"DETUMBLE",   detumble_time,   config_detumble,   detumble,   clean_detumble,     NULL, 60000, 6, (uintmax_t) NULL},  // Func1 - N/A
 	{"COMMS",      comms_time,      config_comms,      comms,      clean_comms,        NULL, 60000, 5, (uintmax_t) NULL},  // Func1 - N/A
-    {"ECC",        ecc_time,        config_ecc,        ecc,        clean_ecc,          NULL, 60000, 4, (uintmax_t) NULL},  // Func1 - N/A
     {"EXPERIMENT", experiment_time, config_experiment, experiment, clean_experiment,   NULL, 60000, 3, (uintmax_t) NULL},  // Func1 - Experiment ID (0 for none)
     {"PIZZA_TIME", pizza_time,      config_pizza,      pizza,      clean_pizza,        NULL, 60000, 2, (uintmax_t) NULL},
-    {"SCHEDIDLE",  idle_time,       config_idle,       idle,       clean_idle,         NULL,     0, 1, (uintmax_t) NULL}
 };

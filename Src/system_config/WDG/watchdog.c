@@ -28,7 +28,6 @@ void watchdog_iwdg_config(int ms){
 
     IWDG->PR = count; 
     
-
     //calculate reload value
     int rlr = ms / T_LSI / (1<<count) - 1;
     IWDG->RLR = rlr;

@@ -15,62 +15,25 @@
 #include "system_config/LED/led.h"
 
 /* Globals */
-#include "scheduler/schedulerGlobals.h"
+#include "globals.h"
 
 /* File Includes */
-#include "scheduler/intelliTask.h"
+#include "scheduler/include/intelliTasks.h"
+
 
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include <TestDefinition.h>
+#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
 
 /* Macros */
 #define SYSTICK_DUR_U 10000          // Config. of systick timer in usec (1 ms)
 #define BATTERY_THRESHOLD 20        // TODO: Min. battery voltage value, below which mode -> CHARGING
 
-/* Misc variables */
-int reboot_count;
-
-/* Testing Variables */
-int max_handler_count;
-int systick_handler_count;
-int is_unlimited_tick;
-
-// Define signal handler and timer
-struct sigaction sysTick;
-struct itimerval sysTick_timer;
-
-static bool led_state = 0;
-
-/* Prototypes */
-void sysTick_handler(int signal);
-//jmp_buf to_mode_select;
-
-
-static const int led_delay_1 = 1111;
-static const int led_delay_2 = 789;
-
-void toggle_LED(int pin) {
-    led_hb(!led_state);
-    led_state = !led_state;
-}
-
-
-/**
- * 'Blink LED' task.
- */
-static void led_task(void *args) {
-  int delay_ms = *(int*)args;
-  
-
-  while (1) {
-    // Toggle the LED.
-	  int pin = 0;
-	  led_hb(!led_state);
-	  led_state = !led_state;
-    // Delay for a second-ish.
-    vTaskDelay(pdMS_TO_TICKS(delay_ms));
-  };
-}
+static const led_task_struct blinkLedTwo = { .led_num = 2, .delay_ms = 100000 };
+static const led_task_struct blinkLedThree = { .led_num = 3, .delay_ms = 100000 };
 
 /**
  * @brief Superloop
@@ -80,9 +43,10 @@ static void led_task(void *args) {
  * there is no scheduler intervention.
  */
 int branch_main() {
-    
-    xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-3, NULL);
-    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-3, NULL);
+    printMsg("watchdog status: %d", (RCC->CSR >> 29) & 1);
+    xTaskCreate(led_task, "LED_blink_2", 400, (void*)&blinkLedTwo, configMAX_PRIORITIES-3, NULL);
+    xTaskCreate(led_task, "LED_blink_3", 400, (void*)&blinkLedThree, configMAX_PRIORITIES-3, NULL);
+    // xTaskCreate(blinkD2, "LED_blink_2", 128, (void*)1 , configMAX_PRIORITIES-3, NULL);
 
     vTaskStartScheduler();
 
@@ -92,21 +56,32 @@ int branch_main() {
 
 }
 
-#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
+#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
 
 #include <TestDefinition.h>
 
 int main() {
     init_init();
+    init_platform(!RUN_TEST);
+    // ^ don't want to run the Scheduler in case we are running other tests
+    printMsg("RESTART\r\n");
     
     //TODO: use RTC first_time flag.
     //if (first_time) {
         init_first_time();
     //}
     
-    init_platform(!RUN_TEST);
-    // ^ don't want to run the Scheduler in case we are running other tests
     
+    #if (RUN_TEST==1) && (TEST_ID != 0)
+
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
+
+    #else
+    printMsg("watchdog status: %d", (RCC->CSR >> 29) & 1);
+//     RCC->CSR |= (1 << 23);
     branch_main();
+    #endif
 }
