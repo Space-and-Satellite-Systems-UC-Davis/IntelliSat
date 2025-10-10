@@ -62,6 +62,12 @@ vi_control_coil(
 
 /*################### SENSOR READINGS ###################*/
 
+/**@brief Report the current date and time to second accuracy.
+ *
+ * @param year,month,day,hour,minute,second Return-by-reference ptrs.
+ *
+ * @return vi_get_epoch_status A return code.
+ */
 vi_get_epoch_status
 vi_get_epoch(
     int *year,
