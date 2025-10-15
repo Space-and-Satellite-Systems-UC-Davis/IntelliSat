@@ -55,10 +55,10 @@ bool block_scheduler = true;
  * @param None
  * @returns None
  */
-// void SysTick_Handler() {
-// 	systick_time++;
-// 	blinky();
-// 	if (_run_scheduler == true) {
-// 		// scheduler();
-// 	}
-// }
+void SysTick_Handler() {
+	systick_time++;
+	blinky();
+	if (_run_scheduler == true) {
+		// scheduler();
+	}
+}

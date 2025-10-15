@@ -82,10 +82,9 @@ void startup() {
 
 
 static const int led_delay_1 = 1111;
-static const int led_delay_2 = 789;
 
 void toggle_LED(int pin) {
-    led_d1(!led_state);
+    led_d2(!led_state);
     led_state = !led_state;
 }
 
@@ -99,8 +98,7 @@ static void led_task(void *args) {
 
   while (1) {
     // Toggle the LED.
-	  int pin = 0;
-	  led_d1(!led_state);
+	  led_d2(!led_state);
 	  led_state = !led_state;
     // Delay for a second-ish.
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
@@ -117,9 +115,6 @@ static void led_task(void *args) {
 int branch_main() {
     
     xTaskCreate(led_task, "LED_blink_1", 128, (void*)&led_delay_1, configMAX_PRIORITIES-3, NULL);
-    xTaskCreate(led_task, "LED_blink_2", 128, (void*)&led_delay_2, configMAX_PRIORITIES-3, NULL);
-
-    xTaskCreate(watchdog, "Watchdog", 128, (void*)watchdog, configMAX_PRIORITIES-1, NULL);
 
     vTaskStartScheduler();
 
