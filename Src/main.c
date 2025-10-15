@@ -9,6 +9,7 @@
 int main() {
     init_init();
     init_platform(!RUN_TEST);
+	printMsg("Initialization Complete.\n");
 
 #if (RUN_TEST==1) && (TEST_ID != 0)
 
