@@ -34,7 +34,6 @@ void wait_with_timeout(bool (*continue_waiting)(), uint64_t timeout_ms) {
 }
 
 
-
 //Multiple files use these functions so declaring here to avoid declaring multiple times
 bool is_GPIOA_not_ready() { return (GPIOA->OTYPER == 0xFFFFFFFF); }
 bool is_GPIOB_not_ready() { return (GPIOB->OTYPER == 0xFFFFFFFF); }
@@ -43,3 +42,12 @@ bool is_GPIOD_not_ready() { return (GPIOD->OTYPER == 0xFFFFFFFF); }
 bool is_GPIOE_not_ready() { return (GPIOE->OTYPER == 0xFFFFFFFF); }
 bool is_GPIOF_not_ready() { return (GPIOF->OTYPER == 0xFFFFFFFF); }
 bool is_GPIOG_not_ready() { return (GPIOG->OTYPER == 0xFFFFFFFF); }
+
+
+//Assumes there is empty space
+void prepend(void* arr, size_t len, void* element) {
+	for (int i = 0; i < len-1; i++) {
+		arr[i+1] = arr[i];
+		if (i == 0) arr[0] = element;
+	}
+}

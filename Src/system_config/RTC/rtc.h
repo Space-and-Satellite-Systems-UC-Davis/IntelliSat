@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <core_config.h>
 #include "WDG/watchdog.h"
+#include "Utils.c"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
@@ -145,12 +146,21 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
 
 /******************************** RTC SET ALARM ******************************/
 
+#define NULL_ID UINT32_MAX
+typedef void(*timer_callback)();
+
+typedef struct {
+    timer_callback callback;
+    uint32_t id;
+    uint32_t unix_time;
+} CallbackEntry;
+
 /**
  * Calls given callback after given amount of time
  *
  * @returns None
  */
-void rtc_setAlarm(
+void rtc_scheduleCallback(
 	uint8_t d_seconds,
 	uint8_t d_minutes,
 	uint8_t d_hours,

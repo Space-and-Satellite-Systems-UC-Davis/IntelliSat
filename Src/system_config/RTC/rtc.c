@@ -340,56 +340,63 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 
 /******************************** RTC SET ALARM ******************************/
 
-#define NULL_ID UINT32_MAX
+// Callbacks for the timers are stored here.
+// Sorted such that earliest entry is the soonest to be called
+CallbackEntry callbacks[TIMER_CALLBACK_ARRAY_SIZE];
 
-// Solution using a typedef: Define a pointer to a function which is taking
-// two floats and returns a float
-typedef void(*timer_callback)();
-
-// Callbacks for the timers are stored here
-timer_callback callbacks[TIMER_CALLBACK_ARRAY_SIZE];
-uint32_t callback_ids[TIMER_CALLBACK_ARRAY_SIZE];
-//Incremted every time a callback is added to be unique. Not index.
+//Incremeted every time a callback is added to be unique. Not index.
 uint32_t id_counter = 0;
 
-uint32_t insert_callback(timer_callback callback) {
+uint32_t insertCallback(timer_callback callback) {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callbacks[i] = NULL) {
 			callbacks[i] = callback;
-			callback_ids = id_counter;
-			id_counter++;
+			callback_ids[i] = id_counter;
+
+			return id_counter++;
 		}
 	}
+
+	return NULL;
 }
 
 //TODO: Create an error enum
-uint32_t delete_callback(uint32_t id) {
+uint32_t deleteCallback(uint32_t id) {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callback_ids[i] = id) {
 			callbacks[i] = NULL;
 			callback_ids[i] = NULL_ID;
 		}
 	}
+	return NULL;
 }
 
 timer_callback getCallback(uint32_t id) {
 	for(int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callback_ids[i] == id) return callbacks[i];
 	}
+	return NULL;
 }
 
-
-//Alarm A - one shot
-//Alarm B - continuous
-//Largely arbitrary decision. Could work on one
-void rtc_setAlarm(
+// Manages our callback state and then sets alarm
+uint32_t rtc_scheduleAlarm(
 		uint8_t d_seconds,
 		uint8_t d_minutes,
 		uint8_t d_hours,
 		bool continuous,
-		void (*callback)())
-{
+		timer_callback callback
+) {
+
+}
+
+// Alarm A - one shot
+// Alarm B - continuous
+// Largely arbitrary decision. Could work on one
+// Takes first element on callbacks[] as argument
+void rtc_setAlarm() {
 	rtc_openWritingPrivilege();
+
+	const entry = callbacks[0];
 
 	// Configure interrupt
 	if (continuous) {
