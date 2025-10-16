@@ -14,11 +14,11 @@
 #define REALOP1_RTC_H_
 
 #include "stm32l476xx.h"
-#include <globals.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <globals.h>
 #include <core_config.h>
 #include "WDG/watchdog.h"
-#include "Utils.c"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
@@ -153,6 +153,7 @@ typedef struct {
     timer_callback callback;
     uint32_t id;
     uint32_t unix_time;
+    uint32_t next_time;
 } CallbackEntry;
 
 /**
@@ -160,12 +161,12 @@ typedef struct {
  *
  * @returns None
  */
-void rtc_scheduleCallback(
-	uint8_t d_seconds,
-	uint8_t d_minutes,
-	uint8_t d_hours,
-	bool continuous,
-	void (*callback)()
+uint32_t rtc_scheduleCallback(
+		uint8_t d_seconds,
+		uint8_t d_minutes,
+		uint8_t d_hours,
+		bool continuous,
+		timer_callback callback
 );
 
 #endif // REALOP1_RTC_H_
