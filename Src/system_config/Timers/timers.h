@@ -17,11 +17,12 @@
 #define PWMTimer0_ClockEnable() 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN
 #define	PWMTimer0_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM4EN
 
-#elif OP_REV == 2 || OP_REV == 3
+#elif OP_REV == 2
 
 #define PWMTimer0 					TIM2
 #define PWMTimer0_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
 #define	PWMTimer0_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
+
 #elif OP_REV == 3
 
 #define PWMTimer0 					TIM1
@@ -81,12 +82,9 @@ void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 /**
  * Initializes the Heartbeat LED Timer (the Systick). 
  * Configures it to tick every ms.
- *
- * @param run_scheduler If set to true, the IntelliSat Scheduler will be
- *        call by the Systick
  * @returns none
 */
-void systick_init(bool run_scheduler);
+void systick_init();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-

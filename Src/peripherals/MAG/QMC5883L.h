@@ -70,12 +70,6 @@
 #define MAG_BSRR_ADDR           0x0B       // SET/RESET Period Register. Controlled by FBR [7:0]. It is recommended that the register 0BH is written by 0x01.
 #define MAG_BSRR_RST            0x01       // Value to Hard Reset
 
-
-typedef enum  {
-    MAG0,
-    MAG1 
-} Mag_Selector;
-
 typedef enum  {
     MAG0,
     MAG1 

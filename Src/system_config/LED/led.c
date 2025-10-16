@@ -165,8 +165,8 @@ void blinky() {
 		counter = 0;
 	}
 	if (counter > 900) {
-		led_d1(1);
+		led_hb(1);
 	} else {
-		led_d1(0);
+		led_hb(0);
 	}
 }

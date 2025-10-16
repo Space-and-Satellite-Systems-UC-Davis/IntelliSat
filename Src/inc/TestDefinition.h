@@ -4,7 +4,7 @@
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-extern void testFunction_Nothing();
+void testFunction_Nothing() { while(1); };
 extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
@@ -44,13 +44,4 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Nothing;
 	}
 	return testFunction_Nothing;
-}
-
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-//                           	  EXTRAS
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-
-void testFunction_Nothing() {
-	while(1);
 }

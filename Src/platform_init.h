@@ -71,12 +71,9 @@ void init_first_time() {
 /**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
- *
- * @param run_scheduler If set to true, IntelliSat Scheduler will be active
- *        in the background
  * @returns None
  */
-void init_platform(bool run_scheduler) {
+void init_platform() {
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
@@ -98,7 +95,7 @@ void init_platform(bool run_scheduler) {
 	printer_init();
 	led_init();
 	buttons_init();
-	systick_init(run_scheduler);
+	systick_init();
     watchdog_init(WWDG_TIMEOUT_TIME);
 }
 
