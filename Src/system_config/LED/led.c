@@ -29,10 +29,9 @@ void led_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 
-	while (GPIOD->OTYPER == 0xFFFFFFFF);
-	while (GPIOE->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
-
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 	
 	// Configure output mode
 	GPIOD->MODER &= ~(
@@ -56,7 +55,7 @@ void led_init() {
 
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 
-	while (GPIOE->OTYPER == 0xFFFFFFFF);
+	wait_with_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// Configure output mode
 	GPIOE->MODER &= ~(
@@ -79,9 +78,9 @@ void led_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOEEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOGEN;
 
-	while (GPIOD->OTYPER == 0xFFFFFFFF);
-	while (GPIOE->OTYPER == 0xFFFFFFFF);
-	while (GPIOG->OTYPER == 0xFFFFFFFF);
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOE_not_ready, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
 
 	// configure the LED D0-D7 pins to be Output mode
 	GPIOD->MODER &= ~(
@@ -138,7 +137,7 @@ void led_dx(int pin, int value) {
 
 
 # elif OP_REV == 3
-void led_d1(bool status) {
+void led_hb(bool status) {
 	gpio_set(GPIOE, 2, status);
 }
 
@@ -166,8 +165,8 @@ void blinky() {
 		counter = 0;
 	}
 	if (counter > 900) {
-		led_d1(1);
+		led_hb(1);
 	} else {
-		led_d1(0);
+		led_hb(0);
 	}
 }

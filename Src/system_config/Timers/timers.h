@@ -13,20 +13,52 @@
 
 #if OP_REV == 1
 
-#define PWMTimer 					TIM4
-#define PWMTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN
-#define	PWMTimer_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM4EN
+#define PWMTimer0 					TIM4
+#define PWMTimer0_ClockEnable() 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN
+#define	PWMTimer0_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM4EN
 
-#elif OP_REV == 2 || OP_REV == 3
+#elif OP_REV == 2
 
-#define PWMTimer 					TIM2
-#define PWMTimer_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
-#define	PWMTimer_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
+#define PWMTimer0 					TIM2
+#define PWMTimer0_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
+#define	PWMTimer0_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
+
+#elif OP_REV == 3
+
+#define PWMTimer0 					TIM1
+#define PWMTimer0_ClockEnable() 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN
+#define	PWMTimer0_ClockDisable() 	RCC->APB2ENR &= ~RCC_APB2ENR_TIM1EN
+
+#define PWMTimer1 					TIM2
+#define PWMTimer1_ClockEnable() 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
+#define	PWMTimer1_ClockDisable() 	RCC-> APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
 
 #endif
 
-#define PWM_TIMER_ON()  PWMTimer->CR1 |=  TIM_CR1_CEN;
-#define PWM_TIMER_OFF() PWMTimer->CR1 &= ~TIM_CR1_CEN;
+
+
+#define SYSTICK_CTRL_COUNTER 1
+
+enum pwm_timer_cap_comp_1_modes {
+    TIM_CCMR1_OC1M_FROZEN,
+    TIM_CCMR1_OC1M_SET_CHAN_1_ACTIVE_ON_MATCH,
+    TIM_CCMR1_OC1M_SET_CHAN_1_INACTIVE_ON_MATCH,
+    TIM_CCMR1_OC1M_TOGGLE,
+    TIM_CCMR1_OC1M_FORCE_INACTIVE,
+    TIM_CCMR1_OC1M_FORCE_ACTIVE,
+    TIM_CCMR1_OC1M_PWM_MODE_1,
+    TIM_CCMR1_OC1M_PWM_MODE_2,
+    TIM_CCMR1_OC1M_RETRIGGERABLE_OPM_MODE_1,
+    TIM_CCMR1_OC1M_RETRIGGERABLE_OPM_MODE_2,
+    TIM_CCMR1_OC1M_COMBINED_PWM_MODE_1 = 0xc,
+    TIM_CCMR1_OC1M_COMBINED_PWM_MODE_2 = 0xd,
+    TIM_CCMR1_OC1M_ASYMMETRIC_PWM_MODE_1 = 0xe,
+    TIM_CCMR1_OC1M_ASYMMETRIC_PWM_MODE_2 = 0xf,
+};
+
+typedef enum PWM_Channels {
+    PWM0, PWM1
+} PWM_Channels;
 
 /**
  * Configures the PWM timer registers to generate a signal at a given period.
@@ -34,27 +66,25 @@
  * @param   period Period of the PWM signal, in microseconds. Note: Cannot be above 32K.
  * @returns Boolean to indicate if the initialization was successful
  */
-bool pwm_initTimer(uint32_t period);
+bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
 /**
  * Changes the Duty Cycle of the PWM signal... assumes the PWM is being generated already.
- * NOTE: Some percentges might not work properly due to integer math causing rounding errors
+ * NOTE: Some percentages might not work properly due to integer math causing rounding errors
  * 
+ * @param pwm The pwm channel to se the duty cycle
  * @param percent A value between 0-100 to indicate 
 */
-void pwm_setDutyCycle(uint8_t percent);
+void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 /**
- * Initializes the Heartbeat LED Timer (the Systck). 
+ * Initializes the Heartbeat LED Timer (the Systick). 
  * Configures it to tick every ms.
- *
- * @param run_scheduler If set to true, the IntelliSat Scheduler will be
- *        call by the Systick
  * @returns none
 */
-void systick_init(bool run_scheduler);
+void systick_init();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-

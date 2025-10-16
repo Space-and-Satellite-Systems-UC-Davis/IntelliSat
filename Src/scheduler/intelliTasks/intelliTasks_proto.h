@@ -1,7 +1,6 @@
 #ifndef INTELLITASKS_PROTO_H_
 #define INTELLITASKS_PROTO_H_
-
-#include "../schedulerGlobals.h"
+#include "globals.h"
 
 /* Scheduling methods */
 

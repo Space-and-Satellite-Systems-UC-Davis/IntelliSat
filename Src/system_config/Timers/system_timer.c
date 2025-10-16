@@ -25,6 +25,7 @@ void delay_ms(uint64_t ms) {
 	while (systick_time - start_time < ms);
 }
 
+//Returns elapsed ms
 uint64_t getSysTime() {
 	return systick_time;
 }
@@ -35,17 +36,18 @@ uint64_t getSysTime() {
 
 bool _run_scheduler;
 
-void systick_init(bool run_scheduler) {
+void systick_init() {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
-	SysTick->CTRL = 0x3;
-	NVIC_EnableIRQ(SysTick_IRQn);
 
-	_run_scheduler = run_scheduler;
+	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;	// CLKSOURCE of 0 uses AHB/8
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+
+	NVIC_EnableIRQ(SysTick_IRQn);
 }
 
-bool block_scheduler = true;
 
 /**
  * Interrupt handler for the SysTick timer.
