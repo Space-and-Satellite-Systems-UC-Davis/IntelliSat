@@ -16,10 +16,10 @@
 #define configUSE_PREEMPTION                                        1
 
 // TODO: ... test with (1)
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION                     0
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION                     1
 
 // TODO: Power saving mode test with (1)
-#define configUSE_TICKLESS_IDLE                                     0
+#define configUSE_TICKLESS_IDLE                                     1
 
 // ... DON'T MODIFY
 #define configCPU_CLOCK_HZ                                          80000000
@@ -28,10 +28,10 @@
 #define configSYSTICK_CLOCK_HZ                                      ( configCPU_CLOCK_HZ / 8 )
 
 // ... TODO: Tune?
-#define configTICK_RATE_HZ                                          250
+#define configTICK_RATE_HZ                                          1000
 
 // ... TODO: Might need to increase
-#define configMAX_PRIORITIES                                        5
+#define configMAX_PRIORITIES                                        7
 
 // Primarily sets the Idle mode stack size TODO: See if it can be reduced
 #define configMINIMAL_STACK_SIZE                                    128
@@ -58,7 +58,7 @@
 
 #define configUSE_ALTERNATIVE_API                                   0 /* Deprecated! */
 
-#define configQUEUE_REGISTRY_SIZE                                   0
+#define configQUEUE_REGISTRY_SIZE                                   8
 
 #define configUSE_QUEUE_SETS                                        0
 
@@ -81,7 +81,7 @@
 
 /* Memory allocation related definitions. */
 
-#define configSUPPORT_STATIC_ALLOCATION                             0
+#define configSUPPORT_STATIC_ALLOCATION                             1
 
 #define configSUPPORT_DYNAMIC_ALLOCATION                            1
 
@@ -157,23 +157,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 //#define configASSERT ( x )  if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
 
-
-/* FreeRTOS MPU specific definitions. */
-
-#define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0
-
-#define configTOTAL_MPU_REGIONS                                8 /* Default value */
-
-#define configTEX_S_C_B_FLASH                                  0x07UL /* Default value */
-
-#define configTEX_S_C_B_SRAM                                   0x07UL /* Default value */
-
-#define configENFORCE_SYSTEM_CALLS_FROM_KERNEL_ONLY            1
-
-#define configALLOW_UNPRIVILEGED_CRITICAL_SECTIONS             1
-
-#define configENABLE_ERRATA_837070_WORKAROUND                  1
-
+// /* FreeRTOS MPU specific definitions. */
 
 /* ARMv8-M secure side port related definitions. */
 
