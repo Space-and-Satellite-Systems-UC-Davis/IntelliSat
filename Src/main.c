@@ -1,7 +1,6 @@
 #include <print_scan.h>
 #include "platform_init.h"
 #include "scheduler/ledtask.h"
-#include "scheduler/process.h"
 #include "scheduler/testqueue.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
@@ -27,7 +26,6 @@ int branch_main() {
     xTaskCreate(vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES-1, NULL );
 
     // xTaskCreate(blinkLed, "blink_led_2", 128, (void *)&led2task_t, configMAX_PRIORITIES - 3, NULL);
-    xTaskCreate()
 
     vTaskStartScheduler();
 

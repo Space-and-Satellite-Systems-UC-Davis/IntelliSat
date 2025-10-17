@@ -28,7 +28,6 @@ void vSenderTask(void *pvParameters)
             if(taskStatus == pdPASS) {
                 printMsg("Send to queue Successfully.\r\n");
                 led_d2(1);
-                pwm_setDutyCycle(40);
                 nop(led_delay);
                 led_d2(0);
             } else {
@@ -56,7 +55,6 @@ void vReceiverTask(void *pvParameter) {
                     (xReceivedStructure.eDataSource == eSender1) ? "Sender 1" : "Sender 2", 
                     xReceivedStructure.ucValue);
                 led_d3(1);
-                pwm_setDutyCycle(60);
                 nop(led_delay);
                 led_d3(0);
             }
