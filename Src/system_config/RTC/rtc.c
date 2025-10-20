@@ -437,6 +437,13 @@ void setAlarm() {
 	const CallbackEntry entry = callbacks[0];
 	if (entry.id == NULL_ID) return;
 
+    // Disable alarm
+	if (entry.next_time != 0) {
+		RTC->CR &= ~RTC_CR_ALRBE;
+	} else {
+		RTC->CR &= ~RTC_CR_ALRAE;
+	}
+
 	// Configure interrupt
 	if (entry.next_time != 0) {
 		RTC->ISR &= ~(RTC_ISR_ALRBF);
@@ -463,16 +470,6 @@ void setAlarm() {
     printMsg("%d:%d:%d\n\r", adjusted_hours, adjusted_minutes, adjusted_seconds);
 
 	RTC->ALRMAR = 0;
-	RTC->ALRMAR |= (
-		  (0 / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
-		| (0 % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
-		| (0 / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
-		| (0 % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
-		| (22 / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
-		| (22 % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
-	);
-	RTC->ALRMAR |= RTC_ALRMAR_MSK4;
-	RTC->ALRMAR = (0) << RTC_ALRMAR_HT_Pos;	// Hour Tens Digit
     if (entry.next_time != 0) {
 
     } else {
@@ -484,6 +481,7 @@ void setAlarm() {
     		| (adjusted_seconds / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
     		| (adjusted_seconds % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
     	);
+    	RTC->ALRMAR |= RTC_ALRMAR_MSK4;
     	// For some reason the initial date is not the same as the date we get in ALRMAR
     }
 
