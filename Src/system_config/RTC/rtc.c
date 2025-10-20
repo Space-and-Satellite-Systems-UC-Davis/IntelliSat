@@ -363,8 +363,8 @@ int compareEntry(const void* a, const void* b) {
 	CallbackEntry entry_a = * ( (CallbackEntry*) a );
 	CallbackEntry entry_b = * ( (CallbackEntry*) b );
 
-    if ( entry_a.id == entry_b.id ) return 0;
-    else if ( entry_a.id < entry_b.id ) return -1;
+    if ( entry_a.unix_time == entry_b.unix_time ) return 0;
+    else if ( entry_a.unix_time < entry_b.unix_time ) return -1;
     else return 1;
 }
 
@@ -374,15 +374,16 @@ uint32_t insertEntry(CallbackEntry entry) {
 			entry.id = id_counter;
 			callbacks[i] = entry;
 
+			qsort(
+				callbacks,
+				TIMER_CALLBACK_ARRAY_SIZE,
+				sizeof(CallbackEntry),
+				compareEntry
+			);
+
 			return id_counter++;
 		}
 	}
-	qsort(
-		callbacks,
-		TIMER_CALLBACK_ARRAY_SIZE,
-		sizeof(CallbackEntry),
-		compareEntry
-	);
 
 	return NULL_ID;
 }
@@ -392,6 +393,7 @@ uint32_t deleteEntry(uint32_t id) {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callbacks[i].id == id) {
 			callbacks[i].id = NULL_ID;
+			callbacks[i].unix_time = NULL_UNIX_TIME;
 		}
 	}
 	qsort(
@@ -559,8 +561,6 @@ void RTC_ALARM_IRQHandler() {
 	while(callbacks[0].unix_time <= current_unix_time) runCurrentTask();
 
 	setAlarm();
-
-	printMsg("adsdasdadsad\n\r");
 
 	rtc_closeWritingPrivilege();
 }

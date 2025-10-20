@@ -147,6 +147,8 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
 /******************************** RTC SET ALARM ******************************/
 
 #define NULL_ID UINT32_MAX
+#define NULL_UNIX_TIME UINT32_MAX
+
 typedef void(*timer_callback)();
 
 typedef struct {
