@@ -16,7 +16,7 @@
 #define PFC2MGT_BAUDRATE 9600
 
 /**
- * Intialize the PFC->MGT Intercom device
+ * Intialize the PFC->MGT Intercom USART devices
  * 
  * @returns None
  */
@@ -28,6 +28,8 @@
   * @param coil_number  The number of the coil whose PWM is being set
   * @param pwm  1 or 0, for pwm 1 or 0
   * @param percent  The PWM percentage (0-100)
+  * 
+  * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_set_coil_percent(int coil_number, int pwm, int percentage);
 
@@ -36,13 +38,14 @@
   * 
   * @param coil_number  the number of the coil
   * 
-  * @returns  the current in Amps (A)
+  * @returns  the current in Amps (A), or -1 if nothing was read
   */
  float mgt_intercom_get_current(int coil_number);
 
  /**
   * Shut down all PWMs and timers on the MGT side
   * 
+  * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_shutdown_all();
 
@@ -50,5 +53,7 @@
   * Shut down a specific timer
   * 
   * @param timer_number  The id of the timer to be turned off
+  * 
+  * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_shutdown_timer(int timer_number);

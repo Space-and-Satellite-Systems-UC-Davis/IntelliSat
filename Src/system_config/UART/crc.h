@@ -13,6 +13,11 @@
 
 #include <UART/uart.h>
 
+#define POLYAL 0xD8
+#define MAX_PAYLOAD_BYTES 255
+#define CRC_CHECK_SIZE sizeof(uint8_t)
+#define MAX_MESSAGE_BYTES MAX_PAYLOAD_BYTES + CRC_CHECK_SIZE
+
 /**
  * Transmit a message. 
  *

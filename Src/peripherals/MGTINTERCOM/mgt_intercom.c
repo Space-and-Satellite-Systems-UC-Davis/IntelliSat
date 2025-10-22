@@ -11,6 +11,7 @@
 
  #include <globals.h>
  #include <MGTINTERCOM/mgt_intercom.h>
+#include "UART/crc.h"
 
 /**
  * Intialize the PFC->MGT Intercom USART devices
@@ -31,7 +32,7 @@
   * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_set_coil_percent(int coil_number, int pwm, int percentage) {
-    uint8_t payload[7];
+    uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'S';
     payload[1] = coil_number + '0';
     payload[2] = ' ';
@@ -52,7 +53,7 @@
   * @returns  the current in Amps (A), or -1 if nothing was read
   */
  float mgt_intercom_get_current(int coil_number) {
-    uint8_t payload[2];
+    uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'C';
     payload[1] = coil_number + '0';
     crc_transmit(MGT_USART_BUS, payload, 2);
@@ -67,7 +68,7 @@
   * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_shutdown_all() {
-    uint8_t payload[1];
+    uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'D';
     crc_transmit(MGT_USART_BUS, payload, 1);
     crc_read(MGT_USART_BUS, payload);
@@ -82,7 +83,7 @@
   * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_shutdown_timer(int timer_number) {
-    uint8_t payload[2];
+    uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
     crc_transmit(MGT_USART_BUS, payload, 2);
