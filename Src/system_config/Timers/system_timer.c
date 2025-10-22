@@ -14,21 +14,8 @@
 #include "timers.h"
 #include <LED/led.h>
 
-
 // Global (external) variables and functions
 extern int core_MHz;	// from core_config.h
-
-uint64_t systick_time = 0;
-
-void delay_ms(uint64_t ms) {
-	uint64_t start_time = systick_time;
-	while (systick_time - start_time < ms);
-}
-
-//Returns elapsed ms
-uint64_t getSysTime() {
-	return systick_time;
-}
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                                 SYSTICK                                   */
@@ -60,9 +47,5 @@ void systick_init(bool run_scheduler) {
  * @returns None
  */
 void SysTick_Handler() {
-	systick_time++;
-	blinky();
-	if (_run_scheduler == true) {
-		// scheduler();
-	}
+
 }
