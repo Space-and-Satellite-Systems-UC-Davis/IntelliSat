@@ -15,7 +15,6 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Callbacks for the timers are stored here.
 // Sorted such that earliest entry is the soonest to be called
-// TODO: Track length?
 CallbackEntry callbacks[TIMER_CALLBACK_ARRAY_SIZE];
 
 //Incremeted every time a callback is added to be unique. Not index.
@@ -519,7 +518,7 @@ uint32_t rtc_scheduleCallback(
     );
 
     uint32_t id = rtc_insertEntry(entry);
-    //TODO: Proper error handling
+
     if (id == NULL_ID) {
     	return NULL_ID;
     }
@@ -557,8 +556,11 @@ void RTC_ALARM_IRQHandler() {
     rtc_getTime(&hour,&minute, &second);
     uint32_t current_unix_time = getUnixTime(second, minute, hour);
 
-    //TODO: Timeout
-	while(callbacks[0].unix_time <= current_unix_time) runCurrentTask();
+	uint64_t start_time = getSysTime();
+	while(
+		callbacks[0].unix_time <= current_unix_time
+		&& !is_time_out(start_time, DEFAULT_TIMEOUT_MS)
+	) runCurrentTask();
 
 	rtc_closeWritingPrivilege();
 }

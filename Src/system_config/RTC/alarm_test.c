@@ -18,7 +18,7 @@ void testFunction_RTC_Alarm() {
 	// rtc was only configurable if using LSI??
 	// If using LSI, expect +/- 3% error
 
-	printMsg("Starting RTC alarm test \n\r");
+	printMsg("\n\rStarting RTC alarm test \n\r");
 
 	// Basic one shot callbacks one after the other
 	rtc_scheduleCallback(5, 0, 0, false, do_something1);
@@ -46,6 +46,23 @@ void testFunction_RTC_Alarm() {
 	// Kill everything
 	// Make sure continuous entry stops
 	rtc_scheduleCallback(45, 0, 0, false, rtc_deleteAllEntries);
+
+	// Expected output:
+	/*
+	 * 	Starting RTC alarm test
+	 * 	Is entry active: 1
+	 * 	When entry is going to be called: 35
+	 * 	Deleting of entry response: 1
+	 * 	Is entry active: 0
+	 * 	When entry is going to be called: 134232923
+	 * 	Do something 1
+	 * 	Do something 4
+	 * 	Do something 2
+	 * 	Do something 5
+	 * 	Do something 3
+	 * 	Do something 5
+	 *
+	 */
 
 	while (true) {
 		continue;

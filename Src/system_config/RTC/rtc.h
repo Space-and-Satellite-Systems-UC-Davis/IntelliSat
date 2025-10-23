@@ -162,7 +162,7 @@ typedef struct {
 /**
  * Calls given callback after given amount of time
  *
- * @returns timed callback id
+ * @returns timed callback id. NULL_ID if unsuccessful
  */
 uint32_t rtc_scheduleCallback(
 		uint8_t d_seconds,
