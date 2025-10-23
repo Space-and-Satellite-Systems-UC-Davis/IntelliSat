@@ -322,7 +322,7 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 			((*hour != temp_hour) || 
 			(*minute != temp_minute) || 
 			(*second != temp_second))
-//			&& is_time_out(start_time, DEFAULT_TIMEOUT_MS)
+			&& !is_time_out(start_time, DEFAULT_TIMEOUT_MS)
 		) {
 			// read the values once
 			*hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);

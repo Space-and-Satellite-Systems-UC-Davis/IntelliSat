@@ -14,6 +14,10 @@ void do_something5() { printMsg("Do something 5 \n\r"); }
 void do_something6() { printMsg("Do something 6 \n\r"); }
 
 void testFunction_RTC_Alarm() {
+	// For some reason when testing on A13,
+	// rtc was only configurable if using LSI??
+	// If using LSI, expect +/- 3% error
+
 	printMsg("Starting RTC alarm test \n\r");
 
 	// Basic one shot callbacks one after the other
