@@ -12,10 +12,6 @@
 
 #include "rtc.h"
 
-//REMOVE
-#include "print_scan.h"
-
-
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Callbacks for the timers are stored here.
 // Sorted such that earliest entry is the soonest to be called
@@ -356,9 +352,59 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 	}
 }
 
-/******************************** RTC SET ALARM ******************************/
+/************************** RTC SCHEDULE CALLBACK *****************************/
 
-//Assumes there is empty space
+// We only use Alarm A
+// Sets alarm for whatever callbacks[0] is at the time
+void setAlarm() {
+	rtc_openWritingPrivilege();
+
+	const CallbackEntry entry = callbacks[0];
+	if (entry.id == NULL_ID) return;
+
+    // Disable alarm
+	// Needs to be done to edit
+	RTC->CR &= ~RTC_CR_ALRAE;
+
+	// Configure interrupt
+	RTC->ISR &= ~(RTC_ISR_ALRAF);
+	RTC->CR |= RTC_CR_ALRAIE;
+    EXTI->IMR1 |= EXTI_IMR1_IM18;
+    EXTI->RTSR1 |= EXTI_RTSR1_RT18;
+    NVIC_EnableIRQ(RTC_Alarm_IRQn);
+
+    // Calculate when to set alarm
+    uint32_t unix_time = entry.unix_time;
+
+    //We assume we don't get more than delta 24 hours for now
+    uint8_t adjusted_hours = unix_time / (60 * 60);
+    unix_time -= (adjusted_hours * 60 * 60);
+
+    uint8_t adjusted_minutes = unix_time / 60;
+    unix_time -= (adjusted_minutes * 60);
+
+    uint8_t adjusted_seconds = unix_time;
+
+    // Program alarm
+	RTC->ALRMAR = 0;
+	RTC->ALRMAR |= (
+		  (adjusted_hours / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
+		| (adjusted_hours % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
+		| (adjusted_minutes / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
+		| (adjusted_minutes % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
+		| (adjusted_seconds / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
+		| (adjusted_seconds % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
+	);
+	// For some reason the initial date is not the same as the date we get in ALRMAR
+	RTC->ALRMAR |= RTC_ALRMAR_MSK4;
+
+    // Enable alarm
+	RTC->CR |= RTC_CR_ALRAE;
+
+	rtc_closeWritingPrivilege();
+}
+
+// Assumes there is empty space
 int compareEntry(const void* a, const void* b) {
 	CallbackEntry entry_a = * ( (CallbackEntry*) a );
 	CallbackEntry entry_b = * ( (CallbackEntry*) b );
@@ -368,7 +414,8 @@ int compareEntry(const void* a, const void* b) {
     else return 1;
 }
 
-uint32_t insertEntry(CallbackEntry entry) {
+// We need to sort and setAlarm to keep the alarm at the earliest callback
+uint32_t rtc_insertEntry(CallbackEntry entry) {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callbacks[i].id == NULL_ID) {
 			entry.id = id_counter;
@@ -381,6 +428,8 @@ uint32_t insertEntry(CallbackEntry entry) {
 				compareEntry
 			);
 
+			setAlarm();
+
 			return id_counter++;
 		}
 	}
@@ -388,25 +437,37 @@ uint32_t insertEntry(CallbackEntry entry) {
 	return NULL_ID;
 }
 
-//TODO: Create an error enum
-uint32_t deleteEntry(uint32_t id) {
+bool rtc_deleteEntry(uint32_t id) {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callbacks[i].id == id) {
 			callbacks[i].id = NULL_ID;
+
+			// Need to do for sorting
 			callbacks[i].unix_time = NULL_UNIX_TIME;
+
+			qsort(
+				callbacks,
+				TIMER_CALLBACK_ARRAY_SIZE,
+				sizeof(CallbackEntry),
+				compareEntry
+			);
+
+			setAlarm();
+
+			return true;
 		}
 	}
-	qsort(
-		callbacks,
-		TIMER_CALLBACK_ARRAY_SIZE,
-		sizeof(CallbackEntry),
-		compareEntry
-	);
 
-	return NULL_ID;
+	return false;
+}
+void rtc_deleteAllEntries() {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		callbacks[i].id = NULL_ID;
+		callbacks[i].unix_time = NULL_UNIX_TIME;
+	}
 }
 
-CallbackEntry getEntry(uint32_t id) {
+CallbackEntry rtc_getEntry(uint32_t id) {
 	for(int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callbacks[i].id == id) return callbacks[i];
 	}
@@ -414,6 +475,9 @@ CallbackEntry getEntry(uint32_t id) {
 	CallbackEntry dummy_entry;
 	dummy_entry.id = NULL_ID;
 	return dummy_entry;
+}
+bool rtc_isEntryActive(uint32_t id) {
+	return rtc_getEntry(id).id != NULL_ID;
 }
 
 uint32_t getUnixTime(
@@ -427,74 +491,6 @@ uint32_t getUnixTime(
     unix_time += d_hours * 60 * 60;
 
     return unix_time;
-}
-
-// Alarm A - one shot
-// Alarm B - continuous
-// Largely arbitrary decision. Could work on one
-// Takes first element on callbacks[] as argument
-void setAlarm() {
-	rtc_openWritingPrivilege();
-
-	const CallbackEntry entry = callbacks[0];
-	if (entry.id == NULL_ID) return;
-
-    // Disable alarm
-	if (entry.next_time != 0) {
-		RTC->CR &= ~RTC_CR_ALRBE;
-	} else {
-		RTC->CR &= ~RTC_CR_ALRAE;
-	}
-
-	// Configure interrupt
-	if (entry.next_time != 0) {
-		RTC->ISR &= ~(RTC_ISR_ALRBF);
-		RTC->CR |= RTC_CR_ALRBIE;
-	} else {
-		RTC->ISR &= ~(RTC_ISR_ALRAF);
-		RTC->CR |= RTC_CR_ALRAIE;
-	}
-    EXTI->IMR1 |= EXTI_IMR1_IM18;
-    EXTI->RTSR1 |= EXTI_RTSR1_RT18;
-    NVIC_EnableIRQ(RTC_Alarm_IRQn);
-
-    uint32_t unix_time = entry.unix_time;
-
-    //We assume we don't get more than delta 24 hours for now
-    uint8_t adjusted_hours = unix_time / (60 * 60);
-    unix_time -= (adjusted_hours * 60 * 60);
-
-    uint8_t adjusted_minutes = unix_time / 60;
-    unix_time -= (adjusted_minutes * 60);
-
-    uint8_t adjusted_seconds = unix_time;
-
-    printMsg("%d:%d:%d\n\r", adjusted_hours, adjusted_minutes, adjusted_seconds);
-
-	RTC->ALRMAR = 0;
-    if (entry.next_time != 0) {
-
-    } else {
-    	RTC->ALRMAR |= (
-    		  (adjusted_hours / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
-    		| (adjusted_hours % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
-    		| (adjusted_minutes / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
-    		| (adjusted_minutes % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
-    		| (adjusted_seconds / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
-    		| (adjusted_seconds % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
-    	);
-    	RTC->ALRMAR |= RTC_ALRMAR_MSK4;
-    	// For some reason the initial date is not the same as the date we get in ALRMAR
-    }
-
-    // Enable alarm
-	if (entry.next_time != 0) {
-		RTC->CR |= RTC_CR_ALRBE;
-	} else {
-		RTC->CR |= RTC_CR_ALRAE;
-	}
-
-	rtc_closeWritingPrivilege();
 }
 
 // Manages our callback state and then sets alarm
@@ -522,13 +518,11 @@ uint32_t rtc_scheduleCallback(
 			hour + d_hours
     );
 
-    uint32_t id = insertEntry(entry);
+    uint32_t id = rtc_insertEntry(entry);
     //TODO: Proper error handling
     if (id == NULL_ID) {
     	return NULL_ID;
     }
-
-    setAlarm();
 
     return id;
 }
@@ -536,11 +530,11 @@ uint32_t rtc_scheduleCallback(
 void runCurrentTask() {
 	CallbackEntry entry = callbacks[0];
 	entry.callback();
-	deleteEntry(entry.id);
+	rtc_deleteEntry(entry.id);
 
 	if (entry.next_time != 0) {
 		entry.unix_time += entry.next_time;
-		insertEntry(entry);
+		rtc_insertEntry(entry);
 	}
 }
 
@@ -549,6 +543,12 @@ void RTC_ALARM_IRQHandler() {
 	//Acknowledged, clear interrupt flags
 	RTC->ISR &= ~(RTC_ISR_ALRAF);
 	EXTI->PR1 |= EXTI_PR1_PIF18;
+
+	// If task has been deleted, stop here
+	if (callbacks[0].id == NULL_ID) {
+		rtc_closeWritingPrivilege();
+		return;
+	}
 
 	runCurrentTask();
 
@@ -559,8 +559,6 @@ void RTC_ALARM_IRQHandler() {
 
     //TODO: Timeout
 	while(callbacks[0].unix_time <= current_unix_time) runCurrentTask();
-
-	setAlarm();
 
 	rtc_closeWritingPrivilege();
 }
