@@ -48,7 +48,7 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
-	rtc_config(LSE, 0);
+	rtc_config(LSI, 0);
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
 }
