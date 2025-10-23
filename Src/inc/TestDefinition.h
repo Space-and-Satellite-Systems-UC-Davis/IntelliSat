@@ -1,5 +1,7 @@
 #pragma once
 
+#include <print_scan.h>
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -9,6 +11,8 @@ extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
+extern void testFunction_PCP();
+extern void testFunction_UART();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
@@ -19,9 +23,9 @@ extern void testFunction_watchdog();
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // Function that returns a pointer to a void function
-void (*getTestFunction(int test_id))(void) {
+void (*getTestFunction(int test))(void) {
 	//! Every case must return a void function
-	switch (test_id) {
+	switch (test) {
 		case 0:
 			return testFunction_Nothing;
 		case 1:
@@ -32,7 +36,11 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogTimer_Callback;
 		case 4:
 			return testerFunction_PWMGeneration;
-		case 8:
+		case 5:
+			return testFunction_PCP;
+		case 6:
+			return testFunction_UART;
+		case 7:
 			return testFunction_IMU_Dupe_Reads;
 		case 11:
 			return testFunction_INA_TMP_Outputs;
@@ -52,5 +60,6 @@ void (*getTestFunction(int test_id))(void) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 void testFunction_Nothing() {
+    printMsg("Hello, world");
 	while(1);
 }
