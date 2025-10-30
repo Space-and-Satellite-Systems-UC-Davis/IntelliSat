@@ -44,9 +44,7 @@ typedef struct {
 	bool transfer_interrupt;
 } DMAConfig;
 
-void configure_channel(
-		DMAConfig config
-);
+void configure_channel(DMAConfig config);
 
 void dma_enable_channel(enum_DMAPeripherals selection);
 void dma_disable_channel(enum_DMAPeripherals selection);
