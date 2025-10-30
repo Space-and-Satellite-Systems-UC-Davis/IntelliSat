@@ -4,7 +4,7 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 
-//No options for some uart because they aren't implemented
+// Only uncomment when SPI/UART are implemented
 typedef enum enum_DMAPeripherals {
 	SELECT_ADC1,
 	SELECT_ADC2,
@@ -30,26 +30,56 @@ typedef struct DMAPeripheral {
 	uint8_t channel_select_value;
 } DMAPeripheral;
 
-typedef struct {
-	enum_DMAPeripherals selection;
-	uint32_t peripheral_addr;
-	uint32_t memory_addr;
-	uint16_t length;
-	uint8_t pdata_size;
-	uint8_t mdata_size;
-	bool circular;
-	bool peripheral_to_memory;
-	bool peripheral_increment;
-	bool memory_increment;
-	bool transfer_interrupt;
+typedef struct DMAConfig {
+	enum_DMAPeripherals selection; // Which peripheral we are working with
+	uint32_t peripheral_addr; // Address of the peripheral data register
+	uint32_t memory_addr; // Address of the memory
+	uint16_t length; // How many units of data to read
+	uint8_t pdata_size; // Number of bytes in peripheral. 1, 2, or 4
+	uint8_t mdata_size; // Number of bytes in memory. 1, 2, or 4
+	bool circular; // Whether DMA should read continuously
+	bool peripheral_to_memory; // True if DMA should copy from periph. to mem.
+	bool peripheral_increment; // Automatically increment peripheral pointer
+	bool memory_increment; // Automatically increment memory pointer.
+	bool transfer_interrupt; // Trigger interrupt on transfer complete?
 } DMAConfig;
 
-void configure_channel(DMAConfig config);
+/**
+ * Initialize the peripheral structs to be returned in dma_selectPeripheral.
+ * Call upon board initialization.
+ *
+ * @returns None
+ */
+void dma_initializePeripheralConstants();
 
+/**
+ * Enable or disable the DMA channel
+ *
+ * @param  selection   Specific peripheral
+ *
+ * @returns requested peripheral
+ */
+DMAPeripheral* dma_selectPeripheral(enum_DMAPeripherals selection);
+
+/**
+ * Applies the config to the DMA channel chosen.
+ * NOTE: Does not enable the DMA channel.
+ *
+ * @param  config   See DMAConfig struct to learn the options
+ *
+ * @returns None
+ */
+void dma_configure_channel(DMAConfig config);
+
+/**
+ * Enable or disable the DMA channel
+ * WARNING: The configuration of the channel is not cleared
+ *
+ * @param  selection   Specific peripheral. Finds channel by attached periph.
+ *
+ * @returns None
+ */
 void dma_enable_channel(enum_DMAPeripherals selection);
 void dma_disable_channel(enum_DMAPeripherals selection);
-
-void DMA_initializePeripheralConstants();
-DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals);
 
 #endif 

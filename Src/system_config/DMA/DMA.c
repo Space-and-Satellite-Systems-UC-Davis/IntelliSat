@@ -1,7 +1,7 @@
 #include "DMA/DMA.h"
 
-void configure_channel(DMAConfig config) {
-	DMAPeripheral* peripheral = DMA_selectPeripheral(config.selection);
+void dma_configure_channel(DMAConfig config) {
+	DMAPeripheral* peripheral = dma_selectPeripheral(config.selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
 	//Check what DMA controller we are working with
@@ -29,6 +29,7 @@ void configure_channel(DMAConfig config) {
 	//Priority is explicitly not an option. We did not yet coordinate what gets what priority yet
 	channel_ptr->CCR |= ( 0x1 << DMA_CCR_PL_Pos ); //0b01 Medium priority
 
+	//Configure size of data
 	switch (config.mdata_size) {
 		case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_MSIZE_Pos ); break; //0b00 8 bits
 		case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_MSIZE_Pos ); break; //0b01 16 bits
@@ -49,23 +50,23 @@ void configure_channel(DMAConfig config) {
 		channel_ptr->CCR |= DMA_CCR_DIR; //Dir=1. Memory to peripheral
 	}
 
-	//Could probablly shorten to config.channel->CCR |= (DMA_CCR_CIRC * config.circular)
-	//But this also reads easier
+	//Should DMA repeatedly read
 	if (config.circular == true) { channel_ptr->CCR |= DMA_CCR_CIRC; }
 
+	//Should an interrupt trigger upon transfer completion?
+	//There are other interrupts we are not configuring right now
 	if (config.transfer_interrupt == true) { channel_ptr->CCR |= DMA_CCR_TCIE; }
 
 	// Set src and dist
 	//Not cast to pointer because pointer could be something other than uint32_t??
-	//^^^If this comment is still here I haven't tested what goes wrong otherwise
+		// Other code I've seen does it like this and it appears to work
 	channel_ptr->CMAR  = (uint32_t)config.memory_addr;
 	channel_ptr->CPAR  = (uint32_t)config.peripheral_addr;
 	channel_ptr->CNDTR = (uint16_t)config.length;
 }
 
-//Actually turn the DMA on
 void dma_enable_channel(enum_DMAPeripherals selection) {
-	DMAPeripheral* peripheral = DMA_selectPeripheral(selection);
+	DMAPeripheral* peripheral = dma_selectPeripheral(selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
 	//Enable without resetting registers
@@ -75,7 +76,7 @@ void dma_enable_channel(enum_DMAPeripherals selection) {
 }
 
 void dma_disable_channel(enum_DMAPeripherals selection) {
-	DMAPeripheral* peripheral = DMA_selectPeripheral(selection);
+	DMAPeripheral* peripheral = dma_selectPeripheral(selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
 	//Disable without resetting registers

@@ -13,7 +13,18 @@
 
 uint16_t adc_readChannel(ADC_TypeDef* adc, int channel);
 float adc_readVoltage(uint16_t channelReading);
+
+/**
+ * Enable DMA on the ADC side in a continuous mode.
+ * NOTE: DMA needs to be configured and enabled as well. See DMA.h
+ *
+ * @param  adc   The ADC being read
+ * @param  channel   Channel that DMA should read
+ *
+ * @returns None
+ */
 void adc_continuous_dma(ADC_TypeDef* adc, int channel);
+
 void adc_init();
 
 

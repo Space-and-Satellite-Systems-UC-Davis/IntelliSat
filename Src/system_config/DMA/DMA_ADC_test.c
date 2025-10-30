@@ -30,7 +30,7 @@ void testFunction_DMA_ADC() {
     config.memory_increment = false;
     config.transfer_interrupt = false;
 
-    configure_channel(config);
+    dma_configure_channel(config);
     adc_continuous_dma(ADC2, 2);
     dma_enable_channel(SELECT_ADC2);
     while ((ADC2->ISR & ADC_ISR_EOC) == 0) nop(1);
@@ -54,7 +54,7 @@ void testFunction_DMA_ADC() {
     config.memory_increment = false;
     config.transfer_interrupt = false;
 
-    configure_channel(config);
+    dma_configure_channel(config);
     adc_continuous_dma(ADC3, 6);
     dma_enable_channel(SELECT_ADC3);
     while ((ADC3->ISR & ADC_ISR_EOC) == 0) nop(1);

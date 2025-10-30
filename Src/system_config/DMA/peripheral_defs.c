@@ -38,7 +38,7 @@ DMAPeripheral* struct_DMA_LPUART1_TX = &dma_lpuart1_tx;
 
 //Arguably it's better to expand the CSELR information when needed
 //I argue it's easier to understand and debug (always see the info)
-void DMA_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, uint8_t cs) {
+void dma_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, uint8_t cs) {
 	peripheral->channel = channel;
 	peripheral->channel_select_value = cs;
 
@@ -87,93 +87,94 @@ void DMA_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, ui
 }
 
 
-void DMA_initializePeripheralConstants() {
-	DMA_initWrapper(
+void dma_initializePeripheralConstants() {
+	dma_initWrapper(
 		struct_DMA_ADC1,
 		DMA1_Channel1,
 		0b0
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_ADC2,
 		DMA1_Channel2,
 		0b0
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_ADC3,
 		DMA1_Channel3,
 		0b0
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_SPI1_RX,
 		DMA1_Channel2,
 		0b0001
 	);
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_SPI1_TX,
 		DMA1_Channel3,
 		0b0001
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_SPI2_RX,
 		DMA1_Channel4,
 		0b0001
 	);
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_SPI2_TX,
 		DMA1_Channel5,
 		0b0001
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_SPI3_RX,
 		DMA2_Channel1,
 		0b0011
 	);
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_SPI3_TX,
 		DMA2_Channel2,
 		0b0011
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_USART1_RX,
 		DMA1_Channel5,
 		0b0010
 	);
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_USART1_TX,
 		DMA1_Channel4,
 		0b0010
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_USART2_RX,
 		DMA1_Channel6,
 		0b0010
 	);
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_USART2_TX,
 		DMA1_Channel7,
 		0b0010
 	);
 
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_LPUART1_RX,
 		DMA2_Channel7,
 		0b0100
 	);
-	DMA_initWrapper(
+	dma_initWrapper(
 		struct_DMA_LPUART1_TX,
 		DMA2_Channel6,
 		0b0100
 	);
 }
 
-DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals selection) {
+// Only uncomment when SPI/UART are implemented
+DMAPeripheral* dma_selectPeripheral(enum_DMAPeripherals selection) {
 	switch (selection) {
 		case SELECT_ADC1: return struct_DMA_ADC1;
 		case SELECT_ADC2: return struct_DMA_ADC2;
