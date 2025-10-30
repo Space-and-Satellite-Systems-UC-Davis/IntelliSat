@@ -78,8 +78,6 @@ void init_first_time() {
  */
 void init_platform(bool run_scheduler) {
 
-    DMA_initializePeripheralConstants();
-
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
     set_IMU(IMU0);
@@ -102,6 +100,7 @@ void init_platform(bool run_scheduler) {
 	led_init();
 	buttons_init();
 	systick_init(run_scheduler);
+    dma_initializePeripheralConstants();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
