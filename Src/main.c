@@ -33,13 +33,21 @@ int main() {
     config.length = 1;
     config.memory_addr = (uint32_t)&test_buffer;
     config.peripheral_addr = (uint32_t) &(ADC3->DR);
+    config.peripheral_to_memory = true;
+    config.memory_increment = false;
+    config.peripheral_increment = false;
+    config.mdata_size = 2;
+    config.pdata_size = 2;
     config.circular = true;
+    config.transfer_interrupt = false;
 
     configure_channel(config);
     adc_continuous_dma(ADC3, 6);
     dma_enable_channel(SELECT_ADC3);
 
 	while (1) {
+		printMsg("REGISTER: %u\r\n", ADC3->DR);
+
 		printMsg("ARRAY: %u\r\n", test_buffer[0]);
 	}
 
