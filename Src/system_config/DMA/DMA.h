@@ -62,24 +62,24 @@ void dma_initializePeripheralConstants();
 DMAPeripheral* dma_selectPeripheral(enum_DMAPeripherals selection);
 
 /**
- * Applies the config to the DMA channel chosen.
- * NOTE: Does not enable the DMA channel.
+ * Applies the config to the DMA channel chosen and enables it
+ * NOTE: There is explicitly no way of "resuming" without reconfiguring
+ * WARNING: If reconfiguring, disable both sides first.
  *
  * @param  config   See DMAConfig struct to learn the options
  *
  * @returns None
  */
-void dma_configure_channel(DMAConfig config);
+void dma_configureAndEnableChannel(DMAConfig config);
 
 /**
- * Enable or disable the DMA channel
- * WARNING: The configuration of the channel is not cleared
+ * Disable the DMA channel
+ * WARNING: You should disable DMA peripheral-side prior to disabling channel
  *
  * @param  selection   Specific peripheral. Finds channel by attached periph.
  *
  * @returns None
  */
-void dma_enable_channel(enum_DMAPeripherals selection);
-void dma_disable_channel(enum_DMAPeripherals selection);
+void dma_disableChannel(enum_DMAPeripherals selection);
 
 #endif 

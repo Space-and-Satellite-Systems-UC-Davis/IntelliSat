@@ -1,6 +1,6 @@
 #include "DMA/DMA.h"
 
-void dma_configure_channel(DMAConfig config) {
+void dma_configureAndEnableChannel(DMAConfig config) {
 	DMAPeripheral* peripheral = dma_selectPeripheral(config.selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
@@ -63,9 +63,14 @@ void dma_configure_channel(DMAConfig config) {
 	channel_ptr->CMAR  = (uint32_t)config.memory_addr;
 	channel_ptr->CPAR  = (uint32_t)config.peripheral_addr;
 	channel_ptr->CNDTR = (uint16_t)config.length;
+
+	// Turn it on
+	dma_enableChannel(config.selection);
 }
 
-void dma_enable_channel(enum_DMAPeripherals selection) {
+// Explicitly not a publicly exposed function because you should always
+// reconfigure the channel. Effect of "resuming" is indeterminate.
+void dma_enableChannel(enum_DMAPeripherals selection) {
 	DMAPeripheral* peripheral = dma_selectPeripheral(selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
@@ -75,7 +80,7 @@ void dma_enable_channel(enum_DMAPeripherals selection) {
 	channel_ptr->CCR |= DMA_CCR_EN;
 }
 
-void dma_disable_channel(enum_DMAPeripherals selection) {
+void dma_disableChannel(enum_DMAPeripherals selection) {
 	DMAPeripheral* peripheral = dma_selectPeripheral(selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 

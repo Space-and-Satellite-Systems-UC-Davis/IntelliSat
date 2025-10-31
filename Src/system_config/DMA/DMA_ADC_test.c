@@ -30,12 +30,12 @@ void testFunction_DMA_ADC() {
     config.memory_increment = false;
     config.transfer_interrupt = false;
 
-    dma_configure_channel(config);
-    adc_continuous_dma(ADC2, 2);
-    dma_enable_channel(SELECT_ADC2);
+    adc_continuousDMAStart(ADC2, 2);
+    dma_configureAndEnableChannel(config);
     while ((ADC2->ISR & ADC_ISR_EOC) == 0) nop(1);
 	printMsg("\r\nARRAY (We Expect not 42): %u\r\n", test_buffer[0]);
-    dma_disable_channel(SELECT_ADC2);
+    adc_continuousDMAStop(ADC2, 2);
+    dma_disableChannel(SELECT_ADC2);
 
 
 
@@ -54,9 +54,8 @@ void testFunction_DMA_ADC() {
     config.memory_increment = false;
     config.transfer_interrupt = false;
 
-    dma_configure_channel(config);
-    adc_continuous_dma(ADC3, 6);
-    dma_enable_channel(SELECT_ADC3);
+    adc_continuousDMAStart(ADC3, 6);
+    dma_configureAndEnableChannel(config);
     while ((ADC3->ISR & ADC_ISR_EOC) == 0) nop(1);
 	printMsg("\r\nARRAY (We Expect not 24): %u\r\n", test_buffer[0]);
 //    dma_disable_channel(SELECT_ADC3);
