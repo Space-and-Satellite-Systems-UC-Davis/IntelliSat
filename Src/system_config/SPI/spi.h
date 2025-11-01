@@ -63,11 +63,6 @@
 */
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin);
 
-void spi_dma_enable_rx(SPI_TypeDef *spi);
-void spi_dma_enable_tx(SPI_TypeDef *spi);
-
-void spi_dma_disable(SPI_TypeDef *spi);
-
 /**
  * Configures an SPI line to be able to transmit_receive() later
 */
@@ -114,6 +109,6 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
 */
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma);
 
-void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint8_t* reception);
+//void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint8_t* reception);
 
 #endif	// REALOP1_SPI_H_
