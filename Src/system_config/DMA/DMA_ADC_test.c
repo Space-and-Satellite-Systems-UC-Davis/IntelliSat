@@ -58,6 +58,12 @@ void testFunction_DMA_ADC() {
     dma_configureAndEnableChannel(config);
     while ((ADC3->ISR & ADC_ISR_EOC) == 0) nop(1);
 	printMsg("\r\nARRAY (We Expect not 24): %u\r\n", test_buffer[0]);
+
+    adc_continuousDMAStop(ADC3, 6);
+    test_buffer[0] = 12;
+	nop(9000000);
+	printMsg("\r\nARRAY (We Expect 12): %u\r\n", test_buffer[0]);
+    adc_continuousDMAStart(ADC3, 6);
 //    dma_disable_channel(SELECT_ADC3);
 //
 //
@@ -92,6 +98,5 @@ void testFunction_DMA_ADC() {
 		printMsg("ARRAY (Should change continuously): %u\r\n", test_buffer[0]);
 
 		nop(900000);
-		break;
 	}
 }
