@@ -26,16 +26,16 @@ void vSenderTask(void *pvParameters)
             // Space is available, send the message
             taskStatus = xQueueSendToBack(myQueue, pvParameters, delay);
             if(taskStatus == pdPASS) {
-                printMsg("Send to queue Successfully.\r\n");
+                printMsg("Send to queue Successfully.\n");
                 led_d2(1);
                 nop(led_delay);
                 led_d2(0);
             } else {
-                printMsg("Could not send to the queue.\r\n");
+                printMsg("Could not send to the queue.\n");
             }
         } else {
             // Queue is full, so yield to allow the receiver to process
-            printMsg("Sender: Queue full, waiting...\r\n");
+            printMsg("Sender: Queue full, waiting...\n");
             vTaskDelay(pdMS_TO_TICKS(QUEUE_TICKS_TO_WAIT));
         }
     }
@@ -51,7 +51,7 @@ void vReceiverTask(void *pvParameter) {
         if (uxQueueMessagesWaiting(myQueue) == configTIMER_QUEUE_LENGTH) {
             taskStatus = xQueueReceive(myQueue, &xReceivedStructure, QUEUE_TICKS_TO_WAIT);
             if(taskStatus == pdPASS) {
-                printMsg("Receiver: Processed message from %s = %d\r\n", 
+                printMsg("Receiver: Processed message from %s = %d\n", 
                     (xReceivedStructure.eDataSource == eSender1) ? "Sender 1" : "Sender 2", 
                     xReceivedStructure.ucValue);
                 led_d3(1);

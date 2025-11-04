@@ -16,10 +16,10 @@ extern intelli_task_t task_table[TASK_TABLE_LEN];
 
 
 void watchdog(void *args) {
-	printMsg(":) Hello from the Scheduler Watchdog! <3\n\r");
+	printMsg(":) Hello from the Scheduler Watchdog! <3\n");
 
 	while (true) {
-		printMsg("Running watchdog\r\n");
+		printMsg("Running watchdog\n");
 		static TaskHandle_t task_manager_handle = NULL;
 
 		//Tear down all tasks
@@ -46,7 +46,7 @@ void watchdog(void *args) {
 										&task_manager_handle
 									);
 		if (status != pdPASS) {
-			printMsg("OOM allocating task manager task\r\n");
+			printMsg("OOM allocating task manager task\n");
 			NVIC_SystemReset(); // If we OOM, we have no recourse but to hard reset
 		}
 		
@@ -62,7 +62,7 @@ void watchdog(void *args) {
 			// Make sure the task does not seize control right after \
 			// the watchdog and task manager yield
 			if (status != pdPASS) {
-				printMsg("OOM allocating %s task with error %d\n\r", task.name, status);
+				printMsg("OOM allocating %s task with error %d\n", task.name, status);
 				NVIC_SystemReset(); // If we OOM, ... (as above)
 			} else {
 				vTaskSuspend(task_table[taskid].FreeRTOS_handle);

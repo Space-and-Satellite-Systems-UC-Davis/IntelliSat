@@ -138,13 +138,13 @@ static char debugBuffer[300];
 //
 
 void task_manager(void *args) {
-	printMsg(":) Hello from the Task Manager! <3\n\r");
+	printMsg(":) Hello from the Task Manager! <3\n");
 
 	static intelli_task_t current_task = null_task;
 	static uint32_t current_task_dur = 0;
 
 	while(1) {
-		printMsg("Running Task Manager\n\r");
+		printMsg("Running Task Manager\n");
 		bool cancel_current_task = false;
 
 		// Initi current_task on boot

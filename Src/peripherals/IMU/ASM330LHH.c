@@ -462,13 +462,13 @@ bool imu_hasExpectedValuesGyro() {
 }
 
 void imu_printAllValues() {
-	printMsg("Gyro\r\n");
-	printMsg("X: %f\r\n", imu_readGyro_X());
-	printMsg("Y: %f\r\n", imu_readGyro_Y());
-	printMsg("Z: %f\r\n", imu_readGyro_Z());
-	printMsg("Accel:\r\n");
-	printMsg("X: %f\r\n", imu_readAcel_X());
-	printMsg("Y: %f\r\n", imu_readAcel_Y());
-	printMsg("Z: %f\r\n", imu_readAcel_Z());
-	printMsg("%f\r\n", imu_readTemp());
+	printMsg("Gyro\n");
+	printMsg("X: %f\n", imu_readGyro_X());
+	printMsg("Y: %f\n", imu_readGyro_Y());
+	printMsg("Z: %f\n", imu_readGyro_Z());
+	printMsg("Accel:\n");
+	printMsg("X: %f\n", imu_readAcel_X());
+	printMsg("Y: %f\n", imu_readAcel_Y());
+	printMsg("Z: %f\n", imu_readAcel_Z());
+	printMsg("%f\n", imu_readTemp());
 }
