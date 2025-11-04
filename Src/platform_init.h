@@ -80,6 +80,7 @@ void init_platform(bool run_scheduler) {
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
+    debug_init();
     set_IMU(IMU0);
 	  imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
     set_IMU(IMU1);
@@ -95,6 +96,7 @@ void init_platform(bool run_scheduler) {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
+    systick_init(true);
 	printer_init();
 	led_init();
 	buttons_init();
