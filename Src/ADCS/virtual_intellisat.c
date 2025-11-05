@@ -1,21 +1,3 @@
-/**@file virtual_intellisat.h
- *
- * @brief ADCS Software's interface to Intellisat.
- *
- * This file contains the function prototype for every
- *  actuator-commanding and sensor-reading function
- *  the ADCS Software needs from Intellisat.
- *
- * Their corresponding definitions will be written in the Intellisat
- *  repo by the CS team. While this means any ADCS code that uses
- *  these functions cannot run outside of the Intellisat repo,
- *  this approach allows for complete separation of the two repos,
- *  which vastly simplifies development for everyone.
- *
- * @author Jacob Tkeio (jacobtkeio@gmail.com)
- * @date 12/30/2023
- */
-
 #include "virtual_intellisat.h"
 #include <print_scan.h>
 #include <globals.h>
@@ -62,12 +44,6 @@ vi_control_coil(
 
 /*################### SENSOR READINGS ###################*/
 
-/**@brief Report the current date and time to second accuracy.
- *
- * @param year,month,day,hour,minute,second Return-by-reference ptrs.
- *
- * @return vi_get_epoch_status A return code.
- */
 vi_get_epoch_status
 vi_get_epoch(
     int *year,
@@ -238,10 +214,6 @@ vi_get_solar_panel_current(
 	vi_sensor sp,
 	double* current
 ){
-	//TODO: Implement
-	if (sp.component != SOL) return VI_GET_SOLAR_PANEL_CURRENT_FAILURE;
-
-
 	// need to double check if these axes are correct
 	PANELS panel = PANEL0;
 	switch (sp.axis) {
@@ -271,6 +243,28 @@ vi_get_solar_panel_current(
 
 	return VI_GET_SOLAR_PANEL_CURRENT_SUCCESS;
 }
+
+vi_get_temp_status 
+vi_get_temp(
+	vi_sensor tempSensor, 
+	double* temp
+){
+	//TODO: Implement
+
+	return VI_GET_TEMP_FAILURE;
+}
+
+vi_get_coils_current_status 
+vi_get_coils_current(
+	double* currentX,
+	double* currentY, 
+	double* currentZ
+){
+	//TODO: Implement
+
+	return VI_GET_COILS_CURRENT_FAILURE;
+}
+
 
 /*###################### CONSTANTS ######################*/
 
