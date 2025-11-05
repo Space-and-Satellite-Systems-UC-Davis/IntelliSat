@@ -41,7 +41,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Diode_Reads;
 		case 14: 
 			return testFunction_watchdog;
-		case 16:
+		case 18:
 			return testFunction_RTC_Alarm;
 		default:
 			return testFunction_Nothing;
