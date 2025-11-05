@@ -20,6 +20,7 @@ typedef enum {
     ADCS_COILS_TESTING,
     ADCS_HDD_TESTING,
     ADCS_ROTISSERIE
+    ADCS_NO_OP
 } adcs_mode; //TODO: full list
 
 typedef enum {
