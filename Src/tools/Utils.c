@@ -34,7 +34,6 @@ void wait_with_timeout(bool (*continue_waiting)(), uint64_t timeout_ms) {
 }
 
 
-
 //Multiple files use these functions so declaring here to avoid declaring multiple times
 bool is_GPIOA_not_ready() { return (GPIOA->OTYPER == 0xFFFFFFFF); }
 bool is_GPIOB_not_ready() { return (GPIOB->OTYPER == 0xFFFFFFFF); }
