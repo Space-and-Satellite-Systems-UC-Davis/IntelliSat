@@ -91,7 +91,7 @@ void dma_initWrapper(
 }
 
 // The binary values are channel selects from the manual.
-// RM0351 Reference manual pp 339, 340
+// RM0351 Rev 10 Reference manual pp 339, 340
 // Each value is mapped to one peripheral on one channel
 void dma_initializePeripheralConstants() {
 	dma_initWrapper(
