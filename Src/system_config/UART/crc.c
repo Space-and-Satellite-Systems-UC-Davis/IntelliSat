@@ -18,7 +18,6 @@ int crc_wait(USART_TypeDef *bus) {
 
 void crc_ack(USART_TypeDef *bus) {
     usart_transmitBytes(bus, "A", 1);
-    printMsg("ACK");
 }
 
 /**
@@ -69,7 +68,6 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
     }
     buffer[nbytes + breaks] = remainder;
     buffer[nbytes + breaks + 1] = ';';
-    printMsg("transmitting: '%s'\r\n", buffer);
     bool ack = false;
     for (int attempts = 0; attempts < 5; attempts++) {
         usart_transmitBytes(bus, buffer, nbytes + breaks + 1 + 1);
@@ -85,7 +83,6 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
-    printMsg("received: '%s'\r\n", buffer);
     crc_ack(bus);
     int breaks = 0;
     for (int index = 0; index + breaks < size; index++) {
