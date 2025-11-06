@@ -155,8 +155,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 /* Define to trap errors during development. */
 
-//#define configASSERT ( x )  if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
-
+#define configASSERT( x ) if ((x) == 0) {taskDISABLE_INTERRUPTS(); for( ;; );}
 /* ARMv8-M secure side port related definitions. */
 #define secureconfigMAX_SECURE_CONTEXTS         5
 
