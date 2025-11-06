@@ -29,11 +29,13 @@ void testFunction_DMA_ADC() {
     config.peripheral_increment = false;
     config.memory_increment = false;
     config.transfer_interrupt = false;
+    config.error_interrupt = false;
 
     adc_continuousDMAStart(ADC2, 2);
     dma_configureAndEnableChannel(config);
     while ((ADC2->ISR & ADC_ISR_EOC) == 0) nop(1);
-	printMsg("\r\nARRAY (We Expect not 42): %u\r\n", test_buffer[0]);
+	printMsg("\r\nARRAY (We expect not 42): %u\r\n", test_buffer[0]);
+	printMsg("TCIF bit (We expect 1): %d", (DMA1->ISR & DMA_ISR_TCIF2) > 0);
     adc_continuousDMAStop(ADC2, 2);
     dma_disableChannel(SELECT_ADC2);
 
@@ -53,42 +55,20 @@ void testFunction_DMA_ADC() {
     config.peripheral_increment = false;
     config.memory_increment = false;
     config.transfer_interrupt = false;
+    config.error_interrupt = false;
 
     adc_continuousDMAStart(ADC3, 6);
     dma_configureAndEnableChannel(config);
     while ((ADC3->ISR & ADC_ISR_EOC) == 0) nop(1);
-	printMsg("\r\nARRAY (We Expect not 24): %u\r\n", test_buffer[0]);
+	printMsg("\r\nARRAY (We expect not 24): %u\r\n", test_buffer[0]);
+	printMsg("TCIF bit (We expect 1): %d", (DMA1->ISR & DMA_ISR_TCIF3) > 0);
 
     adc_continuousDMAStop(ADC3, 6);
     test_buffer[0] = 12;
 	nop(9000000);
-	printMsg("\r\nARRAY (We Expect 12): %u\r\n", test_buffer[0]);
+	printMsg("\r\nARRAY (We expect 12): %u\r\n", test_buffer[0]);
     adc_continuousDMAStart(ADC3, 6);
-//    dma_disable_channel(SELECT_ADC3);
-//
-//
-//
-//    test_buffer[0] = 12;
-//	printMsg("\r\nARRAY (We Expect 12): %u\r\n", test_buffer[0]);
-//
-//    config.selection = SELECT_ADC1;
-//    config.peripheral_addr = (uint32_t) &(ADC1->DR);
-//    config.memory_addr = (uint32_t)&test_buffer;
-//    config.length = 1;
-//    config.pdata_size = 2;
-//    config.mdata_size = 2;
-//    config.circular = true;
-//    config.peripheral_to_memory = true;
-//    config.peripheral_increment = false;
-//    config.memory_increment = false;
-//    config.transfer_interrupt = false;
-//
-//    configure_channel(config);
-//    adc_continuous_dma(ADC1, 6);
-//    dma_enable_channel(SELECT_ADC1);
-//    while ((ADC1->ISR & ADC_ISR_EOC) == 0) nop(1);
-//	printMsg("\r\nARRAY (We Expect not 12): %u\r\n", test_buffer[0]);
-//    dma_disable_channel(SELECT_ADC1);
+    // dma_disableChannel(SELECT_ADC3);
 
 	// Connect pin 6 to ground on ADC3
 	// If the array and register both go to zero, success

@@ -38,9 +38,13 @@ DMAPeripheral* struct_DMA_LPUART1_TX = &dma_lpuart1_tx;
 
 //Arguably it's better to expand the CSELR information when needed
 //I argue it's easier to understand and debug (always see the info)
-void dma_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, uint8_t cs) {
+void dma_initWrapper(
+	DMAPeripheral* peripheral,
+	DMA_Channel_TypeDef* channel,
+	uint8_t channel_select
+) {
 	peripheral->channel = channel;
-	peripheral->channel_select_value = cs;
+	peripheral->channel_select_value = channel_select;
 
 	if ((uint32_t)channel < (uint32_t)DMA1_CSELR_BASE) { //DMA1
 		peripheral->channel_select = DMA1_CSELR;
@@ -86,7 +90,9 @@ void dma_initWrapper(DMAPeripheral* peripheral, DMA_Channel_TypeDef* channel, ui
 	}
 }
 
-
+// The binary values are channel selects from the manual.
+// RM0351 Reference manual pp 339, 340
+// Each value is mapped to one peripheral on one channel
 void dma_initializePeripheralConstants() {
 	dma_initWrapper(
 		struct_DMA_ADC1,

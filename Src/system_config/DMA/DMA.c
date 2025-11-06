@@ -54,8 +54,12 @@ void dma_configureAndEnableChannel(DMAConfig config) {
 	if (config.circular == true) { channel_ptr->CCR |= DMA_CCR_CIRC; }
 
 	//Should an interrupt trigger upon transfer completion?
-	//There are other interrupts we are not configuring right now
 	if (config.transfer_interrupt == true) { channel_ptr->CCR |= DMA_CCR_TCIE; }
+
+	//Should an interrupt trigger upon transfer error?
+	if (config.error_interrupt == true) { channel_ptr->CCR |= DMA_CCR_TEIE; }
+
+	//We can also configure it such that it triggers on half-transfer
 
 	// Set src and dist
 	//Not cast to pointer because pointer could be something other than uint32_t??

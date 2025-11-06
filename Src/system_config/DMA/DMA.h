@@ -42,6 +42,7 @@ typedef struct DMAConfig {
 	bool peripheral_increment; // Automatically increment peripheral pointer
 	bool memory_increment; // Automatically increment memory pointer.
 	bool transfer_interrupt; // Trigger interrupt on transfer complete?
+	bool error_interrupt; // Trigger interrupt on transfer error?
 } DMAConfig;
 
 /**
