@@ -12,7 +12,7 @@ extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
-extern void testFuction_mgtIntercom();
+extern void testFunction_mgtIntercom();
 extern void testFunction_watchdog();
 
 
