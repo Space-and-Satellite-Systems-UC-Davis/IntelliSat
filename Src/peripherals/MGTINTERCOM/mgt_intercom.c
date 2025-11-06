@@ -40,9 +40,7 @@
     payload[4] = ' ';
     payload[5] = percentage / 10 + '0';
     payload[6] = percentage % 10 + '0';
-    crc_transmit(MGT_USART_BUS, payload, 7);
-    crc_read(MGT_USART_BUS, payload);
-    return payload[0] == 'A';
+    return crc_transmit(MGT_USART_BUS, payload, 7);
  }
 
  /**
@@ -70,9 +68,7 @@
  bool mgt_intercom_shutdown_all() {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'D';
-    crc_transmit(MGT_USART_BUS, payload, 1);
-    crc_read(MGT_USART_BUS, payload);
-    return payload[0] == 'A';
+    return crc_transmit(MGT_USART_BUS, payload, 1);
  }
 
  /**
@@ -86,7 +82,5 @@
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
-    crc_transmit(MGT_USART_BUS, payload, 2);
-    crc_read(MGT_USART_BUS, payload);
-    return payload[0] == 'A';
+    return crc_transmit(MGT_USART_BUS, payload, 2);
  }
