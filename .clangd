@@ -1,5 +1,5 @@
-CompileFlags:
-  CompilationDatabase: "Debug/compile_commands.json"
+# CompileFlags:
+#   CompilationDatabase: "Debug/compile_commands.json"
 
 # Other common configuration options (optional)
 # Diagnostics:

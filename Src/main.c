@@ -2,6 +2,7 @@
 #include "platform_init.h"
 #include "scheduler/ledtask.h"
 #include "scheduler/testqueue.h"
+#include "queue.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
@@ -10,7 +11,7 @@
 
 static ledTask_struct led2task_t = {1000,2};
 
-QueueHandle_t myQueue;
+volatile QueueHandle_t myQueue;
 
 int branch_main() {
     //TODO: use RTC first_time flag.
@@ -18,8 +19,9 @@ int branch_main() {
     //  init_first_time()
     //}
     myQueue = xQueueCreate(configTIMER_QUEUE_LENGTH, sizeof(Data_t));
+    vQueueAddToRegistry(myQueue, "Testing Queue");
 
-    xTaskCreate(vSenderTask, "Sender1", 1000, &(xStructsToSend[ 0 ]), configMAX_PRIORITIES, NULL);
+    xTaskCreate(vSenderTask, "Sender1", 1000, &(xStructsToSend[ 0 ]), configMAX_PRIORITIES-1, NULL);
     // xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
 
     // The sender task should always be prioritized over the receiver

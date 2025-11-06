@@ -41,7 +41,7 @@ static const Data_t xStructsToSend[ 2 ] =
 // Forward declaration of queues here
 // You should initialize with xQueueCreate in main(), before calling xTaskCreate, vTaskStartScheduler
 // Before using the Queue instances.
-extern QueueHandle_t myQueue; 
+extern volatile QueueHandle_t myQueue;
 
 void vSenderTask(void *pvParameters);
 
