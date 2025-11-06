@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include "globals.h"
 
 bool pizza_time() {
     printMsg("pizza time?\n");

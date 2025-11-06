@@ -1,4 +1,5 @@
 #include "globals.h"
+#pragma once
 
 /**
  * @brief Place your debug configiurations in here

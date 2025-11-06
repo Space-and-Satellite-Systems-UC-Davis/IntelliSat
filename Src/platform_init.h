@@ -19,6 +19,7 @@
 #include <core_config.h>
 #include <Timers/timers.h>
 #include <Buttons/buttons.h>
+#include <DBG/dbg_config.h>
 #include <SPI/spi.h>
 #include <QSPI/qspi.h>
 #include <LED/led.h>
