@@ -22,6 +22,7 @@
 #define PWMTimer0 					TIM2
 #define PWMTimer0_ClockEnable() 		RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN
 #define	PWMTimer0_ClockDisable() 	RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM2EN
+
 #elif OP_REV == 3
 
 #define PWMTimer0 					TIM1
@@ -74,9 +75,6 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
  * @param percent A value between 0-100 to indicate 
 */
 void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 /**
  * Initializes the Heartbeat LED Timer (the Systick). 
@@ -131,6 +129,8 @@ void logger_registerLogFunction(void (*func)());
  * @returns Boolean to indicate if the initialization was successful
  */
 void timer_waitStartupTime();
+
+bool heartbeat_timer_init();
 
 
 #endif	// REALOP1_TIMERS_H_

@@ -2,6 +2,9 @@
 #define REALOP1_GLOBALS_H_
 
 #include "stm32l476xx.h"
+#include "stdbool.h"
+#include "stddef.h"
+#include <stdint.h>
 
 #define OP_REV 3	// the Orbital Platform revision being programmed
 
