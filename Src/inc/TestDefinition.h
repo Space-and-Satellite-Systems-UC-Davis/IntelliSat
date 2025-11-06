@@ -12,7 +12,9 @@ extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
+extern void testFunction_mgtIntercom();
 extern void testFunction_watchdog();
+
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -38,6 +40,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
+		case 16:
+			return testFunction_mgtIntercom;
 		case 14: 
 			return testFunction_watchdog;
 		default:

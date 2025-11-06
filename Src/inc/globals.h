@@ -13,7 +13,7 @@
 #define LOCK_UNUSED_GPIO_HIGH() GPIOG->PUPDR |= (1 << GPIO_PUPDR_PUPD1)
 #endif
 
-#define WILL_LOOPS_TIMEOUT false
+#define WILL_LOOPS_TIMEOUT true
 #define DEFAULT_TIMEOUT_MS 1000
 
 void delay_ms(uint64_t ms);
