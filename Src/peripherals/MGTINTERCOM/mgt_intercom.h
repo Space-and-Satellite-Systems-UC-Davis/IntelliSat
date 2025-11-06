@@ -57,3 +57,10 @@
   * @returns Boolean denoting whether the MGT side responded
   */
  bool mgt_intercom_shutdown_timer(int timer_number);
+
+ /**
+  * Shut down the entire magnetorquer
+  * 
+  * @returns Boolean success
+  */
+ bool mgt_killall();
