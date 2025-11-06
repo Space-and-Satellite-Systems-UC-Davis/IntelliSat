@@ -130,5 +130,7 @@ void logger_registerLogFunction(void (*func)());
  */
 void timer_waitStartupTime();
 
+bool heartbeat_timer_init();
+
 
 #endif	// REALOP1_TIMERS_H_
