@@ -14,18 +14,12 @@ bool is_DBP_not_set() { return (PWR->CR1 & PWR_CR1_DBP) == 0; }
 void testFunction_LPSleep() {
     printMsg("\r\nSleep Test Start. If you are seeing this multiple times, watchdog triggered reset\r\n");
 
-
-
 	backup_domain_controlEnable();
 	wait_with_timeout(is_DBP_not_set, DEFAULT_TIMEOUT_MS);
 	RCC->BDCR |= RCC_BDCR_LSEON;
 	backup_domain_controlDisable();
 
-	// Time here actually doesn't matter.
-	// PWR_enterLPSleepMode() calls watchdog_IWDGSleepMode();
-	// which sets timeout to max.
-	// Just call in case init_platform() in this verion doesn't
-	watchdog_init(420);
+	// Window Watchdog not planned to be used
 	WWDG->CR &= ~WWDG_CR_WDGA;
 
 	rtc_config(LSE, true);

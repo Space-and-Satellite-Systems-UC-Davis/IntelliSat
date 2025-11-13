@@ -38,6 +38,13 @@
 // Global variable
 int core_Hz = 80000000;
 
+void changeCore_Hz(int Hz) {
+	core_Hz = Hz;
+
+	// If any timer needs notifying about new clock speed, put it here
+	//systick_adjust_reload();
+}
+
 bool is_LSI_not_ready() { return !(RCC->CSR & RCC_CSR_LSIRDY); }
 bool is_LSE_not_ready() { return !(RCC->BDCR & RCC_BDCR_LSERDY); }
 bool is_PLL_not_ready() { return !(RCC->CR & RCC_CR_PLLRDY); }

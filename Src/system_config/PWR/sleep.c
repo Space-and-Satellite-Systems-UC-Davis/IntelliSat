@@ -18,10 +18,7 @@ void PWR_enterLPRunMode() {
 	// Divide SYSCLK by 64. 80MHz -> 1.25MHz
 	// Assuming PLL 80MHz SYSCLK
 	RCC->CFGR |= RCC_CFGR_HPRE_DIV64;
-	core_Hz = 1250000;
-
-	// Tell systick the frequency changed
-//	systick_adjust_reload();
+	changeCore_Hz(1250000);
 
 	PWR->CR1 |= PWR_CR1_LPR;
 	mode = LPRUN;
@@ -33,8 +30,7 @@ void PWR_exitLPRunMode() {
 	wait_with_timeout(is_REGLPF_not_clear, DEFAULT_TIMEOUT_MS);
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
-	core_Hz = 80000000;
-//	systick_adjust_reload();
+	changeCore_Hz(80000000);
 
 	mode = RUN;
 }
@@ -45,9 +41,7 @@ bool PWR_enterLPSleepMode(uint16_t seconds) {
 	// Disable Watchdog pet sitter and tell it we are in sleep
 	watchdog_IWDGSleepMode();
 	NVIC_DisableIRQ(TIM3_IRQn);
-
-	// SysTick is not handled by NVIC
-	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+	NVIC_DisableIRQ(TIM7_IRQn);
 
 	// Set alarm to wake us up later
 	bool result = rtc_wakeUp(seconds);
@@ -73,6 +67,7 @@ void PWR_maintainLPSleep() {
 void PWR_exitLPSleepMode() {
 	watchdog_IWDGWakeUp();
 	NVIC_EnableIRQ(TIM3_IRQn);
+	NVIC_EnableIRQ(TIM7_IRQn);
 
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
