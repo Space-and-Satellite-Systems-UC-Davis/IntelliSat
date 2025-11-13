@@ -34,6 +34,7 @@ void PWR_exitLPRunMode() {
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
 	core_Hz = 80000000;
+	systick_adjust_reload();
 
 	mode = RUN;
 }
