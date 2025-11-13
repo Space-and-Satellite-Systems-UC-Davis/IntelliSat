@@ -16,6 +16,8 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <globals.h>
 #include <core_config.h>
 #include "PWR/sleep.h"
 #include "WDG/watchdog.h"
@@ -156,5 +158,61 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  * @returns false if called with an RTC clock other than LSE/LSI
  */
 bool rtc_wakeUp(uint16_t seconds);
+
+/************************** RTC SCHEDULE CALLBACK *****************************/
+
+#define NULL_ID UINT32_MAX
+#define NULL_UNIX_TIME UINT32_MAX
+
+typedef void(*timer_callback)();
+
+//Stores all information
+typedef struct {
+    timer_callback callback;
+    uint32_t id;
+    uint32_t unix_time;
+    uint32_t next_time;
+} CallbackEntry;
+
+/**
+ * Calls given callback after given amount of time
+ *
+ * @returns timed callback id. NULL_ID if unsuccessful
+ */
+uint32_t rtc_scheduleCallback(
+		uint8_t d_seconds,
+		uint8_t d_minutes,
+		uint8_t d_hours,
+		bool continuous,
+		timer_callback callback
+);
+
+/**
+ * Checks if given timed callback is still waiting
+ *
+ * @returns true if found, false if not.
+ */
+bool rtc_isEntryActive(uint32_t id);
+
+/**
+ * Find the entry by id
+ *
+ * @returns the timed callback. The id will be NULL_ID if it doesn't exist
+ */
+CallbackEntry rtc_getEntry(uint32_t id);
+
+/**
+ * Deletes the entry for a given callback id
+ *
+ * @returns true if found, false if not.
+ */
+bool rtc_deleteEntry(uint32_t id);
+
+/**
+ * Deletes all entries for all callbacks
+ *
+ * @returns None
+ */
+void rtc_deleteAllEntries();
 
 #endif // REALOP1_RTC_H_

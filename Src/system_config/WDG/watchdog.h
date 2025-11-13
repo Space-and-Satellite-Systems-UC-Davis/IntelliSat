@@ -65,13 +65,11 @@ void TIM3_IRQHandler();
 
 /**
  * Configure the IWDG timeout to be the max possible (32 s) for sleep mode (call before entering)
- *
  */
 void watchdog_IWDGSleepMode();
 
 /**
  * Function to be called when waking up from sleep, reset the IWDG timeout to what it was before sleeping
- *
  */
 void watchdog_IWDGWakeUp();
 
