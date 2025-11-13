@@ -18,32 +18,34 @@ typedef struct {
 
 void blinkLed(void * pvParameters) {
     ledTask_struct * param = (ledTask_struct*) pvParameters;
-    switch (param->led_num) {
-        case 2:
-            led_d2(led2_state);
-            led2_state = !led2_state;
-            vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
-            break;
-        case 3:
-            led_d3(led3_state);
-            led3_state = !led3_state;
-            vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
-            break;
-        case 4:
-            led_d4(led4_state);
-            led4_state = !led4_state;
-            vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
-            break;
-        case 5:
-            led_d5(led5_state);
-            led5_state = !led5_state;
-            vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
-            break;
-        case 1:
-            printMsg("The heart beat led (d1) is solely reserved for blinky\n");
-            break;
-        default:
-            printMsg("No valid cases\n");
-            vTaskDelay(0); // Should allow context switch
+    for(;;) {
+        switch (param->led_num) {
+            case 2:
+                led_d2(led2_state);
+                led2_state = !led2_state;
+                vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
+                continue;
+            case 3:
+                led_d3(led3_state);
+                led3_state = !led3_state;
+                vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
+                continue;
+            case 4:
+                led_d4(led4_state);
+                led4_state = !led4_state;
+                vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
+                continue;
+            case 5:
+                led_d5(led5_state);
+                led5_state = !led5_state;
+                vTaskDelay(pdMS_TO_TICKS(param->delay_ms));
+                continue;
+            case 1:
+                printMsg("The heart beat led (d1) is solely reserved for blinky\n");
+                continue;
+            default:
+                printMsg("No valid cases\n");
+                vTaskDelay(0); // Should allow context switch
+        }
     }
 }
