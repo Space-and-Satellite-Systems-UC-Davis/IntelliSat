@@ -14,6 +14,7 @@ extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
 extern void testFunction_watchdog();
 extern void testFunction_LPSleep();
+extern void testFunction_RTC_Alarm();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -43,6 +44,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_watchdog;
 		case 15:
 			return testFunction_LPSleep;
+		case 18:
+			return testFunction_RTC_Alarm;
 		default:
 			return testFunction_Nothing;
 	}
