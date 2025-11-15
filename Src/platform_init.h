@@ -92,13 +92,12 @@ void init_platform() {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
-    // systick_init(true);
+    systick_init(true);
 	printer_init();
 	led_init();
 	buttons_init();
-    // watchdog_init(WWDG_TIMEOUT_TIME);
+    watchdog_init(WWDG_TIMEOUT_TIME);
     // heartbeat_timer_init();
-    systick_init(true);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

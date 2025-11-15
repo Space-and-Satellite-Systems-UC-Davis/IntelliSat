@@ -44,7 +44,6 @@ int branch_main() {
 int main() {
     init_init();
     init_platform();
-    NVIC_DisableIRQ(WWDG_IRQn);
     #if (RUN_TEST==1) && (TEST_ID != 0)
 
         void (*testFunc)();
