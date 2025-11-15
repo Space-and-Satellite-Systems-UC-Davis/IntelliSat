@@ -20,23 +20,21 @@ extern int core_MHz;	// from core_config.h
 
 uint64_t systick_time = 0;
 
-// void delay_ms(uint64_t ms) {
-// 	uint64_t start_time = systick_time;
-// 	while (systick_time - start_time < ms);
-// }
+void delay_ms(uint64_t ms) {
+	uint64_t start_time = systick_time;
+	while (systick_time - start_time < ms);
+}
 
 // //Returns elapsed ms
-// uint64_t getSysTime() {
-// 	return systick_time;
-// }
+uint64_t getSysTime() {
+	return systick_time;
+}
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                                 SYSTICK                                   */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-bool _run_scheduler;
-
-void systick_init(bool run_scheduler) {
+void systick_init() {
 	// configure for 1 ms period
 	SysTick->LOAD = (core_MHz / 8) * 1000;
 	// use AHB/8 as input clock, and enable counter interrupt
@@ -46,6 +44,4 @@ void systick_init(bool run_scheduler) {
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
 	NVIC_EnableIRQ(SysTick_IRQn);
-
-	_run_scheduler = run_scheduler;
 }

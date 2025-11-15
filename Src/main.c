@@ -12,23 +12,23 @@
 
 static ledTask_struct led2task_t = {1000,2};
 
-//volatile QueueHandle_t myQueue;
+volatile QueueHandle_t myQueue;
 
 int branch_main() {
     //TODO: use RTC first_time flag.
     //if (first_time) {
     //  init_first_time()
     //}
-//    myQueue = xQueueCreate(configTIMER_QUEUE_LENGTH, sizeof(Data_t));
-//    vQueueAddToRegistry(myQueue, "Testing Queue");
+   myQueue = xQueueCreate(configTIMER_QUEUE_LENGTH, sizeof(Data_t));
+   vQueueAddToRegistry(myQueue, "Testing Queue");
 
-//    xTaskCreate(vSenderTask, "Sender1", 1000, &(xStructsToSend[ 0 ]), configMAX_PRIORITIES-1, NULL);
-    // xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
+   xTaskCreate(vSenderTask, "Sender1", 1000, &(xStructsToSend[ 0 ]), configMAX_PRIORITIES-1, NULL);
+    xTaskCreate(vSenderTask, "Sender2", 1000, &( xStructsToSend[ 1 ]), configMAX_PRIORITIES-1, NULL);
 
     // The sender task should always be prioritized over the receiver
-//    xTaskCreate(vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES-1, NULL );
+   xTaskCreate(vReceiverTask, "Receiver", 1000, NULL, configMAX_PRIORITIES-1, NULL );
 
-     xTaskCreate(blinkLed, "blink_led_2", 128, (void *)&led2task_t, configMAX_PRIORITIES - 3, NULL);
+    //  xTaskCreate(blinkLed, "blink_led_2", 128, (void *)&led2task_t, configMAX_PRIORITIES - 3, NULL);
 
     vTaskStartScheduler();
 

@@ -83,7 +83,6 @@ void init_platform() {
     set_IMU(IMU1);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
 
-
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     sun_sensor_init();
     //TODO: hdd_init().
@@ -97,8 +96,9 @@ void init_platform() {
 	printer_init();
 	led_init();
 	buttons_init();
-    watchdog_init(WWDG_TIMEOUT_TIME);
-    heartbeat_timer_init();
+    // watchdog_init(WWDG_TIMEOUT_TIME);
+    // heartbeat_timer_init();
+    systick_init(true);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

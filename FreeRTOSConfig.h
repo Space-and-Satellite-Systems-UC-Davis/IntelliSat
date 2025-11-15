@@ -85,7 +85,7 @@
 
 #define configSUPPORT_DYNAMIC_ALLOCATION                            1
 
-#define configTOTAL_HEAP_SIZE                                       10240
+#define configTOTAL_HEAP_SIZE                                       15360
 
 #define configAPPLICATION_ALLOCATED_HEAP                            0
 
@@ -208,7 +208,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define xPortPendSVHandler                      PendSV_Handler
 /* IMPORTANT: This define is commented when used with STM32Cube firmware, when the timebase source is SysTick,
               to prevent overwriting SysTick_Handler defined within STM32Cube HAL */
-// #define xPortSysTickHandler                     SysTick_Handler
+#define xPortSysTickHandler                     SysTick_Handler
 
 
 #endif /* FREERTOS_CONFIG_H */

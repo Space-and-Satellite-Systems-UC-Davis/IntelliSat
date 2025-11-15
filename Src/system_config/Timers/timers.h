@@ -76,15 +76,8 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
 */
 void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 
-/**
- * Initializes the Heartbeat LED Timer (the Systick). 
- * Configures it to tick every ms.
- *
- * @param run_scheduler If set to true, the IntelliSat Scheduler will be
- *        call by the Systick
- * @returns none
-*/
-void systick_init(bool run_scheduler);
+void pwm_timerOn(PWM_Channels pwm);
+void pwm_timerOff(PWM_Channels pwm);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -132,5 +125,19 @@ void timer_waitStartupTime();
 
 bool heartbeat_timer_init();
 
+
+
+
+
+/**
+ * Initializes the Heartbeat LED Timer (the Systick). 
+ * Configures it to tick every ms.
+
+ * @returns none
+*/
+
+
+void systick_init();
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 #endif	// REALOP1_TIMERS_H_
