@@ -79,7 +79,7 @@ void init_platform() {
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
     debug_init();
     set_IMU(IMU0);
-	  imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
     set_IMU(IMU1);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
 
@@ -92,12 +92,12 @@ void init_platform() {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
-    systick_init(true);
+    // systick_init();
 	printer_init();
 	led_init();
 	buttons_init();
     watchdog_init(WWDG_TIMEOUT_TIME);
-    // heartbeat_timer_init();
+    heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
