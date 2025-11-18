@@ -13,24 +13,12 @@
  #include <MGTINTERCOM/mgt_intercom.h>
 #include "UART/crc.h"
 
-/**
- * Intialize the PFC->MGT Intercom USART devices
- * 
- * @returns None
- */
+
  void mgt_intercom_init() {
    usart_init(MGT_USART_BUS, PFC2MGT_BAUDRATE);
 }
 
- /**
-  * Set the PWM for a coil
-  * 
-  * @param coil_number  The number of the coil whose PWM is being set
-  * @param percent  The PWM percentage (0-100)
-  * 
-  * @returns Boolean denoting whether the MGT side responded
-  */
- bool mgt_intercom_set_coil_percent(int coil_number, int percentage) {
+ bool mgt_intercom_setCoilPercent(int coil_number, int percentage) {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'S';
     payload[1] = coil_number + '0';
@@ -39,14 +27,7 @@
     return crc_transmit(MGT_USART_BUS, payload, 4);
  }
 
- /**
-  * Get the current through a coil
-  * 
-  * @param coil_number  the number of the coil
-  * 
-  * @returns  the current in Amps (A), or -1 if nothing was read
-  */
- float mgt_intercom_get_current(int coil_number) {
+ float mgt_intercom_getCurrent(int coil_number) {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'C';
     payload[1] = coil_number + '0';
@@ -56,27 +37,28 @@
     return buffer[0];
  }
 
- /**
-  * Shut down all PWMs and timers on the MGT side
-  * 
-  * @returns Boolean denoting whether the MGT side responded
-  */
- bool mgt_intercom_shutdown_all() {
+ bool mgt_intercom_shutdownAll() {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'D';
     return crc_transmit(MGT_USART_BUS, payload, 1);
  }
 
- /**
-  * Shut down a specific timer
-  * 
-  * @param timer_number  The id of the timer to be turned off
-  * 
-  * @returns Boolean denoting whether the MGT side responded
-  */
- bool mgt_intercom_shutdown_timer(int timer_number) {
+ bool mgt_intercom_shutdownTimer(int timer_number) {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
     return crc_transmit(MGT_USART_BUS, payload, 2);
+ }
+
+ bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir) {
+   uint8_t payload[MAX_MESSAGE_BYTES];
+    payload[0] = 'W';
+    payload[1] = coilNumber + '0';
+    payload[2] = ' ';
+    if (dir == HIGH) {
+       payload[3] = 'H';
+    } else {
+       payload[3] = 'L';
+    }
+    return crc_transmit(MGT_USART_BUS, payload, 4);
  }
