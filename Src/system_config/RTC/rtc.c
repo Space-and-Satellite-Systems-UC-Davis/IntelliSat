@@ -13,8 +13,22 @@
 #include "rtc.h"
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
-bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
+// Callbacks for the timers are stored here.
+// Sorted such that earliest entry is the soonest to be called
+CallbackEntry callbacks[TIMER_CALLBACK_ARRAY_SIZE];
 
+//Incremeted every time a callback is added to be unique. Not index.
+uint32_t id_counter = 0;
+
+void init_callbacks() {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		CallbackEntry dummy_entry;
+		dummy_entry.id = NULL_ID;
+		callbacks[i] = dummy_entry;
+	}
+}
+
+bool is_not_init_RTC() { return !(RTC->ISR & RTC_ISR_INITF); }
 void rtc_openWritingPrivilege() {
 	// Allow Backup Domain Writing Access
 	backup_domain_controlEnable();
@@ -41,6 +55,7 @@ void rtc_closeWritingPrivilege() {
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
+bool is_BDRST_not_set() { return (RCC->BDCR & RCC_BDCR_BDRST) == 0; }
 void rtc_config(char clock_source, int forced_config) {
 	// do nothing if clock is already configured
 	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
@@ -50,10 +65,13 @@ void rtc_config(char clock_source, int forced_config) {
 	backup_domain_controlEnable();
 
 	// store the current clock configuration, in case of bad input
-	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
+	uint32_t backup = RCC->BDCR & ~RCC_BDCR_RTCSEL;
+	uint32_t backup_rtcsel = RCC->BDCR & RCC_BDCR_RTCSEL;
 
 	// reset the clock
-	RCC->BDCR &= ~RCC_BDCR_RTCSEL;
+	RCC->BDCR |= RCC_BDCR_BDRST;
+	wait_with_timeout(is_BDRST_not_set, DEFAULT_TIMEOUT_MS);
+	RCC->BDCR &= ~RCC_BDCR_BDRST;
 
 	// Select the RTC clock source
 	switch (clock_source) {
@@ -67,10 +85,12 @@ void rtc_config(char clock_source, int forced_config) {
 			RCC->BDCR |= RCC_BDCR_RTCSEL_Msk;
 			break;
 		default:
-			RCC->BDCR |= temp;	// restore the original configuration
+			RCC->BDCR |= backup_rtcsel;	// restore the original configuration
 			break;
 	}
 
+	//Restore from reset
+	RCC->BDCR |= backup;
 	// Enable the RTC Clock
 	RCC->BDCR |= RCC_BDCR_RTCEN;
 
@@ -100,6 +120,8 @@ void rtc_config(char clock_source, int forced_config) {
 
 	// Bypass the Shadow registers to read RTC directly
 	RTC->CR |= RTC_CR_BYPSHAD;
+
+	init_callbacks();
 
 	rtc_closeWritingPrivilege();
 
@@ -298,8 +320,8 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		while (
 			((*hour != temp_hour) || 
 			(*minute != temp_minute) || 
-			(*second != temp_second)) &&
-			is_time_out(start_time, DEFAULT_TIMEOUT_MS)
+			(*second != temp_second))
+			&& !is_time_out(start_time, DEFAULT_TIMEOUT_MS)
 		) {
 			// read the values once
 			*hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);
@@ -328,3 +350,218 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
 		*second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
 	}
 }
+
+/************************** RTC SCHEDULE CALLBACK *****************************/
+
+// We only use Alarm A
+// Sets alarm for whatever callbacks[0] is at the time
+void setAlarm() {
+	rtc_openWritingPrivilege();
+
+	const CallbackEntry entry = callbacks[0];
+	if (entry.id == NULL_ID) return;
+
+    // Disable alarm
+	// Needs to be done to edit
+	RTC->CR &= ~RTC_CR_ALRAE;
+
+	// Configure interrupt
+	RTC->ISR &= ~(RTC_ISR_ALRAF);
+	RTC->CR |= RTC_CR_ALRAIE;
+    EXTI->IMR1 |= EXTI_IMR1_IM18;
+    EXTI->RTSR1 |= EXTI_RTSR1_RT18;
+    NVIC_EnableIRQ(RTC_Alarm_IRQn);
+
+    // Calculate when to set alarm
+    uint32_t unix_time = entry.unix_time;
+
+    //We assume we don't get more than delta 24 hours for now
+    uint8_t adjusted_hours = unix_time / (60 * 60);
+    unix_time -= (adjusted_hours * 60 * 60);
+
+    uint8_t adjusted_minutes = unix_time / 60;
+    unix_time -= (adjusted_minutes * 60);
+
+    uint8_t adjusted_seconds = unix_time;
+
+    // Program alarm
+	RTC->ALRMAR = 0;
+	RTC->ALRMAR |= (
+		  (adjusted_hours / 10)   << RTC_ALRMAR_HT_Pos	// Hour Tens Digit
+		| (adjusted_hours % 10)   << RTC_ALRMAR_HU_Pos	// Hour Ones Digit
+		| (adjusted_minutes / 10) << RTC_ALRMAR_MNT_Pos	// Minute Tens Digit
+		| (adjusted_minutes % 10) << RTC_ALRMAR_MNU_Pos	// Minute Tens Digit
+		| (adjusted_seconds / 10) << RTC_ALRMAR_ST_Pos	// Second Tens Digit
+		| (adjusted_seconds % 10) << RTC_ALRMAR_SU_Pos	// Second Ones Digit
+	);
+	// For some reason the initial date is not the same as the date we get in ALRMAR
+	RTC->ALRMAR |= RTC_ALRMAR_MSK4;
+
+    // Enable alarm
+	RTC->CR |= RTC_CR_ALRAE;
+
+	rtc_closeWritingPrivilege();
+}
+
+// Assumes there is empty space
+int compareEntry(const void* a, const void* b) {
+	CallbackEntry entry_a = * ( (CallbackEntry*) a );
+	CallbackEntry entry_b = * ( (CallbackEntry*) b );
+
+    if ( entry_a.unix_time == entry_b.unix_time ) return 0;
+    else if ( entry_a.unix_time < entry_b.unix_time ) return -1;
+    else return 1;
+}
+
+// We need to sort and setAlarm to keep the alarm at the earliest callback
+uint32_t rtc_insertEntry(CallbackEntry entry) {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		if (callbacks[i].id == NULL_ID) {
+			entry.id = id_counter;
+			callbacks[i] = entry;
+
+			qsort(
+				callbacks,
+				TIMER_CALLBACK_ARRAY_SIZE,
+				sizeof(CallbackEntry),
+				compareEntry
+			);
+
+			setAlarm();
+
+			return id_counter++;
+		}
+	}
+
+	return NULL_ID;
+}
+
+bool rtc_deleteEntry(uint32_t id) {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		if (callbacks[i].id == id) {
+			callbacks[i].id = NULL_ID;
+
+			// Need to do for sorting
+			callbacks[i].unix_time = NULL_UNIX_TIME;
+
+			qsort(
+				callbacks,
+				TIMER_CALLBACK_ARRAY_SIZE,
+				sizeof(CallbackEntry),
+				compareEntry
+			);
+
+			setAlarm();
+
+			return true;
+		}
+	}
+
+	return false;
+}
+void rtc_deleteAllEntries() {
+	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		callbacks[i].id = NULL_ID;
+		callbacks[i].unix_time = NULL_UNIX_TIME;
+	}
+}
+
+CallbackEntry rtc_getEntry(uint32_t id) {
+	for(int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
+		if (callbacks[i].id == id) return callbacks[i];
+	}
+
+	CallbackEntry dummy_entry;
+	dummy_entry.id = NULL_ID;
+	return dummy_entry;
+}
+bool rtc_isEntryActive(uint32_t id) {
+	return rtc_getEntry(id).id != NULL_ID;
+}
+
+uint32_t getUnixTime(
+		uint32_t d_seconds,
+		uint32_t d_minutes,
+		uint32_t d_hours
+) {
+    uint32_t unix_time = 0;
+    unix_time += d_seconds;
+    unix_time += d_minutes * 60;
+    unix_time += d_hours * 60 * 60;
+
+    return unix_time;
+}
+
+// Manages our callback state and then sets alarm
+uint32_t rtc_scheduleCallback(
+		uint8_t d_seconds,
+		uint8_t d_minutes,
+		uint8_t d_hours,
+		bool continuous,
+		timer_callback callback
+) {
+	CallbackEntry entry;
+	entry.callback = callback;
+	entry.next_time = 0;
+	if (continuous) {
+		entry.next_time = getUnixTime(d_seconds, d_minutes, d_hours);
+	}
+
+	// Program time to trigger
+    uint8_t hour, minute, second;
+    rtc_getTime(&hour,&minute, &second);
+
+    entry.unix_time = getUnixTime(
+    		second + d_seconds,
+			minute + d_minutes,
+			hour + d_hours
+    );
+
+    uint32_t id = rtc_insertEntry(entry);
+
+    if (id == NULL_ID) {
+    	return NULL_ID;
+    }
+
+    return id;
+}
+
+void runCurrentTask() {
+	CallbackEntry entry = callbacks[0];
+	entry.callback();
+	rtc_deleteEntry(entry.id);
+
+	if (entry.next_time != 0) {
+		entry.unix_time += entry.next_time;
+		rtc_insertEntry(entry);
+	}
+}
+
+void RTC_ALARM_IRQHandler() {
+	rtc_openWritingPrivilege();
+	//Acknowledged, clear interrupt flags
+	RTC->ISR &= ~(RTC_ISR_ALRAF);
+	EXTI->PR1 |= EXTI_PR1_PIF18;
+
+	// If task has been deleted, stop here
+	if (callbacks[0].id == NULL_ID) {
+		rtc_closeWritingPrivilege();
+		return;
+	}
+
+	runCurrentTask();
+
+	//In case next task should have already been run
+    uint8_t hour, minute, second;
+    rtc_getTime(&hour,&minute, &second);
+    uint32_t current_unix_time = getUnixTime(second, minute, hour);
+
+	uint64_t start_time = getSysTime();
+	while(
+		callbacks[0].unix_time <= current_unix_time
+		&& !is_time_out(start_time, DEFAULT_TIMEOUT_MS)
+	) runCurrentTask();
+
+	rtc_closeWritingPrivilege();
+}
+
