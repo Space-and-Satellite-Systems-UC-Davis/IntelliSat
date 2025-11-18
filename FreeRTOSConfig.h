@@ -22,7 +22,7 @@
 #define configUSE_TICKLESS_IDLE                                     1
 
 // ... DON'T MODIFY
-#define configCPU_CLOCK_HZ                                          80000000
+#define configCPU_CLOCK_HZ                                          10000000 // Use AHB /8, not AHB. AHB = 80MHz
 
 // ... DON'T MODIFY
 #define configSYSTICK_CLOCK_HZ                                      ( configCPU_CLOCK_HZ / 8 )
