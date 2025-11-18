@@ -26,21 +26,17 @@
   * Set the PWM for a coil
   * 
   * @param coil_number  The number of the coil whose PWM is being set
-  * @param pwm  1 or 0, for pwm 1 or 0
   * @param percent  The PWM percentage (0-100)
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_set_coil_percent(int coil_number, int pwm, int percentage) {
+ bool mgt_intercom_set_coil_percent(int coil_number, int percentage) {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'S';
     payload[1] = coil_number + '0';
     payload[2] = ' ';
-    payload[3] = pwm + '0';
-    payload[4] = ' ';
-    payload[5] = percentage / 10 + '0';
-    payload[6] = percentage % 10 + '0';
-    return crc_transmit(MGT_USART_BUS, payload, 7);
+    payload[3] = percentage;
+    return crc_transmit(MGT_USART_BUS, payload, 4);
  }
 
  /**
