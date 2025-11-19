@@ -32,6 +32,7 @@ bool heartbeat_timer_init()
     HeartBeatTimer->DIER |= TIM_DIER_UIE; // Enable update interrupt
 
     NVIC_EnableIRQ(TIM7_IRQn); // Enable TIM7 interrupt
+    NVIC_SetPriority(TIM7_IRQn, 15);
     HeartBeatTimer->CR1 |= TIM_CR1_CEN; // Enable timer
     
     return true;
