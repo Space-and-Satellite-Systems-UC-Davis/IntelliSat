@@ -28,13 +28,6 @@ typedef struct
 
 // * End of the TODO
 
-/* Declare two variables of type Data_t that will be passed on the queue. */
-static const Data_t xStructsToSend[ 2 ] =
-{
-    { 100, eSender1 }, /* Used by Sender1. */
-    { 200, eSender2 }  /* Used by Sender2. */
-};
-
 #define QUEUE_TICKS_TO_WAIT 100
 #define TICKS_TO_BLOCK_SENDER 500
 
