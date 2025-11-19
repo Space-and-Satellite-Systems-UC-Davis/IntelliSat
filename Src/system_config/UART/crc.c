@@ -51,6 +51,7 @@ uint8_t crc_remainder(uint8_t payload[], int nbytes) {
 }
 
 bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
+    printMsg("Transmitting: '%s'\r\n", payload);
     uint8_t buffer[MAX_INTERNAL_BYTES];
     uint8_t breaks = 0;
     memset(buffer, 0, MAX_INTERNAL_BYTES);
@@ -81,6 +82,7 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     uint8_t buffer[MAX_MESSAGE_BYTES];
     int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
+    printMsg("Received: '%s'\r\n", buffer);
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
     crc_ack(bus);
@@ -97,4 +99,28 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
         buf[index] = buffer[index + breaks];
     }
     return size - breaks - 1;
+}
+
+bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int lchunks) {
+    int nchunks = ((nbytes - 1) / lchunks) + 1;
+    bool cumulative_success = true;
+    uint8_t subchunk[MAX_PAYLOAD_BYTES];
+    for (int i = 0; i < nchunks; i++) {
+        subchunk[0] = i;
+        memcpy(&subchunk[0] + 1, payload + i*lchunks, lchunks);
+        cumulative_success &= crc_transmit(bus, subchunk, lchunks + 1);
+    }
+    return cumulative_success;
+}
+
+int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks) {
+    uint8_t subchunk[MAX_PAYLOAD_BYTES];
+    int read = 0;
+    for (int i = 0; i < nchunks; i++) {
+        crc_read(bus, subchunk);
+        if (subchunk[0] == i) read += lchunks;
+        if (subchunk[0] > nchunks) return -1;
+        memcpy(buf + subchunk[0]*lchunks, &subchunk[1], lchunks);
+    }
+    return read;
 }

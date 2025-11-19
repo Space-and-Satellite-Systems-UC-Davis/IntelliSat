@@ -18,6 +18,8 @@
 
 #define RADIO_USART USART1
 #define PFC2Radio_BAUDRATE 9600
+#define CHUNK_LENGTH 8
+#define MAX_UINT8_T 255
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
@@ -39,6 +41,11 @@ typedef enum {
     Idle = 'o', //Not busy
 } PFC2RadioState;
 
+typedef struct {
+    size_t size;
+    uint8_t datatype;
+} RadioPacket;
+
 /**
  * Initialize the radio USART ports
  */
@@ -48,20 +55,30 @@ void radio_init();
  * Send data into the radio for transmission down to the ground
  * 
  * @param chunk  The data to be sent
- * @param nbytes  The size of the data to be sent
+ * @param nbytes  The size of the data to be sent.
  * 
  * @returns success or failure
  */
 bool radio_push(uint8_t chunk[], size_t nbytes);
 
 /**
- * Receive data from the radio
+ * Force the radio to send data to the PFC
+ * 
+ * @param chunk  A storage location for the data to be received
+ * 
+ * @returns number of bytes read and the data type
+ */
+RadioPacket radio_force_pull(uint8_t chunk[]);
+
+/**
+ * Receive data from the radio. This should be called by a signal handler.
+ * I assume the first packet has already been received and processed.
  * 
  * @param chunk  an empty storage vessel
  * 
- * @returns number of bytes read
+ * @returns number of bytes read and the data type
  */
-size_t radio_pull(uint8_t chunk[]);
+RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType datatype);
 
 /**
  * Retrieve the radio's state
@@ -72,10 +89,10 @@ size_t radio_pull(uint8_t chunk[]);
 PFC2RadioState radio_get_state();
 
 /**
- * Receive the kill command from the ground
+ * Receive the kill command from the ground. 
  */
 void radio_killall();
 
-bool downlink(uint8_t chunk[], size_t nbytes);
+bool radio_downlink(uint8_t chunk[], size_t nchunks);
 
 #endif /* __RADIO_INTERCOM__ */
