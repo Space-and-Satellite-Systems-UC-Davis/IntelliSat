@@ -1,3 +1,4 @@
+#pragma once
 #include "globals.h"
 #include "FreeRTOS.h"
 #include "print_scan.h"
