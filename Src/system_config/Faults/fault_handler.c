@@ -67,7 +67,7 @@ __attribute__( ( naked ) ) void HardFault_Handler(void) {
    from the assembly wrapper as input parameters */
 void HardFault_Handler_C(unsigned int *hardfault_args)
 {
-	_BFAR           = SCB->BFAR;
+	_BFAR       = SCB->BFAR;
 	_MMAR 			= SCB->MMFAR;
 	_CFSR 			= SCB->CFSR;
 
