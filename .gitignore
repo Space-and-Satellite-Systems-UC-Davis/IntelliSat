@@ -1,0 +1,5 @@
+*.vim
+.vscode
+*.so
+*.o
+*.a
