@@ -4,8 +4,7 @@
             "name": "STM32 debug",
             "compileCommands":[
                 "Debug/compile_commands.json"
-            ],
-            
+            ]
         }
     ]
 }
