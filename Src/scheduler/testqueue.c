@@ -16,9 +16,6 @@
 
 #define led_delay 40000
 
-/* Declare two variables of type Data_t that will be passed on the queue. */
-
-
 void vSenderTask(void *pvParameters)
 {
     BaseType_t taskStatus;
