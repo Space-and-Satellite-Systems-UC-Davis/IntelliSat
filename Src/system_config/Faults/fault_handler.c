@@ -49,7 +49,7 @@ volatile unsigned int _MMAR;
 void fault_handler_init(){
     // Enable MemManage, BusFault, and UsageFault fault handlers
     // Using just Hard Fault Handler for all faults for now
-    // SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_USGFAULTENA_Msk;
+    SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_USGFAULTENA_Msk;
 }
 
 __attribute__( ( naked ) ) void HardFault_Handler(void) {

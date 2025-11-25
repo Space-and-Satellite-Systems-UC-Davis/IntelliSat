@@ -10,7 +10,7 @@
 
 
 // Use kernal provided functions for managing memory (1)
-#define configKERNEL_PROVIDED_STATIC_MEMORY							1
+#define configKERNEL_PROVIDED_STATIC_MEMORY							            1
 
 // Use preemptive scheduler instead of cooperative (1)
 #define configUSE_PREEMPTION                                        1
@@ -22,7 +22,7 @@
 #define configUSE_TICKLESS_IDLE                                     1
 
 // ... DON'T MODIFY
-#define configCPU_CLOCK_HZ                                          80000000
+#define configCPU_CLOCK_HZ                                          10000000 // Use AHB /8, not AHB. AHB = 80MHz
 
 // ... DON'T MODIFY
 #define configSYSTICK_CLOCK_HZ                                      ( configCPU_CLOCK_HZ / 8 )
@@ -85,7 +85,7 @@
 
 #define configSUPPORT_DYNAMIC_ALLOCATION                            1
 
-#define configTOTAL_HEAP_SIZE                                       10240
+#define configTOTAL_HEAP_SIZE                                       40960
 
 #define configAPPLICATION_ALLOCATED_HEAP                            0
 
@@ -98,9 +98,9 @@
 
 #define configUSE_TICK_HOOK                                 0
 
-#define configCHECK_FOR_STACK_OVERFLOW                      0
+#define configCHECK_FOR_STACK_OVERFLOW                      2
 
-#define configUSE_MALLOC_FAILED_HOOK                        0
+#define configUSE_MALLOC_FAILED_HOOK                        1
 
 #define configUSE_DAEMON_TASK_STARTUP_HOOK                  0
 
@@ -129,9 +129,9 @@
 
 #define configTIMER_TASK_PRIORITY                           0
 
-#define configTIMER_QUEUE_LENGTH                            0
+#define configTIMER_QUEUE_LENGTH                            5
 
-#define configTIMER_TASK_STACK_DEPTH                        0 //configMINIMAL_STACK_SIZE
+#define configTIMER_TASK_STACK_DEPTH                        128 //configMINIMAL_STACK_SIZE
 
 
 /* Interrupt nesting behaviour configuration. */
