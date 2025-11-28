@@ -1,0 +1,23 @@
+CompileFlags:
+  Add:
+    - "-target"
+    - "arm-none-eabi"
+    - "-mcpu=cortex-m4"
+    - "-std=gnu11"
+    - "-DDEBUG"
+    - "-DSTM32L4"
+    - "-DSTM32"
+    - "-DSTM32L476ZGTx"
+    - "-Os"
+    - "-ffunction-sections"
+    - "-fdata-sections"
+    - "-Wall"
+    - "-Wextra"
+    - "-mfpu=fpv4-sp-d16"
+    - "-mfloat-abi=hard"
+    - "-mthumb"
+  Remove:
+    - "-fcyclomatic-complexity"
+    - "-fstack-usage"
+    - "--specs=nano.specs"
+  CompilationDatabase: Debug/
