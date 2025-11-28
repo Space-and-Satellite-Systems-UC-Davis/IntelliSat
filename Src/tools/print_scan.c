@@ -33,4 +33,5 @@ int printMsg(const char *message, ...) {
 	vsprintf(buff,message,args);
 
 	usart_transmitBytes(ConsoleUART, buff);
+	return true;
 }

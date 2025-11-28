@@ -8,7 +8,7 @@
 
 int main() {
     init_init();
-    init_platform(!RUN_TEST);
+    init_platform();
 
 #if (RUN_TEST==1) && (TEST_ID != 0)
 

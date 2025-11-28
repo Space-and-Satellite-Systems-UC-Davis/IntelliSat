@@ -13,15 +13,18 @@ void testFunction_MAG_Reads() {
 		if (get_buttonStatus_SW1()) {
 			printMsg("MAG0\r\n");
 			mag_select(MAG0);
-			printMsg("%d\r\n",  mag_read_X());
-			printMsg("%d\r\n", mag_read_Y());
-			printMsg("%d\r\n", mag_read_Z());
+			mag_X = mag_read_X();
+			mag_Y = mag_read_Y();
+			mag_Z = mag_read_Z();
+			printMsg("%d\r\n",  mag_X);
+			printMsg("%d\r\n", mag_Y);
+			printMsg("%d\r\n", mag_Z);
 
 			mag_select(MAG1);
 			printMsg("MAG1\r\n");
-			printMsg("%d\r\n",  mag_read_X());
-			printMsg("%d\r\n", mag_read_Y());
-			printMsg("%d\r\n", mag_read_Z());
+			printMsg("%d\r\n",  mag_X);
+			printMsg("%d\r\n", mag_Y);
+			printMsg("%d\r\n", mag_Z);
 
 		}
 	}
