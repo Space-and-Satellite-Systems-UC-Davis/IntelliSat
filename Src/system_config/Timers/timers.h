@@ -74,6 +74,16 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
  * @param percent A value between 0-100 to indicate 
 */
 void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
+/**
+ * @brief Turns on the timer for a PWM channel
+ * @param pwm the pwm channel
+ */
+void pwm_timerOn(PWM_Channels pwm);
+/**
+ * @brief Turns off the timer for a PWM channel
+ * @param pwm the pwm channel
+ */
+void pwm_timerOff(PWM_Channels pwm);
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -119,5 +129,9 @@ void logger_registerLogFunction(void (*func)());
  */
 void timer_waitStartupTime();
 
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+
+bool heartbeat_timer_init();
 
 #endif	// REALOP1_TIMERS_H_

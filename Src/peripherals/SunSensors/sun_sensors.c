@@ -126,17 +126,16 @@ float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum) {
         tempAddress = TMP1_ADDRESS;
     }
     return temp_sensor_getTemp(panel->i2cPort, panel->scl_pin, panel->sda_pin, tempAddress);
-
 }
 
 void sun_sensors_shutdownAll(){
-    power_set_mode(MODE_POWERED_DOWN);
-    shutdown(true);
+    // power_set_mode(MODE_POWERED_DOWN);
+    // shutdown(true);
 }
 
 void sun_sensors_repowerAll(){
-    power_set_mode(MODE_CONTINUOUS);
-    shutdown(false);
+    // power_set_mode(MODE_CONTINUOUS);
+    // shutdown(false);
 }
 
 

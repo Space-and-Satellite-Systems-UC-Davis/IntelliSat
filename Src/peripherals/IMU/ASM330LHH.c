@@ -18,9 +18,9 @@
 #include "ASM330LHH.h"
 
 //GLOBAL VARIABLES
-#define ACCEL_RATE_REG 0x10
-#define GYRO_CTRL_REG  0x11
-#define IMU_RESET_REG  0x12
+#define ACCEL_RATE_REG (void*) 0x10
+#define GYRO_CTRL_REG  (void*) 0x11
+#define IMU_RESET_REG  (void*) 0x12
 
 // Sensitivity Values
 #define ASM330LHH_ACC_SENSITIVITY_FS_2G   		0.061f

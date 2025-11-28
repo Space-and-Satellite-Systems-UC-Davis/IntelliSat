@@ -22,6 +22,7 @@
 #include <SPI/spi.h>
 #include <QSPI/qspi.h>
 #include <LED/led.h>
+#include <DBG/dbg_config.h>
 #include <RTC/rtc.h>
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
@@ -96,7 +97,7 @@ void init_platform(bool run_scheduler) {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
-    systick_init(true);
+    // systick_init(true);
 	printer_init();
 	led_init();
 	buttons_init();
