@@ -453,4 +453,19 @@ void vi_configure_logging_mode(
     adcs_mode mode
 );
 
+/*###################### SCHEDULERS ######################*/
+
+/**
+ * @brief Start a transaction. Transactions exercise mutual exclusion on FreeRTOS's side.
+ * 
+ */
+bool vi_start_transaction();
+
+/**
+ * @brief Start a transaction. Transactions exercise mutual exclusion on FreeRTOS's side.
+ */
+bool vi_end_transaction();
+
+bool vi_got_preempted();
+
 #endif//VIRTUAL_INTELLISAT_H
