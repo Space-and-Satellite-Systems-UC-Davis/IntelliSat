@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 // From FreeRTOS.h
-typedef void * vi_task_handle_t;
+typedef void *vi_task_handle_t;
 
 /* -------------------------------------------------------------------------- */
 /*                               HARDWARE MUTEX                               */
@@ -80,7 +80,7 @@ bool vi_yield_wait_resume();
  *
  * @param task_handle
  */
-void vi_signal_task_resume(TaskHandle_t task_handle);
+void vi_signal_task_resume(vi_task_handle_t task_handle);
 
 /* -------------------------------------------------------------------------- */
 /*                             ACTUALTOR SHUTDOWN                             */
@@ -149,6 +149,8 @@ bool vi_wait_for_notification(uint32_t timeout_ms,
 /**
  * @brief Check if the current task holds the hardware mutex
  * Useful for debugging
+ * In freeRTOS aware code you should be calling the FreeRTOS equivalent instead
+ * of this
  *
  * @return true if the current task holds mutex
  * @return false otherwise
@@ -157,7 +159,9 @@ bool vi_current_task_owns_hardware();
 
 /**
  * @brief Get the handle.of the task currently holding the hardware mutex
+ * In freeRTOS aware code you should be calling the FreeRTOS equivalent instead
+ * of this
  *
  * @return TaskHandle_t
  */
-TaskHandle_t vi_get_hardware_owner();
+vi_task_handle_t vi_get_hardware_owner();
