@@ -18,9 +18,9 @@
 #include "ASM330LHH.h"
 
 //GLOBAL VARIABLES
-#define ACCEL_RATE_REG (void*) 0x10
-#define GYRO_CTRL_REG  (void*) 0x11
-#define IMU_RESET_REG  (void*) 0x12
+#define ACCEL_RATE_REG 0x10
+#define GYRO_CTRL_REG  0x11
+#define IMU_RESET_REG  0x12
 
 // Sensitivity Values
 #define ASM330LHH_ACC_SENSITIVITY_FS_2G   		0.061f
@@ -59,9 +59,9 @@ void set_IMU(enum IMU_SELECT select){
 
 #endif
 
-void imu_spiWriteReg(void *address, uint8_t data) {
+void imu_spiWriteReg(uint8_t address, uint8_t data) {
 	uint8_t spiDATA[2];
-	spiDATA[0] = (uint8_t)address & IMU_SPI_DATA_DI_Msk;
+	spiDATA[0] = address & IMU_SPI_DATA_DI_Msk;
 	spiDATA[1] = data;
 
 #if OP_REV == 2
