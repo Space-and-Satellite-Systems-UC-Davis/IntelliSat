@@ -129,13 +129,13 @@ float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum) {
 }
 
 void sun_sensors_shutdownAll(){
-    // power_set_mode(MODE_POWERED_DOWN);
-    // shutdown(true);
+    pwrmon_setMode(MODE_POWERED_DOWN);
+    temp_sensor_shutdown(true);
 }
 
 void sun_sensors_repowerAll(){
-    // power_set_mode(MODE_CONTINUOUS);
-    // shutdown(false);
+    pwrmon_setMode(MODE_CONTINUOUS);
+    temp_sensor_shutdown(false);
 }
 
 
