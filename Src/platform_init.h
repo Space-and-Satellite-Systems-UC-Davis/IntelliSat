@@ -49,6 +49,7 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
+    heartbeat_timer_init();
 	rtc_config(LSI, 0);
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
@@ -99,7 +100,6 @@ void init_platform() {
 	led_init();
 	buttons_init();
     watchdog_init(WWDG_TIMEOUT_TIME);
-    heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
