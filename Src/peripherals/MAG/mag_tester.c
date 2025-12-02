@@ -5,7 +5,7 @@
 
 void testFunction_MAG_Reads() {
 
-	int16_t mag_X = 0;
+	float mag_X = 0;
 	float mag_Y = 0;
 	float mag_Z = 0;
 
