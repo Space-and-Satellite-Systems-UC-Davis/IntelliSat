@@ -13,6 +13,8 @@ extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
 extern void testFunction_DMA_ADC();
+extern void testFunction_watchdog();
+extern void testFunction_RTC_Alarm();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -40,6 +42,10 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Diode_Reads;
 		case 20:
 			return testFunction_DMA_ADC;
+		case 14: 
+			return testFunction_watchdog;
+		case 18:
+			return testFunction_RTC_Alarm;
 		default:
 			return testFunction_Nothing;
 	}
