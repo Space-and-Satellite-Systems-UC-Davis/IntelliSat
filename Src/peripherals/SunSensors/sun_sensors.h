@@ -29,7 +29,7 @@ typedef enum PANELS_ENUM {
 } PANELS;
 
 /**
- * Initalizes the sun sensors diode reading
+ * Initializes the sun sensors diode reading
  */
 void sun_sensor_init();
 
@@ -96,13 +96,13 @@ float sun_sensors_readCurrent(PANELS panelNum);
 float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum);
 
 /**
- * Power down all temp sensors and power moniters
+ * Power down all temp sensors and power monitors
  * 
  */
 void sun_sensors_shutdownAll();
 
 /**
- * Repower all temp sensors and power moniters into continuous mode
+ * Restore power to all temp sensors and power monitors into continuous mode
  * 
  */
 void sun_sensors_repowerAll();

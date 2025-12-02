@@ -22,6 +22,7 @@
 #include <SPI/spi.h>
 #include <QSPI/qspi.h>
 #include <LED/led.h>
+#include <DBG/dbg_config.h>
 #include <RTC/rtc.h>
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
@@ -48,6 +49,7 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
+    heartbeat_timer_init();
 	rtc_config(LSI, 0);
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
@@ -71,12 +73,9 @@ void init_first_time() {
 /**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
- *
- * @param run_scheduler If set to true, IntelliSat Scheduler will be active
- *        in the background
  * @returns None
  */
-void init_platform(bool run_scheduler) {
+void init_platform() {
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
@@ -96,12 +95,11 @@ void init_platform(bool run_scheduler) {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
-    systick_init(true);
+    // systick_init(true);
 	printer_init();
 	led_init();
 	buttons_init();
     watchdog_init(WWDG_TIMEOUT_TIME);
-    heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

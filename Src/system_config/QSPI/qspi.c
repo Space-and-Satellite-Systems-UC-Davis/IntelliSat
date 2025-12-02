@@ -231,7 +231,7 @@ bool qspi_sendCommand(
 	if (qspi_dma_inuse()) {
 		DMA2_Channel7->CNDTR = (uint16_t)data_length;
 		DMA2_Channel7->CPAR  = QUADSPI->DR;
-		DMA2_Channel7->CMAR  = (void*)data;
+		DMA2_Channel7->CMAR  = (uintptr_t) data;
 		DMA2_Channel7->CCR  |=
 			  (r_or_w << DMA_CCR_DIR)
 			| DMA_CCR_EN;

@@ -1,5 +1,5 @@
 #include <globals.h>
-#include "timers.h"
+#include <Timers/timers.h>
 #include <LED/led.h>
 
 #define HeartBeatTimer TIM7
