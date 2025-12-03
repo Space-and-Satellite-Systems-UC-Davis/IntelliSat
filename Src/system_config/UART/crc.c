@@ -87,7 +87,7 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     if (crc_remainder(buffer, size)) return -1;
     crc_ack(bus);
     int breaks = 0;
-    for (int index = 0; index + breaks < size; index++) {
+    for (int index = 0; index + breaks < size && index < MAX_PAYLOAD_BYTES; index++) {
         if (buffer[index + breaks] == '\\') {
             breaks++;
             buf[index] = buffer[index + breaks];
