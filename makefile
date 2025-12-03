@@ -1,34 +1,31 @@
-CC := gcc
-CFLAGS := -I. -lm -Wswitch -c
-
-# Source files
-SOURCES := determination/determination.c determination/mag_lookup/mag_lookup.c determination/TRIAD/triad.c \
-           determination/sun_lookup/sun_lookup.c adcs_math/vector.c adcs_math/matrix.c adcs_math/calibration.c adcs_math/sensors.c\
-           determination/sun_lookup/spa.c determination/pos_lookup/pos_lookup.c \
-           determination/pos_lookup/sgp4/src/c/SGP4.c determination/pos_lookup/sgp4/src/c/TLE.c \
-           determination/novasc3.1/novas.c determination/novasc3.1/novascon.c \
-           determination/novasc3.1/solsys1.c determination/novasc3.1/eph_manager.c \
-           determination/novasc3.1/readeph0.c determination/pos_lookup/ECEF_to_geodetic.c \
-           determination/novasc3.1/nutation.c control/detumble/detumble.c control/detumble/detumble_util.c control/bdot/bdot_control.c \
-		   control/ramp/ramp.c control/experiment/ramp_experiment.c ADCS.c control/experiment/PID_experiment.c \
-           control/experiment/determination_experiment.c
+include config.mk
+include sources.mk
 
 # Target executable name
 TARGET := libADCS.a
 
 all: $(TARGET)
 
-$(TARGET): $(SOURCES)
-	$(CC) $(SOURCES) $(CFLAGS)
-	ar rcs $@ *.o
-	rm *.o
+DEPENDENCIES := $(patsubst %.o,%.d,$(OBJECTS))
+-include $(DEPENDENCIES)
+
+$(TARGET): $(OBJECTS)
+	@echo "AR $@"
+	$(Q)ar rcs $@ $^
+# 	@echo "Cleaning $@ objects & dependencies"
+# 	$(Q)rm -f $(OBJECTS) $(DEPENDENCIES)
+
+%.o: %.c
+	@mkdir -p ./build
+	@echo "CC $@"
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@ 
 
 run:
 	./$(TARGET)
 
 clean:
-	rm -f $(TARGET) 
-	rm -f *.o
-
+	@echo "CLEAN"
+	$(Q)rm -f $(TARGET) ./build/$(OBJECTS) $(DEPENDENCIES)
 
 .PHONY: all clean run
+

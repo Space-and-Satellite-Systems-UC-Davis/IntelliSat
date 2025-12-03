@@ -46,18 +46,16 @@ vi_get_css_status get_measured_sun(int generation, vec3 *measured_sun) {
     static double prevVals[6];  // Not sure how that could be implemented
 
     for (int i = 0; i < 6; i++){
-        sensors[i].component = VI_COMP_CSS_CHOICE;
+        sensors[i].component = CSS;
     }
 
     for (int i = 0; i < 6; i++) {
-        sensors[i].field.css_choice = 
-            sensor_pair_choice(sensors[i], generation) == 1
-            ? i * 2         //VI_CSS_**1           
-            : i * 2 + 1;    //VI_CSS_**2
+        sensors[i].choice = 
+            sensor_pair_choice(sensors[i], generation) == 1 ? ONE : TWO; 
     }
 
     for (int i = 0; i < 6; i++){
-        if (getCSS(sensors[i], i, prevVals[i], &(currVals[i])))
+        if (getCSS(sensors[i], prevVals[i], &(currVals[i])))
             return VI_GET_CSS_FAILURE;
     }
 
@@ -76,17 +74,17 @@ determination_status determination(mat3 *attitude) {
 
     vec3 measured_mag;
     vec3 measured_sun;
-    vec3 mag_prev;
+    vec3 mag_prev = (vec3){0, 0, 0};
 
     vi_sensor magnotometer;
-    magnotometer.component = VI_COMP_MAG_CHOICE;
+    magnotometer.component = MAG;
 
     // Get current generation
     int generation = vi_get_determination_generation();
 
     // Ger magotometer choice
-    magnotometer.field.mag_choice =
-        sensor_pair_choice(magnotometer, generation) == 1 ? VI_MAG1 : VI_MAG2;
+    magnotometer.choice =
+        sensor_pair_choice(magnotometer, generation) == 1 ? ONE : TWO;
 
     // Get current Time
     if (vi_get_epoch(&year, &month, &day, &hour, &minute, &second) ==
@@ -115,8 +113,8 @@ determination_status determination(mat3 *attitude) {
     }
 
     int update_IGRF = 0; // false
-    char *tle_line1;
-    char *tle_line2;
+    char *tle_line1 = NULL;
+    char *tle_line2 = NULL;
 
     vi_get_TLE_status tle_status = vi_get_TLE(tle_line1, tle_line2);
 
@@ -243,4 +241,91 @@ void get_earth_direction(vec3 *earth_attitude) {
     vec3 down;
     vec_set(0, 0, 1, &down);
     mat_vec_mult(attitude, down, earth_attitude);
+}
+
+determination_status get_moon_direction(vec3 *moon_attitude) {
+    
+    int delta_t = 69;
+
+    int year, month, day, hour, minute, second;
+    
+    // Get current Time
+    //vi_get_epoch_status epoch_status = vi_get_epoch(&year, &month, &day, &hour, &minute, &second);
+    if (vi_get_epoch(&year, &month, &day, &hour, &minute, &second) ==
+        GET_EPOCH_FAILURE)
+        return DET_EPOCH_FAILURE; //TODO: fix error handling w/ return type
+
+    // adding delta_t = 69 seconds to UTC to convert to TT
+    double TT = julian_date(year, month, day, hour + minute / 60.0 + (second + delta_t) / 3600.0); 
+    double UTC = julian_date(year, month, day, hour + minute / 60.0 + second / 3600.0);
+
+    static object moon;
+    cat_entry null_star;
+    static short int first_time = 1;
+
+    if (first_time) {
+        make_cat_entry ("NULL_STAR","   ",0L,0.0,0.0,0.0,0.0,0.0,0.0, &null_star);
+        make_object (0,11,"Moon",&null_star, &moon);
+        first_time = 0;
+    }
+    observer location;
+    double longitude;
+    double latitude;
+    double altitude;
+    double geocentric_radius;
+    double geocentric_latitude;
+    pos_lookup_status pos_status;
+    char *tle_line1;
+    char *tle_line2;
+
+    vi_get_TLE_status tle_status = vi_get_TLE(tle_line1, tle_line2);
+    
+    switch (tle_status) {
+    case GET_TLE_FAILURE:
+        return DET_NO_TLE;
+    case GET_TLE_SUCCESS_OLD:
+        break;
+    case GET_TLE_SUCCESS_NEW:
+        break;
+    }
+
+    pos_status =
+            pos_lookup(tle_line1, tle_line2, UTC, 0.0, &longitude, &latitude,
+                       &altitude, &geocentric_radius, &geocentric_latitude);
+
+    switch (pos_status) {
+    case SGP4_ERROR:
+        return DET_POS_LOOKUP_ERROR;
+    case TEME2ITRS_ERROR:
+        return DET_POS_LOOKUP_ERROR;
+    case ITRS2LLA_ERROR:
+        return DET_POS_LOOKUP_ERROR;
+    case POS_LOOKUP_SUCCESS:
+        break;
+    }
+
+    double pos[3] = {longitude, latitude, altitude}; // get current satellite position x, y, z
+    double vel[3] = {0, 0, 0}; // get current satellite velocity vx, vy, vz
+    make_observer_in_space(pos, vel, &location); // check if we can assume that satellite is in space or it could also be on the surface
+
+    sky_pos output;
+    // local gcrs coordinate system
+    place(TT, &moon, &location, delta_t, 0, 0, &output); // arg6: check if need full accuracy (0) or reduced accuracy (1) is fine
+
+    // convert from geocentric to topocentric
+    double x = output.r_hat[0];
+    double y = output.r_hat[1];
+    double z = output.r_hat[2];
+    double u = -x * sin(longitude) + y * cos(longitude);
+    double v = (-x * sin(latitude) * cos(longitude)) - (y * sin(latitude) * sin(longitude)) + (z * cos(latitude)); 
+    double w = (x * cos(latitude) * cos(longitude)) + (y * cos(latitude) * sin(longitude)) + (z * sin(latitude)); 
+    vec3 topo_moon_vec;
+    // reverse w and swap u and v
+    vec_set(v, u, -w, &topo_moon_vec);
+
+    mat3 attitude;
+    determination(&attitude);
+    mat_vec_mult(attitude, topo_moon_vec, moon_attitude);
+    //convert output (of type sky_pos) to vec3 type
+    //moon_attitude = output.r_hat;
 }

@@ -125,14 +125,9 @@ double mat_det(mat3 mat) {
 		mat.x3 * (mat.y1*mat.z2 - mat.z1*mat.y2);
 }
 
-int mat_inverse(mat3 mat, mat3 *output) {
-    double determinant = mat_det(mat);
+mat3 mat_adj(mat3 mat) {
 
-    if (fabs(determinant) < 1e-6) {
-        return -1;
-    }
-
-    mat3 new_mat = (mat3) {
+	mat3 new_mat = (mat3) {
         mat.y2*mat.z3-mat.y3*mat.z2,
         mat.x3*mat.z2-mat.x2*mat.z3,
         mat.x2*mat.y3-mat.x3*mat.y2,
@@ -144,7 +139,19 @@ int mat_inverse(mat3 mat, mat3 *output) {
         mat.x1*mat.y2-mat.x2*mat.y1
     };
 
-    mat_scalar(1/determinant, mat, output);
+	return new_mat;
+}
+
+int mat_inverse(mat3 mat, mat3 *output) {
+    double determinant = mat_det(mat);
+
+    if (fabs(determinant) < 1e-6) {
+        return -1;
+    }
+
+	mat3 adj = mat_adj(mat);
+
+    mat_scalar(1/determinant, adj, output);
     return 0;
 }
 

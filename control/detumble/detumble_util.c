@@ -1,38 +1,19 @@
 #include "control/detumble/detumble_util.h"
-#include "control/detumble/detumble.h"
-#include "math.h"
-#include "control/bdot/bdot_control.h"
-#include "virtual_intellisat.h"
 
 // TODO: Implement computeB_coils to convert coils curr to magitude
 
-const double control_constant = 67200.0; // TODO: tune :p
+
 const double coilInductance = 1;         // TODO: Messure (Henrys)
 const double coilResistance = 1;         // TODO: Measure (Ohms)
 const double B_Earth = 1;                // TODO: I need
 const double decayPercent = 0.2;         // TODO: Decide on percentage
 
-vec3 findAngVel(vec3 b0, vec3 b1, uint64_t delta_t) {
-
-    vec3 bdot;   // The velocity vector pointing from b0 to b1
-    vec3 angVel; // The angular velocity
-
-    if (delta_t == 0)
-        return (vec3){0.0, 0.0, 0.0};
-
-    bdot_control(b1, b0, delta_t, &bdot);
-    vec_scalar((1.0 / vec_mag(b0)), bdot, &angVel);
-
-    // Convert into degree per second
-    double RPSmultiplier = (180 / M_PI) * 1000;
-    vec_scalar(RPSmultiplier, angVel, &angVel);
-
-    return angVel;
-}
 
 // TODO: work on this function
+// Look into vi_get_coils_current()
 double computeB_coils(double current) { return current; }
 
+// TODO: switch into some kind of constant timeout
 double computeDecay(double B_initial) {
 
     double tau = coilInductance / coilResistance;
@@ -51,18 +32,6 @@ bool detumbleDelay(vec3 mdm)
     if (vi_delay_ms(delayTime)) return true;
 
     return false;
-}
-
-vec3 computeMDM(vec3 mag_curr, vec3 mag_prev, uint64_t delta_t, vec3 coils_curr,
-                vec3 needle) {
-
-    vec3 mdm;
-    bdot_control(mag_curr, mag_prev, delta_t, &coils_curr);
-    vec_sub(coils_curr, needle, &coils_curr);
-    vec_scalar(-control_constant, coils_curr, &mdm);
-    capCurrent(&mdm);
-
-    return mdm;
 }
 
 bool aboveThreshold(vec3 input, double threshold) {

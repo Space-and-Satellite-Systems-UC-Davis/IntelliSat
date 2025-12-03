@@ -18,8 +18,8 @@
 #include <math.h>
 
 detumble_status detumble(vec3 needle, bool isTesting) {
-    vec3 mag_curr, mag_prev; // Magnotometer readings
-    vec3 coils_curr;
+    vec3 mag_curr, mag_prev = {0,0,0}; // Magnotometer readings
+    //vec3 coils_curr;
     uint64_t startTime = 0, curr_millis = 0, prev_millis = 0, delta_t = 0;
     vec3 mdm;            // Magnetic Dipole Moment
     vec3 angVel;         // Angular Velocity
@@ -28,9 +28,9 @@ detumble_status detumble(vec3 needle, bool isTesting) {
 
     // Declare varibles for sensor alternation
     vi_sensor magnotometer; // Initialize it to VI_MAG1
-    magnotometer.component = VI_COMP_MAG_CHOICE;
-    magnotometer.field.mag_choice =
-        sensor_pair_choice(magnotometer, generation) == 1 ? VI_MAG1 : VI_MAG2;
+    magnotometer.component = MAG;
+    magnotometer.choice =
+        sensor_pair_choice(magnotometer, generation) == 1 ? ONE : TWO;
 
     if (vi_get_curr_millis(&curr_millis))
         return DETUMBLING_FAILURE_CURR_MILLIS;
@@ -61,7 +61,7 @@ detumble_status detumble(vec3 needle, bool isTesting) {
             return DETUMBLING_FAILURE_MAGNOTOMETER;
 
         // Compute the magetic dipole moment: M = -k(bDot - n)
-        mdm = computeMDM(mag_curr, mag_prev, delta_t, coils_curr, needle);
+        mdm = computeMDM(mag_curr, mag_prev, delta_t, needle);
 
         // Send control command to coils
         if (vi_control_coil(mdm.x, mdm.y, mdm.z))

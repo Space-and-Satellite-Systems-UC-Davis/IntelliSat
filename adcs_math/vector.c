@@ -14,7 +14,7 @@
 #include <math.h>
 
 void vec_set(double x, double y, double z, vec3 *output) {
-    (*output).x = x;
+    (*output).x = x; //output->x = x;
     (*output).y = y;
     (*output).z = z;
 }
