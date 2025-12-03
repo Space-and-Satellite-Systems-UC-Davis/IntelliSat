@@ -10,7 +10,7 @@
  * @date 7/17/2023
  */
 
-#include "determination/TRIAD/triad.h"
+#include "triad.h"
 #include "adcs_math/matrix.h"
 #include "adcs_math/vector.h"
 

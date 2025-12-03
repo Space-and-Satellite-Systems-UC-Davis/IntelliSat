@@ -1,4 +1,4 @@
-#include "determination/determination.h"
+#include "determination.h"
 #include "determination/novasc3.1/novas.h"
 
 #include "determination/TRIAD/triad.h"

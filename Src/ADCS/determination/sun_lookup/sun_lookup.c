@@ -10,7 +10,7 @@
  * @date 8/29/2023
  */
 
-#include "determination/sun_lookup/sun_lookup.h"
+#include "sun_lookup.h"
 #include "determination/sun_lookup/spa.h"
 #include <math.h>
 

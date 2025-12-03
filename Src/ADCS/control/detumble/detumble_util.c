@@ -1,4 +1,4 @@
-#include "control/detumble/detumble_util.h"
+#include "detumble_util.h"
 
 // TODO: Implement computeB_coils to convert coils curr to magitude
 

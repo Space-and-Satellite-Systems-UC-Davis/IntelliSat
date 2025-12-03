@@ -1,4 +1,4 @@
-#include "determination/mag_lookup/mag_lookup.h"
+#include "mag_lookup.h"
 #include "adcs_math/vector.h"
 
 

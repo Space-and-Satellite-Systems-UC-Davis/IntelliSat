@@ -1,4 +1,4 @@
-#include "control/experiment/ramp_experiment.h"
+#include "ramp_experiment.h"
 #include "adcs_math/sensors.h"
 #include "virtual_intellisat.h"
 
