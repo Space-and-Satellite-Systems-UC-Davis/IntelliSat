@@ -440,9 +440,7 @@ vi_delay_ms(
  *
  * @param string The string to print.
  */
-void vi_print (
-  const char *message, ...
-);
+void vi_print (const char *message);
 
 
 
