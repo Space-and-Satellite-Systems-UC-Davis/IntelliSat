@@ -6,43 +6,43 @@
 #include "IMU/ASM330LHH.h"
 #include "Buttons/buttons.h"
 
-#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
+#define RUN_TEST 0
+#define TEST_ID  0
 
 #include <TestDefinition.h>
 
-int main() {
+int main(void) {
     init_init();
     init_platform(!RUN_TEST);
+    usart_init(USART2, 9600);
 
 #if (RUN_TEST==1) && (TEST_ID != 0)
-
     void (*testFunc)();
     testFunc = getTestFunction(TEST_ID);
     testFunc();
+#else
 
-    #else
+    const char* message = "Hello, DMA USART2 TX!\r\n";
+    
+    DMAConfig tx_config = {
+        .selection = SELECT_USART2_TX,
+        .peripheral_addr = (uint32_t)&USART2->TDR,
+        .memory_addr = (uint32_t)message,
+        .length = (uint16_t)strlen(message),
+        .pdata_size = 1,
+        .mdata_size = 1,
+        .circular = false,
+        .peripheral_to_memory = false,
+        .peripheral_increment = false,
+        .memory_increment = true,
+        .transfer_interrupt = true,
+    };
 
+    usart_transmitBytesDMA((uint8_t *)message, tx_config);
 
-    printMsg("START\r\n");
-
-    uint16_t test_buffer[1] = {42};
-
-    DMAConfig config;
-    config.selection = SELECT_ADC3;
-    config.length = 1;
-    config.memory_addr = (uint32_t)&test_buffer;
-    config.peripheral_addr = (uint32_t) &(ADC3->DR);
-    config.circular = true;
-
-    configure_channel(config);
-    adc_continuous_dma(ADC3, 6);
-    dma_enable_channel(SELECT_ADC3);
-
-	while (1) {
-		printMsg("ARRAY: %u\r\n", test_buffer[0]);
-	}
-
+    while (1) {
+        uint32_t count = DMA1_Channel7->CNDTR;
+        printMsg("count: %d\r\n", count);
+    }
 #endif
-
 }

@@ -1,4 +1,5 @@
 #include "DMA/DMA.h"
+#include <string.h>
 
 void configure_channel(DMAConfig config) {
 	DMAPeripheral* peripheral = DMA_selectPeripheral(config.selection);
@@ -82,5 +83,27 @@ void dma_disable_channel(enum_DMAPeripherals selection) {
 	peripheral->channel_select->CSELR &=
 			~(peripheral->channel_select_value) << peripheral->channel_select_pos;
 	channel_ptr->CCR &= ~(DMA_CCR_EN);
+}
+
+//Transmit bytes over USART1 or USART2 using DMA
+void usart_transmitBytesDMA(uint8_t message[], DMAConfig config)
+{
+	if (config.selection == SELECT_USART2_TX) RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN_Msk;	
+	else if (config.selection == SELECT_USART1_TX) RCC->APB2ENR |= RCC_APB2ENR_USART1EN_Msk;
+	else return; //Unsupported USART
+
+    configure_channel(config);
+
+	if (config.selection == SELECT_USART2_TX) {
+		USART2->CR3 |= USART_CR3_DMAT;
+    	USART2->CR1 |= USART_CR1_TE | USART_CR1_UE;
+	}
+	else if (config.selection == SELECT_USART1_TX) {
+		USART1->CR3 |= USART_CR3_DMAT;
+		USART1->CR1 |= USART_CR1_TE | USART_CR1_UE;
+	}
+
+    dma_enable_channel(config.selection);
+	
 }
 
