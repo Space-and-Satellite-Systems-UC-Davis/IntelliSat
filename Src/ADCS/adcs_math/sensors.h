@@ -61,7 +61,7 @@ typedef enum getCSS{
  * @param prevValue previous sensor value
  * @param currValue the current sensor value to be read 
  */
-getCSS_status getCSS(vi_sensor sensor, vi_CSS_face face ,double prevVal, double *currVal);
+getCSS_status getCSS(vi_sensor sensor ,double prevVal, double *currVal);
 
 /**
  * returns 1 if in eclipse, 0 if not

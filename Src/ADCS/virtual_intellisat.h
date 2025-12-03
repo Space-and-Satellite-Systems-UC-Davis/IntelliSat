@@ -37,17 +37,19 @@ typedef enum {
 } vi_component;
 
 typedef enum {
-	One = 1,
-	Two = 2,
+    NSA = 0, //No Sensor Alternation
+	ONE = 1,
+	TWO = 2,
 } vi_choice;
 
 typedef enum {
+    NA = 0, //Not applicable
 	PX = 1,
-	PY = 2,
-	PZ = 3,
-	NX = 4,
-	NY = 5,
-	NZ = 6,
+    NX = 2,
+    PY = 3,
+    NY = 4,
+    PZ = 5,
+    NZ = 6,
 } vi_axis;
 
 /**
@@ -190,8 +192,8 @@ vi_get_angvel(
 
 
 typedef enum {
-	VI_GET_MAG_SUCCESS,
-	VI_GET_MAG_FAILURE
+	VI_GET_MAG_SUCCESS = 0,
+	VI_GET_MAG_FAILURE = 1,
 } vi_get_mag_status;
 
 /**
@@ -439,7 +441,7 @@ vi_delay_ms(
  * @param string The string to print.
  */
 void vi_print (
-  const char *message
+  const char *message, ...
 );
 
 
@@ -452,5 +454,50 @@ void vi_print (
 void vi_configure_logging_mode(
     adcs_mode mode
 );
+
+
+/**
+ * @brief Check if the current mode has been restarted 
+ *  since this last ran.
+ *
+ * If this returns true, it means we should discard all
+ *  saved state (since it means the state is no longer valid)
+ *  and reperform first-time mode setup.
+ * 
+ * @return Integer/Bool.
+ */
+int
+vi_mode_got_restarted();
+
+
+/**
+ * @brief Begin control loop transaction.
+ *
+ * Between calls to this and vi_end_control_transaction,
+ *  the scheduler will not interrupt the running mode.
+ *  
+ * Wrapping iterations of control loops in transactions
+ *  guarantees that input sensor data is relevant to the
+ *  output actuator controls. Otherwise, the scheduler
+ *  could interrupt the running mode at any time and then
+ *  reenter it, continuing mode execution with stale data.
+ *
+ * @return Void.
+ */
+void
+vi_start_control_transaction();
+
+
+/**
+ * @brief End control loop transaction.
+ *
+ *  Between calls to vi_start_control_transaction and this,
+ *  the scheduler will not interrupt the running mode.
+ *
+ * @return Void.
+ */
+void
+vi_end_control_transaction();
+
 
 #endif//VIRTUAL_INTELLISAT_H

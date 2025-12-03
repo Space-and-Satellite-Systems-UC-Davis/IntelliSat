@@ -9,6 +9,9 @@
 #ifndef CALIBRATION_H
 #define CALIBRATION_H
 
+#include "vector.h"
+#include "virtual_intellisat.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -38,9 +41,31 @@ float lowpass_filter(float currValue, float prevValue, float filterConstant);
  *
  * @return sensor calibration value after filtration
  */
-float get_sensor_calibration(float currValue, float prevValue,
-                             float offset, float scalar, float filterConstant);
+float get_sensor_calibration(float currValue, float prevValue, float offset,
+                             float scalar, float filterConstant);
 
+/**
+ * @brief perform sensor calibration on sensor readings
+ *
+ * @param prevVal previous sensor value, used in calibration
+ * 
+ * @param currVal current sensor value, calibrated value returned-by-reference
+ *
+ * @return true if calibration is sucessful, false if otherwise
+ */
+bool calibrateDbl(vi_sensor sensor, double prevVal, double *currVal);
+
+
+/**
+ * @brief perform sensor calibration on sensor readings in a vec3 type
+ *
+ * @param prevVal previous sensor value, used in calibration
+ * 
+ * @param currVal current sensor value, calibrated  value returned-by-reference
+ *
+ * @return true if calibration is sucessful, false if otherwise
+ */
+bool calibrateVec3(vi_sensor sensor, vec3 prevVal, vec3 *currVal);
 
 /**
  * @brief Safely calculate delta_t accounting for integer overflow

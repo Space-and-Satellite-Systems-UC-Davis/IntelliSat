@@ -16,8 +16,8 @@ PID_status PID_experiment(double target, int infinite) {
   vi_sensor imu;
   vi_sensor hdd;
 
-  imu.component = VI_COMP_IMU_CHOICE;
-  hdd.component = VI_COMP_HDD_CHOICE;
+  imu.component = IMU;
+  hdd.component = HDD;
 
   vec3 angVel_curr = (vec3){0,0,0};
   vec3 angVel_prev = (vec3){0,0,0};
@@ -26,10 +26,9 @@ PID_status PID_experiment(double target, int infinite) {
   int generation = vi_get_experiment_generation();
 
   // Get IMU sensor choice
-  imu.field.imu_choice = 
-      sensor_pair_choice(imu, generation) == 1 ? VI_IMU1 : VI_IMU2 ;
+  imu.choice = sensor_pair_choice(imu, generation) == 1 ? ONE : TWO ;
 
-  hdd.field.hdd_choice = VI_HDD1;
+  hdd.choice = ONE;
   
   // Verify experiment is running
 
@@ -59,16 +58,16 @@ PID_status PID_experiment(double target, int infinite) {
 
      //Clamp the output
     if (throttle >= 0) {
-      hdd.field.hdd_choice = VI_HDD1;
+      hdd.choice = ONE;
       if (throttle > 2.5) throttle = 2.5;
 		} 
     else {
-        hdd.field.hdd_choice  = VI_HDD2;
+        hdd.choice  = TWO;
         if (throttle < -2.5) throttle = -2.5;
     }
 
     // Take output and plug it into HDD
-    if (vi_hdd_command(hdd.field.hdd_choice, throttle) == HDD_COMMAND_FAILURE)
+    if (vi_hdd_command(hdd, throttle) == HDD_COMMAND_FAILURE)
       return PID_EXPERIMENT_COMMAND_FAILURE;
 
     angVel_prev = angVel_curr;

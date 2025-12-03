@@ -9,10 +9,10 @@ determination_exp_status determination_experiment() {
   mat3 prevAttitude;
   mat3 currAttitude;
   vec3 sun;
-  vi_HDD_choice hdd_choice = VI_HDD1;
+  vi_sensor hdd = {HDD, ONE, PX};
 
   // Get current generation for sensor alternation
-  int generation = vi_get_experiment_generation();
+  //int generation = vi_get_experiment_generation();
 
   // TODO: default values for now, waiting for sun sensors to implement get_sun
   sun.x = 0;
@@ -61,7 +61,7 @@ determination_exp_status determination_experiment() {
     double throttle = PID_command(target, zrotation, curr_millis, &controller);
     
     // Take output and plug it into HDD
-    if (vi_hdd_command(hdd_choice, throttle) == HDD_COMMAND_FAILURE)
+    if (vi_hdd_command(hdd, throttle) == HDD_COMMAND_FAILURE)
       return DETERMINATION_EXPERIMENT_HDD_COMMAND_FAILURE;
     prevAttitude = currAttitude;
     prev_millis = curr_millis;
