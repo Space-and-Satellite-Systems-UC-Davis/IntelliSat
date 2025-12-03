@@ -44,7 +44,7 @@ typedef struct intellisat_task_t {
 
 intelli_task_t task_table[TASK_TABLE_LEN] = {
     {7, "LOW_PWR",      60000,  low_pwr_time,    config_low_pwr,    low_pwr,    clean_low_pwr,      NULL, NULL},  // Func1 - N/A
-	{6, "DETUMBLE",     60000,  detumble_time,   config_detumble,   detumble,   clean_detumble,     NULL, NULL},  // Func1 - N/A
+	{6, "DETUMBLE",     60000,  detumble_time,   config_detumble,   run_detumble,   clean_detumble,     NULL, NULL},  // Func1 - N/A
 	{5, "COMMS",        60000,  comms_time,      config_comms,      comms,      clean_comms,        NULL, NULL},  // Func1 - N/A
     {4, "ECC",          60000,  ecc_time,        config_ecc,        ecc,        clean_ecc,          NULL, NULL},  // Func1 - N/A
     {3, "EXPERIMENT",   60000,  experiment_time, config_experiment, experiment, clean_experiment,   NULL, NULL},  // Func1 - Experiment ID (0 for none)

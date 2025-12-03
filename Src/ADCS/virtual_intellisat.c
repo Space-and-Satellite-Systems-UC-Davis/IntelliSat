@@ -59,7 +59,7 @@ vi_get_angvel(
     double *angvel_y,
     double *angvel_z
 ){
-	enum IMU_SELECT imu_select = (imuSensor.choice == One) ? IMU0 : IMU1;
+	enum IMU_SELECT imu_select = (imuSensor.choice == ONE) ? IMU0 : IMU1;
 
 	set_IMU(imu_select);
 
