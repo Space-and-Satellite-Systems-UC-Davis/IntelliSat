@@ -8,7 +8,10 @@ void testFunction_RadioIntercom() {
     radio_init();
     while (true) {
         uint8_t chunk[CHUNK_LENGTH*4];
-        memset(chunk, 42, sizeof chunk);
+        for (int i = 0; i < CHUNK_LENGTH*4; i++) {
+            chunk[i] = i + '0';
+        }
+        printMsg("Chunk is: '%s'\r\n", chunk);
         printMsg("I'm alive!\r\n");
         printMsg("%d\r\n", radio_push(chunk, sizeof chunk));
         printMsg("%d\r\n", radio_force_pull(chunk).size);
