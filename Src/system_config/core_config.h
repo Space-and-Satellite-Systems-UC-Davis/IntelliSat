@@ -40,6 +40,14 @@ enum rcc_cfgr_ppre_prescalers {
 };
 
 /**
+ * Modify clock frequency and account for any timers that need to be notified.
+ *
+ * @param   None
+ * @returns None
+ */
+void changeCore_Hz(int Hz);
+
+/**
  * Initializes the clocks of the micro-controller.
  *
  * This function sets up the various clock sources and

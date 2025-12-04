@@ -16,7 +16,7 @@
 #include "GPIO/gpio.h"
 
 // Global (external) variables and functions
-extern int core_MHz;	// from core_config.h
+extern int core_Hz;	// from core_config.h
 
 
 void pwm_timer_gpio() {
@@ -96,9 +96,9 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period) {
 		PWMTimer->CCER |= TIM_CCER_CC4E;
 	}
 	
-	// (f_clk / f_goal) - 1  ==> ( 2*(core_MHz/16) / 1 MHz) - 1
-	// (2*(core_MHz/16)) due to RCC configurations in core_config.c
- 	PWMTimer->PSC = 2*(core_MHz/16) - 1;		// Frequency in 1us;
+	// (f_clk / f_goal) - 1  ==> ( 2*(core_Hz/1000000/16) / 1 MHz) - 1
+	// (2*(core_Hz/1000000/16)) due to RCC configurations in core_config.c
+ 	PWMTimer->PSC = 2*(core_Hz/1000000/16) - 1;		// Frequency in 1us;
 	PWMTimer->ARR = period;
 
 	PWMTimer->EGR |= TIM_EGR_UG;
