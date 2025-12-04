@@ -119,5 +119,22 @@ void logger_registerLogFunction(void (*func)());
  */
 void timer_waitStartupTime();
 
+#define RTOSDebugTimer                  TIM8
+
+/**
+ * Configures the timer to track task run time, runs at 10x faster than systick
+ *
+ * @param   none
+ * @returns none
+ */
+void rtos_debug_timer_init();
+
+/**
+ * Get the current count of the rtos debug timer
+ *
+ * @param   none
+ * @returns uint32_t current rtos debug timer value
+ */
+int rtos_debug_timer_get_counter_value();
 
 #endif	// REALOP1_TIMERS_H_
