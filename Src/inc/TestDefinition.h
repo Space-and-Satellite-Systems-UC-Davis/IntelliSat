@@ -12,6 +12,9 @@ extern void testerFunction_PWMGeneration();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
+extern void testFunction_watchdog();
+extern void testFunction_LPSleep();
+extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -42,8 +45,10 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_mgtIntercom;
 		case 14: 
 			return testFunction_watchdog;
-		case 18:
+    case 18:
 			return testFunction_RTC_Alarm;
+		case 23:
+			return testFunction_LPSleep;
 		default:
 			return testFunction_Nothing;
 	}
