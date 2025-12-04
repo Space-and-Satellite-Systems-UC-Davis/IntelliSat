@@ -4,6 +4,7 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 
+
 //No options for some uart because they aren't implemented
 typedef enum enum_DMAPeripherals {
 	SELECT_ADC1,
@@ -44,6 +45,10 @@ typedef struct {
 	bool transfer_interrupt;
 } DMAConfig;
 
+DMAConfig USART_TX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length);
+DMAConfig USART_RX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length);
+
+
 void configure_channel(
 		DMAConfig config
 );
@@ -53,6 +58,7 @@ void dma_disable_channel(enum_DMAPeripherals selection);
 
 void DMA_initializePeripheralConstants();
 DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals);
-void usart_transmitBytesDMA(uint8_t message[], DMAConfig config);
+void usart_transmitBytesDMA(uint8_t message[], enum_DMAPeripherals selection, bool circular);
+void usart_recieveBytesDMA(uint8_t buffer[], uint16_t size, enum_DMAPeripherals selection);
 
 #endif 

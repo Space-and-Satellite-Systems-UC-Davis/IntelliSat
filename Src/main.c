@@ -23,22 +23,8 @@ int main(void) {
 #else
 
     const char* message = "Hello, DMA USART2 TX!\r\n";
-    
-    DMAConfig tx_config = {
-        .selection = SELECT_USART2_TX,
-        .peripheral_addr = (uint32_t)&USART2->TDR,
-        .memory_addr = (uint32_t)message,
-        .length = (uint16_t)strlen(message),
-        .pdata_size = 1,
-        .mdata_size = 1,
-        .circular = false,
-        .peripheral_to_memory = false,
-        .peripheral_increment = false,
-        .memory_increment = true,
-        .transfer_interrupt = true,
-    };
 
-    usart_transmitBytesDMA((uint8_t *)message, tx_config);
+    usart_transmitBytesDMA((uint8_t*)message, SELECT_USART2_TX, true);
 
     while (1) {
         uint32_t count = DMA1_Channel7->CNDTR;
