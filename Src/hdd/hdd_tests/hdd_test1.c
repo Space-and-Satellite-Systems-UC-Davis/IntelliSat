@@ -26,7 +26,7 @@ void testFunction_HDD1() {
 	printMsg("Starting HDD1 test function execution.\r\n");
 
 	// init timer here does other initialization actions
-	const int targetPWM = PWM1;
+	const int targetPWM = PWM0;
 	const int secondPWM = (targetPWM + 1) % 2;
 	printMsg("Testing HDD%d\r\n", targetPWM);
 	led_d2(1);
@@ -56,13 +56,20 @@ void testFunction_HDD1() {
 		printMsg("Continuing. \r\n");
 	}
 
+	//hdd_calibrate(targetPWM, 1);
 	hdd_arm(targetPWM);
-	hdd_arm(secondPWM);
+	//hdd_arm(secondPWM);
+
+	printMsg("Testing max duty \r\n");
+	pwm_setDutyCycle(targetPWM, MAX_DUTY);
+	delay_ms(5000);
+
+	printMsg("Finished arming; throttling to max \r\n");
 	pwm_setDutyCycle(targetPWM, 90);
 	pwm_setDutyCycle(secondPWM, MAX_DUTY);
 	delay_ms(10000);
 
-	pwm_setDutyCycle(secondPWM, 60);
+	pwm_setDutyCycle(secondPWM, 75);
 	printMsg("Testing slipping.\r\n");
 	pwm_setDutyCycle(targetPWM, SLIP_DUTY);
 	delay_ms(5000);
@@ -75,7 +82,7 @@ void testFunction_HDD1() {
 	hddDrive(targetPWM, 95, 1);
 	uint8_t duty = pwm_getDutyCycle(targetPWM);
 	printMsg("Set duty to %u and got duty %u\r\n", 95, duty);
-	delay_ms(10000);
+	delay_ms(3000);
 
 	led_d2(1);
 	led_d3(1);

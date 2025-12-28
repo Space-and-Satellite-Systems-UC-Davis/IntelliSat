@@ -6,10 +6,15 @@
  */
 
 #include "hdd_init.h"
-#include "../system_config/Timers/timers.h"
+
+#include <Timers/timers.h>
+#include <ADC/adc.h>
+#include <LED/led.h>
+#include <inttypes.h>
+#include <print_scan.h>
 
 const dutyType MAX_START_DUTY = 100;  // previous max duty to trigger calibration
-const dutyType SLIP_DUTY = 75;  // last valid duty that will not cause any slipping
+const dutyType SLIP_DUTY = 70;  // last valid duty that will not cause any slipping
 const dutyType MAX_DUTY = 100;  // targeted current max duty (should be no higher than 10 for 2ms pulses)
 const dutyType MID_DUTY = 50;
 const dutyType MIN_DUTY = 0;  // targeted current min duty (should be no lower than 5 for 1ms pulses)
@@ -31,11 +36,11 @@ void hdd_calibrate(const PWM_Channels channel, const int CAL_MAX) {
 	if (CAL_MAX) {
 		printMsg("Feeding Maximum duty. \r\n");
 		pwm_setDutyCycle(channel, MAX_DUTY);
-		delay_ms(4000);
+		delay_ms(5000);
 	} else {
 		printMsg("Feeding minimum duty. \r\n");
 		pwm_setDutyCycle(channel, MIN_DUTY);
-		delay_ms(4000);
+		delay_ms(5000);
 	}
 }
 
@@ -57,8 +62,15 @@ void hdd_arm(PWM_Channels channel) {
 		currDuty -= DUTY_STEP;
 	}
 
-	printMsg("Return to zero. \r\n");
-	pwm_setDutyCycle(channel, MID_DUTY);
+	printMsg("Return to baseline. \r\n");
+	printMsg("Setting minimum duty \r\n");
+	pwm_setDutyCycle(channel, MIN_DUTY);
+	delay_ms(2000);
 
-	delay_ms(5000);
+	printMsg("Setting mid duty \r\n");
+	pwm_setDutyCycle(channel, MID_DUTY);
+	delay_ms(2000);
+
+	//pwm_setDutyCycle(channel, MID_DUTY);
+	//delay_ms(5000);
 }
