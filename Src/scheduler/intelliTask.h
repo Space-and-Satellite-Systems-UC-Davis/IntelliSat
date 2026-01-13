@@ -9,6 +9,9 @@
 
 #define TASK_TABLE_LEN 7
 
+SemaphoreHandle_t intelliTask_execMutex = NULL;
+StaticSemaphore_t intelliTask_execMutexBuffer;
+
 
 /*
  * Task - a mode of execution on satellite
