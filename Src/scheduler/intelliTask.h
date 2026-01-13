@@ -12,7 +12,6 @@
 SemaphoreHandle_t intelliTask_execMutex = NULL;
 StaticSemaphore_t intelliTask_execMutexBuffer;
 
-
 /*
  * Task - a mode of execution on satellite
  * (note: uses preemption to interrupt running tasks)

@@ -10,6 +10,7 @@
  */
 #pragma once
 
+
 /**
  * @brief Enter critical section - disables interrupts and scheduler
  * Use before sending commands to actuators to ensure atomicity
@@ -17,8 +18,16 @@
  */
 void vi_enter_critical();
 
+
 /**
  * @brief Exit critical section - re-enables interrupts and scheduler
  * If a higher-priority task wants to run, switch to it immediately.
  */
 void vi_exit_critical();
+
+
+/**
+ * @brief Return true if the task has been restarted since the last
+ * time it ran.
+ */
+int vi_task_has_restarted();
