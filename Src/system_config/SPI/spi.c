@@ -171,7 +171,7 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	while((spi->SR & SPI_SR_BSY) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS)));	// Wait till last data frame is processed
 
 	spi_stopCommunication(cs_port, cs_pin);
-	spi->CR1 &= ~SPI_CR1_SPE;	
+	spi->CR1 &= ~SPI_CR1_SPE;
 
 	start_time = getSysTime();
 	uint8_t temp;
@@ -284,9 +284,9 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		}
 
     
-    inner_start_time = getSysTime();
+		inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
-    inner_start_time = getSysTime();
+		inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
 
 		// read the reception line until it's empty
