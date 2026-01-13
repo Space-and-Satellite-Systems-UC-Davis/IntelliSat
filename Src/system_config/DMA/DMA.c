@@ -132,16 +132,22 @@ void dma_disable_channel(enum_DMAPeripherals selection) {
 	channel_ptr->CCR &= ~(DMA_CCR_EN);
 }
 
-//Transmit bytes over USART1 or USART2 using DMA, selection must be USARTx_TX
+/*
+Transmit bytes over USART1 or USART2 using DMA, selection must be USARTx_TX
+*/
 void usart_transmitBytesDMA(uint8_t message[], enum_DMAPeripherals selection, bool circular)
 {
 	if (selection == SELECT_USART2_TX) 
 	{
+		//Enable USART2 clock
 		RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN_Msk;
 		DMAConfig config = USART_TX_Config(selection, (uint32_t)message, strlen((char*)message));
 		config.circular = circular;
 		configure_channel(config);
+
+		//Enable DMA transmitter
 		USART2->CR3 |= USART_CR3_DMAT;
+		//Enable transmitter and USART
 		USART2->CR1 |= USART_CR1_TE | USART_CR1_UE;
 		dma_enable_channel(config.selection);
 	}
