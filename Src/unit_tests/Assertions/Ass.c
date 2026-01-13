@@ -1,4 +1,5 @@
 #include "Ass.h"
+#include "../Suites/suite.h"
 
 #include <string.h>
 #include <math.h>
@@ -32,11 +33,11 @@ bool assert_equal_int(int actual, int expected)
 {
     if (actual != expected)
     {
-        printMsg("Fail. Expected integer %d to equal %d\r\n", actual, expected);
+        current_test_failed = 1;
+        printMsg("\tExpected integer %d to equal %d\r\n", actual, expected);
         return false;
     }
 
-    printMsg("Pass.\r\n");
     return true;
 }
 
@@ -50,11 +51,11 @@ bool assert_equal_float_exact(float actual, float expected)
 
     if (actual_bits != expected_bits)
     {
-        printMsg("Fail. Expected float %f (bits %" PRIu32 ") to equal float %f (bits %" PRIu32 ") exactly.\r\n", actual, actual_bits, expected, expected_bits);
+        current_test_failed = 1;
+        printMsg("\tExpected float %f (bits %" PRIu32 ") to equal float %f (bits %" PRIu32 ") exactly.\r\n", actual, actual_bits, expected, expected_bits);
         return false;
     }
 
-    printMsg("Pass.\r\n");
     return true;
 }
 
@@ -64,11 +65,11 @@ bool assert_equal_float_within(float actual, float expected, float leeway)
 
     if (!(fabsf(actual - expected) <= leeway))
     {
-        printMsg("Fail. Expected float %f to equal %f with error %f\r\n", actual, expected, leeway);
+        current_test_failed = 1;
+        printMsg("\tExpected float %f to equal %f with error %f\r\n", actual, expected, leeway);
         return false;
     }
 
-    printMsg("Pass.\r\n");
     return true;
 }
 
@@ -79,7 +80,8 @@ bool assert_equal_char_array(char *actual, char *expected, int length)
     {
         if (actual[i] != expected[i])
         {
-            printMsg("Fail. \'");
+            current_test_failed = 1;
+            printMsg("\'");
             for (int j = 0; j < length; j++)
             {
                 printMsg("%c", actual[j]);
@@ -94,7 +96,6 @@ bool assert_equal_char_array(char *actual, char *expected, int length)
         }
     }
 
-    printMsg("Pass.\r\n");
     return true;
 }
 
@@ -103,11 +104,11 @@ bool assert_greater_than_int(int greater, int lesser)
 {
     if (greater > lesser)
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expected int %d to be greater than %d\r\n", greater, lesser);
+    current_test_failed = 1;
+    printMsg("\tExpected int %d to be greater than %d\r\n", greater, lesser);
     return false;
 }
 
@@ -115,11 +116,11 @@ bool assert_greater_than_equal_int(int greater, int lesser)
 {
     if (greater >= lesser)
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expected int %d to be greater than or equal to %d\r\n", greater, lesser);
+    current_test_failed = 1;
+    printMsg("\tExpected int %d to be greater than or equal to %d\r\n", greater, lesser);
     return false;
 }
 
@@ -128,11 +129,11 @@ bool assert_greater_than_float(float greater, float lesser, float leeway)
 {
     if (greater - fabsf(leeway) > lesser)
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expected float %f to be greater than %f with leeway %f\r\n", greater, lesser, leeway);
+    current_test_failed = 1;
+    printMsg("\tExpected float %f to be greater than %f with leeway %f\r\n", greater, lesser, leeway);
     return false;
 }
 
@@ -140,11 +141,11 @@ bool assert_greater_than_equal_float(float greater, float lesser, float leeway)
 {
     if (greater - fabsf(leeway) > lesser || assert_equal_float_exact_no_print(greater, lesser))
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expected float %f to be greater than or equal to %f  with leeway %f\r\n", greater, lesser, leeway);
+    current_test_failed = 1;
+    printMsg("\tExpected float %f to be greater than or equal to %f  with leeway %f\r\n", greater, lesser, leeway);
     return false;
 }
 
@@ -153,11 +154,11 @@ bool assert_less_than_int(int lesser, int greater)
 {
     if (lesser < greater)
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expect int %d to be less than %d\r\n", lesser, greater);
+    current_test_failed = 1;
+    printMsg("\tExpect int %d to be less than %d\r\n", lesser, greater);
     return false;
 }
 
@@ -165,11 +166,11 @@ bool assert_less_than_equal_int(int lesser, int greater)
 {
     if (lesser <= greater)
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expect int %d to be less than or equal to %d\r\n", lesser, greater);
+    current_test_failed = 1;
+    printMsg("\tExpect int %d to be less than or equal to %d\r\n", lesser, greater);
     return false;
 }
 
@@ -178,22 +179,22 @@ bool assert_less_than_float(float lesser, float greater, float leeway)
 {
     if (lesser < greater - fabsf(leeway))
     {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expect float %f to be less than %f with error %f\r\n", lesser, greater, leeway);
+    current_test_failed = 1;
+    printMsg("\tExpect float %f to be less than %f with error %f\r\n", lesser, greater, leeway);
     return false;
 }
 
 bool assert_less_than_equal_float(float lesser, float greater, float leeway)
 {
     if (lesser < greater - fabsf(leeway) || assert_equal_float_exact_no_print(lesser, greater)) {
-        printMsg("Pass.\r\n");
         return true;
     }
 
-    printMsg("Fail. Expect float %f to be less than or equal to %f with error %f\r\n", lesser, greater, leeway);
+    current_test_failed = 1;
+    printMsg("\tExpect float %f to be less than or equal to %f with error %f\r\n", lesser, greater, leeway);
     return false;
 }
 
