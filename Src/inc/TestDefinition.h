@@ -14,7 +14,9 @@ extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
 extern void testFunction_DMA_ADC();
 extern void testFunction_watchdog();
+extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
+extern void testFunction_mgtIntercom();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -40,12 +42,16 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_INA_TMP_Outputs;
 		case 12:
 			return testFunction_Diode_Reads;
-		case 20:
-			return testFunction_DMA_ADC;
 		case 14: 
 			return testFunction_watchdog;
-		case 18:
+    case 16:
+			return testFunction_mgtIntercom;
+    case 18:
 			return testFunction_RTC_Alarm;
+    case 20:
+			return testFunction_DMA_ADC;
+		case 23:
+			return testFunction_LPSleep;
 		default:
 			return testFunction_Nothing;
 	}
