@@ -214,6 +214,10 @@ vi_get_solar_panel_current(
 	vi_sensor sp,
 	double* current
 ){
+	//TODO: Implement
+	if (sp.component != SOL) return VI_GET_SOLAR_PANEL_CURRENT_FAILURE;
+
+
 	// need to double check if these axes are correct
 	PANELS panel = PANEL0;
 	switch (sp.axis) {
@@ -243,28 +247,6 @@ vi_get_solar_panel_current(
 
 	return VI_GET_SOLAR_PANEL_CURRENT_SUCCESS;
 }
-
-vi_get_temp_status 
-vi_get_temp(
-	vi_sensor tempSensor, 
-	double* temp
-){
-	//TODO: Implement
-
-	return VI_GET_TEMP_FAILURE;
-}
-
-vi_get_coils_current_status 
-vi_get_coils_current(
-	double* currentX,
-	double* currentY, 
-	double* currentZ
-){
-	//TODO: Implement
-
-	return VI_GET_COILS_CURRENT_FAILURE;
-}
-
 
 /*###################### CONSTANTS ######################*/
 
