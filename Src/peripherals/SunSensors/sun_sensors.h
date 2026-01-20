@@ -18,8 +18,7 @@ typedef struct PANEL_STRUCT {
 
 typedef enum DIODE_ENUM {DIODE0, DIODE1} DIODES;
 
-// Virtual Intellisat declares a TEMP enum, so it's TEMPR here
-typedef enum TEMPR_ENUM {TEMP0, TEMP1} TEMPR;
+typedef enum TEMP_ENUM {TEMP0, TEMP1} TEMP_SENSOR;
 
 
 typedef enum PANELS_ENUM {
@@ -96,7 +95,7 @@ float sun_sensors_readCurrent(PANELS panelNum);
  * @return temperature in Celsius
  * 
  */
-float sun_sensors_readTemp(PANELS panelNum, TEMPR tempNum);
+float sun_sensors_readTemp(PANELS panelNum, TEMP_SENSOR tempNum);
 
 /**
  * Power down all temp sensors and power moniters

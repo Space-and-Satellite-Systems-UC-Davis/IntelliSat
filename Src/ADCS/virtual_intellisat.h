@@ -336,6 +336,11 @@ vi_get_sensor_calibration(
 );
 
 
+typedef enum{
+    SENSOR_ON = 0,
+    SENSOR_OFF = 1
+} sensor_status;
+
 /**
  * @brief Get the current status (on/off) of a given sensor.
  *
@@ -348,7 +353,7 @@ vi_get_sensor_calibration(
 vi_get_constant_status
 vi_get_sensor_status(
 	vi_sensor sensor,
-	int *sensor_status
+	sensor_status *sensor_status
 );
 
 
