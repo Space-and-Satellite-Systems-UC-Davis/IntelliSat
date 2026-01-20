@@ -119,7 +119,7 @@ float sun_sensors_readCurrent(PANELS panelNum) {
     return pwrmon_getCurrent(panel->i2cPort, panel->scl_pin, panel->sda_pin);
 }
 
-float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum) {
+float sun_sensors_readTemp(PANELS panelNum, TEMP_SENSOR tempNum) {
     panel_t* panel = sun_sensors_panelInfoSelect(panelNum);
     int tempAddress = TMP0_ADDRESS;
     if (tempNum == TEMP1) {
