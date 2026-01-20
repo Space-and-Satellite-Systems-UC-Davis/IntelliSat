@@ -18,6 +18,7 @@ extern void testFunction_getCalendar();
 extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
+extern void testFunction_virtual_intellisat();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -55,6 +56,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_DMA_ADC;
 		case 23:
 			return testFunction_LPSleep;
+		case 24:
+			return testFunction_virtual_intellisat;
 		default:
 			return testFunction_Nothing;
 	}
