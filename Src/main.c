@@ -1,4 +1,3 @@
-#include <print_scan.h>
 #include "platform_init.h"
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
@@ -17,11 +16,6 @@ int main() {
     testFunc();
 
     #else
-
-	//TODO: use RTC first_time flag.
-	//if (first_time) {
-	//  init_first_time()
-	//}
 
 	while (1) {
 		continue;

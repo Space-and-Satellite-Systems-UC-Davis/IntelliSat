@@ -120,5 +120,17 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second);
  */
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
 
+/**
+ * Returns the current RTC Date (YY, MM, DD, DOW).
+ * NOTE : To ensure consistency between time and date, read time first to lock the shadow registers, then read calendar
+ *
+ * @param year   Where the function stores the year (0 - 99, e.g. 2000 - 2099)
+ * @param month  Where the function stores the month (1 - 12, i.e. January - December)
+ * @param date   Where the function stores the date (1 - 31)
+ * @param day    Where the function stores the weekday (1 - 7, i.e. Monday - Sunday)
+ *
+ * @returns None
+ */
+void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day);
 
 #endif // REALOP1_RTC_H_
