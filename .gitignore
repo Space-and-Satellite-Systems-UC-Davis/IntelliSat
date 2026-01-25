@@ -58,6 +58,10 @@ release
 
 # Launch file
 *.launch
+.vscode/*
 
-.vscode
-settings.json
+# CMake build files
+build
+
+# MacOS 
+.DS_Store

@@ -35,7 +35,7 @@ char qspi_getStatus() {
 #define qspi_dma_inuse()  (qspi_details &   0b0100000)
 
 // Global (external) variables and functions
-extern int core_MHz;	// from core_config.h
+extern int core_Hz;	// from core_config.h
 
 void qspi_gpioInit() {
 
@@ -145,12 +145,12 @@ void qspi_config(
 
 	qspi_gpioInit();
 	qspi_disable();
-	QUADSPI->CR = 0;
+	QUADSPI->CR = QSPI_REG_RESET;
 	QUADSPI->CR |=
-		  ((core_MHz-1) << QUADSPI_CR_PRESCALER_Pos)
+		  ((core_Hz-1000000) << QUADSPI_CR_PRESCALER_Pos)
 		| QUADSPI_CR_SSHIFT
 		| QUADSPI_CR_APMS;
-	QUADSPI->DCR = 0;
+	QUADSPI->DCR = QSPI_REG_RESET;
 	QUADSPI->DCR |= (flash_size << QUADSPI_DCR_FSIZE_Pos);
 	QUADSPI->CCR &= ~(
 		  QUADSPI_CCR_ADSIZE
@@ -205,7 +205,7 @@ bool qspi_setCommand(
 		);
 		RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 		DMA2_CSELR->CSELR &= ~(DMA_CSELR_C7S_Msk);
-		DMA2_CSELR->CSELR |= (3U << DMA_CSELR_C7S_Pos);
+		DMA2_CSELR->CSELR |= (DMA2_CSELR_C7S_QSPI << DMA_CSELR_C7S_Pos);
 		DMA2_Channel7->CCR |=
 			  (0x00 << DMA_CCR_MSIZE_Pos)
 			| (0x00 << DMA_CCR_PSIZE_Pos)
@@ -296,7 +296,7 @@ bool qspi_statusPoll(
 	qspi_disable();
 	QUADSPI->PSMKR = mask;
 	QUADSPI->PSMAR = match;
-	QUADSPI->PIR   = 0x10;	// Polling Interval (# of clocks)
+	QUADSPI->PIR   = 0x10;	// Polling Interval (# of clocks), in this case 16 clocks
 	QUADSPI->CR |=
 		  QUADSPI_CR_APMS	// Ends the transaction after the match
 		| QUADSPI_CR_SMIE;	// Will Interrupt when the match is found
@@ -310,10 +310,10 @@ bool qspi_statusPoll(
 
 	qspi_enable();
 	QUADSPI->CCR |=
-		  (2U << QUADSPI_CCR_FMODE_Pos)
-		| (3U << QUADSPI_CCR_DMODE_Pos)
-		| (3U << QUADSPI_CCR_ADMODE_Pos)
-		| (1U << QUADSPI_CCR_IMODE_Pos)
+		  (QSPI_CCR_FMODE_AUTOMATIC_POLLING << QUADSPI_CCR_FMODE_Pos)
+		| (QSPI_CCR_DMODE_4_DATA_LINES << QUADSPI_CCR_DMODE_Pos)
+		| (QSPI_CCR_ADMODE_4_ADDRESS_LINES << QUADSPI_CCR_ADMODE_Pos)
+		| (QSPI_CCR_IMODE_1_INSTRUCTION_LINES << QUADSPI_CCR_IMODE_Pos)
 		| (instruction << QUADSPI_CCR_INSTRUCTION_Pos);
 
 	/*

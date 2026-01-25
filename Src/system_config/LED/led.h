@@ -149,7 +149,7 @@ void led_dx(int pin, int value);
  *
  * @returns None
  */
-void led_d1(bool value);
+void led_hb(bool value);
 
 /**
  * Sets the state of the D2 LED
