@@ -34,7 +34,7 @@ bool assert_equal_int(int actual, int expected)
     if (actual != expected)
     {
         current_test_failed = 1;
-        printMsg("\tExpected integer %d to equal %d\r\n", actual, expected);
+        printMsg("\tExpected: %d, Received: %d\r\n", expected, actual);
         return false;
     }
 
@@ -52,7 +52,7 @@ bool assert_equal_float_exact(float actual, float expected)
     if (actual_bits != expected_bits)
     {
         current_test_failed = 1;
-        printMsg("\tExpected float %f (bits %" PRIu32 ") to equal float %f (bits %" PRIu32 ") exactly.\r\n", actual, actual_bits, expected, expected_bits);
+        printMsg("\tExpected: %f (bits %" PRIu32 "), Received: %f (bits %" PRIu32 ")\r\n", expected, expected_bits, actual, actual_bits);
         return false;
     }
 
@@ -66,7 +66,7 @@ bool assert_equal_float_within(float actual, float expected, float leeway)
     if (!(fabsf(actual - expected) <= leeway))
     {
         current_test_failed = 1;
-        printMsg("\tExpected float %f to equal %f with error %f\r\n", actual, expected, leeway);
+        printMsg("\tExpected: %f with leeway of %f, Received: %f\r\n", expected, leeway, actual);
         return false;
     }
 
@@ -81,12 +81,12 @@ bool assert_equal_char_array(char *actual, char *expected, int length)
         if (actual[i] != expected[i])
         {
             current_test_failed = 1;
-            printMsg("\'");
+            printMsg("Expected: \'");
             for (int j = 0; j < length; j++)
             {
                 printMsg("%c", actual[j]);
             }
-            printMsg("\' not equivalent to \'");
+            printMsg("\', Received: \'");
             for (int j = 0; j < length; j++)
             {
                 printMsg("%c", expected[j]);
@@ -108,7 +108,7 @@ bool assert_greater_than_int(int greater, int lesser)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpected int %d to be greater than %d\r\n", greater, lesser);
+    printMsg("\tExpected %d to be greater than %d\r\n", greater, lesser);
     return false;
 }
 
@@ -120,7 +120,7 @@ bool assert_greater_than_equal_int(int greater, int lesser)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpected int %d to be greater than or equal to %d\r\n", greater, lesser);
+    printMsg("\tExpected %d to be greater than or equal to %d\r\n", greater, lesser);
     return false;
 }
 
@@ -133,7 +133,7 @@ bool assert_greater_than_float(float greater, float lesser, float leeway)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpected float %f to be greater than %f with leeway %f\r\n", greater, lesser, leeway);
+    printMsg("\tExpected %f to be greater than %f with leeway %f\r\n", greater, lesser, leeway);
     return false;
 }
 
@@ -145,7 +145,7 @@ bool assert_greater_than_equal_float(float greater, float lesser, float leeway)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpected float %f to be greater than or equal to %f  with leeway %f\r\n", greater, lesser, leeway);
+    printMsg("\tExpected %f to be greater than or equal to %f  with leeway %f\r\n", greater, lesser, leeway);
     return false;
 }
 
@@ -158,7 +158,7 @@ bool assert_less_than_int(int lesser, int greater)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpect int %d to be less than %d\r\n", lesser, greater);
+    printMsg("\tExpect %d to be less than %d\r\n", lesser, greater);
     return false;
 }
 
@@ -170,7 +170,7 @@ bool assert_less_than_equal_int(int lesser, int greater)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpect int %d to be less than or equal to %d\r\n", lesser, greater);
+    printMsg("\tExpect %d to be less than or equal to %d\r\n", lesser, greater);
     return false;
 }
 
@@ -183,7 +183,7 @@ bool assert_less_than_float(float lesser, float greater, float leeway)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpect float %f to be less than %f with error %f\r\n", lesser, greater, leeway);
+    printMsg("\tExpected %f to be less than %f with error %f\r\n", lesser, greater, leeway);
     return false;
 }
 
@@ -194,7 +194,7 @@ bool assert_less_than_equal_float(float lesser, float greater, float leeway)
     }
 
     current_test_failed = 1;
-    printMsg("\tExpect float %f to be less than or equal to %f with error %f\r\n", lesser, greater, leeway);
+    printMsg("\tExpected %f to be less than or equal to %f with error %f\r\n", lesser, greater, leeway);
     return false;
 }
 

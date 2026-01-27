@@ -22,21 +22,19 @@ void init_suite(UT_Suite* suite, unsigned int id, char* name) {
 }
 
 void run_suite(UT_Suite* suite) {
-    printMsg("\r\n----- Running suite %s -----\r\n\r\n", suite->name);
+    printMsg("\r\nSuite: %s\r\n\r\n", suite->name);
     // print_suite_details(suite);
     for (unsigned int i = 0; i < suite->num_tests; i++) {
-        printMsg("%s......\r\n\r\n", suite->test_names[i]);
+        printMsg("  %s......\r\n", suite->test_names[i]);
 
-    
         suite->tests[i]();
 
-        printMsg("\r\n");
     
         if (current_test_failed) {
-            printMsg("Failed.\r\n\r\n");
+            printMsg("  Failed.\r\n\r\n");
             suite->failed++;
         } else {
-            printMsg("Passed.\r\n\r\n");
+            printMsg("  Passed.\r\n\r\n");
             suite->passed++;
         }
 
@@ -63,6 +61,9 @@ void add_test(UT_Suite* suite, Test_Fun test_function, char* test_name) {
 void print_suite_details(UT_Suite* suite) {
     printMsg("\r\nSuite name: %s\r\n Suite ID: %d\r\n Suite Num Tests: %d\r\n", suite->name, suite->id, suite->num_tests);
 }
+
+
+
 
 
 
