@@ -55,15 +55,11 @@ void add_test(UT_Suite* suite, Test_Fun test_function, char* test_name) {
 
     suite->num_tests++;
     printMsg("num tests %d", suite->num_tests);
-
 }
 
 void print_suite_details(UT_Suite* suite) {
     printMsg("\r\nSuite name: %s\r\n Suite ID: %d\r\n Suite Num Tests: %d\r\n", suite->name, suite->id, suite->num_tests);
 }
-
-
-
 
 
 

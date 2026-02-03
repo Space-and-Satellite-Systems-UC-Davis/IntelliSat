@@ -3,6 +3,7 @@
 #include "Suites/suite.h"
 #include "print_scan.h"
 #include "Assertions/Ass.h"
+#include "Registry/Registry.h"
 
 void test_function1()
 {
@@ -25,6 +26,7 @@ void test_function3()
 
 void run_tests()
 {
+
     // IMU Tests
     //  test_initial_state();
     UT_Suite suite;
@@ -33,5 +35,18 @@ void run_tests()
     add_test(&suite, test_function2, "second test");
     // add_test(&suite, test_function2);
     add_test(&suite, test_function3, "third test");
-    run_suite(&suite);
+    // run_suite(&suite);
+
+    UT_Suite suite2;
+    init_suite(&suite2, 2, "Second suite");
+
+    add_test(&suite2, test_function3, "fourth test");
+
+    UT_Registry registry;
+    init_registry(&registry);
+
+    add_suite(&registry, &suite);
+    add_suite(&registry, &suite2);
+    run_registry(&registry);
+
 }
