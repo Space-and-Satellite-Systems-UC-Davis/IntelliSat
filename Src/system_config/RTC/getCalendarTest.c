@@ -40,10 +40,10 @@ void testFunction_getCalendar(void) {
         rtc_getTime(&hh, &mm, &ss);
 
         // Format: 20YY-MM-DD (Day) HH:MM:SS
-        printMsg("20%02u-%02u-%02u (Day=%u) %02u:%02u:%02u\r\n", y, m, d, w, hh, mm, ss);
+        printMsg("20%02u-%02u-%02u (Day of the week=%u) %02u:%02u:%02u\r\n", y, m, d, w, hh, mm, ss);
 
         // Check
-        if (m == January && d == 1 && ss == 0) {
+        if (m == January && d == 1 && mm == 0 && ss == 0) {
             printMsg("!!! HAPPY NEW YEAR (Rollover Successful) !!!\r\n");
         }
 
