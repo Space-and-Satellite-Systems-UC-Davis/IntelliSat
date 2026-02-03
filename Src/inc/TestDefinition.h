@@ -45,16 +45,16 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Diode_Reads;
 		case 14: 
 			return testFunction_watchdog;
-//		case 16:
-//			return testFunction_mgtIntercom;
-//		case 18:
-//			return testFunction_RTC_Alarm;
+		case 16:
+			return testFunction_mgtIntercom;
+		case 18:
+			return testFunction_RTC_Alarm;
 		case 19:
 			return testFunction_getCalendar;
-//		case 20:
-//			return testFunction_DMA_ADC;
-//		case 23:
-//			return testFunction_LPSleep;
+		case 20:
+			return testFunction_DMA_ADC;
+		case 23:
+			return testFunction_LPSleep;
 		default:
 			return testFunction_Nothing;
 	}
