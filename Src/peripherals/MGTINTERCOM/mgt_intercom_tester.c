@@ -6,16 +6,16 @@ void testFunction_mgtIntercom() {
     mgt_intercom_init();
     while (1) {
         delay_ms(100);
-        float code = mgt_intercom_get_current(1);
+        float code = mgt_intercom_getCurrent(1);
         printMsg("%f\r\n", code);
         delay_ms(100);
-        int code2 = mgt_intercom_set_coil_percent(1, 3, 10);
+        int code2 = mgt_intercom_setCoilPercent(1, 10);
         printMsg("%d\r\n", code2);
         delay_ms(100);
-        code2 = mgt_intercom_shutdown_all();
+        code2 = mgt_intercom_shutdownAll();
         printMsg("%d\r\n", code2);
         delay_ms(100);
-        code2 = mgt_intercom_shutdown_timer(6);
+        code2 = mgt_intercom_shutdownTimer(6);
         printMsg("%d\r\n", code2);        
         printMsg("Cycle\r\n");
     }

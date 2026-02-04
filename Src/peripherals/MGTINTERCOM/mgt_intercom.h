@@ -22,7 +22,7 @@ typedef enum DIRECTION_ENUM {LOW, HIGH} DIRECTION;
  * 
  * @returns None
  */
- void mgt_intercom_init();
+void mgt_intercom_init();
 
  /**
   * Set the PWM for a coil
@@ -32,7 +32,7 @@ typedef enum DIRECTION_ENUM {LOW, HIGH} DIRECTION;
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_setCoilPercent(int coil_number, int percentage);
+bool mgt_intercom_setCoilPercent(int coil_number, int percentage);
 
  /**
   * Get the current through a coil
@@ -41,14 +41,14 @@ typedef enum DIRECTION_ENUM {LOW, HIGH} DIRECTION;
   * 
   * @returns  the current in Amps (A), or -1 if nothing was read
   */
- float mgt_intercom_getCurrent(int coil_number);
+float mgt_intercom_getCurrent(int coil_number);
 
  /**
   * Shut down all PWMs and timers on the MGT side
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_shutdownAll();
+bool mgt_intercom_shutdownAll();
 
  /**
   * Set the direction for a coil
@@ -58,7 +58,7 @@ typedef enum DIRECTION_ENUM {LOW, HIGH} DIRECTION;
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir);
+bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir);
 
  /**
   * Shut down a specific timer
@@ -67,4 +67,4 @@ typedef enum DIRECTION_ENUM {LOW, HIGH} DIRECTION;
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_shutdownTimer(int timer_number);
+bool mgt_intercom_shutdownTimer(int timer_number);
