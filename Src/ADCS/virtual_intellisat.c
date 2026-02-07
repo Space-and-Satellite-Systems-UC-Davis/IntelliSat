@@ -46,7 +46,7 @@ vi_get_epoch(
 	//TODO: Implement
 	// May need to change int parameter types to uint_8
 	rtc_getTime(hour, minute, second);
-
+	rtc_getCalendar(year, month, day);
 	return GET_EPOCH_SUCCESS;
 }
 
@@ -255,7 +255,7 @@ vi_get_sensor_calibration(
 vi_get_constant_status
 vi_get_sensor_status(
 	vi_sensor sensor,
-	int *sensor_status
+	sensor_status *sensor_status
 ){
 	//TODO: Implement
 
