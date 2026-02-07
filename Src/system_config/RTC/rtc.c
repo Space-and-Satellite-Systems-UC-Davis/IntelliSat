@@ -8,6 +8,10 @@
  *  - May 22-25, 2023 (Creation)
  *  	Author : Darsh
  *  	Log    : Wrote the primary rtc interface
+ * 
+ *  Oct 15, 2025 - Jan 12, 2026 
+ * 	Author: Dylan
+ * 	Log: Rewrote and created time/date getters
  */
 
 #include "rtc.h"
@@ -284,47 +288,80 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 /****************************** RTC TIME GETTERS *****************************/
 
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
-	if ((RTC->CR & RTC_CR_BYPSHAD)) {
-		// Bypassing Shadow Registers
-		// requires reading the registers multiple times
+	// Time register
+	uint32_t tr_reg = 0;
 
-		// temporary variables to hold the second read.
-		uint8_t temp_hour   = *hour   + 1;
-		uint8_t temp_minute = *minute + 1;
-		uint8_t temp_second = *second + 1;
+	// If shadow registers are bypassed
+	if (RTC->CR & RTC_CR_BYPSHAD) {
+		// If bypassing, read twice to ensure consistent registers
+		uint32_t tr_check = 0;
+		uint32_t retries = 0;
+		const uint32_t max_retries = 10000;
 
-		// check to make sure both values read were consistent
-		uint64_t start_time = getSysTime(); //time in ms
-		while (
-			((*hour != temp_hour) || 
-			(*minute != temp_minute) || 
-			(*second != temp_second)) &&
-			is_time_out(start_time, DEFAULT_TIMEOUT_MS)
-		) {
-			// read the values once
-			*hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);
-			*hour   += 1  * ((RTC->TR & RTC_TR_HU_Msk)  >> RTC_TR_HU_Pos);
-			*minute  = 10 * ((RTC->TR & RTC_TR_MNT_Msk) >> RTC_TR_MNT_Pos);
-			*minute += 1  * ((RTC->TR & RTC_TR_MNU_Msk) >> RTC_TR_MNU_Pos);
-			*second  = 10 * ((RTC->TR & RTC_TR_ST_Msk)  >> RTC_TR_ST_Pos);
-			*second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
-
-			// read the values a second time
-			temp_hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);
-			temp_hour   += 1  * ((RTC->TR & RTC_TR_HU_Msk)  >> RTC_TR_HU_Pos);
-			temp_minute  = 10 * ((RTC->TR & RTC_TR_MNT_Msk) >> RTC_TR_MNT_Pos);
-			temp_minute += 1  * ((RTC->TR & RTC_TR_MNU_Msk) >> RTC_TR_MNU_Pos);
-			temp_second  = 10 * ((RTC->TR & RTC_TR_ST_Msk)  >> RTC_TR_ST_Pos);
-			temp_second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
-		}
+		do {
+			tr_reg = RTC->TR;
+			tr_check = RTC->TR;
+			retries++;
+		} while ((tr_reg != tr_check) && (retries < max_retries));
+			
 	} else {
-		// Not bypassing Shadow Registers
-		// simply read the values in the registers
-		*hour    = 10 * ((RTC->TR & RTC_TR_HT_Msk)  >> RTC_TR_HT_Pos);
-		*hour   += 1  * ((RTC->TR & RTC_TR_HU_Msk)  >> RTC_TR_HU_Pos);
-		*minute  = 10 * ((RTC->TR & RTC_TR_MNT_Msk) >> RTC_TR_MNT_Pos);
-		*minute += 1  * ((RTC->TR & RTC_TR_MNU_Msk) >> RTC_TR_MNU_Pos);
-		*second  = 10 * ((RTC->TR & RTC_TR_ST_Msk)  >> RTC_TR_ST_Pos);
-		*second += 1  * ((RTC->TR & RTC_TR_SU_Msk)  >> RTC_TR_SU_Pos);
+		// Shadow mode, do single read
+		tr_reg = RTC->TR;
 	}
+
+	// Converting BCD to binary 
+	// Hour
+	uint8_t ht = (tr_reg & RTC_TR_HT_Msk) >> RTC_TR_HT_Pos;
+	uint8_t hu = (tr_reg & RTC_TR_HU_Msk) >> RTC_TR_HU_Pos;
+	*hour = (ht * 10) + hu;
+	// Minute
+	uint8_t mnt = (tr_reg & RTC_TR_MNT_Msk) >> RTC_TR_MNT_Pos;
+	uint8_t mnu = (tr_reg & RTC_TR_MNU_Msk) >> RTC_TR_MNU_Pos;
+	*minute = (mnt * 10) + mnu;
+	// Second
+	uint8_t st = (tr_reg & RTC_TR_ST_Msk) >> RTC_TR_ST_Pos;
+	uint8_t su = (tr_reg & RTC_TR_SU_Msk) >> RTC_TR_SU_Pos;
+	*second = (st * 10) + su;
+}
+
+void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date) {
+	// Date register
+	uint32_t dr_reg = 0;
+
+	// If shadow registers are bypassed
+	if (RTC->CR & RTC_CR_BYPSHAD) {
+		// If bypassing, read twice to ensure consistent registers
+		uint32_t dr_check = 0;
+		
+		// Retry max amount of times
+		// Can maybe swap for is_time_out()
+		uint32_t retries = 0; 
+		const uint32_t max_retries = 10000; 
+
+		do {
+			dr_reg = RTC->DR;
+			dr_check = RTC->DR;
+			retries++;
+		} while ((dr_reg != dr_check) && (retries < max_retries));
+			
+	} else {
+		// else in shadow mode, the shadow registers are frozen during read
+		// so single 32-bit read captures the consistent state
+		dr_reg = RTC->DR;
+	}
+
+	// Converting BCD to binary 
+	// Year
+	uint8_t yt = (dr_reg & RTC_DR_YT_Msk) >> RTC_DR_YT_Pos;
+	uint8_t yu = (dr_reg & RTC_DR_YU_Msk) >> RTC_DR_YU_Pos;
+	*year = (yt * 10) + yu;
+	// Month 
+	uint8_t mt = (dr_reg & RTC_DR_MT_Msk) >> RTC_DR_MT_Pos;
+	uint8_t mu = (dr_reg & RTC_DR_MU_Msk) >> RTC_DR_MU_Pos;
+	*month = (mt * 10) + mu;
+	// Date 
+	uint8_t dt = (dr_reg & RTC_DR_DT_Msk) >> RTC_DR_DT_Pos;
+	uint8_t du = (dr_reg & RTC_DR_DU_Msk) >> RTC_DR_DU_Pos;
+	*date = (dt * 10) + du;
+
 }
