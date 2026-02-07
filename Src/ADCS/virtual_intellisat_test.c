@@ -34,9 +34,8 @@ in the relevant parameters in the meantime (-1). Once the getter function for th
 implemented, please make sure to update this test. 
 */
 void test_vi_get_epoch() {
-    int year = UNSET, month = UNSET, day = UNSET,
+    uint8_t year = UNSET, month = UNSET, day = UNSET,
         hour = UNSET, minute = UNSET, second = UNSET;
-
     vi_get_epoch(&year, &month, &day, &hour, &minute, &second);
     
     printMsg(
@@ -146,6 +145,13 @@ void test_vi_get_angvel() {
 }
 
 void testFunction_virtual_intellisat() {
+    /* Test: vi_get_epoch_status */
+    printMsg("===== Testing: test_vi_get_epoch() =====\r\n");
+    test_vi_get_epoch();
+    printMsg("Test Concluded\r\n\n");
+
+    delay_ms(5000);
+
     /* Test: vi_get_epoch_status */
     printMsg("===== Testing: test_vi_get_epoch() =====\r\n");
     test_vi_get_epoch();

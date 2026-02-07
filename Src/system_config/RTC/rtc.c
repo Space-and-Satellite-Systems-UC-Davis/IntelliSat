@@ -600,6 +600,20 @@ void rtc_deleteAllEntries() {
 		callbacks[i].id = NULL_ID;
 		callbacks[i].unix_time = NULL_UNIX_TIME;
 	}
+
+	// Converting BCD to binary 
+	// Hour
+	uint8_t ht = (tr_reg & RTC_TR_HT_Msk) >> RTC_TR_HT_Pos;
+	uint8_t hu = (tr_reg & RTC_TR_HU_Msk) >> RTC_TR_HU_Pos;
+	*hour = (ht * 10) + hu;
+	// Minute
+	uint8_t mnt = (tr_reg & RTC_TR_MNT_Msk) >> RTC_TR_MNT_Pos;
+	uint8_t mnu = (tr_reg & RTC_TR_MNU_Msk) >> RTC_TR_MNU_Pos;
+	*minute = (mnt * 10) + mnu;
+	// Second
+	uint8_t st = (tr_reg & RTC_TR_ST_Msk) >> RTC_TR_ST_Pos;
+	uint8_t su = (tr_reg & RTC_TR_SU_Msk) >> RTC_TR_SU_Pos;
+	*second = (st * 10) + su;
 }
 
 CallbackEntry rtc_getEntry(uint32_t id) {
