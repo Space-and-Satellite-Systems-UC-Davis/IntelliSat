@@ -34,9 +34,8 @@ in the relevant parameters in the meantime (-1). Once the getter function for th
 implemented, please make sure to update this test. 
 */
 void test_vi_get_epoch() {
-    int year = UNSET, month = UNSET, day = UNSET,
+    uint8_t year = UNSET, month = UNSET, day = UNSET,
         hour = UNSET, minute = UNSET, second = UNSET;
-
     vi_get_epoch(&year, &month, &day, &hour, &minute, &second);
     
     printMsg(
