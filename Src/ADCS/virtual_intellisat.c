@@ -27,9 +27,19 @@ vi_control_coil(
 	double command_y,
 	double command_z
 ){
-	//TODO: Implement
+    // Coils commands should be normalized
+    if (command_x*command_x + command_y*command_y + command_z*command_z > 1.0)
+	    return VI_CONTROL_COIL_FAILURE;
+        
+    // Check whether each command gets a response
+	if (!mgt_intercom_setCoilPercent(0, round(100 * command_x))
+        return VI_CONTROL_COIL_FAILURE;
+	if (!mgt_intercom_setCoilPercent(1, round(100 * command_y))
+        return VI_CONTROL_COIL_FAILURE;
+	if (!mgt_intercom_setCoilPercent(2, round(100 * command_z))
+        return VI_CONTROL_COIL_FAILURE;
 
-	return VI_CONTROL_COIL_FAILURE;
+	return VI_CONTROL_COIL_SUCCESS;
 }
 
 /*################### SENSOR READINGS ###################*/
