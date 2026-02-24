@@ -15,6 +15,7 @@ void testFunction_RadioIntercom() {
         printMsg("I'm alive!\r\n");
         printMsg("%d\r\n", radio_push(chunk, sizeof chunk));
         printMsg("%d\r\n", radio_force_pull(chunk).size);
+        printMsg("Chunk is: '%s'\r\n", chunk);
         printMsg("%c\r\n", radio_get_state());
         printMsg("%d\r\n", radio_downlink(chunk, 4));
         printMsg("Cycle Complete\r\n");
