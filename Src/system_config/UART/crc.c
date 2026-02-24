@@ -78,7 +78,7 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
     for (int attempts = 0; attempts < 5; attempts++) {
         usart_transmitBytes(bus, buffer, MAX_MESSAGE_BYTES);
         ack = crc_wait(bus);
-        if (ack == 1) break;
+        if (ack != -1) break;
     }
     return ack;
 }
