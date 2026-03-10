@@ -4,7 +4,7 @@
 
 #define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
-#define RUN_UNIT_TESTS 1 //0 = run IntelliSat, 1 = run unit tests
+#define RUN_UNIT_TESTS 0 //0 = run IntelliSat, 1 = run unit tests
 
 #include <TestDefinition.h>
 
