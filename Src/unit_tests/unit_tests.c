@@ -5,23 +5,6 @@
 #include "Assertions/Ass.h"
 #include "Registry/Registry.h"
 
-void test_function1()
-{
-    assert_equal_int(1, 1);
-    assert_equal_int(1, 2);
-    assert_equal_int(2,4);
-}
-
-void test_function2()
-{
-    assert_equal_int(45,45);
-    assert_equal_float_exact(0.25f, 0.251f);
-}
-
-void test_function3()
-{
-    assert_equal_int(3, 3);
-}
 
 
 void run_tests()
@@ -30,23 +13,16 @@ void run_tests()
     // IMU Tests
     //  test_initial_state();
     UT_Suite suite;
-    init_suite(&suite, 1, "First suite");
-    add_test(&suite, test_function1, "first test");
-    add_test(&suite, test_function2, "second test");
-    // add_test(&suite, test_function2);
-    add_test(&suite, test_function3, "third test");
-    // run_suite(&suite);
+    init_suite(&suite, 1, "Initial state");
+    add_test(&suite, test_stable_while_flat, "Stable while flat");
 
-    UT_Suite suite2;
-    init_suite(&suite2, 2, "Second suite");
 
-    add_test(&suite2, test_function3, "fourth test");
-
+    // set up registry
     UT_Registry registry;
     init_registry(&registry);
 
     add_suite(&registry, &suite);
-    add_suite(&registry, &suite2);
+    
     run_registry(&registry);
 
 }

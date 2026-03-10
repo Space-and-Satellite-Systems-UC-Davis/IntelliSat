@@ -29,7 +29,6 @@ void run_suite(UT_Suite* suite) {
 
         suite->tests[i]();
 
-    
         if (current_test_failed) {
             printMsg("  Failed.\r\n\r\n");
             suite->failed++;

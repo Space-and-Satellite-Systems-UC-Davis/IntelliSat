@@ -1,29 +1,33 @@
 #include "IMU_tests.h"
+#include "../Assertions/Ass.h"
 #include <math.h>
 #include <float.h>
 
-void test_initial_state()
+// void test_initial_state()
+// {
+//     printMsg("\r\ntest intiail state\r\n");
+
+//     set_IMU(IMU0);
+//     imu_init(IMU_ODR_3333_Hz, IMU_FS_16_g, IMU_ODR_3333_Hz, IMU_FS_125_dps);
+//     printMsg("Stable while flat (IMU0): \r\n Gyro: %d\r\n", test_stable_while_flat(2.5f, 1, 5));
+
+//     set_IMU(IMU1);
+//     imu_init(IMU_ODR_3333_Hz, IMU_FS_16_g, IMU_ODR_3333_Hz, IMU_FS_125_dps);
+//     printMsg("Stable while flat (IMU1): \r\n Gyro: %d\r\n", test_stable_while_flat(2.5f, 1, 5));
+
+//     set_IMU(IMU0);
+//     imu_init(IMU_ODR_3333_Hz, IMU_FS_16_g, IMU_ODR_3333_Hz, IMU_FS_125_dps);
+//     while (1)
+//     {
+//         printMsg("Stable while flat (IMU0): \r\n Gyro: %d\r\n", test_stable_while_flat(2.5f, 1, 5));
+//     }
+// }
+
+void test_stable_while_flat()
 {
-    printMsg("\r\ntest intiail state\r\n");
-
-    set_IMU(IMU0);
-    imu_init(IMU_ODR_3333_Hz, IMU_FS_16_g, IMU_ODR_3333_Hz, IMU_FS_125_dps);
-    printMsg("Stable while flat (IMU0): \r\n Gyro: %d\r\n", test_stable_while_flat(2.5f, 1, 5));
-
-    set_IMU(IMU1);
-    imu_init(IMU_ODR_3333_Hz, IMU_FS_16_g, IMU_ODR_3333_Hz, IMU_FS_125_dps);
-    printMsg("Stable while flat (IMU1): \r\n Gyro: %d\r\n", test_stable_while_flat(2.5f, 1, 5));
-
-    set_IMU(IMU0);
-    imu_init(IMU_ODR_3333_Hz, IMU_FS_16_g, IMU_ODR_3333_Hz, IMU_FS_125_dps);
-    while (1)
-    {
-        printMsg("Stable while flat (IMU0): \r\n Gyro: %d\r\n", test_stable_while_flat(2.5f, 1, 5));
-    }
-}
-
-bool test_stable_while_flat(float max_gyro_fluctuation, int rate, int seconds)
-{
+    float max_gyro_fluctuation = 0.0f;
+    int rate = 5;
+    int seconds = 1;
     float max_gyro_x = FLT_MIN;
     float max_gyro_y = FLT_MIN;
     float max_gyro_z = FLT_MIN;
@@ -59,21 +63,20 @@ bool test_stable_while_flat(float max_gyro_fluctuation, int rate, int seconds)
         min_gyro_z = fmin(min_gyro_z, cur_gyro_z);
     }
 
-    printMsg("\r\n--------------------------\r\n");
-    printMsg("max X: %f\r\n", max_gyro_x);
-    printMsg("max Y: %f\r\n", max_gyro_y);
-    printMsg("max Z: %f\r\n", max_gyro_z);
 
-    printMsg("min X: %f\r\n", min_gyro_x);
-    printMsg("min Y: %f\r\n", min_gyro_y);
-    printMsg("min Z: %f\r\n", min_gyro_z);
 
-    
+    // return min_gyro_x >= -max_gyro_fluctuation &&
+    //        min_gyro_y >= -max_gyro_fluctuation &&
+    //        min_gyro_z >= -max_gyro_fluctuation &&
+    //        max_gyro_x <= max_gyro_fluctuation &&
+    //        max_gyro_y <= max_gyro_fluctuation &&
+    //        max_gyro_z <= max_gyro_fluctuation;
 
-    return min_gyro_x >= -max_gyro_fluctuation &&
-           min_gyro_y >= -max_gyro_fluctuation &&
-           min_gyro_z >= -max_gyro_fluctuation &&
-           max_gyro_x <= max_gyro_fluctuation &&
-           max_gyro_y <= max_gyro_fluctuation &&
-           max_gyro_z <= max_gyro_fluctuation;
+    assert_greater_than_equal_float(min_gyro_x, -max_gyro_fluctuation, 0.0f);
+    assert_greater_than_equal_float(min_gyro_y, -max_gyro_fluctuation, 0.0f);
+    assert_greater_than_equal_float(min_gyro_z, -max_gyro_fluctuation, 0.0f);
+    assert_less_than_equal_float(max_gyro_x, max_gyro_fluctuation, 0.001f);
+    assert_less_than_equal_float(max_gyro_y, max_gyro_fluctuation, 0.001f);
+    assert_less_than_equal_float(max_gyro_z, max_gyro_fluctuation, 0.001f);
+    // assert_less_than_equal_float(0.000000f, 0.000000f, 0.00f);
 }

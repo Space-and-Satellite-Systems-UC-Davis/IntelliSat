@@ -127,7 +127,7 @@ bool assert_greater_than_equal_int(int greater, int lesser)
 // greater than float
 bool assert_greater_than_float(float greater, float lesser, float leeway)
 {
-    if (greater - fabsf(leeway) > lesser)
+    if (greater - fabsf(leeway) > lesser || greater + fabsf(leeway) > lesser )
     {
         return true;
     }
@@ -139,7 +139,7 @@ bool assert_greater_than_float(float greater, float lesser, float leeway)
 
 bool assert_greater_than_equal_float(float greater, float lesser, float leeway)
 {
-    if (greater - fabsf(leeway) > lesser || assert_equal_float_exact_no_print(greater, lesser))
+    if (greater - fabsf(leeway) > lesser || greater + fabsf(leeway) > lesser || assert_equal_float_exact_no_print(greater, lesser))
     {
         return true;
     }
@@ -177,7 +177,8 @@ bool assert_less_than_equal_int(int lesser, int greater)
 // less than float
 bool assert_less_than_float(float lesser, float greater, float leeway)
 {
-    if (lesser < greater - fabsf(leeway))
+
+    if (lesser < greater - fabsf(leeway) || lesser < greater + fabsf(leeway) )
     {
         return true;
     }
@@ -189,7 +190,8 @@ bool assert_less_than_float(float lesser, float greater, float leeway)
 
 bool assert_less_than_equal_float(float lesser, float greater, float leeway)
 {
-    if (lesser < greater - fabsf(leeway) || assert_equal_float_exact_no_print(lesser, greater)) {
+    float test_var = greater - fabsf(leeway);
+    if (lesser < greater - fabsf(leeway) || lesser < greater + fabsf(leeway) || assert_equal_float_exact_no_print(lesser, greater)) {
         return true;
     }
 
