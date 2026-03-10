@@ -12,6 +12,7 @@ void do_something3() { printMsg("Do something 3 \n\r"); }
 void do_something4() { printMsg("Do something 4 \n\r"); }
 void do_something5() { printMsg("Do something 5 \n\r"); }
 void do_something6() { printMsg("Do something 6 \n\r"); }
+void do_something7() { printMsg("Do something 7 \n\r"); } // should never be used xs
 
 void testFunction_RTC_Alarm() {
 	// For some reason when testing on A13,
@@ -29,22 +30,30 @@ void testFunction_RTC_Alarm() {
 	// Schedule a callback to run in the middle of other tasks
 	rtc_scheduleCallback(10, 0, 0, false, do_something4);
 
-	// Schedule a recurring callback
+	// Schedule a recurring callback 
 	rtc_scheduleCallback(20, 0, 0, true, do_something5);
+
+	// Schedule a recurring callback to delete
+	uint32_t id2 = rtc_scheduleCallback(20, 0, 0, true, do_something7);
 
 	// Check if entry is there
 	printMsg("Is entry active: %d\n\r", rtc_isEntryActive(id));
 	printMsg("When entry is going to be called: %d\n\r", rtc_getEntry(id).unix_time);
 
-	printMsg("Deleting of entry response: %d\n\r", rtc_deleteEntry(id));
+	printMsg("Deleting of one shot entry response: %d\n\r", rtc_deleteEntry(id));
 
 	// Check if entry is there after deleting it
-	printMsg("Is entry active: %d\n\r", rtc_isEntryActive(id));
+	printMsg("Is deleted one shot entry active: %d\n\r", rtc_isEntryActive(id));
 	// Expect 134232923
 	printMsg("When entry is going to be called: %d\n\r", rtc_getEntry(id).unix_time);
 
+	// // Make sure continuous entry stops
+	printMsg("Deleting of continous entry response: %d\n\r", rtc_deleteEntry(id2));
+	// Check if continuous entry is there
+	printMsg("Is deleted continous entry active: %d\n\r", rtc_isEntryActive(id2));
+
+
 	// Kill everything
-	// Make sure continuous entry stops
 	rtc_scheduleCallback(45, 0, 0, false, rtc_deleteAllEntries);
 
 	// Expected output:
@@ -53,8 +62,10 @@ void testFunction_RTC_Alarm() {
 	 * 	Is entry active: 1
 	 * 	When entry is going to be called: 35
 	 * 	Deleting of entry response: 1
-	 * 	Is entry active: 0
+	 * 	Is deleted one shot entry active: 0
 	 * 	When entry is going to be called: 134232923
+	 *  Deleting of continous entry: 1
+	 *	Is deleted continous entry active: 0
 	 * 	Do something 1
 	 * 	Do something 4
 	 * 	Do something 2
