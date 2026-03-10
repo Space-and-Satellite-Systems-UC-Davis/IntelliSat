@@ -1,4 +1,3 @@
-#include <print_scan.h>
 #include "platform_init.h"
 #include "unit_tests/unit_tests.h"
 
@@ -23,11 +22,6 @@ int main() {
 	run_tests();
 
     #else
-
-	//TODO: use RTC first_time flag.
-	//if (first_time) {
-	//  init_first_time()
-	//}
 
 	while (1) {
 		continue;
