@@ -1,4 +1,3 @@
-#include <print_scan.h>
 #include "platform_init.h"
 #include "scheduler/ledtask.h"
 #include "scheduler/testqueue.h"

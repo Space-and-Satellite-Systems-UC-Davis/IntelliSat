@@ -26,6 +26,7 @@
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
+#include <DMA/DMA.h>
 #include <print_scan.h>
 #include <SunSensors/sun_sensors.h>
 #include <WDG/watchdog.h>
@@ -83,7 +84,6 @@ void init_platform() {
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
     set_IMU(IMU1);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
-
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
     sun_sensor_init();
     //TODO: hdd_init().
@@ -97,7 +97,9 @@ void init_platform() {
 	printer_init();
 	led_init();
 	buttons_init();
+    dma_initializePeripheralConstants();
     watchdog_init(WWDG_TIMEOUT_TIME);
+    heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
