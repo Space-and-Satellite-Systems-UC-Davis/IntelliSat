@@ -67,7 +67,7 @@ bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir);
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_shutdown_timer(int timer_number);
+ bool mgt_intercom_shutdownTimer(int timer_number);
 
  /**
   * Shut down the entire magnetorquer

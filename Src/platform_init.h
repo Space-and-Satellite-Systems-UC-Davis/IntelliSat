@@ -49,7 +49,6 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
-    heartbeat_timer_init();
 	rtc_config(LSI, 0);
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
