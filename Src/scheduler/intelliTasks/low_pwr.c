@@ -1,5 +1,4 @@
 #include "low_pwr.h"
-#include "PWR/sleep_primitive.h"
 #include "PWR/sleep_primitives.h"
 #include "RTC/rtc.h"
 #include <stdint.h>
@@ -14,7 +13,7 @@ void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime) {
 
     if(eTaskConfirmSleepModeStatus() == eAbortSleep) {
         PWR_disarmRTC();
-        PWR_exitLPSleepMode();
+        PWR_exitLPRunMode();
         return;
     }
 

@@ -1,6 +1,5 @@
 #include "FreeRTOS.h"
 #include "task.h"
-#include "PWR/sleep.h"
 
 /**
  * @brief Implements the port for vPortSuppressTicksAndSleep

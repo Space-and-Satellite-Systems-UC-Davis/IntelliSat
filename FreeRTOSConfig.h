@@ -210,7 +210,6 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
               to prevent overwriting SysTick_Handler defined within STM32Cube HAL */
 // #define xPortSysTickHandler                     SysTick_Handler
 
-extern void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime);
 #define portSUPPRESS_TICKS_AND_SLEEP(x) vPortSuppressTicksAndSleep(x)
 
 #endif /* FREERTOS_CONFIG_H */

@@ -24,7 +24,7 @@ void PWR_enterLPRunMode(void) {
 }
 
 
-inline bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
+static inline bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
 
 void PWR_exitLPRunMode(void) {
 	PWR->CR1 &= ~(PWR_CR1_LPR);
@@ -40,7 +40,7 @@ void PWR_armRTC(uint16_t seconds) {
 	NVIC_DisableIRQ(TIM3_IRQn);
 	NVIC_DisableIRQ(TIM7_IRQn);
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-	rtc_wakeUp(seconds);
+	rtc_wakeUp(seconds, NULL);
 }
 
 void PWR_disarmRTC(void) {
