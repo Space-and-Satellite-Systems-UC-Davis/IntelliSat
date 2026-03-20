@@ -11,7 +11,7 @@
 // Global (external) variables and functions
 extern int core_Hz;	// from core_config.h
 
-void PWR_enterLPRunMode() {
+void PWR_enterLPRunMode(void) {
 	//Optionally, we could power down flash here
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE);
@@ -26,13 +26,34 @@ void PWR_enterLPRunMode() {
 
 inline bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
 
-void PWR_exitLPRunMode() {
+void PWR_exitLPRunMode(void) {
 	PWR->CR1 &= ~(PWR_CR1_LPR);
 
 	wait_with_timeout(is_REGLPF_not_clear, DEFAULT_TIMEOUT_MS);
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
 	changeCore_Hz(80000000);
+}
+
+void PWR_armRTC(uint16_t seconds) {
+	watchdog_IWDGSleepMode();
+	NVIC_DisableIRQ(TIM3_IRQn);
+	NVIC_DisableIRQ(TIM7_IRQn);
+	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+	rtc_wakeUp(seconds);
+}
+
+void PWR_disarmRTC(void) {
+	watchdog_IWDGWakeUp();
+	NVIC_EnableIRQ(TIM3_IRQn);
+	NVIC_EnableIRQ(TIM7_IRQn);
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+}
+
+void PWR_wfi(void) {
+	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
+	__DSB();
+	__WFI();
 }
 
 // bool PWR_enterLPSleepMode(uint16_t seconds) {
@@ -73,25 +94,3 @@ void PWR_exitLPRunMode() {
 
 // 	PWR_exitLPRunMode();
 // }
-
-
-void PWR_armRTC(uint16_t seconds) {
-	watchdog_IWDGSleepMode();
-	NVIC_DisableIRQ(TIM3_IRQn);
-	NVIC_DisableIRQ(TIM7_IRQn);
-	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-	rtc_wakeUp(seconds);
-}
-
-void PWR_disarmRTC() {
-	watchdog_IWDGWakeUp();
-	NVIC_EnableIRQ(TIM3_IRQn);
-	NVIC_EnableIRQ(TIM7_IRQn);
-	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
-}
-
-void PWR_wfi(void) {
-	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
-	__DSB();
-	__WFI();
-}
