@@ -4,7 +4,7 @@
 *  Created on: Aug 12, 2025
 */
 
-#include "sleep_primitives.h"
+#include "sleep_bare_metal.h"
 #include "RTC/rtc.h"
 #include "WDG/watchdog.h"
 #include <print_scan.h>
