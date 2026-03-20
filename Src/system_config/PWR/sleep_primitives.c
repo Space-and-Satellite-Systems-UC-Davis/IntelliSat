@@ -4,12 +4,12 @@
  *  Created on: Jul 16, 2025
  */
 #include "sleep_primitives.h"
+#include "RTC/rtc.h"
+#include "stm32l476xx.h"
+#include <stdint.h>
 
 // Global (external) variables and functions
 extern int core_Hz;	// from core_config.h
-
-//Stores current mode globally*
-volatile OperatingMode mode = RUN;
 
 void PWR_enterLPRunMode() {
 	//Optionally, we could power down flash here
@@ -21,9 +21,11 @@ void PWR_enterLPRunMode() {
 	changeCore_Hz(1250000);
 
 	PWR->CR1 |= PWR_CR1_LPR;
-	mode = LPRUN;
 }
-bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
+
+
+inline bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
+
 void PWR_exitLPRunMode() {
 	PWR->CR1 &= ~(PWR_CR1_LPR);
 
@@ -31,45 +33,65 @@ void PWR_exitLPRunMode() {
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
 	changeCore_Hz(80000000);
-
-	mode = RUN;
 }
 
-bool PWR_enterLPSleepMode(uint16_t seconds) {
-	PWR_enterLPRunMode();
+// bool PWR_enterLPSleepMode(uint16_t seconds) {
+// 	PWR_enterLPRunMode();
 
-	// Disable Watchdog pet sitter and tell it we are in sleep
+// 	// Disable Watchdog pet sitter and tell it we are in sleep
+// 	watchdog_IWDGSleepMode();
+// 	NVIC_DisableIRQ(TIM3_IRQn);
+// 	NVIC_DisableIRQ(TIM7_IRQn);
+
+// 	// Set alarm to wake us up later
+// 	bool result = rtc_wakeUp(seconds);
+// 	if (result == false) return false;
+
+// 	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
+// 	mode = LPSLEEP;
+// 	// I don't think this loop is avoidable with timeout
+// 	// Wake up interrupt can trigger prior to getting out of LPSleep
+// 	// Loop will end unless explicitly ordered to continue
+// 	while(mode == LPSLEEP) {
+// 		mode = LPRUN;
+// 		__DSB();
+// 		__WFI();
+// 	}
+// 	PWR_exitLPSleepMode();
+// 	return true;
+// }
+// void PWR_maintainLPSleep() {
+// 	mode = LPSLEEP;
+// }
+
+// void PWR_exitLPSleepMode() {
+// 	watchdog_IWDGWakeUp();
+// 	NVIC_EnableIRQ(TIM3_IRQn);
+// 	NVIC_EnableIRQ(TIM7_IRQn);
+
+// 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+
+// 	PWR_exitLPRunMode();
+// }
+
+
+void PWR_armRTC(uint16_t seconds) {
 	watchdog_IWDGSleepMode();
 	NVIC_DisableIRQ(TIM3_IRQn);
 	NVIC_DisableIRQ(TIM7_IRQn);
-
-	// Set alarm to wake us up later
-	bool result = rtc_wakeUp(seconds);
-	if (result == false) return false;
-
-	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
-	mode = LPSLEEP;
-	// I don't think this loop is avoidable with timeout
-	// Wake up interrupt can trigger prior to getting out of LPSleep
-	// Loop will end unless explicitly ordered to continue
-	while(mode == LPSLEEP) {
-		mode = LPRUN;
-		__DSB();
-		__WFI();
-	}
-	PWR_exitLPSleepMode();
-	return true;
-}
-void PWR_maintainLPSleep() {
-	mode = LPSLEEP;
+	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+	rtc_wakeUp(seconds);
 }
 
-void PWR_exitLPSleepMode() {
+void PWR_disarmRTC() {
 	watchdog_IWDGWakeUp();
 	NVIC_EnableIRQ(TIM3_IRQn);
 	NVIC_EnableIRQ(TIM7_IRQn);
-
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+}
 
-	PWR_exitLPRunMode();
+void PWR_wfi(void) {
+	SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
+	__DSB();
+	__WFI();
 }
