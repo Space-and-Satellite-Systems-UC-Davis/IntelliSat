@@ -25,6 +25,10 @@ CallbackEntry callbacks[TIMER_CALLBACK_ARRAY_SIZE];
 //Incremeted every time a callback is added to be unique. Not index.
 uint32_t id_counter = 0;
 
+uint32_t getUnixTime(uint32_t d_seconds, uint32_t d_minutes, uint32_t d_hours);
+
+static void (*on_cycle_callback)() = NULL;
+
 void init_callbacks() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		CallbackEntry dummy_entry;
@@ -399,7 +403,8 @@ const uint16_t MAX_SLEEP = 30; // in seconds, must be under 32
 bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
 
 // There are ways to allow it to wait longer if we need to
-bool rtc_wakeUp(uint16_t seconds) {
+bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)()) {
+	on_cycle_callback = on_cycle;
 	// Only LSI and LSE will be on for Stop modes.
 	// Stop modes not currently implemented
 	uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
@@ -489,7 +494,7 @@ void RTC_WKUP_IRQHandler() {
 	}
 
 	sleep_cycles--;
-	PWR_maintainLPSleep();
+	if (on_cycle_callback != NULL) on_cycle_callback();
 
 	rtc_closeWritingPrivilege();
 }
