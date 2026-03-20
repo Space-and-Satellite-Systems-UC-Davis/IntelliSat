@@ -3,13 +3,13 @@
  *
  *  Created on: Jul 16, 2025
  */
-#include "sleep.h"
+#include "sleep_primitives.h"
 
 // Global (external) variables and functions
 extern int core_Hz;	// from core_config.h
 
 //Stores current mode globally*
-OperatingMode mode = RUN;
+volatile OperatingMode mode = RUN;
 
 void PWR_enterLPRunMode() {
 	//Optionally, we could power down flash here

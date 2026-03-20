@@ -17,13 +17,20 @@ typedef enum OperatingMode {
 } OperatingMode;
 
 /**
- * Enter or exit Low Power Run mode
+ * @brief Enter Low Power Run mode
  *
  * @param None
  *
  * @returns None
  */
 void PWR_enterLPRunMode();
+
+/**
+ * @brief Exit low power mode
+ * @param None
+ * 
+ * @returns None
+ */
 void PWR_exitLPRunMode();
 
 /**
@@ -34,6 +41,12 @@ void PWR_exitLPRunMode();
  * @returns false if RTC isn't using LSE or LSI
  */
 bool PWR_enterLPSleepMode(uint16_t seconds);
+
+/**
+ * Exit Low Power Sleep Mode
+ *
+ * @returns false if RTC isn't using LSE or LSI
+ */
 void PWR_exitLPSleepMode();
 
 /**
