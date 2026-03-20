@@ -22,6 +22,7 @@
 #define FREQOFF 2 //actualy idk but off by 2
 
 #define WWDG_TIMEOUT_TIME 420 //can change if needed
+#define WWDG_KICK_INTERVAL_MS  200
 
 /**
  * Configure both iwdg and wwdg watchdogs
