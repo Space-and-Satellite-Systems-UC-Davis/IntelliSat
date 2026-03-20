@@ -4,7 +4,7 @@
 
 #define HeartBeatTimer TIM7
 
-uint64_t time = 0;
+static volatile uint64_t time = 0;
 
 void delay_ms(uint64_t ms) {
 	uint64_t start_time = time;
@@ -13,7 +13,9 @@ void delay_ms(uint64_t ms) {
 
 //Returns elapsed ms
 uint64_t getSysTime() {
+	__disable_irq();
 	return time;
+	__enable_irq();
 }
 
 bool heartbeat_timer_init()
@@ -32,7 +34,7 @@ bool heartbeat_timer_init()
     HeartBeatTimer->DIER |= TIM_DIER_UIE; // Enable update interrupt
 
     NVIC_EnableIRQ(TIM7_IRQn); // Enable TIM7 interrupt
-    NVIC_SetPriority(TIM7_IRQn, 15);
+    NVIC_SetPriority(TIM7_IRQn, 4);
     HeartBeatTimer->CR1 |= TIM_CR1_CEN; // Enable timer
     
     return true;
