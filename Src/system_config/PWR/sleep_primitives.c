@@ -35,12 +35,12 @@ void PWR_exitLPRunMode(void) {
 	changeCore_Hz(80000000);
 }
 
-void PWR_armRTC(uint16_t seconds) {
+bool PWR_armRTC(uint16_t seconds, void (*on_cycle)()) {
 	watchdog_IWDGSleepMode();
 	NVIC_DisableIRQ(TIM3_IRQn);
 	NVIC_DisableIRQ(TIM7_IRQn);
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-	rtc_wakeUp(seconds, NULL);
+	return rtc_wakeUp(seconds, on_cycle);
 }
 
 void PWR_disarmRTC(void) {

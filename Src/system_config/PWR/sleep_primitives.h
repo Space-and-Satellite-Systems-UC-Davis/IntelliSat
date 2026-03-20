@@ -34,7 +34,7 @@ void PWR_exitLPRunMode(void);
  * 
  * @param seconds 
  */
-void PWR_armRTC(uint16_t seconds);
+bool PWR_armRTC(uint16_t seconds, void (*on_cycle)());
 
 void PWR_disarmRTC(void);
 

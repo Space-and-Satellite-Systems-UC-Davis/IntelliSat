@@ -427,7 +427,10 @@ bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)()) {
 
 	RTC->CR &= ~(RTC_CR_WUTE); //clear
 	//Can't access WUCKSEL/WUT otherwise
-	wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+	// wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+	// ^^ Replaced with below since TIM 7 is diabled when in low power sleep
+	uint32_t timeout = 1000000;
+	while(!(RTC -> ISR & RTC_ISR_WUTWF) && timeout--);
 
 	//Set auto-reload to number of seconds we wait
 	RTC->WUTR &= ~(RTC_WUTR_WUT);
@@ -468,6 +471,7 @@ void RTC_WKUP_IRQHandler() {
 	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
 	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off wake-up interrupt
+		on_cycle_callback = NULL;
 		return; // Do not maintain sleep
 	} else if (sleep_cycles == 1) {
 		RTC->CR &= ~(RTC_CR_WUTE);
