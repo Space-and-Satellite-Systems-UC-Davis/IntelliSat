@@ -159,6 +159,13 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  */
 void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day);
 
+/**
+ * @brief Returns the current unix time
+ * 
+ * @return uint32_t The unix time
+ */
+uint32_t rtc_getUnixTime(void);
+
 /********************************* RTC ALARMS ********************************/
 
 /**

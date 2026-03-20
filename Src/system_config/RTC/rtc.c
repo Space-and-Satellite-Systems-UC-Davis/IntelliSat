@@ -15,6 +15,7 @@
  */
 
 #include "rtc.h"
+#include <stdint.h>
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Callbacks for the timers are stored here.
@@ -381,6 +382,12 @@ void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day)
 
 	// Day of week (1 = Monday through 7 = Sunday)
 	*day = (dr_reg & RTC_DR_WDU_Msk) >> RTC_DR_WDU_Pos;
+}
+
+uint32_t rtc_getUnixTime(void) {
+	uint8_t h, m, s;
+	rtc_getTime(&h, &m, &s);
+	return getUnixTime(s,m,h);
 }
 
 /******************************** RTC WAKEUP *********************************/
