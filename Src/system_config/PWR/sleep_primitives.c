@@ -24,12 +24,12 @@ void PWR_enterLPRunMode(void) {
 }
 
 
-static inline bool is_REGLPF_not_clear() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
+static inline bool is_REGLPF_set() { return (PWR->SR2 & PWR_SR2_REGLPF) != 0; }
 
 void PWR_exitLPRunMode(void) {
 	PWR->CR1 &= ~(PWR_CR1_LPR);
 
-	wait_with_timeout(is_REGLPF_not_clear, DEFAULT_TIMEOUT_MS);
+	wait_with_timeout(is_REGLPF_set, DEFAULT_TIMEOUT_MS);
 
 	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
 	changeCore_Hz(80000000);
