@@ -15,7 +15,11 @@ int crc_wait(USART_TypeDef *bus) {
     memset(ack, 0, sizeof ack);
     int count = usart_receiveBytes(bus, ack, MAX_MESSAGE_BYTES);
     printMsg("<%s>\r\n", ack);
-    return (ack[0] == 'A') - (count < 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
+    bool acked = false;
+    for (int i = 0; i < sizeof ack; i++) {
+        if (ack[i] == 'A') acked = true;
+    }
+    return acked - (count < 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
 }
 
 void crc_ack(USART_TypeDef *bus) {
@@ -23,6 +27,7 @@ void crc_ack(USART_TypeDef *bus) {
     memset(ack, 0, sizeof ack);
     ack[0] = 'A';
     usart_transmitBytes(bus, ack, sizeof ack);
+    printMsg("ACK\n");
 }
 
 /**

@@ -95,4 +95,6 @@ void radio_killall();
 
 bool radio_downlink(uint8_t chunk[], size_t nchunks);
 
+void echo();
+
 #endif /* __RADIO_INTERCOM__ */

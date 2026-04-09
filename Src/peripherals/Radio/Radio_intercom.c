@@ -12,6 +12,7 @@
 
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
+#include "print_scan.h"
 
  /**
  * Initialize the radio USART ports
@@ -97,4 +98,10 @@ bool radio_downlink(uint8_t chunk[], size_t nchunks) {
     packet[0] = TransferToGround;
     packet[1] = nchunks;
     crc_transmit(RADIO_USART, packet, 2);
+}
+
+void echo() {
+    uint8_t packet[MAX_MESSAGE_BYTES];
+    size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
+    printMsg("Radio Says: <%s>", packet);
 }
