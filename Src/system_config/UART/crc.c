@@ -91,10 +91,10 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     uint8_t buffer[MAX_MESSAGE_BYTES];
     int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
-    printMsg("R: %s", buffer);
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
     if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
+    printMsg("R: %s\r\n", buffer);
     crc_ack(bus);
     int breaks = 0;
     for (int index = 0; index + breaks < size && index < MAX_PAYLOAD_BYTES; index++) {
@@ -127,9 +127,10 @@ int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks)
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = 0;
     for (int i = 0; i < nchunks; i++) {
-        crc_read(bus, subchunk);
+        if (crc_read(bus, subchunk) == -1) continue;
         if (subchunk[0] == i) read += lchunks;
         if (subchunk[0] > nchunks) return -1;
+        printMsg("C: %s\r\n", &subchunk[1]);
         memcpy(buf + subchunk[0]*lchunks, &subchunk[1], lchunks);
     }
     return read;
