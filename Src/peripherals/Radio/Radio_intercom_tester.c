@@ -18,6 +18,7 @@ void testFunction_RadioIntercom() {
         printMsg("Chunk is: '%s'\r\n", chunk);
         printMsg("%c\r\n", radio_get_state());
         printMsg("%d\r\n", radio_downlink(chunk, 4));
+        printMsg("Chunk is: '%s'\r\n", chunk);
         printMsg("Cycle Complete\r\n");
     }
 }

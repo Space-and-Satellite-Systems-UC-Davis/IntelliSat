@@ -27,7 +27,7 @@ void crc_ack(USART_TypeDef *bus) {
     memset(ack, 0, sizeof ack);
     ack[0] = 'A';
     usart_transmitBytes(bus, ack, sizeof ack);
-    printMsg("ACK\n");
+    printMsg("ACK\r\n");
 }
 
 /**
@@ -61,7 +61,7 @@ uint8_t crc_remainder(uint8_t payload[], int nbytes) {
 }
 
 bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
-    printMsg("T: %s", payload);
+    printMsg("T: %s\r\n", payload);
     uint8_t buffer[MAX_INTERNAL_BYTES];
     uint8_t breaks = 0;
     memset(buffer, 0, MAX_INTERNAL_BYTES);
@@ -117,7 +117,8 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     for (int i = 0; i < nchunks; i++) {
         subchunk[0] = i;
-        memcpy(1 + &subchunk[0], payload + i*lchunks, lchunks);
+        memcpy(&subchunk[1], payload + i*lchunks, lchunks);
+        printMsg("TC: %s\r\n", &subchunk[1]);
         if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
     }
     return cumulative_success;
@@ -130,7 +131,7 @@ int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks)
         if (crc_read(bus, subchunk) == -1) continue;
         if (subchunk[0] == i) read += lchunks;
         if (subchunk[0] > nchunks) return -1;
-        printMsg("C: %s\r\n", &subchunk[1]);
+        printMsg("RC: %s (%d / %d)\r\n", &subchunk[1], read/lchunks, nchunks);
         memcpy(buf + subchunk[0]*lchunks, &subchunk[1], lchunks);
     }
     return read;
