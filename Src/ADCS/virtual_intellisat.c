@@ -32,11 +32,11 @@ vi_control_coil(
 	    return VI_CONTROL_COIL_FAILURE;
         
     // Check whether each command gets a response
-	if (!mgt_intercom_setCoilPercent(0, round(100 * command_x))
+	if (!mgt_intercom_setCoilPercent(0, round(100 * command_x)))
         return VI_CONTROL_COIL_FAILURE;
-	if (!mgt_intercom_setCoilPercent(1, round(100 * command_y))
+	if (!mgt_intercom_setCoilPercent(1, round(100 * command_y)))
         return VI_CONTROL_COIL_FAILURE;
-	if (!mgt_intercom_setCoilPercent(2, round(100 * command_z))
+	if (!mgt_intercom_setCoilPercent(2, round(100 * command_z)))
         return VI_CONTROL_COIL_FAILURE;
 
 	return VI_CONTROL_COIL_SUCCESS;

@@ -4,6 +4,16 @@
 
 void testFunction_mgtIntercom() {
     mgt_intercom_init();
+    int i = 5;
+    while(1){
+        int code2 = mgt_intercom_setCoilPercent(2, (i + 5)%100);
+        mgt_intercom_turnOnTimer(2);
+        printMsg("%d\r\n", code2);
+        i+=25;
+        delay_ms(5000);
+        mgt_intercom_shutdownTimer(2);
+        delay_ms(2000);
+    }
     while (1) {
         delay_ms(100);
         float code = mgt_intercom_getCurrent(1);
