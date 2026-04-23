@@ -14,11 +14,23 @@
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"
 
- /**
+bool talking;
+
+/**
  * Initialize the radio USART ports
  */
 void radio_init() {
     usart_init(RADIO_USART, PFC2Radio_BAUDRATE);
+    talking = false;
+}
+
+/**
+ * 
+ */
+bool are_talking() {
+    if (talking) return true;
+    if (crc_transmit(RADIO_USART, "?", 1)) talking = true;
+    return talking;
 }
 
 /**
@@ -30,6 +42,7 @@ void radio_init() {
  * @returns success or failure
  */
 bool radio_push(uint8_t chunk[], size_t nbytes) {
+    if (!are_talking()) return false;
     uint8_t header[2];
     header[0] = 'D';
     header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
@@ -47,6 +60,7 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
  */
 RadioPacket radio_force_pull(uint8_t chunk[]) {
     RadioPacket fail = {-1, 'u'};
+    if (!are_talking()) return fail;
     if (!crc_transmit(RADIO_USART, "U", 1)) return fail;
     uint8_t buffer[MAX_PAYLOAD_BYTES];
     crc_read(RADIO_USART, buffer);
@@ -62,6 +76,10 @@ RadioPacket radio_force_pull(uint8_t chunk[]) {
  * @returns number of bytes read and the data type
  */
 RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType datatype) {
+    RadioPacket fail;
+    fail.size = 0;
+    fail.datatype = 0;
+    if (!are_talking()) return fail;
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = crc_chunked_read(RADIO_USART, chunk, CHUNK_LENGTH, nchunks);
     RadioPacket success;
@@ -77,6 +95,7 @@ RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType dat
  * @returns the state
  */
 PFC2RadioState radio_get_state() {
+    if (!are_talking()) return Idle;
     crc_transmit(RADIO_USART, "S", 1);
     PFC2RadioState buffer[MAX_PAYLOAD_BYTES];
     crc_read(RADIO_USART, buffer);
@@ -87,6 +106,7 @@ PFC2RadioState radio_get_state() {
  * Receive the kill command from the ground. 
  */
 void radio_killall() {
+    if (!are_talking()) return;
     if (mgt_killall()) {
         // TODO: Here Be Dragons
         // Kill the PFC
@@ -94,13 +114,15 @@ void radio_killall() {
 }
 
 bool radio_downlink(uint8_t chunk[], size_t nchunks) {
+    if (!are_talking()) return false;
     uint8_t packet[2];
     packet[0] = TransferToGround;
     packet[1] = nchunks;
-    crc_transmit(RADIO_USART, packet, 2);
+    return crc_transmit(RADIO_USART, packet, 2);
 }
 
 void echo() {
+    if (!are_talking()) return;
     uint8_t packet[MAX_MESSAGE_BYTES];
     size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
     printMsg("Radio Says: <%s>", packet);
