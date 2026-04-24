@@ -29,6 +29,7 @@ extern void testFunction_RTC_storage();
 extern void testFunction_LogDownlink();
 extern void testFunction_RTC2FRAM();
 extern void testFunction_virtual_intellisat();
+extern void testFunction_detumbling();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -88,6 +89,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RTC2FRAM;
 		case 24:
 			return testFunction_virtual_intellisat;
+        case 25:
+            return testFunction_detumbling;
 		default:
 			return testFunction_Nothing;
 	}
