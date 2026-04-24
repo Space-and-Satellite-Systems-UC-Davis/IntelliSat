@@ -19,6 +19,7 @@ extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
 extern void testFunction_virtual_intellisat();
+extern void testFunction_detumbling();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -58,6 +59,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LPSleep;
 		case 24:
 			return testFunction_virtual_intellisat;
+        case 25:
+            return testFunction_detumbling;
 		default:
 			return testFunction_Nothing;
 	}
