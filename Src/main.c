@@ -1,6 +1,6 @@
 #include "platform_init.h"
-#include "scheduler/ledtask.h"
-#include "scheduler/testqueue.h"
+#include "scheduler/utils/ledtask.h"
+#include "scheduler/utils/testqueue.h"
 #include "queue.h"
 #include "stm32l476xx.h"
 
