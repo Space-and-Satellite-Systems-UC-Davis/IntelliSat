@@ -2,10 +2,13 @@
     "configurations": [
         {
             "name": "STM32 debug",
-            "compileCommands":[
+            "compileCommands": [
                 "Debug/compile_commands.json"
             ],
-            
+            "intelliSenseMode": "windows-msvc-x64",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
         }
-    ]
+    ],
+    "version": 4
 }
