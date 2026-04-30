@@ -446,7 +446,8 @@ void USART1_IRQHandler() {
 #endif
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
-		USART1->ISR &= ~USART_ISR_RTOF;
+		// USART1->ISR &= ~USART_ISR_RTOF;
+		USART1->ICR &= ~USART_ICR_RTOCF;
 #if OP_REV == 1 || OP_REV == 2
 		USART1_RxBuffer.timedout = true;
 #endif

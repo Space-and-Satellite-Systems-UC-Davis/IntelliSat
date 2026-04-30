@@ -1,0 +1,82 @@
+/*
+ * DMA_test.c
+ *
+ *  Created on: Oct 30, 2025
+ */
+
+#include "SunSensors/sun_sensors.h"
+#include "ADC/adc.h"
+#include "DMA/DMA.h"
+#include "IMU/ASM330LHH.h"
+#include "Buttons/buttons.h"
+#include <print_scan.h>
+
+void testFunction_DMA_ADC() {
+    printMsg("START\r\n");
+
+    uint16_t test_buffer[1] = {42};
+	printMsg("\r\nARRAY (We Expect 42): %u\r\n", test_buffer[0]);
+
+    DMAConfig config;
+    config.selection = SELECT_ADC2;
+    config.peripheral_addr = (uint32_t) &(ADC2->DR);
+    config.memory_addr = (uint32_t)&test_buffer;
+    config.length = 1;
+    config.pdata_size = 1;
+    config.mdata_size = 1;
+    config.circular = false;
+    config.peripheral_to_memory = true;
+    config.peripheral_increment = false;
+    config.memory_increment = false;
+    config.transfer_interrupt = false;
+    config.error_interrupt = false;
+
+    adc_continuousDMAStart(ADC2, 2);
+    dma_configureAndEnableChannel(config);
+    while ((ADC2->ISR & ADC_ISR_EOC) == 0) nop(1);
+	printMsg("\r\nARRAY (We expect not 42): %u\r\n", test_buffer[0]);
+	printMsg("TCIF bit (We expect 1): %d", (DMA1->ISR & DMA_ISR_TCIF2) > 0);
+    adc_continuousDMAStop(ADC2, 2);
+    dma_disableChannel(SELECT_ADC2);
+
+
+
+    test_buffer[0] = 24;
+	printMsg("\r\nARRAY (We Expect 24): %u\r\n", test_buffer[0]);
+
+    config.selection = SELECT_ADC3;
+    config.peripheral_addr = (uint32_t) &(ADC3->DR);
+    config.memory_addr = (uint32_t)&test_buffer;
+    config.length = 1;
+    config.pdata_size = 1;
+    config.mdata_size = 1;
+    config.circular = true;
+    config.peripheral_to_memory = true;
+    config.peripheral_increment = false;
+    config.memory_increment = false;
+    config.transfer_interrupt = false;
+    config.error_interrupt = false;
+
+    adc_continuousDMAStart(ADC3, 6);
+    dma_configureAndEnableChannel(config);
+    while ((ADC3->ISR & ADC_ISR_EOC) == 0) nop(1);
+	printMsg("\r\nARRAY (We expect not 24): %u\r\n", test_buffer[0]);
+	printMsg("TCIF bit (We expect 1): %d", (DMA1->ISR & DMA_ISR_TCIF3) > 0);
+
+    adc_continuousDMAStop(ADC3, 6);
+    test_buffer[0] = 12;
+	nop(9000000);
+	printMsg("\r\nARRAY (We expect 12): %u\r\n", test_buffer[0]);
+    adc_continuousDMAStart(ADC3, 6);
+    // dma_disableChannel(SELECT_ADC3);
+
+	// Connect pin 6 to ground on ADC3
+	// If the array and register both go to zero, success
+
+	while (1) {
+		printMsg("\r\nREGISTER: %u\r\n", ADC3->DR);
+		printMsg("ARRAY (Should change continuously): %u\r\n", test_buffer[0]);
+
+		nop(900000);
+	}
+}

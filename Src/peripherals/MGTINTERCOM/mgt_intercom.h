@@ -15,23 +15,24 @@
 #define MGT_USART_BUS USART2
 #define PFC2MGT_BAUDRATE 9600
 
+typedef enum DIRECTION_ENUM {LOW, HIGH} DIRECTION;
+
 /**
  * Intialize the PFC->MGT Intercom USART devices
  * 
  * @returns None
  */
- void mgt_intercom_init();
+void mgt_intercom_init();
 
  /**
   * Set the PWM for a coil
   * 
   * @param coil_number  The number of the coil whose PWM is being set
-  * @param pwm  1 or 0, for pwm 1 or 0
   * @param percent  The PWM percentage (0-100)
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_set_coil_percent(int coil_number, int pwm, int percentage);
+bool mgt_intercom_setCoilPercent(int coil_number, int percentage);
 
  /**
   * Get the current through a coil
@@ -40,27 +41,48 @@
   * 
   * @returns  the current in Amps (A), or -1 if nothing was read
   */
- float mgt_intercom_get_current(int coil_number);
+float mgt_intercom_getCurrent(int coil_number);
 
  /**
   * Shut down all PWMs and timers on the MGT side
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_shutdown_all();
+bool mgt_intercom_shutdownAll();
 
  /**
-  * Shut down a specific timer
+  * Set the direction for a coil
   * 
-  * @param timer_number  The id of the timer to be turned off
+  * @param coil_number  The number of the coil whose PWM is being set
+  * @param direction  The direction of the coil HIGH or LOW
   * 
   * @returns Boolean denoting whether the MGT side responded
   */
- bool mgt_intercom_shutdown_timer(int timer_number);
+bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir);
 
- /**
-  * Shut down the entire magnetorquer
-  * 
-  * @returns Boolean success
-  */
- bool mgt_killall();
+
+/**
+* Shut down the entire magnetorquer
+* 
+* @returns Boolean success
+*/
+bool mgt_killall();
+  
+/**
+* Shut down a specific timer
+* 
+* @param timer_number  The coil # of the timer to be turned off
+* 
+* @returns Boolean denoting whether the MGT side responded
+*/
+bool mgt_intercom_shutdownTimer(int timer_number);
+
+
+/**
+ * Turn on a specific timer
+ * 
+ * @param timer_number The coil # of the timer to be turned off
+ * 
+ * @returns Boolean denoting whether the MGT side responded
+ */
+bool mgt_intercom_turnOnTimer(int timer_number);
