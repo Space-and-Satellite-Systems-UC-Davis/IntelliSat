@@ -4,7 +4,7 @@
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-extern void testFunction_Nothing();
+void testFunction_Nothing() { while(1); };
 extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
@@ -18,6 +18,7 @@ extern void testFunction_getCalendar();
 extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
+extern void testFunction_RadioIntercom();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -53,19 +54,12 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_getCalendar;
 		case 20:
 			return testFunction_DMA_ADC;
+    case 21:
+			return testFunction_RadioIntercom;
 		case 23:
 			return testFunction_LPSleep;
 		default:
 			return testFunction_Nothing;
 	}
 	return testFunction_Nothing;
-}
-
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-//                           	  EXTRAS
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-
-void testFunction_Nothing() {
-	while(1);
 }

@@ -9,8 +9,8 @@
  * 21 May 2025 - Initial
  */
 
- #include <globals.h>
- #include <MGTINTERCOM/mgt_intercom.h>
+#include <globals.h>
+#include <MGTINTERCOM/mgt_intercom.h>
 #include "UART/crc.h"
 
 
@@ -55,6 +55,11 @@ bool mgt_intercom_turnOnTimer(int timer_number) {
     payload[0] = 'T';
     payload[1] = timer_number + '0';
     return crc_transmit(MGT_USART_BUS, payload, 2);
+
+bool mgt_killall() {
+   uint8_t payload[MAX_MESSAGE_BYTES];
+   payload[0] = 'K';
+   return crc_transmit(MGT_USART_BUS, payload, 1);
 }
 
 bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir) {
