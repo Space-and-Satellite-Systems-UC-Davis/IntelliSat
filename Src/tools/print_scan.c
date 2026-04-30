@@ -32,5 +32,5 @@ int printMsg(const char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	usart_transmitBytes(ConsoleUART, buff);
+	usart_transmitBytes(ConsoleUART, (uint8_t*)buff);
 }

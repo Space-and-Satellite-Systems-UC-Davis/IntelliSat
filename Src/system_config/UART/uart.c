@@ -396,18 +396,30 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 
 /**************************** USART INTERRUPTS ****************************/
 
+// void USART1_IRQHandler() {
+// 	if (USART1->ISR & USART_ISR_RXNE) {
+// 		USART1->ISR &= ~USART_ISR_RXNE;
+// #if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
+// 		enqueueBuffer(USART1_RxBuffer, USART1);
+// #endif
+// 	}
+// 	if (USART1->ISR & USART_ISR_RTOF) {
+// 		USART1->ISR &= ~USART_ISR_RTOF;
+// #if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
+// 		USART1_RxBuffer.timedout = true;
+// #endif
+// 	}
+// }
+
+
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
-#if OP_REV == 1 || OP_REV == 2
 		enqueueBuffer(USART1_RxBuffer, USART1);
-#endif
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ISR &= ~USART_ISR_RTOF;
-#if OP_REV == 1 || OP_REV == 2
 		USART1_RxBuffer.timedout = true;
-#endif
 	}
 }
 

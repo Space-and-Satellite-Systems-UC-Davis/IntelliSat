@@ -184,8 +184,8 @@ DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals selection) {
 //		case SELECT_SPI2_TX: return struct_DMA_SPI2_TX;
 //		case SELECT_SPI3_RX: return struct_DMA_SPI3_RX;
 //		case SELECT_SPI3_TX: return struct_DMA_SPI3_TX;
-//		case SELECT_USART1_RX: return struct_DMA_USART1_RX;
-//		case SELECT_USART1_TX: return struct_DMA_USART1_TX;
+		case SELECT_USART1_RX: return struct_DMA_USART1_RX;
+		case SELECT_USART1_TX: return struct_DMA_USART1_TX;
 		case SELECT_USART2_RX: return struct_DMA_USART2_RX;
 		case SELECT_USART2_TX: return struct_DMA_USART2_TX;
 //		case SELECT_LPUART1_RX: return struct_DMA_LPUART1_RX;

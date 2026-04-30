@@ -58,7 +58,11 @@ void dma_disable_channel(enum_DMAPeripherals selection);
 
 void DMA_initializePeripheralConstants();
 DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals);
-void usart_transmitBytesDMA(uint8_t message[], enum_DMAPeripherals selection, bool circular);
-void usart_recieveBytesDMA(uint8_t buffer[], uint16_t size, enum_DMAPeripherals selection);
+bool usart_receiveBytesDMA(enum_DMAPeripherals selection, uint8_t *rx_buffer, uint16_t length);
+bool usart_transmitBytesDMA(enum_DMAPeripherals selection, const uint8_t *tx_buffer, uint16_t length);
+
+void dma_init();
+void dma_test();
+void DMA1_Channel4_IRQHandler(void);
 
 #endif 

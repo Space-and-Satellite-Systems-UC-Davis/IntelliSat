@@ -13,7 +13,7 @@
 typedef enum {false, true} bool;
 #define NULL 0
 
-#define WILL_LOOPS_TIMEOUT false
+#define WILL_LOOPS_TIMEOUT true
 #define DEFAULT_TIMEOUT_MS 1000
 
 void delay_ms(uint64_t ms);
