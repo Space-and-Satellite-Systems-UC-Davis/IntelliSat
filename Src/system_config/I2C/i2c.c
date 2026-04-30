@@ -30,6 +30,7 @@
  
  void softi2c_delay() {
 	 nop(30);
+//	 nop(700);
  }
  
  void softi2c_sigStart(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {

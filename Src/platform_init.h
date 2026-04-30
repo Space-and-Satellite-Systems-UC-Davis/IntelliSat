@@ -89,7 +89,7 @@ void init_platform(bool run_scheduler) {
 
 
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
-    sun_sensor_init();
+//    sun_sensor_init();
     //TODO: hdd_init().
     //TODO: initialize intercom.
     //TODO: fetch flash header.
@@ -101,7 +101,7 @@ void init_platform(bool run_scheduler) {
 	led_init();
 	buttons_init();
   dma_initializePeripheralConstants();
-  watchdog_init(WWDG_TIMEOUT_TIME);
+//  watchdog_init(WWDG_TIMEOUT_TIME);
   heartbeat_timer_init();
 }
 
