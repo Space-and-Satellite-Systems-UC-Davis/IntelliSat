@@ -8,6 +8,7 @@
 
 #metadata
 .metadata/
+.DS_Store
 
 #Debug
 Debug/
