@@ -268,6 +268,8 @@ vi_get_sensor_status(
 	sensor_status *sensor_status
 ){
 	//TODO: Implement
+	//A way for us to turn off sensors if deemed necessary
+	//Used before calling a sensor
 
 	return GET_CONSTANT_FAILURE;
 }
@@ -277,9 +279,14 @@ vi_get_TLE(
 	char *tle_line1,
 	char *tle_line2
 ){
-	//TODO: Implement
+	tle_line1 = pull_tle();
+	tle_line2 = pull_tle() + 70;
 
-	return GET_TLE_FAILURE;
+	if (tle_line1[0] == '\0'){
+		return GET_TLE_FAILURE;
+	}
+
+	return GET_TLE_SUCCESS_NEW;
 }
 
 int vi_get_experiment_generation(){
