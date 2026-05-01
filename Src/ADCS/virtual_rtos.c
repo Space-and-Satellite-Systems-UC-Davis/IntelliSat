@@ -13,44 +13,37 @@
  * @copyright Copyright (c) 2025
  * 
  */
-#include "scheduler/intelliTask.h"
+#pragma once
 
-static int task_restarts[TASK_TABLE_LEN];
-static TaskHandle_t last_task = NULL;
+#include "scheduler/intelliTasks/intelliTasks_proto.h"
+#include "virtual_rtos.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
+extern Taskhandle_t detumbleHandle;
+extern Taskhandle_t experimentHandle;
 
-int get_idx_of_handle(TaskHandle_t handle) {
-    for (int i = 0; i < TASK_TABLE_LEN; i++)
-        if (task_table[i].FreeRTOS_handle == handle)
-            return i;
+typedef enum {
+    VR_DETUMBLE,
+    VR_EXPERIMENT
+} vr_tasks;
+
+void vr_enter_critical() {
+    taskENTER_CRITICAL();
 }
 
-void vi_enter_critical() {
-    // Lazy mutex creation
-    if (intelliTask_execMutex == NULL)
-        intelliTask_execMutex = xSemaphoreCreateMutexStatic(&intelliTask_execMutexBuffer);
-
-    // If swapping tasks, save the fact that the previous task restarted
-    // TODO move this logic somewhere guaranteed to run on a switch
-    if (last_task && xTaskGetCurrentTaskHandle() != last_task)
-        task_restarts[get_idx_of_handle(last_task)] = 1;
-
-    (void)xSemaphoreTake(intelliTask_execMutex, portMAX_DELAY);
+void vr_exit_critical() {
+    taskEXIT_CRITICAL();
 }
 
-void vi_exit_critical() {
-    last_task = xTaskGetCurrentTaskHandle();
-
-    if (xSemaphoreGive(intelliTask_execMutex) != pdTRUE) {
-        // There is almost no recourse except waiting for the
-        // hardware watchdog to restart the computer. TODO log error
-        return;
+// TODO Should/how long to wait for notification
+int vr_task_has_restarted(vr_tasks task) {
+    switch (task) {
+        case VR_DETUMBLE:
+        ulTaskNotifyTake(detumbleHandle, 0)
+        break;
+        case VR_EXPERIMENT:
+        ulTaskNotifyTake(experimentHandle, 0)
+        break;
     }
-}
-
-int vi_task_has_restarted() {
-    int idx = get_idx_of_handle(xTaskGetCurrentTaskHandle());
-    int has_restarted = task_restarts[idx];
-    task_restarts[idx] = 0;
-    return has_restarted;
 }
