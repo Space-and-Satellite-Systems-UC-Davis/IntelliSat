@@ -9,7 +9,6 @@
 
 void run_tests()
 {
-
     // IMU Tests
     //  test_initial_state();
     UT_Suite suite;

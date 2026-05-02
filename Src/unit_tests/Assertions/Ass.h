@@ -24,6 +24,5 @@ bool assert_less_than_equal_float(float lesser, float greater, float leeway);
 // char array
 bool assert_equal_char_array(char* actual, char* expected, int length); // or size_t length
 
-
 // over time
 bool assert_stays_within_over_time_int();
