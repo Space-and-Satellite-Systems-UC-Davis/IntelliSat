@@ -9,8 +9,8 @@
  * 21 May 2025 - Initial
  */
 
- #include <globals.h>
- #include <MGTINTERCOM/mgt_intercom.h>
+#include <globals.h>
+#include <MGTINTERCOM/mgt_intercom.h>
 #include "UART/crc.h"
 
 

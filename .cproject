@@ -602,13 +602,4 @@
 			<resource resourceType="PROJECT" workspacePath="/IntelliSat"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.2146917372;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.2146917372.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.103575512;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1618841485">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.498296272;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.498296272.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1325920330;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.244255518">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 </cproject>
