@@ -10,7 +10,7 @@ void watchdog_init(int ms){
          ms = WWDG_MAX;
      }
      watchdog_wwdg_config(ms);
-    watchdog_interrupt_config(WWDG_KICK_INTERVAL_MS);
+    watchdog_interrupt_config(ms);
 }
 
 void watchdog_iwdg_config(int ms){
