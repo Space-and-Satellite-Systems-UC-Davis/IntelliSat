@@ -55,6 +55,9 @@ vi_get_epoch(
 ){
 	//TODO: Implement
 	// May need to change int parameter types to uint_8
+	//TODO: Fix arguments for rtc_getCalendar
+	// 		^Thinking about adding int *date to the parameters for this function
+	// 		^ Also note to self: date is day (1-31) while day is day of the week (1-7)
 	rtc_getTime(hour, minute, second);
 	rtc_getCalendar(year, month, day);
 	return GET_EPOCH_SUCCESS;
