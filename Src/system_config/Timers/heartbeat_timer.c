@@ -13,9 +13,7 @@ void delay_ms(uint64_t ms) {
 
 //Returns elapsed ms
 uint64_t getSysTime() {
-	__disable_irq();
 	return time;
-	__enable_irq();
 }
 
 bool heartbeat_timer_init()
