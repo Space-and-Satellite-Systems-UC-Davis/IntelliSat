@@ -293,35 +293,47 @@ vi_get_TLE(
 }
 
 int vi_get_experiment_generation(){
-	//TODO: Implement
 
-	return 0;
+	return pull_experiment_generation();
 }
 
 void vi_increment_experiment_generation(){
-	//TODO: Implement
+
+	uint32_t new_gen = pull_experiment_generation() + 1;
+
+	push_experiment_generation(new_gen);
+
+	return;
 
 }
 
 int vi_get_detumbling_generation(){
-	//TODO: Implement
 
-	return 0;
+	return pull_detumbling_generation();
 }
 
 void vi_increment_detumbling_generation(){
-	//TODO: Implement
+	
+	uint32_t new_gen = pull_detumbling_generation() + 1;
+
+	push_detumbling_generation(new_gen);
+
+	return;
 
 }
 
 int vi_get_determination_generation(){
-	//TODO: Implement
 
-	return 0;
+	return pull_determination_generation();;
 }
 
 void vi_increment_determination_generation(){
-	//TODO: Implement
+
+	uint32_t new_gen = pull_determination_generation() + 1;
+
+	push_determination_generation(new_gen);
+
+	return;
 
 }
 
