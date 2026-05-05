@@ -123,30 +123,43 @@ uint32_t* get_sensor_status();
 /**
  * Returns the experiment generation count
  *
- * @returns            Returns the current experiment generation
+ *  @returns            Returns the current experiment generation
  */
-uint32_t* pull_experiment_generation();
+uint32_t pull_experiment_generation();
 
 /**
  * Updates the experiment generation count
  *
- * @returns           Returns whether the push was successful
+ *  @returns           Returns whether the push was successful
  */
-bool push_experiment_generation(uint32_t* data_in);
+bool push_experiment_generation(uint32_t data_in);
 
 /**
  * Returns the detumbling generation count
  *
  * @returns            Returns the current detumbling generation
  */
-uint32_t* pull_detumbling_generation();
+uint32_t pull_detumbling_generation();
 
 /**
  * Updates the detumbling generation count
  *
  * @returns           Returns whether the push was successful
  */
-bool push_detumbling_generation(uint32_t* data_in);
+bool push_detumbling_generation(uint32_t data_in);
 
+/**
+ * Returns the determination generation count
+ *
+ * @returns            Returns the current determination generation
+ */
+uint32_t pull_determination_generation();
+
+/**
+ * Updates the determination generation count
+ *
+ * @returns           Returns whether the push was successful
+ */
+bool push_determination_generation(uint32_t data_in);
 
 #endif
