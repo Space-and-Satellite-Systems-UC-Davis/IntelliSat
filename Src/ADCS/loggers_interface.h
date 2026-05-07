@@ -20,14 +20,15 @@
  *
  * @returns           Whether push was successful (bool).
  */
-bool push_tle(uint32_t* data_in);
+bool push_tle(char* data_in);
 
 /**
  * Returns the TLE (from FRAM).
  *
  * @returns           TLE data (140 bytes).
  */
-uint32_t* pull_tle();
+char* pull_tle();
+
 
 /**
  * Updates sun sensor parameters.
@@ -75,7 +76,7 @@ bool push_imu(uint32_t* data_in);
  *
  * @returns           IMU parameters (48 bytes).
  */
-uint32_t* push_imu();
+uint32_t* pull_imu();
 
 /**
  * Pushes one data buffer to the FLASH. Page incrementing/storage location is
@@ -112,13 +113,19 @@ uint32_t* flash_pull(uint32_t* data_in);
  */
 uint32_t* fram_pull(uint32_t* data_in, uint16_t page);
 
+/**
+ * Push sensor status
+ * 
+ * @returns Whether the push was successful
+ */
+bool push_sensor_status(uint32_t* data_in);
 
 /**
  * Returns sensor status
  * 
- * @returns            Returns sensor status data (4 bytes)
+ * @returns Returns sensor status data (4 bytes)
  */
-uint32_t* get_sensor_status();
+uint32_t* pull_sensor_status();
 
 /**
  * Returns the experiment generation count
@@ -132,34 +139,34 @@ uint32_t pull_experiment_generation();
  *
  *  @returns           Returns whether the push was successful
  */
-bool push_experiment_generation(uint32_t data_in);
+bool push_experiment_generation(uint8_t data_in);
 
 /**
  * Returns the detumbling generation count
  *
  * @returns            Returns the current detumbling generation
  */
-uint32_t pull_detumbling_generation();
+uint8_t pull_detumbling_generation();
 
 /**
  * Updates the detumbling generation count
  *
  * @returns           Returns whether the push was successful
  */
-bool push_detumbling_generation(uint32_t data_in);
+bool push_detumbling_generation(uint8_t data_in);
 
 /**
  * Returns the determination generation count
  *
- * @returns            Returns the current determination generation
+ * @returns Returns the current determination generation
  */
-uint32_t pull_determination_generation();
+uint8_t pull_determination_generation();
 
 /**
- * Updates the determination generation count
+ * Updates the determination generation count 
  *
- * @returns           Returns whether the push was successful
+ * @returns Returns whether the push was successful
  */
-bool push_determination_generation(uint32_t data_in);
+bool push_determination_generation(uint8_t data_in);
 
 #endif
