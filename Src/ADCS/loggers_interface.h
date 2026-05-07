@@ -167,7 +167,7 @@ bool push_detumbling_generation(uint8_t data_in);
 uint8_t pull_determination_generation();
 
 /**
- * Updates the determination generation count
+ * Updates the determination generation count 
  *
  * @returns Returns whether the push was successful
  */
