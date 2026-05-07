@@ -55,6 +55,7 @@ bool mgt_intercom_turnOnTimer(int timer_number) {
     payload[0] = 'T';
     payload[1] = timer_number + '0';
     return crc_transmit(MGT_USART_BUS, payload, 2);
+}
 
 bool mgt_killall() {
    uint8_t payload[MAX_MESSAGE_BYTES];
@@ -63,14 +64,14 @@ bool mgt_killall() {
 }
 
 bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir) {
-   uint8_t payload[MAX_MESSAGE_BYTES];
-    payload[0] = 'W';
-    payload[1] = coilNumber + '0';
-    payload[2] = ' ';
-    if (dir == HIGH) {
-       payload[3] = 'H';
-    } else {
-       payload[3] = 'L';
-    }
-    return crc_transmit(MGT_USART_BUS, payload, 4);
+	uint8_t payload[MAX_MESSAGE_BYTES];
+	payload[0] = 'W';
+	payload[1] = coilNumber + '0';
+	payload[2] = ' ';
+	if (dir == HIGH) {
+	   payload[3] = 'H';
+	} else {
+	   payload[3] = 'L';
+	}
+	return crc_transmit(MGT_USART_BUS, payload, 4);
 }
