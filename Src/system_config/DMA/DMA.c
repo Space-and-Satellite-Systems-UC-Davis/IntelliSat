@@ -53,68 +53,68 @@ DMAConfig USART_RX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, u
 }
 
 
-	void configure_channel(DMAConfig config) {
-		DMAPeripheral* peripheral = DMA_selectPeripheral(config.selection);
-		DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
+void configure_channel(DMAConfig config) {
+	DMAPeripheral* peripheral = DMA_selectPeripheral(config.selection);
+	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
-		//Check what DMA controller we are working with
-		//DMA1_Channel7_BASE is simply the largest address in DMA1 controller that may be passed
-		if ((uint32_t)channel_ptr <= DMA1_Channel7_BASE) { //The channel is in DMA1
-			RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
-		} else { //DMA2
-			RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
-		}
-
-		//Reset all
-		channel_ptr->CCR &= ~(
-			DMA_CCR_MEM2MEM_Msk
-			| DMA_CCR_MSIZE_Msk
-			| DMA_CCR_PSIZE_Msk
-			| DMA_CCR_MINC_Msk
-			| DMA_CCR_PINC_Msk
-			| DMA_CCR_CIRC_Msk
-			| DMA_CCR_DIR_Msk
-			| DMA_CCR_EN_Msk
-		);
-
-		//Configure channel
-
-		//Priority is explicitly not an option. We did not yet coordinate what gets what priority yet
-		channel_ptr->CCR |= ( 0x1 << DMA_CCR_PL_Pos ); //0b01 Medium priority
-
-		switch (config.mdata_size) {
-			case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_MSIZE_Pos ); break; //0b00 8 bits
-			case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_MSIZE_Pos ); break; //0b01 16 bits
-			case 4: channel_ptr->CCR |= ( (0b10) << DMA_CCR_MSIZE_Pos ); break; //0b10 32 bits
-		}
-		switch (config.pdata_size) {
-			case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_PSIZE_Pos ); break; //0b00 8 bits
-			case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_PSIZE_Pos ); break; //0b01 16 bits
-			case 4: channel_ptr->CCR |= ( (0b10) << DMA_CCR_PSIZE_Pos ); break; //0b10 32 bits
-		}
-
-		if (config.peripheral_increment == true) { channel_ptr->CCR |= DMA_CCR_PINC; } //Increment peripheral
-		if (config.memory_increment == true) { channel_ptr->CCR |= DMA_CCR_MINC; } //Increment memory
-
-		if (config.peripheral_to_memory == true) {
-			channel_ptr->CCR &= ~DMA_CCR_DIR; //Dir=0. Peripheral to memory
-		} else {
-			channel_ptr->CCR |= DMA_CCR_DIR; //Dir=1. Memory to peripheral
-		}
-
-		//Could probablly shorten to config.channel->CCR |= (DMA_CCR_CIRC * config.circular)
-		//But this also reads easier
-		if (config.circular == true) { channel_ptr->CCR |= DMA_CCR_CIRC; }
-
-		if (config.transfer_interrupt == true) { channel_ptr->CCR |= DMA_CCR_TCIE; }
-
-		// Set src and dist
-		//Not cast to pointer because pointer could be something other than uint32_t??
-		//^^^If this comment is still here I haven't tested what goes wrong otherwise
-		channel_ptr->CMAR  = (uint32_t)config.memory_addr;
-		channel_ptr->CPAR  = (uint32_t)config.peripheral_addr;
-		channel_ptr->CNDTR = (uint16_t)config.length;
+	//Check what DMA controller we are working with
+	//DMA1_Channel7_BASE is simply the largest address in DMA1 controller that may be passed
+	if ((uint32_t)channel_ptr <= DMA1_Channel7_BASE) { //The channel is in DMA1
+		RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+	} else { //DMA2
+		RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 	}
+
+	//Reset all
+	channel_ptr->CCR &= ~(
+		DMA_CCR_MEM2MEM_Msk
+		| DMA_CCR_MSIZE_Msk
+		| DMA_CCR_PSIZE_Msk
+		| DMA_CCR_MINC_Msk
+		| DMA_CCR_PINC_Msk
+		| DMA_CCR_CIRC_Msk
+		| DMA_CCR_DIR_Msk
+		| DMA_CCR_EN_Msk
+	);
+
+	//Configure channel
+
+	//Priority is explicitly not an option. We did not yet coordinate what gets what priority yet
+	channel_ptr->CCR |= ( 0x1 << DMA_CCR_PL_Pos ); //0b01 Medium priority
+
+	switch (config.mdata_size) {
+		case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_MSIZE_Pos ); break; //0b00 8 bits
+		case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_MSIZE_Pos ); break; //0b01 16 bits
+		case 4: channel_ptr->CCR |= ( (0b10) << DMA_CCR_MSIZE_Pos ); break; //0b10 32 bits
+	}
+	switch (config.pdata_size) {
+		case 1: channel_ptr->CCR |= ( (0b00) << DMA_CCR_PSIZE_Pos ); break; //0b00 8 bits
+		case 2: channel_ptr->CCR |= ( (0b01) << DMA_CCR_PSIZE_Pos ); break; //0b01 16 bits
+		case 4: channel_ptr->CCR |= ( (0b10) << DMA_CCR_PSIZE_Pos ); break; //0b10 32 bits
+	}
+
+	if (config.peripheral_increment == true) { channel_ptr->CCR |= DMA_CCR_PINC; } //Increment peripheral
+	if (config.memory_increment == true) { channel_ptr->CCR |= DMA_CCR_MINC; } //Increment memory
+
+	if (config.peripheral_to_memory == true) {
+		channel_ptr->CCR &= ~DMA_CCR_DIR; //Dir=0. Peripheral to memory
+	} else {
+		channel_ptr->CCR |= DMA_CCR_DIR; //Dir=1. Memory to peripheral
+	}
+
+	//Could probablly shorten to config.channel->CCR |= (DMA_CCR_CIRC * config.circular)
+	//But this also reads easier
+	if (config.circular == true) { channel_ptr->CCR |= DMA_CCR_CIRC; }
+
+	if (config.transfer_interrupt == true) { channel_ptr->CCR |= DMA_CCR_TCIE; }
+
+	// Set src and dist
+	//Not cast to pointer because pointer could be something other than uint32_t??
+	//^^^If this comment is still here I haven't tested what goes wrong otherwise
+	channel_ptr->CMAR  = (uint32_t)config.memory_addr;
+	channel_ptr->CPAR  = (uint32_t)config.peripheral_addr;
+	channel_ptr->CNDTR = (uint16_t)config.length;
+}
 
 
 
@@ -239,19 +239,54 @@ void dma_init() {
 	NVIC_EnableIRQ(DMA1_Channel5_IRQn); //Enable the IRQ for the channel we will be using for USART1 RX.
 }
 
-void dma_test() {
-	printMsg("Starting DMA Test...\n");
-	while (!usart1_tx_ready) {
-		printMsg("Waiting for USART1 to be ready...\n");
-	}
+void dma_test(void) {
+    printMsg("Starting DMA Test...\n");
 
-	uint8_t message[] = "hi";
-    usart_transmitBytesDMA(SELECT_USART1_TX, message, sizeof(message)); //DMA transmit
+    const uint32_t timeout_ms = DEFAULT_TIMEOUT_MS;
+    const uint8_t message[] = "dma loopback test\n";
+    uint8_t rx_buf[sizeof(message)] = {0};
 
-	//monitor the transmission complete flag in the interrupt handler, and print when the transmission is done
-	while (!usart1_tx_ready) {
-	}
-	printMsg("DMA Transmission Complete!\n");
+    // Clear stale state
+    usart1_tx_ready = true;
+    usart1_rx_ready = false;
+
+    if (!usart_receiveBytesDMA(SELECT_USART1_RX, rx_buf, sizeof(rx_buf))) {
+        printMsg("DMA RX start failed\n");
+        return;
+    }
+
+    if (!usart_transmitBytesDMA(SELECT_USART1_TX, message, sizeof(message))) {
+        printMsg("DMA TX start failed\n");
+        return;
+    }
+
+    uint64_t start = getSysTime();
+    while (!usart1_tx_ready && !is_time_out(start, timeout_ms)) {
+    }
+    if (!usart1_tx_ready) {
+        printMsg("DMA TX timeout\n");
+        return;
+    }
+
+    start = getSysTime();
+    while (!usart1_rx_ready && !is_time_out(start, timeout_ms)) {
+    }
+    if (!usart1_rx_ready) {
+        printMsg("DMA RX timeout\n");
+        return;
+    }
+
+    bool match = true;
+    for (uint16_t i = 0; i < sizeof(message); i++) {
+        if (rx_buf[i] != message[i]) { match = false; break; }
+    }
+
+    if (!match) {
+        printMsg("DMA RX mismatch\n");
+        return;
+    }
+
+    printMsg("DMA loopback OK\n");
 }
 
 

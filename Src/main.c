@@ -16,5 +16,7 @@ int main(void) {
     init_platform(!RUN_TEST);
     usart_init(USART1, 9600);
     
-    dma_test();
+    while (1) {
+        dma_test();
+    }
 }
