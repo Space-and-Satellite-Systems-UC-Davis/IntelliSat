@@ -48,18 +48,16 @@ vi_get_epoch_status
 vi_get_epoch(
     int *year,
     int *month,
-    int *day,
+	int *date,
+    int *weekday,
     int *hour, //rtc get time
     int *minute,
     int *second
 ){
 	//TODO: Implement
 	// May need to change int parameter types to uint_8
-	//TODO: Fix arguments for rtc_getCalendar
-	// 		^Thinking about adding int *date to the parameters for this function
-	// 		^ Also note to self: date is day (1-31) while day is day of the week (1-7)
 	rtc_getTime(hour, minute, second);
-	rtc_getCalendar(year, month, day);
+	rtc_getCalendar(year, month, date, weekday);
 	return GET_EPOCH_SUCCESS;
 }
 
