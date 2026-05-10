@@ -10,7 +10,6 @@
 int main() {
     init_init();
     init_platform(!RUN_TEST);
-
 #if (RUN_TEST==1) && (TEST_ID != 0)
 
     void (*testFunc)();
@@ -18,7 +17,7 @@ int main() {
     testFunc();
 
 #elif (RUN_TEST == 0) && (RUN_UNIT_TESTS == 1)
-	run_tests();
+	run_tests();  
   
 #else
 
