@@ -16,6 +16,8 @@ typedef enum {false, true} bool;
 #define WILL_LOOPS_TIMEOUT true
 #define DEFAULT_TIMEOUT_MS 1000
 
+#define TIMER_CALLBACK_ARRAY_SIZE 255
+
 void delay_ms(uint64_t ms);
 void nop(long long nop_loops);
 uint64_t getSysTime();

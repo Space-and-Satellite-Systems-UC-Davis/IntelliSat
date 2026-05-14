@@ -20,7 +20,6 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 #include <GPIO/gpio.h>
-#include <DMA/DMA.h>
 
 #define GPIO_AFRH_AFSEL_AF5 5U
 #define GPIO_AFRH_AFSEL_AF6 6U
@@ -37,7 +36,7 @@
 #define SPI2_CS			  GPIOB,12
 #define SPI3_CS			  UNUSED_GPIO
 
-#elif OP_REV == 2 
+#elif OP_REV == 2
 
 #define SPI1_CS			  GPIOA,4
 #define SPI2_CS			  UNUSED_GPIO
@@ -62,11 +61,6 @@
  * Stops an SPI peripheral
 */
 void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin);
-
-void spi_dma_enable_rx(SPI_TypeDef *spi);
-void spi_dma_enable_tx(SPI_TypeDef *spi);
-
-void spi_dma_disable(SPI_TypeDef *spi);
 
 /**
  * Configures an SPI line to be able to transmit_receive() later
@@ -113,7 +107,5 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
  * @returns Boolean to indicate if the communication was successful or not
 */
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma);
-
-void spi_continuous_dma(SPI_TypeDef* spi, uint8_t* transmission, uint8_t* reception);
 
 #endif	// REALOP1_SPI_H_

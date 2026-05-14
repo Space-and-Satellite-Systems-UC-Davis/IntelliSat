@@ -25,7 +25,7 @@
  */
 void spi3_gpioInit() {
 
-#if OP_REV == 2 
+#if OP_REV == 2
 	// GPIO
 	/* OP R2 GPIO pinout
 	 * 		SPI3 SCK		B3		(Alternate Function, AF6)
@@ -260,7 +260,6 @@ void spi_config(SPI_TypeDef *spi) {
 
 /***************************** SPI COMMUNICATION *****************************/
 void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
-
 	gpio_low(cs_port, cs_pin);
 }
 void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {

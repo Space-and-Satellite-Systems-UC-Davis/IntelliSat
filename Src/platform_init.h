@@ -29,6 +29,7 @@
 #include <DMA/DMA.h>
 #include <print_scan.h>
 #include <SunSensors/sun_sensors.h>
+#include <WDG/watchdog.h>
 
 #define SCB_CPACR_CP10_POS 20U
 #define SCB_CPACR_CP11_POS 22U
@@ -78,15 +79,13 @@ void init_first_time() {
  */
 void init_platform(bool run_scheduler) {
 
-    DMA_initializePeripheralConstants();
-
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
+    debug_init();
     set_IMU(IMU0);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
-	  //PLEEEEEEASE DO NOT MERGE
-//    set_IMU(IMU1);
-//    imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
+    set_IMU(IMU1);
+    imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
 
 
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
@@ -101,7 +100,9 @@ void init_platform(bool run_scheduler) {
 	printer_init();
 	led_init();
 	buttons_init();
-	systick_init(run_scheduler);
+  dma_initializePeripheralConstants();
+  watchdog_init(WWDG_TIMEOUT_TIME);
+  heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
