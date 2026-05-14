@@ -126,18 +126,4 @@ void timer_waitStartupTime();
 bool heartbeat_timer_init();
 
 
-
-
-
-/**
- * Initializes the Heartbeat LED Timer (the Systick). 
- * Configures it to tick every ms.
-
- * @returns none
-*/
-
-
-void systick_init();
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-
 #endif	// REALOP1_TIMERS_H_
