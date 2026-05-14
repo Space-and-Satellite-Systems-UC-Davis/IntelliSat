@@ -458,7 +458,7 @@ void USART1_IRQHandler() {
 		enqueueBuffer(USART1_RxBuffer, USART1);
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
-		USART1->ISR &= ~USART_ISR_RTOF;
+		USART1->ICR &= ~USART_ICR_RTOCF;
 		USART1_RxBuffer.timedout = true;
 	}
 }
