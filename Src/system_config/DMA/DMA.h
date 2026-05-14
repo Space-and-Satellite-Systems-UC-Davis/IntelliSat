@@ -4,6 +4,7 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 
+//No options for some uart because they aren't implemented
 // Only uncomment when SPI/UART are implemented
 typedef enum enum_DMAPeripherals {
 	SELECT_ADC1,
@@ -15,10 +16,10 @@ typedef enum enum_DMAPeripherals {
 //	SELECT_SPI2_TX,
 //	SELECT_SPI3_RX,
 //	SELECT_SPI3_TX,
-//	SELECT_USART1_RX,
-//	SELECT_USART1_TX,
-//	SELECT_USART2_RX,
-//	SELECT_USART2_TX,
+	SELECT_USART1_RX,
+	SELECT_USART1_TX,
+	SELECT_USART2_RX,
+	SELECT_USART2_TX,
 //	SELECT_LPUART1_RX,
 //	SELECT_LPUART1_TX,
 } enum_DMAPeripherals;
@@ -45,42 +46,30 @@ typedef struct DMAConfig {
 	bool error_interrupt; // Trigger interrupt on transfer error?
 } DMAConfig;
 
-/**
- * Initialize the peripheral structs to be returned in dma_selectPeripheral.
- * Call upon board initialization.
- *
- * @returns None
- */
-void dma_initializePeripheralConstants();
+DMAConfig USART_TX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length);
+DMAConfig USART_RX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length);
+
+
+void configure_channel(
+		DMAConfig config
+);
 
 /**
- * Enable or disable the DMA channel
+ * Request specific DMA peripheral struct
  *
- * @param  selection   Specific peripheral
+ * @param  selection   type is an enum of options
  *
  * @returns requested peripheral
  */
 DMAPeripheral* dma_selectPeripheral(enum_DMAPeripherals selection);
 
-/**
- * Applies the config to the DMA channel chosen and enables it
- * NOTE: There is explicitly no way of "resuming" without reconfiguring
- * WARNING: If reconfiguring, disable both sides first.
- *
- * @param  config   See DMAConfig struct to learn the options
- *
- * @returns None
- */
-void dma_configureAndEnableChannel(DMAConfig config);
+void DMA_initializePeripheralConstants();
+DMAPeripheral* DMA_selectPeripheral(enum_DMAPeripherals);
+bool usart_receiveBytesDMA(enum_DMAPeripherals selection, uint8_t *rx_buffer, uint16_t length);
+bool usart_transmitBytesDMA(enum_DMAPeripherals selection, const uint8_t *tx_buffer, uint16_t length);
 
-/**
- * Disable the DMA channel
- * WARNING: You should disable DMA peripheral-side prior to disabling channel
- *
- * @param  selection   Specific peripheral. Finds channel by attached periph.
- *
- * @returns None
- */
-void dma_disableChannel(enum_DMAPeripherals selection);
+void dma_init();
+void dma_test();
+void DMA1_Channel4_IRQHandler(void);
 
 #endif 

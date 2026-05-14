@@ -7,7 +7,7 @@
 
 #include <TestDefinition.h>
 
-int main() {
+int main(void) {
     init_init();
     init_platform(!RUN_TEST);
 
