@@ -1,3 +1,5 @@
+#ifndef SUN_H
+#define SUN_H
 
 #include <globals.h>
 #include <ADC/adc.h>
@@ -108,3 +110,4 @@ void sun_sensors_shutdownAll();
 void sun_sensors_repowerAll();
 
 
+#endif
