@@ -281,8 +281,6 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 	//initialize accelerometer and gyroscope
 	imu_acelCtrl(acel_rate, acel_scale, 0);
 	imu_gyroCtrl(gyro_rate, gyro_scale);
-
-
 }
 
 float imu_readAcel_X() {
