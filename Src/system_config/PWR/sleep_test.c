@@ -7,6 +7,7 @@
 #include "sleep.h"
 #include "RTC/rtc.h"
 #include "WDG/watchdog.h"
+#include "UART/uart.h"
 #include <print_scan.h>
 
 bool is_DBP_not_set() { return (PWR->CR1 & PWR_CR1_DBP) == 0; }
@@ -52,21 +53,23 @@ void testFunction_mgtSleep() {
 	gpio_mode(GPIOD, 1, GPIO_MODER_Output, GPIO_OTYPER_PUSH_PULL, GPIO_OSPEEDR_HIGH, GPIO_PUPDR_NO_PULL);
 	// infinite loop
 	bool valid = true;
-    uint8_t c[] = {0, '\0'};
-	for(unit8_t i = 10; i < 20; i++) {
+    
+	for(uint8_t i = 10; i < 20; i++) {
 		// led_d4(true);
-		c[0] = i;
+		uint8_t c[] = {i, '\0'};
 		gpio_low(GPIOD, 14);
 		delay_ms(5000);
 		gpio_high(GPIOD, 14);
 		gpio_low(GPIOD, 3);
 		gpio_low(GPIOD, 1);
-		// usart_transmitStr(USART2, &c);
 		usart_transmitStr(USART2, &c);
+        // while(true) {
+        //     usart_transmitStr(USART2, &c);
+        // }
 		uint8_t c_in[2];
-		while(!usart_receiveBufferNotEmpty(USART1));
+		while(!usart_receiveBufferNotEmpty(USART2));
 		usart_receiveBytes(USART2, c_in, 1);
-		if(c_in[0] == i + 1) {
+		if(c_in[0] == c[0] + 1) {
 			// works, turn on D2
 			gpio_high(GPIOD,3);
 		}
@@ -74,7 +77,7 @@ void testFunction_mgtSleep() {
 			// no work, turn on D3
 			gpio_high(GPIOD, 1);
             valid = false;
-            break;
+            // break;
 		}
 	}
     if(valid) {
@@ -90,27 +93,31 @@ void testFunction_mgtSleep() {
 }
 
 void testFunction_RadioSleep() {
+    // delay_ms(1000);
 	usart_init(USART1, 9600);
+	// usart_init(USART1, 9600);
 	gpio_mode(GPIOD, 14, GPIO_MODER_Output, GPIO_OTYPER_PUSH_PULL, GPIO_OSPEEDR_HIGH, GPIO_PUPDR_NO_PULL);
 	gpio_mode(GPIOD, 3, GPIO_MODER_Output, GPIO_OTYPER_PUSH_PULL, GPIO_OSPEEDR_HIGH, GPIO_PUPDR_NO_PULL);
 	gpio_mode(GPIOD, 1, GPIO_MODER_Output, GPIO_OTYPER_PUSH_PULL, GPIO_OSPEEDR_HIGH, GPIO_PUPDR_NO_PULL);
 	// infinite loop
 	bool valid = true;
-    uint8_t c[] = {0, '\0'};
-	for(unit8_t i = 10; i < 20; i++) {
+    
+	for(uint8_t i = 10; i < 20; i++) {
 		// led_d4(true);
-		c[0] = i;
+		uint8_t c[] = {i, '\0'};
 		gpio_low(GPIOD, 14);
 		delay_ms(5000);
 		gpio_high(GPIOD, 14);
 		gpio_low(GPIOD, 3);
 		gpio_low(GPIOD, 1);
-		// usart_transmitStr(USART2, &c);
 		usart_transmitStr(USART1, &c);
+        // while(true) {
+        //     usart_transmitStr(USART2, &c);
+        // }
 		uint8_t c_in[2];
 		while(!usart_receiveBufferNotEmpty(USART1));
 		usart_receiveBytes(USART1, c_in, 1);
-		if(c_in[0] == i + 1) {
+		if(c_in[0] == c[0] + 1) {
 			// works, turn on D2
 			gpio_high(GPIOD,3);
 		}
@@ -118,7 +125,7 @@ void testFunction_RadioSleep() {
 			// no work, turn on D3
 			gpio_high(GPIOD, 1);
             valid = false;
-            break;
+            // break;
 		}
 	}
     if(valid) {
