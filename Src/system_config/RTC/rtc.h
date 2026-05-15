@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <globals.h>
 #include <core_config.h>
-#include "PWR/sleep.h"
 #include "WDG/watchdog.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
@@ -193,6 +192,13 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  */
 void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day);
 
+/**
+ * @brief Returns the current unix time
+ * 
+ * @return uint32_t The unix time
+ */
+uint32_t rtc_getUnixTime(void);
+
 /********************************* RTC ALARMS ********************************/
 
 /**
@@ -204,7 +210,7 @@ void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day)
  *
  * @returns false if called with an RTC clock other than LSE/LSI
  */
-bool rtc_wakeUp(uint16_t seconds);
+bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)());
 
 /************************** RTC SCHEDULE CALLBACK *****************************/
 

@@ -76,6 +76,9 @@ bool pwm_initTimer(PWM_Channels pwm, uint32_t period);
 */
 void pwm_setDutyCycle(PWM_Channels pwm,  uint8_t percentage);
 
+void pwm_timerOn(PWM_Channels pwm);
+void pwm_timerOff(PWM_Channels pwm);
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
