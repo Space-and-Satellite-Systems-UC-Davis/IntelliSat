@@ -1,8 +1,6 @@
 #include <LED/led.h>
+#include <RTC/rtc.h>
 #include <print_scan.h>
-#include <RTC
-
-bool 
 
 #define SAT_FIRST_RUN_REG RTC->BKP0R
 #define FLAG_SAT_ALREADY_RAN 0x00000001
@@ -24,6 +22,8 @@ typedef enum {
 bool received_uplink() { return true; }
 bool received_ground_signal() { return true; }
 
+void wait30_callback() { rtc_writeToBKPNumber(FLAG_WAIT_DONE, 1); }
+
 void testFunction_Startup_Simulation() {
   MCUState state = INITIAL_CHECKS;
   int t = 0;
@@ -42,27 +42,44 @@ void testFunction_Startup_Simulation() {
       printMsg("t = 30 minutes\r\n");
       t30_printed = true;
     }
-    
+
     switch (state) {
     case INITIAL_CHECKS:
 
-      // Check watchdog
+      // TODO: Check watchdog
 
-      // Check I2C, SPI, UART
+      // TODO: Check I2C, SPI, UART
 
-      // RTC
+      // TODO: Check RTC
+
+      // Has the satellite run the first time?
+      // NO: Save state of satellite
+      // YES: Continue
       if (SAT_FIRST_RUN_REG != FLAG_SAT_ALREADY_RAN) {
         printMsg("RTC has not been run.\r\n");
 
-        // save the state of the satellite
+        printMsg("TODO: save sattelite state.\r\n");
 
-        SAT_FIRST_RUN_REG = FLAG_SAT_ALREADY_RAN;
+        // 1. Remember satellite already ran
+        // 2. Reset the 30 minute wait flag
+        rtc_writeToBKPNumber(FLAG_SAT_ALREADY_RAN, 0);
+        rtc_writeToBKPNumber(0, 1);
+
       } else {
         printMsg("RTC has been run.\r\n");
       }
 
+      // Is the satellite running for the first time / completed the do nothing
+      // for 30 minutes?
+      // NO: do nothing for 30 minutes, use interrupt to wake after 30
+      // YES: skip to the uplink / handshake process
       if (WAIT_30_REG != FLAG_WAIT_DONE) {
-        // reset to initial state
+        printMsg("TODO: reset initial state.\r\n");
+
+
+        // delete previous callbacks and schedule another 30 minute one
+        rtc_deleteAllEntries();
+        rtc_scheduleCallback(0, 30, 0, false, wait30_callback);
 
         state = WAIT_POWER_ON;
         state_start_t = t;
@@ -71,20 +88,25 @@ void testFunction_Startup_Simulation() {
         state_start_t = t;
       }
       break;
-    case WAIT_POWER_ON:
-      if (t - state_start_t >= 30 * 60) {
-        printMsg("power on.\r\n");
-        printMsg("burn wire on.\r\n");
 
-        WAIT_30_REG = FLAG_WAIT_DONE;
+    case WAIT_POWER_ON:
+      // Has the satellite completed the 30 minute wait? 
+      // YES: burn wire on
+      if (WAIT_30_REG == FLAG_WAIT_DONE) {
+        printMsg("TODO: burn wire on.\r\n");
 
         // go initiate wait for handshake
         state = WAITING_FOR_UPLINK;
         state_start_t = t;
       }
       break;
+
     case WAITING_FOR_UPLINK:
       printMsg("Waiting for handshake...\r\n");
+
+      // has satellite received the initial uplink?
+      // YES: Initiate handshake process.
+      // NO: if it's been 2 weeks, go into diagnostics mode and run the burn wire
       if (received_uplink()) {
         printMsg("Uplink received. Peform handshake. \r\n");
 
@@ -112,7 +134,7 @@ void testFunction_Startup_Simulation() {
     case GROUND_TO_SAT_1:
       printMsg("Handshake step 2: waiting for ground -> satellite "
                "confirmation.\r\n");
-
+               
       if (received_ground_signal()) {
         printMsg("Ground confirmation received.\r\n");
 
