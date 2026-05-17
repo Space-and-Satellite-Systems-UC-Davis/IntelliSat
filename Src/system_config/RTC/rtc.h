@@ -96,12 +96,46 @@ void rtc_config(char clock_source, int forced_config);
 
 /**
  * Stores 4 bytes into any of the 32 backup registers on the RTC
+ * NOTE: Used registers are BKP0, BKP1
  *
  * @param bits 	The bits to be stored
  * @param bkp  	The register to store into (an int between 0-31)
  *
  */
 void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
+
+enum FirstTimeStatus {
+  Default = 0, // The default value of BKP
+  // What we set it to on first activation.
+  // Need an intermediate value because we rely on rtc_config in init_platform
+  First = 1,
+  NotFirst = 2 // No longer the first time
+};
+/**
+ * Reads BKP0 to tell whether it's the first time this board was turned on.
+ * NOTE: Not reliable before rtc_configure updates the flag.
+ *
+ * @returns true if it's the first time being on for the board.
+ */
+bool rtc_isFirstTime();
+
+/**
+ * Read bit representing sensor status in BKP1
+ *
+ * @param offset	Which bit to modify out of 32
+ *
+ * @returns status of sensor
+ */
+bool rtc_readFromADCSVariable(uint32_t offset);
+
+/**
+ * Stores bit representing sensor status in BKP1
+ *
+ * @param status 	Whether the sensor is active or not
+ * @param offset  	Which bit to modify out of 32
+ *
+ */
+void rtc_writeToADCSVariable(bool status, uint32_t offset);
 
 /****************************** RTC TIME SETTERS *****************************/
 

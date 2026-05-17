@@ -96,9 +96,9 @@ void init_platform() {
 	printer_init();
 	led_init();
 	buttons_init();
-    dma_initializePeripheralConstants();
-    watchdog_init(WWDG_TIMEOUT_TIME);
-    heartbeat_timer_init();
+	dma_initializePeripheralConstants();
+	watchdog_init(WWDG_TIMEOUT_TIME);
+	heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

@@ -127,6 +127,11 @@ void rtc_config(char clock_source, int forced_config) {
 
 	rtc_closeWritingPrivilege();
 
+	// Unset first_time flag
+	switch (RTC->BKP0R) {
+		case Default: rtc_writeToBKPNumber(First, 0); break;
+		case First: rtc_writeToBKPNumber(NotFirst, 0); break;
+	}
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -304,6 +309,27 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		}
 		rtc_closeWritingPrivilege();
 }
+
+bool rtc_isFirstTime() {
+	if (RTC->BKP0R == Default || RTC->BKP0R == First) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool rtc_readFromADCSVariable(uint32_t offset) {
+	return RTC->BKP1R >> offset;
+}
+void rtc_writeToADCSVariable(bool status, uint32_t offset) {
+	uint32_t variables = RTC->BKP1R;
+
+	variables &= ~(1 << offset);
+	variables |= (status << offset);
+
+	rtc_writeToBKPNumber(variables, 1);
+}
+
 
 /****************************** RTC TIME GETTERS *****************************/
 
