@@ -47,3 +47,11 @@ int vr_task_has_restarted(vr_tasks task) {
         break;
     }
 }
+
+void vr_delay_ms(int ms) {
+    vTaskDelay(pdMS_TO_TICKS(ms));
+}
+
+void vr_get_curr_millis(uint64_t *curr_millis) {
+    *curr_millis = (uint64_t)pdTICKS_TO_MS(xTaskGetTickCount());
+}

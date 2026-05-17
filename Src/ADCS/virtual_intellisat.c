@@ -4,6 +4,13 @@
 #include "../peripherals/IMU/ASM330LHH.h"
 #include <Timers/timers.h>
 
+#if defined(__has_include) && __has_include("FreeRTOS.h")
+    #include "FreeRTOS.h"
+    #include "task.h"
+    #include "virtual_rtos.h"
+    #define VI_HAS_FREERTOS 1
+#endif
+
 /*################## ACTUATOR COMMANDS ##################*/
 
 vi_hdd_command_status
@@ -48,7 +55,11 @@ vi_get_curr_millis_status
 vi_get_curr_millis(
 	uint64_t *curr_millis
 ){
+#ifdef VI_HAS_FREERTOS
+	vr_get_curr_millis(curr_millis);
+#else
 	*curr_millis = getSysTime();
+#endif
 	return GET_CURR_MILLIS_SUCCESS;
 }
 
@@ -192,13 +203,19 @@ vi_delay_ms_status
 vi_delay_ms(
     int ms
 ){
+#ifdef VI_HAS_FREERTOS
+	TickType_t before = xTaskGetTickCount();
+	vr_delay_ms(ms);
+	if ((xTaskGetTickCount() - before) >= pdMS_TO_TICKS(ms))
+		return VI_DELAY_MS_SUCCESS;
+	return VI_DELAY_MS_FAILURE;
+#else
 	uint64_t current = getSysTime();
 	delay_ms(ms);
-	if (getSysTime() >= current + (uint64_t)(ms)){
+	if (getSysTime() >= current + (uint64_t)(ms))
 		return VI_DELAY_MS_SUCCESS;
-	} else {
-		return VI_DELAY_MS_FAILURE;
-	}
+	return VI_DELAY_MS_FAILURE;
+#endif
 }
 
 void vi_print (const char* message){

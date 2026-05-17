@@ -283,6 +283,11 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 	imu_gyroCtrl(gyro_rate, gyro_scale);
 }
 
+void imu_powerDown(void) {
+	imu_acelCtrl(IMU_ODR_OFF, 0, 0);
+	imu_gyroCtrl(IMU_ODR_OFF, 0);
+}
+
 float imu_readAcel_X() {
 
 	uint8_t instructionHi = OUTX_H_A_Pos | IMU_SPI_RW ;	//Where we send Hi instruction

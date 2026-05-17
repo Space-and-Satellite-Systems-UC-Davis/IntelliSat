@@ -91,6 +91,15 @@ void mag_init(int rate, int scale, int oversample) {
 
 }
 
+void mag_powerDown(void) {
+    #if OP_REV == 2 || OP_REV == 1
+        softi2c_writeReg(MAG_I2C_SCL, MAG_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, MAG_MODE_STANDBY);
+    #elif OP_REV == 3
+        softi2c_writeReg(MAG0_I2C_SCL, MAG0_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, MAG_MODE_STANDBY);
+        softi2c_writeReg(MAG1_I2C_SCL, MAG1_I2C_SDA, MAG_ADDR, MAG_CR1_ADDR, MAG_MODE_STANDBY);
+    #endif
+}
+
 int16_t mag_read_X() {
     #if OP_REV == 2 || OP_REV == 1
         int16_t x = softi2c_readRegHighLow(MAG_I2C_SCL, MAG_I2C_SDA, MAG_ADDR, 0x01, 0x00);

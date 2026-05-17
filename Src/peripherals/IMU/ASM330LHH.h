@@ -128,6 +128,11 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale);
 void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
 
 /**
+ * Powers down the IMU by setting accelerometer and gyroscope ODR to zero.
+ */
+void imu_powerDown(void);
+
+/**
  * Reads the X-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
  *
  * @returns The X-axis acceleration value as a 16-bit signed integer.

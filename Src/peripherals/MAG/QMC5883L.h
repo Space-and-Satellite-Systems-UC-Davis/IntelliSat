@@ -87,6 +87,11 @@ typedef enum  {
 void mag_init(int rate, int scale, int oversample);
 
 /**
+ * Powers down the magnetometer by setting mode to standby.
+ */
+void mag_powerDown(void);
+
+/**
  * Reads the x-axis magnetometer value from the OP1 sensor.
  *
  * @returns The x-axis magnetometer value.

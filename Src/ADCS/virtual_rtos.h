@@ -10,6 +10,8 @@
  */
 #pragma once
 
+#include <stdint.h>
+
 
 /**
  * @brief Enter critical section - disables interrupts and scheduler
@@ -31,3 +33,21 @@ void vi_exit_critical();
  * time it ran.
  */
 int vi_task_has_restarted();
+
+
+/**
+ * @brief Sleep for ms milliseconds, yielding to the FreeRTOS scheduler.
+ *
+ * Uses vTaskDelay so the tickless idle hook can fire during the wait,
+ * keeping elapsed time correct across LP Run clock speed changes.
+ */
+void vr_delay_ms(int ms);
+
+
+/**
+ * @brief Write the current FreeRTOS tick count converted to milliseconds.
+ *
+ * The tick count is advanced by vTaskStepTick via the RTC in the tickless
+ * idle hook, so this remains accurate regardless of LP Run clock speed.
+ */
+void vr_get_curr_millis(uint64_t *curr_millis);

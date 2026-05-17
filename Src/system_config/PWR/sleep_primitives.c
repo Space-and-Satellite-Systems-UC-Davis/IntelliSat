@@ -12,13 +12,13 @@
 extern int core_Hz;	// from core_config.h
 
 void PWR_enterLPRunMode(void) {
-	//Optionally, we could power down flash here
-
+	// Disable interrupts across the clock divider write — an ISR firing mid-transition
+	// would execute at an intermediate clock speed with uncalibrated TIM7 delays.
+	__disable_irq();
 	RCC->CFGR &= ~(RCC_CFGR_HPRE);
-	// Divide SYSCLK by 64. 80MHz -> 1.25MHz
-	// Assuming PLL 80MHz SYSCLK
-	RCC->CFGR |= RCC_CFGR_HPRE_DIV64;
+	RCC->CFGR |= RCC_CFGR_HPRE_DIV64; // 80MHz -> 1.25MHz
 	changeCore_Hz(1250000);
+	__enable_irq();
 
 	PWR->CR1 |= PWR_CR1_LPR;
 }
@@ -31,8 +31,10 @@ void PWR_exitLPRunMode(void) {
 
 	wait_with_timeout(is_REGLPF_set, DEFAULT_TIMEOUT_MS);
 
-	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor
+	__disable_irq();
+	RCC->CFGR &= ~(RCC_CFGR_HPRE); // Reset clock divisor (1.25MHz -> 80MHz)
 	changeCore_Hz(80000000);
+	__enable_irq();
 }
 
 bool PWR_armRTC(uint16_t seconds, void (*on_cycle)()) {
