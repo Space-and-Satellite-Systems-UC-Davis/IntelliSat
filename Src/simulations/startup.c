@@ -1,5 +1,14 @@
 #include <LED/led.h>
 #include <print_scan.h>
+#include <RTC
+
+bool 
+
+#define SAT_FIRST_RUN_REG RTC->BKP0R
+#define FLAG_SAT_ALREADY_RAN 0x00000001
+
+#define WAIT_30_REG RTC->BKP1R
+#define FLAG_WAIT_DONE 0x00000001
 
 typedef enum {
   INITIAL_CHECKS,     // initiate MCU
@@ -25,35 +34,49 @@ void testFunction_Startup_Simulation() {
 
   while (true) {
     if (!t0_printed && t >= 0) {
-      printMsg("t = 0\r\n");
+      printMsg("t = 0 minutes\r\n");
       t0_printed = true;
     }
 
-    if (!t30_printed && t == 30) {
-      printMsg("t = 30\r\n");
+    if (!t30_printed && t == 30 * 60) {
+      printMsg("t = 30 minutes\r\n");
       t30_printed = true;
     }
-
+    
     switch (state) {
     case INITIAL_CHECKS:
-      // RTC
-      if (RTC->BKP0R == 0x00000000) {
-        printMsg("RTC has not been run.\r\n");
-      } else {
-        printMsg("RTC has been run.\r\n");
-      }
 
       // Check watchdog
 
       // Check I2C, SPI, UART
 
-      state = WAIT_POWER_ON;
-      state_start_t = t;
+      // RTC
+      if (SAT_FIRST_RUN_REG != FLAG_SAT_ALREADY_RAN) {
+        printMsg("RTC has not been run.\r\n");
+
+        // save the state of the satellite
+
+        SAT_FIRST_RUN_REG = FLAG_SAT_ALREADY_RAN;
+      } else {
+        printMsg("RTC has been run.\r\n");
+      }
+
+      if (WAIT_30_REG != FLAG_WAIT_DONE) {
+        // reset to initial state
+
+        state = WAIT_POWER_ON;
+        state_start_t = t;
+      } else {
+        state = WAITING_FOR_UPLINK;
+        state_start_t = t;
+      }
       break;
     case WAIT_POWER_ON:
-      if (t - state_start_t >= 30) {
+      if (t - state_start_t >= 30 * 60) {
         printMsg("power on.\r\n");
         printMsg("burn wire on.\r\n");
+
+        WAIT_30_REG = FLAG_WAIT_DONE;
 
         // go initiate wait for handshake
         state = WAITING_FOR_UPLINK;
