@@ -40,7 +40,7 @@ void timer_initStartupTimer() {
 
 	// Enable timer interrupt
 	StartupTimer->DIER |= TIM_DIER_UIE;
-	// Enable TIM6 interrupt
+	// Enable TIM5 interrupt
 	NVIC_EnableIRQ(TIM5_IRQn);
 }
 

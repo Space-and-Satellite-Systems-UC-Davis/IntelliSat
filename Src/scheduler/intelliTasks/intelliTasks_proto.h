@@ -28,7 +28,7 @@ void config_idle();
 /* Run methods */
 
 void low_pwr();
-void detumble();
+void run_detumble();
 void comms();
 void experiment();
 void ecc();
