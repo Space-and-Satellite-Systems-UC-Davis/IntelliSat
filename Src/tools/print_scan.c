@@ -30,7 +30,7 @@ int printMsg(const char *message, ...) {
 
 	va_list args;
 	va_start(args, message);
-	vsprintf(buff,message,args);
+	vsnprintf(buff, sizeof(buff), message, args);
 
 	usart_transmitStr(ConsoleUART, buff);
 }
