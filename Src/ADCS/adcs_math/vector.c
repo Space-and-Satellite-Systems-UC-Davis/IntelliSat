@@ -13,39 +13,46 @@
 #include "vector.h"
 #include <math.h>
 
-void vec_set(double x, double y, double z, vec3 *output) {
-    (*output).x = x; //output->x = x;
+void vec_set(double x, double y, double z, vec3 *output)
+{
+    (*output).x = x; // output->x = x;
     (*output).y = y;
     (*output).z = z;
 }
 
-void vec_scalar(double scalar, vec3 vector, vec3 *output) {
+void vec_scalar(double scalar, vec3 vector, vec3 *output)
+{
     vec_set(scalar * (vector.x), scalar * (vector.y), scalar * (vector.z),
             output);
 }
 
-void vec_cross(vec3 left, vec3 right, vec3 *output) {
+void vec_cross(vec3 left, vec3 right, vec3 *output)
+{
     vec_set((left.y * right.z - left.z * right.y),
             (left.z * right.x - left.x * right.z),
             (left.x * right.y - left.y * right.x), output);
 }
 
-void vec_add(vec3 left, vec3 right, vec3 *output) {
+void vec_add(vec3 left, vec3 right, vec3 *output)
+{
     vec_set(left.x + right.x, left.y + right.y, left.z + right.z, output);
 }
 
-void vec_sub(vec3 left, vec3 right, vec3 *output) {
+void vec_sub(vec3 left, vec3 right, vec3 *output)
+{
     vec_set(left.x - right.x, left.y - right.y, left.z - right.z, output);
 }
 
-void vec_bisect(vec3 left, vec3 right, vec3 *output) {
+void vec_bisect(vec3 left, vec3 right, vec3 *output)
+{
     vec3 sum_vector;
     vec_add(left, right, &sum_vector);
 
     vec_scalar(0.5, sum_vector, output);
 }
 
-int vec_norm(vec3 vector, vec3 *output) {
+int vec_norm(vec3 vector, vec3 *output)
+{
     double mag = vec_mag(vector);
 
     if (fabs(mag) < 1e-6) {
@@ -57,9 +64,21 @@ int vec_norm(vec3 vector, vec3 *output) {
     return 0;
 }
 
-double vec_dot(vec3 first, vec3 second) {
+double vec_dot(vec3 first, vec3 second)
+{
     return (first.x) * (second.x) + (first.y) * (second.y) +
            (first.z) * (second.z);
 }
 
 double vec_mag(vec3 vector) { return sqrt(vec_dot(vector, vector)); }
+
+bool vec_equal(vec3 first, vec3 second)
+{
+    if (first.x != second.x)
+        return false;
+    if (first.y != second.y)
+        return false;
+    if (first.z != second.z)
+        return false;
+    return true;
+}

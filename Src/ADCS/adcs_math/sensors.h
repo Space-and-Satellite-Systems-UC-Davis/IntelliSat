@@ -8,13 +8,22 @@
 #ifndef SENSORS_H
 #define SENSORS_H
 
-#include "determination/novasc3.1/novas.h"
-#include "adcs_math/vector.h"
 #include "adcs_math/calibration.h"
+#include "adcs_math/vector.h"
+#include "determination/novasc3.1/novas.h"
 #include "virtual_intellisat.h"
 
 #include <limits.h>
 #include <stdint.h>
+
+
+extern const vec3 undefined_vec3;
+
+
+
+vi_sensor makeSensor(vi_component component, vi_choice choice, vi_axis axis);
+
+vi_choice selectSensor(vi_sensor sensor, int generation);
 
 
 typedef enum getMag{
@@ -24,44 +33,43 @@ typedef enum getMag{
 } getMag_status;
 
 /**
- * @brief Retrive sensor data from Virtual Intellisat and perform calibration 
+ * @brief Retrive sensor data from Virtual Intellisat and perform calibration
  *
- * @param sensor the sensor to read from 
+ * @param sensor the sensor to read from
  * @param prevValue previous sensor value
- * @param currValue the current sensor value to be read 
+ * @param currValue the current sensor value to be read
  */
 getMag_status getMag(vi_sensor sensor, vec3 prevVal, vec3 *currVal);
 
-typedef enum getIMU{
+typedef enum getIMU {
     GET_IMU_SUCCESS,
     GET_IMU_FAILURE,
     IMU_CALIBRATION_FAILURE
 } getIMU_status;
 
 /**
- * @brief Retrive sensor data from Virtual Intellisat and perform calibration 
+ * @brief Retrive sensor data from Virtual Intellisat and perform calibration
  *
- * @param sensor the sensor to read from 
+ * @param sensor the sensor to read from
  * @param prevValue previous sensor value
- * @param currValue the current sensor value to be read 
+ * @param currValue the current sensor value to be read
  */
 getIMU_status getIMU(vi_sensor sensor, vec3 prevVal, vec3 *currVal);
 
-typedef enum getCSS{
+typedef enum getCSS {
     GET_CSS_SUCCESS,
     GET_CSS_FAILURE,
     CSS_CALIBRATION_FAILURE
 } getCSS_status;
 
 /**
- * @brief Retrive sensor data from Virtual Intellisat and perform calibration 
+ * @brief Retrive sensor data from Virtual Intellisat and perform calibration
  *
- * @param sensor the sensor to read from
- * @param face the desired sun sensor face 
+ * @param sensor the sensor to read from 
  * @param prevValue previous sensor value
- * @param currValue the current sensor value to be read 
+ * @param currValue the current sensor value to be read
  */
-getCSS_status getCSS(vi_sensor sensor ,double prevVal, double *currVal);
+getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal);
 
 /**
  * returns 1 if in eclipse, 0 if not
@@ -78,6 +86,6 @@ int is_in_eclipse();
  *
  * @return 1 or 2 The sensor choice. 0 If invalid sensor.
  */
-int sensor_pair_choice(vi_sensor sensor, int generation);
+vi_choice sensor_pair_choice(vi_sensor sensor, int generation);
 
 #endif

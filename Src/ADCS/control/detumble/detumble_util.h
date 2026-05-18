@@ -11,13 +11,11 @@
 
 #include "adcs_math/vector.h"
 #include "control/detumble/detumble.h"
-#include "virtual_intellisat.h"
 #include "math.h"
+#include "virtual_intellisat.h"
 
 #include <stdbool.h>
 #include <stdint.h>
-
-
 
 /**
  * @brief convert the coils current into magnetic field magitude
@@ -30,17 +28,17 @@ double computeB_coils(double current);
 
 /**
  * @brief compute the time needed for the coil's magnetic field to decay
- * 
- * @return 
+ *
+ * @return
  */
 double computeDecay(double B_initial);
 
 /**
- * @brief Perform the delay for the magnetic coils 
+ * @brief Perform the delay for the magnetic coils
  *
  * @return true if the delay was performed sucessfully
  */
-bool detumbleDelay(vec3 mdm);
+bool detumbleDelay();
 
 /**
  * @brief checks if angular velocity exceeds threshold
@@ -50,7 +48,7 @@ bool detumbleDelay(vec3 mdm);
  *
  * @return true if threshold has been exceeded
  */
-bool aboveThreshold(vec3 input, double threshold);
+bool aboveThreshold(vec3 curr, vec3 prev, double threshold);
 
 /**
  * @brief checks if current exceeds threshold

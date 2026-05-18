@@ -10,3 +10,7 @@ For an overview of REALOP's ADCS software, see: https://docs.google.com/document
 - SGP4 by aholinch: https://github.com/aholinch/sgp4
 - SPA by NREL's Ibrahim Reda and Afshin Andreas: https://midcdmz.nrel.gov/spa/
 - IGRF by risherlock: https://github.com/risherlock/ADCS
+
+## License
+See `LICENSE`. Third-party components are licensed separately; see
+`THIRD_PARTY_NOTICES.md`.
