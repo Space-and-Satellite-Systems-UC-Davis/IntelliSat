@@ -10,11 +10,11 @@
 #ifndef ADCS_H
 #define ADCS_H
 
+
 typedef enum {
-    ADCS_DETUMBLE,
-    ADCS_INITIAL_DETUMBLE,
-    ADCS_HDD_EXP_ANGVEL,
-    ADCS_HDD_EXP_TRIAD,
+	ADCS_DETUMBLE,
+	ADCS_HDD_EXP_ANGVEL,
+	ADCS_HDD_EXP_TRIAD,
     ADCS_HDD_EXP_RAMP,
     ADCS_TESTING,
     ADCS_COILS_TESTING,
@@ -24,19 +24,20 @@ typedef enum {
 } adcs_mode; //TODO: full list
 
 typedef enum {
-    ADCS_MAIN_SUCCESS,
-    ADCS_MAIN_UNKNOWN,
-    ADCS_MAIN_ECLIPSE,
-    ADCS_MAIN_HDD_ERR,
-    ADCS_MAIN_IMU_ERR,
-    ADCS_MAIN_DETUMBLE_ERR,
-    ADCS_MAIN_COILS_TESTING_ERR,
-    ADCS_ROTISSERIE_ERR
-} adcs_main_status; // TODO: full list
+   ADCS_MAIN_SUCCESS,
+   ADCS_MAIN_UNKNOWN,
+   ADCS_MAIN_ECLIPSE,
+   ADCS_MAIN_HDD_ERR,
+   ADCS_MAIN_IMU_ERR,
+   ADCS_MAIN_DETUMBLE_ERR,
+   ADCS_MAIN_COILS_TESTING_ERR,
+   ADCS_ROTISSERIE_ERR
+} adcs_main_status; //TODO: full list
+
 
 #ifdef __cplusplus
 extern "C" {
-#endif //__cplusplus
+#endif//__cplusplus
 
 /**@brief Command ADCS to run a mode.
  *
@@ -46,16 +47,20 @@ extern "C" {
  *
  * @return The mode's status code.
  */
-adcs_main_status ADCS_MAIN(adcs_mode mode);
+adcs_main_status
+ADCS_MAIN(adcs_mode mode);
+
 
 /**@brief Ask ADCS to recommend a mode to run.
  *
  * @return The recommended mode.
  */
-adcs_mode ADCS_recommend_mode();
+adcs_mode
+ADCS_recommend_mode();
 
 #ifdef __cplusplus
 }
-#endif //__cplusplus
+#endif//__cplusplus
 
-#endif // ADCS_H
+
+#endif//ADCS_H
