@@ -1,6 +1,7 @@
 #include "control/experiment/PID_experiment.h"
 #include "adcs_math/sensors.h"
 #include "virtual_intellisat.h"
+#include "virtual_ros.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -46,6 +47,12 @@ PID_status PID_experiment(double target, int infinite)
     // Run a while loop
     while (infinite || (fabs(target - angVel_curr.z) > 0.1)) {
 
+        vi_enter_critical();
+        if (vi_task_has_restarted()) {
+            // Return to Schedulers to restart Detumbling
+            return PID_EXPERIMENT_HAS_RESTARTED;
+        }
+
         if (getIMU(imu, angVel_prev, &angVel_curr))
             return PID_EXPERIMENT_ANGVEL_FAILURE;
         // Get the current time (Virtual Intellisat)
@@ -72,6 +79,8 @@ PID_status PID_experiment(double target, int infinite)
             return PID_EXPERIMENT_COMMAND_FAILURE;
 
         angVel_prev = angVel_curr;
+
+        vi_exit_critical();
     }
 
     // Increment generation on successful execution
