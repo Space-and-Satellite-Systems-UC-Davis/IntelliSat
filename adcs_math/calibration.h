@@ -9,19 +9,21 @@
 #ifndef CALIBRATION_H
 #define CALIBRATION_H
 
-#include "vector.h"
+#include "adcs_math/vector.h"
 #include "virtual_intellisat.h"
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef enum { CALIBRATION_SUCESS, CALIBRATION_FAILURE } calibration_status;
+
 /**
- * @brief Implement lowpass filter on sensor raw values to mitigate the effect
- * of noise from abnormally high values
+ * @brief Implement lowpass filter on sensor raw values to mitigate the
+ * effect of noise from abnormally high values
  *
  * @param currValue current sensor raw value
  * @param prevValue previous sensor raw value
- * @param filterConstant constant between 0-1; a greater value is a greater damp
- * on unusually large jumps in sensor data
+ * @param filterConstant constant between 0-1; a greater value is a greater
+ * damp on unusually large jumps in sensor data
  *
  * @return filtered sensor value
  */
@@ -48,24 +50,23 @@ float get_sensor_calibration(float currValue, float prevValue, float offset,
  * @brief perform sensor calibration on sensor readings
  *
  * @param prevVal previous sensor value, used in calibration
- * 
+ *
  * @param currVal current sensor value, calibrated value returned-by-reference
  *
  * @return true if calibration is sucessful, false if otherwise
  */
-bool calibrateDbl(vi_sensor sensor, double prevVal, double *currVal);
-
+calibration_status calibrateDbl(vi_sensor sensor, double prev, double *curr);
 
 /**
  * @brief perform sensor calibration on sensor readings in a vec3 type
  *
  * @param prevVal previous sensor value, used in calibration
- * 
+ *
  * @param currVal current sensor value, calibrated  value returned-by-reference
  *
  * @return true if calibration is sucessful, false if otherwise
  */
-bool calibrateVec3(vi_sensor sensor, vec3 prevVal, vec3 *currVal);
+calibration_status calibrateVec3(vi_sensor sensor, vec3 prevVal, vec3 *currVal);
 
 /**
  * @brief Safely calculate delta_t accounting for integer overflow
@@ -76,5 +77,6 @@ bool calibrateVec3(vi_sensor sensor, vec3 prevVal, vec3 *currVal);
  * @return delta_t change in time
  */
 uint64_t get_delta_t(uint64_t currTime, uint64_t prevTime);
+
 
 #endif

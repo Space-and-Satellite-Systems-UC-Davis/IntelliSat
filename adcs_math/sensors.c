@@ -2,41 +2,66 @@
 
 #define MAX_RETRIES 3
 
+const vec3 undefined_vec3 = { NAN, NAN, NAN };
+
+vi_sensor makeSensor(vi_component component, vi_choice choice, vi_axis axis)
+{
+    vi_sensor sensor;
+    sensor.component = component;
+    sensor.choice = choice;
+    sensor.axis = axis;
+    return sensor;
+}
+
+vi_choice selectSensor(vi_sensor sensor, int generation)
+{
+    // Sensor Alteration
+    sensor.choice = sensor_pair_choice(sensor, generation) == 1 ? ONE : TWO;
+
+    // Logic to swap the sensor is the sensor is OFF
+    sensor_status status;
+    vi_get_sensor_status(sensor, &status);
+    if (status == SENSOR_OFF)
+        sensor.choice = (sensor.choice == ONE) ? TWO : ONE;
+
+    return sensor.choice;
+}
 
 getMag_status getMag(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 {
-    int errorCount; // Local varible to store error occurances
+    int errorCount = 0;
 
-    errorCount = 0;
     while (vi_get_mag(sensor, &(currVal->x), &(currVal->y), &(currVal->z))) {
         errorCount++;
-        if (errorCount >= MAX_RETRIES) return GET_MAG_FAILURE;
+        if (errorCount >= MAX_RETRIES)
+            return GET_MAG_FAILURE;
     };
 
-    errorCount = 0;
-    while (calibrateVec3(sensor, prevVal, currVal)){
+    while (calibrateVec3(sensor, prevVal, currVal) != CALIBRATION_SUCESS) {
         errorCount++;
-        if (errorCount >= MAX_RETRIES) return MAG_CALIBRATION_FAILURE;
+        if (errorCount >= MAX_RETRIES)
+            return MAG_CALIBRATION_FAILURE;
     }
 
     return GET_MAG_SUCCESS;
-
 }
 
 getIMU_status getIMU(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 {
     int errorCount; // Local varible to store error occurances
 
-    errorCount = 0;         
+    errorCount = 0;
     while (vi_get_angvel(sensor, &(currVal->x), &(currVal->y), &(currVal->z))) {
         errorCount++;
-        if (errorCount >= MAX_RETRIES) return GET_IMU_FAILURE;
+        if (errorCount >= MAX_RETRIES)
+            return GET_IMU_FAILURE;
     };
 
     errorCount = 0;
-    while (calibrateVec3(sensor, prevVal, currVal)){
+    while (calibrateVec3(sensor, prevVal, currVal)) {
         errorCount++;
-        if (errorCount >= MAX_RETRIES) return IMU_CALIBRATION_FAILURE;
+        if (errorCount >= MAX_RETRIES)
+            return IMU_CALIBRATION_FAILURE;
     }
 
     return GET_IMU_SUCCESS;
@@ -47,13 +72,15 @@ getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal)
     int errorCount = 0;
     while (vi_get_css(sensor, currVal)) {
         errorCount++;
-        if(errorCount >= 3) return GET_CSS_FAILURE;
+        if (errorCount >= 3)
+            return GET_CSS_FAILURE;
     }
 
-    while(calibrateDbl(sensor, prevVal, currVal)){
+    while (calibrateDbl(sensor, prevVal, currVal)) {
         errorCount++;
-        if(errorCount >= 3) return CSS_CALIBRATION_FAILURE;
-    }                
+        if (errorCount >= 3)
+            return CSS_CALIBRATION_FAILURE;
+    }
 
     return GET_CSS_SUCCESS;
 }
@@ -61,23 +88,24 @@ getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal)
 int is_in_eclipse()
 {
 
-    //static int iteration = 0;
-    //     px1, px2, nx1, nx2, py1, py2, ny1, ny2, pz1, pz2, nz1, nz2;
+    // static int iteration = 0;
+    //      px1, px2, nx1, nx2, py1, py2, ny1, ny2, pz1, pz2, nz1, nz2;
     double readingsOne[6];
     double readingsTwo[6];
-    double prevValOne = 0.0, prevValTwo = 0.0; // TODO: MUST CHANGE
+    double prevValOne = NAN, prevValTwo = NAN;
 
-    vi_sensor sensorOne = {CSS, ONE, PX}; 
-    vi_sensor sensorTwo = {CSS, TWO, PX};
+    vi_sensor sensorOne = { CSS, ONE, PX };
+    vi_sensor sensorTwo = { CSS, TWO, PX };
 
     for (int face = PX; face <= NZ; face++) {
+
+        // Set sensor face to current face
+        sensorOne.axis = face;
+        sensorTwo.axis = face;
+
         // Get Readings from sensor
         getCSS(sensorOne, prevValOne, &readingsOne[face - 1]);
         getCSS(sensorTwo, prevValTwo, &readingsTwo[face - 1]);
-
-        // Increment to next set of sensors
-        // sensorOne.field.css_choice++;
-        // sensorTwo.field.css_choice++;
     }
 
     double sum = 0;
@@ -87,7 +115,7 @@ int is_in_eclipse()
 
     double magnitude = sqrt(sum);
 
-    //iteration++;
+    // iteration++;
 
     if (magnitude <= 0.25) {
         return 1;
@@ -142,7 +170,7 @@ static const char alternations[256] = {
     0b00001011, 0b00001111, 0b01100010, 0b00000000
 };
 
-int sensor_pair_choice(vi_sensor sensor, int generation)
+vi_choice sensor_pair_choice(vi_sensor sensor, int generation)
 {
     int mask = 0;
     switch (sensor.component) {
@@ -165,8 +193,8 @@ int sensor_pair_choice(vi_sensor sensor, int generation)
     }
 
     if ((alternations[generation % 256] | (1 << mask)) != 0) {
-        return 2;
+        return TWO;
     } else {
-        return 1;
+        return ONE;
     }
 }

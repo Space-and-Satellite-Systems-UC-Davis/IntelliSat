@@ -339,19 +339,24 @@ vi_get_sensor_calibration(
 );
 
 
+typedef enum{
+    SENSOR_ON = 0,
+    SENSOR_OFF = 1
+} sensor_status;
+
 /**
  * @brief Get the current status (on/off) of a given sensor.
  *
  * @param sensor we want calibration for.
  *        (w/ component, choice, axis)
- * @param status (boolean) for Return-by-reference pointer.
+ * @param status (enum) for Return-by-reference pointer.
  *
  * @return vi_get_constant_status A return code (SUCESS / FAILURE).
  */
 vi_get_constant_status
 vi_get_sensor_status(
 	vi_sensor sensor,
-	int *sensor_status
+    sensor_status *status
 );
 
 

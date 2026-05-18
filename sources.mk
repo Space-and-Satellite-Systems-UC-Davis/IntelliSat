@@ -1,7 +1,7 @@
 SOURCES := \
     ADCS.c \
     $(wildcard adcs_math/*.c) \
-    control/bdot/bdot_control.c \
+    control/detumble/bdot_control.c \
     control/detumble/detumble.c \
     control/detumble/detumble_util.c \
     $(wildcard control/experiment/*.c) \

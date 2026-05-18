@@ -5,11 +5,12 @@
 #include "determination/mag_lookup/mag_lookup.h"
 #include "determination/pos_lookup/pos_lookup.h"
 #include "determination/sun_lookup/sun_lookup.h"
+#include "determination/sun_sensors/sun_sensors.h"
 
+#include "adcs_math/calibration.h"
 #include "adcs_math/matrix.h"
 #include "adcs_math/sensors.h"
 #include "adcs_math/vector.h"
-#include "adcs_math/calibration.h"
 
 #include "ADCS.h"
 #include "virtual_intellisat.h"
@@ -38,43 +39,45 @@ static determination_cache cache;
 // TODO: Write function to get all 12 sun sensor readings
 // TODO: Implement logic to turn CSS readings into a vec3
 
-vi_get_css_status get_measured_sun(int generation, vec3 *measured_sun) {
+vi_get_css_status get_measured_sun(int generation, vec3 *measured_sun)
+{
 
-    //px_choice, nx_choice, py_choice, ny_choice, pz_choice, nz_choice;
+    // px_choice, nx_choice, py_choice, ny_choice, pz_choice, nz_choice;
     vi_sensor sensors[6]; // PX, NX, PY, NY, PZ, NZ
-    double currVals[6];   
-    static double prevVals[6];  // Not sure how that could be implemented
+    double currVals[6];
+    static double prevVals[6] = { NAN, NAN, NAN, NAN, NAN, NAN };
 
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < 6; i++) {
         sensors[i].component = CSS;
     }
 
     for (int i = 0; i < 6; i++) {
-        sensors[i].choice = 
-            sensor_pair_choice(sensors[i], generation) == 1 ? ONE : TWO; 
+        sensors[i].choice = selectSensor(sensors[i], generation);
     }
 
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < 6; i++) {
         if (getCSS(sensors[i], prevVals[i], &(currVals[i])))
             return VI_GET_CSS_FAILURE;
     }
 
     // Implement logic to combine readings into vector
-    *measured_sun = (vec3){0.0, 0.0, 0.0};
+    *measured_sun = (vec3){ 0.0, 0.0, 0.0 };
+    estimate_sun_photodiodes(currVals, measured_sun);
 
-    //Clone currVals into prevVals;
+    // Clone currVals into prevVals;
     memcpy(prevVals, currVals, sizeof(currVals));
 
     return VI_GET_CSS_SUCCESS;
 }
 
-determination_status determination(mat3 *attitude) {
+determination_status determination(mat3 *attitude)
+{
 
     int year, month, day, hour, minute, second;
 
     vec3 measured_mag;
     vec3 measured_sun;
-    vec3 mag_prev = (vec3){0, 0, 0};
+    vec3 mag_prev = undefined_vec3;
 
     vi_sensor magnotometer;
     magnotometer.component = MAG;
@@ -119,14 +122,14 @@ determination_status determination(mat3 *attitude) {
     vi_get_TLE_status tle_status = vi_get_TLE(tle_line1, tle_line2);
 
     switch (tle_status) {
-    case GET_TLE_FAILURE:
-        return DET_NO_TLE;
-    case GET_TLE_SUCCESS_OLD:
-        break;
-    case GET_TLE_SUCCESS_NEW:
-        update_IGRF = 1;
-        break;
-        // update IGRF when we get a new TLE, including the 1st time
+        case GET_TLE_FAILURE:
+            return DET_NO_TLE;
+        case GET_TLE_SUCCESS_OLD:
+            break;
+        case GET_TLE_SUCCESS_NEW:
+            update_IGRF = 1;
+            break;
+            // update IGRF when we get a new TLE, including the 1st time
     }
 
     double longitude;
@@ -157,14 +160,14 @@ determination_status determination(mat3 *attitude) {
     }
 
     switch (pos_status) {
-    case SGP4_ERROR:
-        return DET_POS_LOOKUP_ERROR;
-    case TEME2ITRS_ERROR:
-        return DET_POS_LOOKUP_ERROR;
-    case ITRS2LLA_ERROR:
-        return DET_POS_LOOKUP_ERROR;
-    case POS_LOOKUP_SUCCESS:
-        break;
+        case SGP4_ERROR:
+            return DET_POS_LOOKUP_ERROR;
+        case TEME2ITRS_ERROR:
+            return DET_POS_LOOKUP_ERROR;
+        case ITRS2LLA_ERROR:
+            return DET_POS_LOOKUP_ERROR;
+        case POS_LOOKUP_SUCCESS:
+            break;
     }
 
     vec3 reference_sun;
@@ -182,14 +185,14 @@ determination_status determination(mat3 *attitude) {
     }
 
     switch (sun_status) {
-    case SUN_LOOKUP_BAD_DATE:
-        return DET_POS_LOOKUP_ERROR;
-    case SUN_LOOKUP_BAD_ENVIRONMENT:
-        return DET_POS_LOOKUP_ERROR;
-    case SUN_LOOKUP_BAD_LLA:
-        return DET_POS_LOOKUP_ERROR;
-    case SUN_LOOKUP_SUCCESS:
-        break;
+        case SUN_LOOKUP_BAD_DATE:
+            return DET_POS_LOOKUP_ERROR;
+        case SUN_LOOKUP_BAD_ENVIRONMENT:
+            return DET_POS_LOOKUP_ERROR;
+        case SUN_LOOKUP_BAD_LLA:
+            return DET_POS_LOOKUP_ERROR;
+        case SUN_LOOKUP_SUCCESS:
+            break;
     }
 
     vec3 reference_mag;
@@ -200,11 +203,11 @@ determination_status determination(mat3 *attitude) {
             igrf_set_date_time(year, month, day, hour, minute, second);
 
         switch (igrf_time_status) {
-        // TODO: use 'default' approximate time if out of bounds?
-        case IGRF_SET_DATE_OUT_OF_BOUNDS:
-            return DET_IGRF_TIME_ERROR;
-        case IGRF_SET_DATE_SUCCESS:
-            break;
+            // TODO: use 'default' approximate time if out of bounds?
+            case IGRF_SET_DATE_OUT_OF_BOUNDS:
+                return DET_IGRF_TIME_ERROR;
+            case IGRF_SET_DATE_SUCCESS:
+                break;
         }
     }
 
@@ -221,10 +224,10 @@ determination_status determination(mat3 *attitude) {
         measured_sun, measured_mag, reference_sun, reference_mag, attitude);
 
     switch (triad_status) {
-    case TRIAD_NORM_FAILURE:
-        return DET_TRIAD_ERROR;
-    case TRIAD_SUCCESS:
-        break;
+        case TRIAD_NORM_FAILURE:
+            return DET_TRIAD_ERROR;
+        case TRIAD_SUCCESS:
+            break;
     }
 
     // Increment generation on successful execution
@@ -233,7 +236,8 @@ determination_status determination(mat3 *attitude) {
     return DET_SUCCESS;
 }
 
-void get_earth_direction(vec3 *earth_attitude) {
+void get_earth_direction(vec3 *earth_attitude)
+{
 
     mat3 attitude;
     determination(&attitude);
@@ -243,29 +247,34 @@ void get_earth_direction(vec3 *earth_attitude) {
     mat_vec_mult(attitude, down, earth_attitude);
 }
 
-determination_status get_moon_direction(vec3 *moon_attitude) {
-    
+determination_status get_moon_direction(vec3 *moon_attitude)
+{
+
     int delta_t = 69;
 
     int year, month, day, hour, minute, second;
-    
+
     // Get current Time
-    //vi_get_epoch_status epoch_status = vi_get_epoch(&year, &month, &day, &hour, &minute, &second);
+    // vi_get_epoch_status epoch_status = vi_get_epoch(&year, &month, &day,
+    // &hour, &minute, &second);
     if (vi_get_epoch(&year, &month, &day, &hour, &minute, &second) ==
         GET_EPOCH_FAILURE)
-        return DET_EPOCH_FAILURE; //TODO: fix error handling w/ return type
+        return DET_EPOCH_FAILURE; // TODO: fix error handling w/ return type
 
     // adding delta_t = 69 seconds to UTC to convert to TT
-    double TT = julian_date(year, month, day, hour + minute / 60.0 + (second + delta_t) / 3600.0); 
-    double UTC = julian_date(year, month, day, hour + minute / 60.0 + second / 3600.0);
+    double TT = julian_date(year, month, day,
+                            hour + minute / 60.0 + (second + delta_t) / 3600.0);
+    double UTC =
+        julian_date(year, month, day, hour + minute / 60.0 + second / 3600.0);
 
     static object moon;
     cat_entry null_star;
     static short int first_time = 1;
 
     if (first_time) {
-        make_cat_entry ("NULL_STAR","   ",0L,0.0,0.0,0.0,0.0,0.0,0.0, &null_star);
-        make_object (0,11,"Moon",&null_star, &moon);
+        make_cat_entry("NULL_STAR", "   ", 0L, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                       &null_star);
+        make_object(0, 11, "Moon", &null_star, &moon);
         first_time = 0;
     }
     observer location;
@@ -275,50 +284,57 @@ determination_status get_moon_direction(vec3 *moon_attitude) {
     double geocentric_radius;
     double geocentric_latitude;
     pos_lookup_status pos_status;
-    char *tle_line1;
-    char *tle_line2;
+    char *tle_line1 = NULL;
+    char *tle_line2 = NULL;
 
     vi_get_TLE_status tle_status = vi_get_TLE(tle_line1, tle_line2);
-    
+
     switch (tle_status) {
-    case GET_TLE_FAILURE:
-        return DET_NO_TLE;
-    case GET_TLE_SUCCESS_OLD:
-        break;
-    case GET_TLE_SUCCESS_NEW:
-        break;
+        case GET_TLE_FAILURE:
+            return DET_NO_TLE;
+        case GET_TLE_SUCCESS_OLD:
+            break;
+        case GET_TLE_SUCCESS_NEW:
+            break;
     }
 
     pos_status =
-            pos_lookup(tle_line1, tle_line2, UTC, 0.0, &longitude, &latitude,
-                       &altitude, &geocentric_radius, &geocentric_latitude);
+        pos_lookup(tle_line1, tle_line2, UTC, 0.0, &longitude, &latitude,
+                   &altitude, &geocentric_radius, &geocentric_latitude);
 
     switch (pos_status) {
-    case SGP4_ERROR:
-        return DET_POS_LOOKUP_ERROR;
-    case TEME2ITRS_ERROR:
-        return DET_POS_LOOKUP_ERROR;
-    case ITRS2LLA_ERROR:
-        return DET_POS_LOOKUP_ERROR;
-    case POS_LOOKUP_SUCCESS:
-        break;
+        case SGP4_ERROR:
+            return DET_POS_LOOKUP_ERROR;
+        case TEME2ITRS_ERROR:
+            return DET_POS_LOOKUP_ERROR;
+        case ITRS2LLA_ERROR:
+            return DET_POS_LOOKUP_ERROR;
+        case POS_LOOKUP_SUCCESS:
+            break;
     }
 
-    double pos[3] = {longitude, latitude, altitude}; // get current satellite position x, y, z
-    double vel[3] = {0, 0, 0}; // get current satellite velocity vx, vy, vz
-    make_observer_in_space(pos, vel, &location); // check if we can assume that satellite is in space or it could also be on the surface
+    double pos[3] = { longitude, latitude,
+                      altitude }; // get current satellite position x, y, z
+    double vel[3] = { 0, 0, 0 };  // get current satellite velocity vx, vy, vz
+    make_observer_in_space(
+        pos, vel, &location); // check if we can assume that satellite is in
+                              // space or it could also be on the surface
 
     sky_pos output;
     // local gcrs coordinate system
-    place(TT, &moon, &location, delta_t, 0, 0, &output); // arg6: check if need full accuracy (0) or reduced accuracy (1) is fine
+    place(TT, &moon, &location, delta_t, 0, 0,
+          &output); // arg6: check if need full accuracy (0) or reduced accuracy
+                    // (1) is fine
 
     // convert from geocentric to topocentric
     double x = output.r_hat[0];
     double y = output.r_hat[1];
     double z = output.r_hat[2];
     double u = -x * sin(longitude) + y * cos(longitude);
-    double v = (-x * sin(latitude) * cos(longitude)) - (y * sin(latitude) * sin(longitude)) + (z * cos(latitude)); 
-    double w = (x * cos(latitude) * cos(longitude)) + (y * cos(latitude) * sin(longitude)) + (z * sin(latitude)); 
+    double v = (-x * sin(latitude) * cos(longitude)) -
+               (y * sin(latitude) * sin(longitude)) + (z * cos(latitude));
+    double w = (x * cos(latitude) * cos(longitude)) +
+               (y * cos(latitude) * sin(longitude)) + (z * sin(latitude));
     vec3 topo_moon_vec;
     // reverse w and swap u and v
     vec_set(v, u, -w, &topo_moon_vec);
@@ -326,6 +342,8 @@ determination_status get_moon_direction(vec3 *moon_attitude) {
     mat3 attitude;
     determination(&attitude);
     mat_vec_mult(attitude, topo_moon_vec, moon_attitude);
-    //convert output (of type sky_pos) to vec3 type
-    //moon_attitude = output.r_hat;
+    // convert output (of type sky_pos) to vec3 type
+    // moon_attitude = output.r_hat;
+
+    return DET_SUCCESS;
 }

@@ -1,4 +1,5 @@
-/**@file vector.h
+/**
+ * @file vector.h
  *
  * @brief Interface for 3D vector utility functions.
  *
@@ -8,13 +9,16 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <stdbool.h>
+
 typedef struct Vector3 {
     double x;
     double y;
     double z;
 } vec3; // Use "vec3" as the type.
 
-/**@brief Load the output vector with the given values.
+/**
+ * @brief Load the output vector with the given values.
  *
  * @param x,y,z The values to load into the output vector.
  * @param output The vec3* that will hold the resulting vector.
@@ -23,7 +27,8 @@ typedef struct Vector3 {
  */
 void vec_set(double x, double y, double z, vec3 *output);
 
-/**@brief Multiply a vector by a scalar value.
+/**
+ * @brief Multiply a vector by a scalar value.
  *
  * Also consider this a method of scalar division!
  *
@@ -35,7 +40,8 @@ void vec_set(double x, double y, double z, vec3 *output);
  */
 void vec_scalar(double scalar, vec3 vector, vec3 *output);
 
-/**@brief Perform a cross product on two vectors.
+/**
+ * @brief Perform a cross product on two vectors.
  *
  * The cross product is NONCOMMUTATIVE!
  * 	left x right != right x left.
@@ -48,7 +54,8 @@ void vec_scalar(double scalar, vec3 vector, vec3 *output);
  */
 void vec_cross(vec3 left, vec3 right, vec3 *output);
 
-/**@brief Add two vectors element-by-element.
+/**
+ * @brief Add two vectors element-by-element.
  *
  * @param first,second The vectors to add.
  * @param output The vec3* that will hold the result of the addition.
@@ -57,7 +64,8 @@ void vec_cross(vec3 left, vec3 right, vec3 *output);
  */
 void vec_add(vec3 first, vec3 second, vec3 *output);
 
-/**@brief Subtract two vectors element-by-element
+/**
+ * @brief Subtract two vectors element-by-element
  *
  * @param first, second The vectors to subtract.
  * @param output The vec3* that will hold the result of the subtraction.
@@ -66,7 +74,8 @@ void vec_add(vec3 first, vec3 second, vec3 *output);
  */
 void vec_sub(vec3 first, vec3 second, vec3 *output);
 
-/**@brief Find the bisector of two vectors.
+/**
+ * @brief Find the bisector of two vectors.
  *
  * In this implementation, the bisector's length is the average of the
  * 	input vectors' length. If you only want information about the direction
@@ -79,7 +88,8 @@ void vec_sub(vec3 first, vec3 second, vec3 *output);
  */
 void vec_bisect(vec3 first, vec3 second, vec3 *output);
 
-/**@brief Normalize a vector (stretch length to 1).
+/**
+ * @brief Normalize a vector (stretch length to 1).
  *
  * It is likely that the length of a vector normalized with this
  *  function will not be exactly 1.0. There is imprecision involved!
@@ -92,7 +102,8 @@ void vec_bisect(vec3 first, vec3 second, vec3 *output);
  */
 int vec_norm(vec3 vector, vec3 *output);
 
-/**@brief Calculate the dot product of two vectors.
+/**
+ * @brief Calculate the dot product of two vectors.
  *
  * @param first,second The vectors to dot.
  *
@@ -100,7 +111,8 @@ int vec_norm(vec3 vector, vec3 *output);
  */
 double vec_dot(vec3 first, vec3 second);
 
-/**@brief Calculate the magnitude (length) of a vector.
+/**
+ * @brief Calculate the magnitude (length) of a vector.
  *
  * The magnitude of a vector is strictly non-negative.
  *
@@ -109,5 +121,15 @@ double vec_dot(vec3 first, vec3 second);
  * @return The magnitude of the vector.
  */
 double vec_mag(vec3 vector);
+
+/**
+ * @brief Compares two vectors
+ *
+ * @param first the first vector
+ * @param second the second vector
+ *
+ * @return true if both vectors are identical
+ */
+bool vec_equal(vec3 first, vec3 second);
 
 #endif // VECTOR_H
