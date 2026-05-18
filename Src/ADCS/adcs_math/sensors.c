@@ -1,9 +1,22 @@
 #include "sensors.h"
+#include "matrix.h"
 
 #define MAX_RETRIES 3
 
+// Note: sensor calibration is performed in the body frame.
+// Ultimately, as long as prevVal and currVal are in the same frame,
+//  the calibration routine will work. Our approach is to convert
+//  all values to the body frame before applying any calibration.
+
 const vec3 undefined_vec3 = { NAN, NAN, NAN };
 
+const mat3 mag_to_body_transform = { 1.0, 0.0, 0.0,
+                                     0.0, 1.0, 0.0,
+                                     0.0, 0.0, 1.0 };
+
+const mat3 imu_to_body_transform = { 1.0, 0.0, 0.0,
+                                     0.0, 1.0, 0.0,
+                                     0.0, 0.0, 1.0 };
 vi_sensor makeSensor(vi_component component, vi_choice choice, vi_axis axis)
 {
     vi_sensor sensor;
@@ -31,12 +44,18 @@ getMag_status getMag(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 {
     int errorCount = 0;
 
+    // Temporarily store mag-frame values in currVal
     while (vi_get_mag(sensor, &(currVal->x), &(currVal->y), &(currVal->z))) {
         errorCount++;
         if (errorCount >= MAX_RETRIES)
             return GET_MAG_FAILURE;
     };
 
+    // Transform the mag-frame values into the satellite's body frame
+    mat_vec_mult(mag_to_body_transform, *currVal, currVal);
+
+    // Output calibrated body-frame values to currVal (return-by-reference)
+    errorCount = 0;
     while (calibrateVec3(sensor, prevVal, currVal) != CALIBRATION_SUCESS) {
         errorCount++;
         if (errorCount >= MAX_RETRIES)
@@ -48,15 +67,19 @@ getMag_status getMag(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 
 getIMU_status getIMU(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 {
-    int errorCount; // Local varible to store error occurances
+    int errorCount = 0; // Local varible to store error occurances
 
-    errorCount = 0;
+    // Temporarily store imu-frame values in currVal
     while (vi_get_angvel(sensor, &(currVal->x), &(currVal->y), &(currVal->z))) {
         errorCount++;
         if (errorCount >= MAX_RETRIES)
             return GET_IMU_FAILURE;
     };
 
+    // Transform the imu-frame values into the satellite's body frame
+    mat_vec_mult(imu_to_body_transform, *currVal, currVal);
+
+    // Output calibrated body-frame values to currVal (return-by-reference)
     errorCount = 0;
     while (calibrateVec3(sensor, prevVal, currVal)) {
         errorCount++;
@@ -76,6 +99,7 @@ getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal)
             return GET_CSS_FAILURE;
     }
 
+    errorCount = 0;
     while (calibrateDbl(sensor, prevVal, currVal)) {
         errorCount++;
         if (errorCount >= 3)

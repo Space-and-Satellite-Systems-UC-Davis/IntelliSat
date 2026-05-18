@@ -14,7 +14,8 @@
 pos_lookup_status pos_lookup(char *tle_line1, char *tle_line2, double UTC1,
                              double UTC2, double *longitude, double *latitude,
                              double *altitude, double *geocentric_radius,
-                             double *geocentric_latitude) {
+                             double *geocentric_latitude)
+{
     TLE tle;
 
     double realop_position_TEME[3];
@@ -37,6 +38,8 @@ pos_lookup_status pos_lookup(char *tle_line1, char *tle_line2, double UTC1,
     realop_position_TEME[0] *= 1000.0;
     realop_position_TEME[1] *= 1000.0;
     realop_position_TEME[2] *= 1000.0;
+
+    // Check the radius for some reason... jacob can't remember why
 
     (*geocentric_radius) =
         sqrt(realop_position_TEME[0] * realop_position_TEME[0] +
