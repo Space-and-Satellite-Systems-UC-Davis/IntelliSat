@@ -11,23 +11,16 @@
 #include "print_scan.h"
 
 int crc_wait(USART_TypeDef *bus) {
-    uint8_t ack[MAX_MESSAGE_BYTES];
-    memset(ack, 0, sizeof ack);
-    int count = usart_receiveBytes(bus, ack, MAX_MESSAGE_BYTES);
-    printMsg("<%s>\r\n", ack);
-    bool acked = false;
-    for (int i = 0; i < sizeof ack; i++) {
-        if (ack[i] == 'A') acked = true;
-    }
-    return acked - (count < 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
+    uint8_t ack = '\0';
+    int count = usart_receiveBytes(bus, &ack, 1);
+    return (ack == 'A') - (count != 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
+
 }
 
 void crc_ack(USART_TypeDef *bus) {
-    uint8_t ack[MAX_MESSAGE_BYTES];
-    memset(ack, 0, sizeof ack);
+    uint8_t ack[1];
     ack[0] = 'A';
-    usart_transmitBytes(bus, ack, sizeof ack);
-    printMsg("ACK\r\n");
+    usart_transmitBytes(bus, ack, 1);
 }
 
 /**
@@ -81,8 +74,9 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
     buffer[nbytes + breaks + 1] = ';';
     int ack = 0;
     for (int attempts = 0; attempts < 5; attempts++) {
-        usart_transmitBytes(bus, buffer, MAX_MESSAGE_BYTES);
+        usart_transmitBytes(bus, buffer, nbytes+breaks+2);
         ack = crc_wait(bus);
+        printMsg("ACK = %d", ack);
         if (ack != -1) break;
     }
     return ack;

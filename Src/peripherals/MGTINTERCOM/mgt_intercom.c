@@ -24,7 +24,7 @@ bool mgt_intercom_setCoilPercent(int coil_number, int percentage) {
     payload[1] = coil_number + '0';
     payload[2] = ' ';
     payload[3] = percentage;
-    return crc_transmit(MGT_USART_BUS, payload, 4);
+    return crc_transmit(MGT_USART_BUS, payload, 4) != 1;
 }
 
 float mgt_intercom_getCurrent(int coil_number) {

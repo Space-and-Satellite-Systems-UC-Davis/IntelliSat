@@ -30,7 +30,7 @@ void mgt_intercom_init();
   * @param coil_number  The number of the coil whose PWM is being set
   * @param percent  The PWM percentage (0-100)
   * 
-  * @returns Boolean denoting whether the MGT side responded
+  * @returns Boolean denoting whether the MGT side responded (1 == response, 0 == no response)
   */
 bool mgt_intercom_setCoilPercent(int coil_number, int percentage);
 

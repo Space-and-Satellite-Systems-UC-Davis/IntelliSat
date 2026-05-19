@@ -17,6 +17,7 @@
  */
 
 #include "uart.h"
+#include <LED/led.h>
 
 /** IMPORTANT: Dealing with Revision Changes
  * Things to change across revisions:
@@ -417,7 +418,7 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 
 	uint64_t start_time = getSysTime(); //time in ms
 	uint16_t sz = 0;
-	while ((sz < size) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))) {
+	while ((sz < size) && !(is_time_out(start_time, 10))) {
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
@@ -455,10 +456,12 @@ void USART1_IRQHandler() {
 }
 
 void USART2_IRQHandler() {
+	led_d3(true);
 	if (USART2->ISR & USART_ISR_RXNE) {
 		USART2->ISR &= ~USART_ISR_RXNE;
 #if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
 		enqueueBuffer(USART2_RxBuffer, USART2);
+
 #endif
 	}
 	if (USART2->ISR & USART_ISR_RTOF) {
@@ -467,6 +470,7 @@ void USART2_IRQHandler() {
 		USART2_RxBuffer.timedout = true;
 #endif
 	}
+	led_d3(false);
 }
 
 void USART3_IRQHandler() {
