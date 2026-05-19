@@ -20,8 +20,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-extern Taskhandle_t detumbleHandle;
-extern Taskhandle_t experimentHandle;
+extern TaskHandle_t detumbleHandle;
+extern TaskHandle_t experimentHandle;
 
 typedef enum {
     VR_DETUMBLE,
@@ -40,10 +40,10 @@ void vr_exit_critical() {
 int vr_task_has_restarted(vr_tasks task) {
     switch (task) {
         case VR_DETUMBLE:
-        ulTaskNotifyTake(detumbleHandle, 0)
+        ulTaskNotifyTake(detumbleHandle, 0);
         break;
         case VR_EXPERIMENT:
-        ulTaskNotifyTake(experimentHandle, 0)
+        ulTaskNotifyTake(experimentHandle, 0);
         break;
     }
 }
