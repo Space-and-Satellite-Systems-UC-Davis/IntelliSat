@@ -20,6 +20,8 @@ extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
 extern void testFunction_RadioIntercom();
+extern void testFunction_mgtSleep();
+extern void testFunction_RadioSleep();
 extern void testFunction_RTC_storage();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -64,6 +66,10 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LPSleep;
 		case 26:
 			return testFunction_RTC_storage;
+		case 27:
+			return testFunction_mgtSleep;
+		case 28:
+			return testFunction_RadioSleep;
 		default:
 			return testFunction_Nothing;
 	}
