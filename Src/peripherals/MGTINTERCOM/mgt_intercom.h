@@ -60,13 +60,21 @@ bool mgt_intercom_shutdownAll();
   */
 bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir);
 
- /**
-  * Shut down a specific timer
-  * 
-  * @param timer_number  The coil # of the timer to be turned off
-  * 
-  * @returns Boolean denoting whether the MGT side responded
-  */
+
+/**
+* Shut down the entire magnetorquer
+* 
+* @returns Boolean success
+*/
+bool mgt_killall();
+  
+/**
+* Shut down a specific timer
+* 
+* @param timer_number  The coil # of the timer to be turned off
+* 
+* @returns Boolean denoting whether the MGT side responded
+*/
 bool mgt_intercom_shutdownTimer(int timer_number);
 
 

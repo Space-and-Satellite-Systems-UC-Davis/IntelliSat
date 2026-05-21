@@ -1,0 +1,23 @@
+name: C CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  merge_group:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: make project
+      run: make
+    - name: groundstation
+      run: cd groundstation && make

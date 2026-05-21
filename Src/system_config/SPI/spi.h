@@ -36,7 +36,7 @@
 #define SPI2_CS			  GPIOB,12
 #define SPI3_CS			  UNUSED_GPIO
 
-#elif OP_REV == 2 
+#elif OP_REV == 2
 
 #define SPI1_CS			  GPIOA,4
 #define SPI2_CS			  UNUSED_GPIO

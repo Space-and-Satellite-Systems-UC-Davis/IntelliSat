@@ -1,0 +1,12 @@
+# CompileFlags:
+#   CompilationDatabase: "Debug/compile_commands.json"
+
+# Other common configuration options (optional)
+# Diagnostics:
+#   ClangTidy:
+#     Add: ["*"]
+#     Remove: ["modernize-use-trailing-return-type"]
+
+# InlayHints:
+#   Enabled: Yes
+#   ParameterNames: Yes
