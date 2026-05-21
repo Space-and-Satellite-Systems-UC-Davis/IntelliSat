@@ -605,6 +605,8 @@ bool rtc_deleteEntry(uint32_t id) {
 
 			setAlarm();
 
+			id_counter--;
+
 			return true;
 		}
 	}
