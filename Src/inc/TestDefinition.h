@@ -17,7 +17,7 @@ extern void testFunction_watchdog();
 extern void testFunction_getCalendar();
 extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
-// extern void testFunction_mgtIntercom();
+extern void testFunction_mgtIntercom();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
