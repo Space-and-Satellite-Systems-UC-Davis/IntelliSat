@@ -127,11 +127,8 @@ void rtc_config(char clock_source, int forced_config) {
 
 	rtc_closeWritingPrivilege();
 
-	// Unset first_time flag
-	switch (RTC->BKP0R) {
-		case Default: rtc_writeToBKPNumber(First, 0); break;
-		case First: rtc_writeToBKPNumber(NotFirst, 0); break;
-	}
+	// Increment boot counter
+	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -311,23 +308,23 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 }
 
 bool rtc_isFirstTime() {
-	if (RTC->BKP0R == Default || RTC->BKP0R == First) {
+	if (RTC->BKP0R == 0 || RTC->BKP0R == 1) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
-bool rtc_readFromADCSVariable(uint32_t offset) {
-	return RTC->BKP1R >> offset;
+bool rtc_readFromADCSVariable(SensorOffset offset) {
+	return RTC->BKP1R >> (uint32_t) offset;
 }
-void rtc_writeToADCSVariable(bool status, uint32_t offset) {
+void rtc_writeToADCSVariable(bool status, SensorOffset offset) {
 	uint32_t variables = RTC->BKP1R;
 
-	variables &= ~(1 << offset);
-	variables |= (status << offset);
+	variables &= ~(1 << (uint32_t) offset);
+	variables |= (status << (uint32_t) offset);
 
-	rtc_writeToBKPNumber(variables, 1);
+	rtc_writeToBKPNumber(variables, ADCSVars);
 }
 
 

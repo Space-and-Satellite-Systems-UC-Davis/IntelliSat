@@ -602,4 +602,5 @@
 			<resource resourceType="PROJECT" workspacePath="/IntelliSat"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="scannerConfiguration"/>
 </cproject>

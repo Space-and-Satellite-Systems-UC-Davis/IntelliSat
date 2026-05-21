@@ -10,38 +10,52 @@
 // WARNING: THIS TEST REQUIRES SEVERAL RUNS.
 void testFunction_RTC_storage() {
 	// Uncomment if you want to clear first flag
-	//rtc_writeToBKPNumber(0, 0);
+//	rtc_writeToBKPNumber(0, 0);
 	switch (RTC->BKP0R) {
-		case Default:
+		case 0:
 			printMsg("Flag is in Default after-erase state. This should not happen if called after init\n");
 			break;
-		case First:
+		case 1:
 			printMsg("Flag has been initialized to First time state\n");
 			break;
-		case NotFirst:
-			printMsg("Flag is in Not First state\n");
-			break;
 		default:
+			printMsg("Flag is in Not First state. Boot counter is >1\n");
+			break;
+
 	}
 
+	printMsg("\n");
 	bool first = rtc_isFirstTime();
-	printMsg("First time: %s", first ? "true" : "false");
+	printMsg("First time: %s\n", first ? "true" : "false");
 
-	printMsg("State of previous ADCS Variables: %d", RTC->BKP1R);
+	printMsg("State of previous ADCS Variables: %d\n", RTC->BKP1R);
 
 	// Clear ADCS vars
 	rtc_writeToBKPNumber(0, 1);
-	printMsg("State of cleared ADCS Variables: %d", RTC->BKP1R);
+	printMsg("State of cleared ADCS Variables: %d\n", RTC->BKP1R);
 
-	rtc_writeToADCSVariable(true, 0);
-	rtc_writeToADCSVariable(true, 1);
-	rtc_writeToADCSVariable(true, 31);
-	rtc_writeToADCSVariable(true, 30);
+	rtc_writeToADCSVariable(true, Sun0);
+	rtc_writeToADCSVariable(true, Sun1);
+	rtc_writeToADCSVariable(true, Coil1);
+	rtc_writeToADCSVariable(true, Hdd0);
 
-	printMsg("New state ADCS Variables: %d", RTC->BKP1R);
+	printMsg("New state ADCS Variables: %d\n", RTC->BKP1R);
 
-	printMsg("State of variable at offset 1: %d", rtc_readFromADCSVariable(1));
-	printMsg("State of variable at offset 13: %d", rtc_readFromADCSVariable(13));
+	printMsg("State of variable at offset Sun1: %d\n", rtc_readFromADCSVariable(Sun1));
+	printMsg("State of variable at offset Hdd0: %d\n", rtc_readFromADCSVariable(Hdd0));
+	printMsg("State of variable at offset Hdd1: %d\n", rtc_readFromADCSVariable(Hdd1));
 
 	nop(1);
+
+	/* EXPECTED OUTPUT, ASSUMING ONE CLEARS THE FIRST TIME FLAG AAND THEN RUNS
+	Flag has been initialized to First time state
+
+	First time: true
+	State of previous ADCS Variables: 532483
+	State of cleared ADCS Variables: 0
+	New state ADCS Variables: 532483
+	State of variable at offset Sun1: 1
+	State of variable at offset Hdd0: 1
+	State of variable at offset Hdd1: 0
+	 */
 }

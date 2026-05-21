@@ -104,12 +104,9 @@ void rtc_config(char clock_source, int forced_config);
  */
 void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
 
-enum FirstTimeStatus {
-  Default = 0, // The default value of BKP
-  // What we set it to on first activation.
-  // Need an intermediate value because we rely on rtc_config in init_platform
-  First = 1,
-  NotFirst = 2 // No longer the first time
+enum BKPDesignations {
+  BootCounter = 0,
+  ADCSVars = 1,
 };
 /**
  * Reads BKP0 to tell whether it's the first time this board was turned on.
@@ -119,6 +116,15 @@ enum FirstTimeStatus {
  */
 bool rtc_isFirstTime();
 
+typedef enum SensorOffset_enum {
+	Sun0=0, Sun1, Sun2, Sun3, Sun4, Sun5, Sun6,
+	Sun7, Sun8, Sun9, Sun10, Sun11,
+	Coil0, Coil1, Coil2,
+	Imu0, Imu1,
+	Mag0, Mag1,
+	Hdd0, Hdd1
+} SensorOffset;
+
 /**
  * Read bit representing sensor status in BKP1
  *
@@ -126,7 +132,7 @@ bool rtc_isFirstTime();
  *
  * @returns status of sensor
  */
-bool rtc_readFromADCSVariable(uint32_t offset);
+bool rtc_readFromADCSVariable(SensorOffset offset);
 
 /**
  * Stores bit representing sensor status in BKP1
@@ -135,7 +141,7 @@ bool rtc_readFromADCSVariable(uint32_t offset);
  * @param offset  	Which bit to modify out of 32
  *
  */
-void rtc_writeToADCSVariable(bool status, uint32_t offset);
+void rtc_writeToADCSVariable(bool status, SensorOffset offset);
 
 /****************************** RTC TIME SETTERS *****************************/
 
