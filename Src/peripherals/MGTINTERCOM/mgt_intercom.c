@@ -12,6 +12,7 @@
 #include <globals.h>
 #include <MGTINTERCOM/mgt_intercom.h>
 #include "UART/crc.h"
+#include <tools/print_scan.h>
 
 
 void mgt_intercom_init() {
@@ -24,7 +25,7 @@ bool mgt_intercom_setCoilPercent(int coil_number, int percentage) {
     payload[1] = coil_number + '0';
     payload[2] = ' ';
     payload[3] = percentage;
-    return crc_transmit(MGT_USART_BUS, payload, 4) != 1;
+    return crc_transmit(MGT_USART_BUS, payload, 4) == 1;
 }
 
 float mgt_intercom_getCurrent(int coil_number) {
@@ -32,9 +33,13 @@ float mgt_intercom_getCurrent(int coil_number) {
 	payload[0] = 'C';
 	payload[1] = coil_number + '0';
 	crc_transmit(MGT_USART_BUS, payload, 2);
-	float buffer[64];
+	uint8_t buffer[64];
+    printMsg("preread");
 	if (crc_read(MGT_USART_BUS, buffer) < 0) return -1;
-	return buffer[0];
+    float value;
+    memcpy(&value, buffer, sizeof(float)); 
+    printMsg("float: %f", value);
+	return value;
 }
 
 bool mgt_intercom_shutdownAll() {
@@ -54,7 +59,7 @@ bool mgt_intercom_turnOnTimer(int timer_number) {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'T';
     payload[1] = timer_number + '0';
-    return crc_transmit(MGT_USART_BUS, payload, 2);
+    return crc_transmit(MGT_USART_BUS, payload, 2) == 1;
 }
 
  bool mgt_killall() {

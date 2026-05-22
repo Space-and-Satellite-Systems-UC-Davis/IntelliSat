@@ -73,10 +73,13 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
     buffer[nbytes + breaks] = remainder;
     buffer[nbytes + breaks + 1] = ';';
     int ack = 0;
+    for(int i = 0; i<nbytes+breaks+2; i++){
+        printMsg("%c", buffer[i]);
+    }
     for (int attempts = 0; attempts < 5; attempts++) {
         usart_transmitBytes(bus, buffer, nbytes+breaks+2);
         ack = crc_wait(bus);
-        printMsg("ACK = %d", ack);
+        // printMsg("ACK = %d", ack);
         if (ack != -1) break;
     }
     return ack;
@@ -84,11 +87,24 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     uint8_t buffer[MAX_MESSAGE_BYTES];
-    int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
+    memset(buffer, 0, sizeof(buffer));
+    uint8_t temp[1];
+
+    int size = 0;
+    do{
+        usart_receiveBytes(bus, temp, 1);
+        buffer[size] = temp[0];
+        size++;
+    }while(buffer[size-1] != ';' && size < MAX_MESSAGE_BYTES);
+    printMsg("MSG: ");
+    for(int i = 0; i<size; i++){
+        printMsg("%02x ", buffer[i]);
+    }
+    printMsg("\r\n");
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
+    printMsg("HERE");
     if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
-    printMsg("R: %s\r\n", buffer);
     crc_ack(bus);
     int breaks = 0;
     for (int index = 0; index + breaks < size && index < MAX_PAYLOAD_BYTES; index++) {
