@@ -43,14 +43,14 @@ float mgt_intercom_getCurrent(int coil_number) {
 bool mgt_intercom_shutdownAll() {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'D';
-    return crc_transmit(MGT_USART_BUS, payload, 1);
+    return crc_transmit(MGT_USART_BUS, payload, 1) == 1;
 }
 
 bool mgt_intercom_shutdownTimer(int timer_number) {
     uint8_t payload[MAX_MESSAGE_BYTES];
     payload[0] = 'F';
     payload[1] = timer_number + '0';
-    return crc_transmit(MGT_USART_BUS, payload, 2);
+    return crc_transmit(MGT_USART_BUS, payload, 2) == 1;
 }
 
 bool mgt_intercom_turnOnTimer(int timer_number) {
@@ -63,7 +63,7 @@ bool mgt_intercom_turnOnTimer(int timer_number) {
  bool mgt_killall() {
    uint8_t payload[MAX_MESSAGE_BYTES];
    payload[0] = 'K';
-   return crc_transmit(MGT_USART_BUS, payload, 1);
+   return crc_transmit(MGT_USART_BUS, payload, 1) == 1;
 }
 
 bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir) {
@@ -76,5 +76,5 @@ bool mgt_intercom_setCoilDirection(int coilNumber, DIRECTION dir) {
 	} else {
 	   payload[3] = 'L';
 	}
-	return crc_transmit(MGT_USART_BUS, payload, 4);
+	return crc_transmit(MGT_USART_BUS, payload, 4) == 1;
 }

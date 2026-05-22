@@ -418,7 +418,7 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 
 	uint64_t start_time = getSysTime(); //time in ms
 	uint16_t sz = 0;
-	while ((sz < size) && !(is_time_out(start_time, 50))) {
+	while ((sz < size) && !(is_time_out(start_time, MGTTIMEOUT))) {
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
@@ -456,7 +456,6 @@ void USART1_IRQHandler() {
 }
 
 void USART2_IRQHandler() {
-	led_d3(true);
 	if (USART2->ISR & USART_ISR_RXNE) {
 		USART2->ISR &= ~USART_ISR_RXNE;
 #if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
@@ -470,7 +469,6 @@ void USART2_IRQHandler() {
 		USART2_RxBuffer.timedout = true;
 #endif
 	}
-	led_d3(false);
 }
 
 void USART3_IRQHandler() {

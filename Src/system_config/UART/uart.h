@@ -19,6 +19,8 @@
 #include <GPIO/gpio.h>
 #include <string.h>
 
+#define MGTTIMEOUT 50
+
 /*
  * Initializes the UART hardware to conduct UART communication with
  * 1 start bit, 8 data bits, 1 stop bits, No parity

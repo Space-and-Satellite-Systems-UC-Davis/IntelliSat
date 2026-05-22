@@ -20,6 +20,16 @@
 #define MAX_MESSAGE_BYTES ( MAX_INTERNAL_BYTES ) / 2
 
 /**
+ * Waits for an ack
+ * 
+ * @param bus
+ * 
+ * @returns integer denoting ack status, receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
+ */
+int crc_wait(USART_TypeDef *bus);
+
+
+/**
  * Sends an ack
  * 
  * @param bus
