@@ -13,7 +13,6 @@
 int crc_wait(USART_TypeDef *bus) {
     uint8_t ack = '\0';
     int count = usart_receiveBytes(bus, &ack, 1);
-    // printMsg("ACK GOT %c", ack);
     return (ack == 'A') - (count != 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
 
 }

@@ -418,7 +418,7 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 
 	uint64_t start_time = getSysTime(); //time in ms
 	uint16_t sz = 0;
-	while ((sz < size) && !(is_time_out(start_time, MGTTIMEOUT))) {
+	while ((sz < size) && !(is_time_out(start_time, 100))) {
 		if (rxbuff->front != rxbuff->rear) {	// rxbuff not empty
 			buffer[sz++] = rxbuff->buffer[rxbuff->front];
 			rxbuff->front = (rxbuff->front + 1) % ReceiveBufferLen;
