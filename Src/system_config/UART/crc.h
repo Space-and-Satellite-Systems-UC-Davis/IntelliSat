@@ -20,6 +20,15 @@
 #define MAX_MESSAGE_BYTES ( MAX_INTERNAL_BYTES ) / 2
 
 /**
+ * Sends an ack
+ * 
+ * @param bus
+ * 
+ * @returns nothing
+ */
+void crc_ack(USART_TypeDef *bus);
+
+/**
  * Transmit a message. Assumes the message is small enough
  * (< 128 bytes, can be as large as 253 bytes if the message doesn't require breaks)
  *

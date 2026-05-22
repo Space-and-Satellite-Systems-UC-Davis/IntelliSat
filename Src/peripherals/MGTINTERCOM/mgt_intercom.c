@@ -33,13 +33,11 @@ float mgt_intercom_getCurrent(int coil_number) {
 	payload[0] = 'C';
 	payload[1] = coil_number + '0';
 	crc_transmit(MGT_USART_BUS, payload, 2);
-	uint8_t buffer[64];
-    printMsg("preread");
+    usart_flushrx(MGT_USART_BUS);
+    crc_ack(MGT_USART_BUS);
+	float buffer[64];
 	if (crc_read(MGT_USART_BUS, buffer) < 0) return -1;
-    float value;
-    memcpy(&value, buffer, sizeof(float)); 
-    printMsg("float: %f", value);
-	return value;
+	return buffer[0];
 }
 
 bool mgt_intercom_shutdownAll() {

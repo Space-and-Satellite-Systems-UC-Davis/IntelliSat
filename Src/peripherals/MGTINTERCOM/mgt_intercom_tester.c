@@ -15,8 +15,8 @@ void testFunction_mgtIntercom() {
         printMsg("SetCoilPercent: to %d,  %d\r\n", i, code2);
         i+=25;
 
-        // float current = mgt_intercom_getCurrent(0);
-        // printMsg("Got current = %f\r\n", current);
+        float current = mgt_intercom_getCurrent(0);
+        printMsg("Got current = %f\r\n", current);
         delay_ms(5000);
         // mgt_intercom_shutdownTimer(0);
         // mgt_intercom_shutdownTimer(0);
