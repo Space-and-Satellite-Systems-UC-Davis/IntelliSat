@@ -28,7 +28,7 @@ log_record_idle fill_log_idle() {
     uint8_t dummyUInt8_t;
 
     // WIP
-    // uint8_t boot_number;
+    log.boot_number = (uint8_t)(RTC->BKP0R);
 
 
     // DONE
