@@ -127,6 +127,8 @@ void rtc_config(char clock_source, int forced_config) {
 
 	rtc_closeWritingPrivilege();
 
+	// Increment boot counter
+	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -304,6 +306,27 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		}
 		rtc_closeWritingPrivilege();
 }
+
+bool rtc_isFirstTime() {
+	if (RTC->BKP0R == 0 || RTC->BKP0R == 1) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool rtc_readFromADCSVariable(SensorOffset offset) {
+	return RTC->BKP1R >> (uint32_t) offset;
+}
+void rtc_writeToADCSVariable(bool status, SensorOffset offset) {
+	uint32_t variables = RTC->BKP1R;
+
+	variables &= ~(1 << (uint32_t) offset);
+	variables |= (status << (uint32_t) offset);
+
+	rtc_writeToBKPNumber(variables, ADCSVars);
+}
+
 
 /****************************** RTC TIME GETTERS *****************************/
 
@@ -604,6 +627,8 @@ bool rtc_deleteEntry(uint32_t id) {
 			);
 
 			setAlarm();
+
+			id_counter--;
 
 			return true;
 		}
