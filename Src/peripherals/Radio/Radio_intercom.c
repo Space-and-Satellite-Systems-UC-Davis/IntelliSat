@@ -13,6 +13,7 @@
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"
+#include "log_record.h"
 
 bool talking;
 
@@ -49,6 +50,19 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
     if (crc_transmit(RADIO_USART, header, 2)) {
         return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
     }
+}
+
+/**
+ * Sends the log beacon to the radio to be send via radio to our home radio.
+ * 
+ * @param chunk  The data to be sent
+ * @param nbytes  The size of the data to be sent.
+ * 
+ * @returns success or failure
+ */
+bool radio_push_beacon(log_record_idle log) {
+    uint8_t logArray[sizeof(log_record_idle)] = (uint8_t*)(&log);
+    return radio_push(logArray, sizeof(log_record_idle))
 }
 
 /**
