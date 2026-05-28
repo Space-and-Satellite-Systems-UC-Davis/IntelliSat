@@ -22,6 +22,10 @@ void run_tests()
 
     add_suite(&registry, &suite);
     
-    run_registry(&registry);
+    while(1){
+        run_registry(&registry);
+        delay_ms(5000);
+    }
+    
 
 }
