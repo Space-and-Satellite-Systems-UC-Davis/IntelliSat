@@ -16,6 +16,8 @@
 #include "IMU/ASM330LHH.h"
 #include "SunSensors/sun_sensors.h"
 
+
+#define NOT_IMPLEMENTED 0
 /**
  * 
  * Fills the log_record_idle struct for sending to the Radio.
@@ -43,22 +45,22 @@ log_record_idle fill_log_idle() {
 
 
     // WIP
-    // uint8_t last_action_taken;
-    // uint8_t last_uplink_year;
-    // uint8_t last_uplink_month;
-    // uint8_t last_uplink_date;
-    // uint8_t last_uplink_hour;
-    // uint8_t last_uplink_minute;
-    // uint8_t last_uplink_second;
-    // uint8_t num_new_experiments;
+    log.last_action_taken = NOT_IMPLEMENTED;
+    log.last_uplink_year = NOT_IMPLEMENTED;
+    log.last_uplink_month = NOT_IMPLEMENTED;
+    log.last_uplink_date = NOT_IMPLEMENTED;
+    log.last_uplink_hour = NOT_IMPLEMENTED;
+    log.last_uplink_minute = NOT_IMPLEMENTED;
+    log.last_uplink_second = NOT_IMPLEMENTED;
+    log.num_new_experiments = NOT_IMPLEMENTED;
 
 
     // WIP
     // float batt_level;
     log.batt_level = pwrmon_getBusVoltage(BATMON_GPIO, BATMON_SCL, BATMON_SDA);
-    // float batt_7_day_low;
-    // float batt_7_day_avg;
-    // float batt_7_day_high;
+    log.batt_7_day_low = NOT_IMPLEMENTED;
+    log.batt_7_day_avg = NOT_IMPLEMENTED;
+    log.batt_7_day_high = NOT_IMPLEMENTED;
 
 
 
@@ -132,12 +134,12 @@ log_record_idle fill_log_idle() {
     log.temp_ny = reading >= 0 ? (uint8_t)(reading * 255) : 0;
 
     // WIP
-    log.error_msg = 0; //dont worry, we dont ever have errors :)
+    log.error_msg = NOT_IMPLEMENTED;
 
 
-    // mat3 attitude; // TODO: convert to euler angles
+    log.attitude = {0, 0, 0, 0, 0, 0, 0, 0, 0}; // TODO: convert to euler angles
 
 
-    // unsigned int is_in_eclipse : 1;
+    log.is_in_eclipse = NOT_IMPLEMENTED;
     return log;
 }
