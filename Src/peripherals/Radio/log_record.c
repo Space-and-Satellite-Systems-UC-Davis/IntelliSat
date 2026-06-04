@@ -10,8 +10,8 @@
  * 
  ********************************************************/
 
-#include "log_record.h"
-#include "rtc.h"
+#include "RADIO/log_record.h"
+#include "RTC/rtc.h"
 #include "MAG/QMC5883L.h"
 #include "IMU/ASM330LHH.h"
 #include "SunSensors/sun_sensors.h"
@@ -137,7 +137,7 @@ log_record_idle fill_log_idle() {
     log.error_msg = NOT_IMPLEMENTED;
 
 
-    log.attitude = {0, 0, 0, 0, 0, 0, 0, 0, 0}; // TODO: convert to euler angles
+    log.attitude = (mat3){0}; // TODO: convert to euler angles
 
 
     log.is_in_eclipse = NOT_IMPLEMENTED;

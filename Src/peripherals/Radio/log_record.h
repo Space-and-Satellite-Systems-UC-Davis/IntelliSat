@@ -2,6 +2,7 @@
 
 //#include "adcs_math.h"
 #include "ADCS.h"
+#include "adcs_math/matrix.h"
 
 
 /**
