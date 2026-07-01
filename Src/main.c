@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "stm32l476xx.h"
 
+#define BARE_METAL      1   // 1 = run IntelliSat, 0 = run Schedulers main
 #define RUN_TEST	    0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	    0	// ID of the test to run in case RUN_TEST = 1
 #define RTOS_TEST       0   // 0 to run branch_main, 1 to run branch_test
@@ -55,12 +56,15 @@ int main() {
     #elif (RUN_TEST == 0) && (RUN_UNIT_TESTS == 1)
 	    run_tests();
     #else
-        // #if RTOS_TEST
-        //     test_main();
-        // #else
-        //     branch_main();
-        // #endif
-        while(1);
+        #if (BARE_METAL)
+                while (1);
+        #else
+            #if RTOS_TEST
+                test_main();
+            #else
+                branch_main();
+            #endif
+        #endif
     #endif
     return 0;
 }
