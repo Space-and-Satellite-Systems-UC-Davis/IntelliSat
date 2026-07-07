@@ -3,6 +3,9 @@
 # .cproject
 # .project
 
+#vscode
+.vscode/
+
 #settings
 .settings/
 

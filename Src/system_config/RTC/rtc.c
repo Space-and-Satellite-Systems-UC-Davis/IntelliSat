@@ -15,6 +15,7 @@
  */
 
 #include "rtc.h"
+#include <stdint.h>
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Callbacks for the timers are stored here.
@@ -23,6 +24,10 @@ CallbackEntry callbacks[TIMER_CALLBACK_ARRAY_SIZE];
 
 //Incremeted every time a callback is added to be unique. Not index.
 uint32_t id_counter = 0;
+
+uint32_t getUnixTime(uint32_t d_seconds, uint32_t d_minutes, uint32_t d_hours);
+
+static void (*on_cycle_callback)() = NULL;
 
 void init_callbacks() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
@@ -122,6 +127,8 @@ void rtc_config(char clock_source, int forced_config) {
 
 	rtc_closeWritingPrivilege();
 
+	// Increment boot counter
+	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -300,6 +307,27 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		rtc_closeWritingPrivilege();
 }
 
+bool rtc_isFirstTime() {
+	if (RTC->BKP0R == 0 || RTC->BKP0R == 1) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool rtc_readFromADCSVariable(SensorOffset offset) {
+	return RTC->BKP1R >> (uint32_t) offset;
+}
+void rtc_writeToADCSVariable(bool status, SensorOffset offset) {
+	uint32_t variables = RTC->BKP1R;
+
+	variables &= ~(1 << (uint32_t) offset);
+	variables |= (status << (uint32_t) offset);
+
+	rtc_writeToBKPNumber(variables, ADCSVars);
+}
+
+
 /****************************** RTC TIME GETTERS *****************************/
 
 void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second) {
@@ -383,6 +411,12 @@ void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day)
 	*day = (dr_reg & RTC_DR_WDU_Msk) >> RTC_DR_WDU_Pos;
 }
 
+uint32_t rtc_getUnixTime(void) {
+	uint8_t h, m, s;
+	rtc_getTime(&h, &m, &s);
+	return getUnixTime(s,m,h);
+}
+
 /******************************** RTC WAKEUP *********************************/
 
 //Watchdog will be mad if we don't notify it every ~32 seconds
@@ -392,7 +426,8 @@ const uint16_t MAX_SLEEP = 30; // in seconds, must be under 32
 bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
 
 // There are ways to allow it to wait longer if we need to
-bool rtc_wakeUp(uint16_t seconds) {
+bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)()) {
+	on_cycle_callback = on_cycle;
 	// Only LSI and LSE will be on for Stop modes.
 	// Stop modes not currently implemented
 	uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
@@ -415,7 +450,10 @@ bool rtc_wakeUp(uint16_t seconds) {
 
 	RTC->CR &= ~(RTC_CR_WUTE); //clear
 	//Can't access WUCKSEL/WUT otherwise
-	wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+	// wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+	// ^^ Replaced with below since TIM 7 is diabled when in low power sleep
+	uint32_t timeout = 1000000;
+	while(!(RTC -> ISR & RTC_ISR_WUTWF) && timeout--);
 
 	//Set auto-reload to number of seconds we wait
 	RTC->WUTR &= ~(RTC_WUTR_WUT);
@@ -456,6 +494,7 @@ void RTC_WKUP_IRQHandler() {
 	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
 	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off wake-up interrupt
+		on_cycle_callback = NULL;
 		return; // Do not maintain sleep
 	} else if (sleep_cycles == 1) {
 		RTC->CR &= ~(RTC_CR_WUTE);
@@ -482,7 +521,7 @@ void RTC_WKUP_IRQHandler() {
 	}
 
 	sleep_cycles--;
-	PWR_maintainLPSleep();
+	if (on_cycle_callback != NULL) on_cycle_callback();
 
 	rtc_closeWritingPrivilege();
 }
@@ -588,6 +627,8 @@ bool rtc_deleteEntry(uint32_t id) {
 			);
 
 			setAlarm();
+
+			id_counter--;
 
 			return true;
 		}

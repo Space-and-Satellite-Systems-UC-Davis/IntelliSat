@@ -21,6 +21,9 @@ extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
 extern void testFunction_RadioIntercom();
 extern void testFunction_DMA_USART();
+extern void testFunction_mgtSleep();
+extern void testFunction_RadioSleep();
+extern void testFunction_RTC_storage();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -50,7 +53,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_watchdog;
 		case 16:
 			return testFunction_mgtIntercom;
-    case 17:
+		case 17:
 			return testFunction_AssTest;
 		case 18:
 			return testFunction_RTC_Alarm;
@@ -58,11 +61,17 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_getCalendar;
 		case 20:
 			return testFunction_DMA_ADC;
-    case 21:
+		case 21:
 			return testFunction_RadioIntercom;
 		case 23:
 			return testFunction_LPSleep;
-		case 29:
+		case 26:
+			return testFunction_RTC_storage;
+		case 27:
+			return testFunction_mgtSleep;
+		case 28:
+			return testFunction_RadioSleep;
+ 		case 29:
 			return testFunction_DMA_USART;
 		default:
 			return testFunction_Nothing;

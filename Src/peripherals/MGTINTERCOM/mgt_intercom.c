@@ -57,7 +57,7 @@ bool mgt_intercom_turnOnTimer(int timer_number) {
     return crc_transmit(MGT_USART_BUS, payload, 2);
 }
 
-bool mgt_killall() {
+ bool mgt_killall() {
    uint8_t payload[MAX_MESSAGE_BYTES];
    payload[0] = 'K';
    return crc_transmit(MGT_USART_BUS, payload, 1);
