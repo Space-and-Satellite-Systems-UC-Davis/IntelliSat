@@ -20,6 +20,7 @@ extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
 extern void testFunction_RadioIntercom();
+extern void testFunction_DMA_USART();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -61,6 +62,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RadioIntercom;
 		case 23:
 			return testFunction_LPSleep;
+		case 29:
+			return testFunction_DMA_USART;
 		default:
 			return testFunction_Nothing;
 	}
