@@ -93,7 +93,7 @@ PFC2RadioState radio_get_state();
  */
 void radio_killall();
 
-bool radio_downlink(uint8_t chunk[], size_t nchunks);
+bool radio_downlink(size_t nchunks);
 
 void echo();
 
