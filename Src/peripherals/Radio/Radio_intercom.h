@@ -26,7 +26,7 @@ typedef enum {
     UploadData = 'U', //Transfer data to PFC
 	SendState = 'S', //Send state to PFC
 	TransferToGround = 'T', //Transfer data to ground station
-    KillAll = 'K', // Kill the satelite
+    kYs = 'Y', // Kill the satelite
 } PFC2RadioMessageType;
 
 //Tells PFC what type of data is being sent
