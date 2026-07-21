@@ -6,6 +6,13 @@
 
 void testFunction_RadioIntercom() {
     radio_init();
+    while(true){
+        char str[12] = "HelloWorld!";
+        printMsg("SENDING MSG!\r\n");
+        radio_push(str, 11);
+        printMsg("State: %d\r\n", radio_get_state());
+        delay_ms(1000);
+    }
     while (true) {
         uint8_t chunk[CHUNK_LENGTH*4];
         for (int i = 0; i < CHUNK_LENGTH*4; i++) {
