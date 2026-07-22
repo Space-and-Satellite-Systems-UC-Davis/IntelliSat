@@ -49,7 +49,8 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
     uint8_t header[2];
     header[0] = 'D';
     header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
-    if (crc_transmit(RADIO_USART, header, 2)) {
+    header[2] = nbytes % CHUNK_LENGTH; //remainder, to calculate total num bytes
+    if (crc_transmit(RADIO_USART, header, 3)) {
         return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
     }
 }
