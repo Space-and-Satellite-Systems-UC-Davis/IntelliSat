@@ -97,7 +97,7 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	dma_initializePeripheralConstants();
-	watchdog_init(WWDG_TIMEOUT_TIME);
+//	watchdog_init(WWDG_TIMEOUT_TIME);
 	heartbeat_timer_init();
 }
 

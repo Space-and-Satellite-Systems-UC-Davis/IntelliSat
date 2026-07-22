@@ -10,10 +10,12 @@
  * 
  ********************************************************/
 
+#pragma once
+
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"
-#include "log_record.h"
+#include "ADCS/logging_records.h"
 
 bool talking;
 

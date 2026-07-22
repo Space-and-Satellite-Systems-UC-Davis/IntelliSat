@@ -10,11 +10,7 @@
  * 
  ********************************************************/
 
-#include "RADIO/log_record.h"
-#include "RTC/rtc.h"
-#include "MAG/QMC5883L.h"
-#include "IMU/ASM330LHH.h"
-#include "SunSensors/sun_sensors.h"
+#include "log_record.h"
 
 
 #define NOT_IMPLEMENTED 0
