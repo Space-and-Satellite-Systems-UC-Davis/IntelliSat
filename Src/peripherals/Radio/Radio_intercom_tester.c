@@ -7,9 +7,9 @@
 void testFunction_RadioIntercom() {
     radio_init();
     while(true){
-        char str[12] = "HelloWorld!";
+        char str[200] = "Hello World! I hope you are receiving this message right now :) I just wanted to test if like 200 characters worked through the intercom. Hope you have a lot of fun debugging everything radio! yippee!";
         printMsg("SENDING MSG!\r\n");
-        radio_push(str, 11);
+        radio_push(str, 200);
         printMsg("State: %d\r\n", radio_get_state());
         delay_ms(1000);
     }

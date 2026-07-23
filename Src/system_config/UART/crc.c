@@ -137,11 +137,10 @@ int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks)
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = 0;
     for (int i = 0; i < nchunks; i++) {
-        if (crc_read(bus, subchunk) == -1) continue;
-        if (subchunk[0] == i) read += lchunks;
-        if (subchunk[0] > nchunks) return -1;
-        // printMsg("RC: %s (%d / %d)\r\n", &subchunk[1], read/lchunks, nchunks);
-        memcpy(buf + subchunk[0]*lchunks, &subchunk[1], lchunks);
+        int size = crc_read(bus, subchunk);
+        memcpy(buf + read, &subchunk[1], size-1);
+        if (subchunk[0] == i) read += size-1;
+        if (subchunk[0] >= nchunks) return -1;
     }
     return read;
 }
