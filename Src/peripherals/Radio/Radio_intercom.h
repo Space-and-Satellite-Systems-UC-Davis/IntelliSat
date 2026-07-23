@@ -78,7 +78,7 @@ RadioPacket radio_force_pull(uint8_t chunk[]);
  * 
  * @returns number of bytes read and the data type
  */
-RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType datatype);
+RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType datatype);
 
 /**
  * Retrieve the radio's state
@@ -96,5 +96,7 @@ void radio_killall();
 bool radio_downlink(uint8_t chunk[], size_t nchunks);
 
 void echo();
+
+void initEmptyChunk(uint8_t chunk[]);
 
 #endif /* __RADIO_INTERCOM__ */

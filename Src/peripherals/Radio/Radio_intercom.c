@@ -68,7 +68,8 @@ RadioPacket radio_force_pull(uint8_t chunk[]) {
     if (!crc_transmit(RADIO_USART, "U", 1)) return fail;
     uint8_t buffer[MAX_PAYLOAD_BYTES];
     crc_read(RADIO_USART, buffer);
-    return radio_pull(chunk, buffer[1], buffer[2]);
+    int totalBytes = (buffer[1]-1) * CHUNK_LENGTH + buffer[2];
+    return radio_pull(chunk, totalBytes, buffer[3]);
 }
 
 /**
@@ -79,15 +80,15 @@ RadioPacket radio_force_pull(uint8_t chunk[]) {
  * 
  * @returns number of bytes read and the data type
  */
-RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType datatype) {
+RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType datatype) {
     RadioPacket fail;
     fail.size = 0;
     fail.datatype = 0;
     if (!are_talking()) return fail;
-    uint8_t subchunk[MAX_PAYLOAD_BYTES];
-    int read = crc_chunked_read(RADIO_USART, chunk, CHUNK_LENGTH, nchunks);
+    int nchunks = (nbytes-1)/CHUNK_LENGTH + 1;
+    crc_chunked_read(RADIO_USART, chunk, CHUNK_LENGTH, nchunks);
     RadioPacket success;
-    success.size = read;
+    success.size = nbytes;
     success.datatype = datatype;
     return success;
 }
@@ -130,4 +131,10 @@ void echo() {
     uint8_t packet[MAX_MESSAGE_BYTES];
     size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
     printMsg("Radio Says: <%s>", packet);
+}
+
+void initEmptyChunk(uint8_t chunk[]) {
+	for (size_t i = 0; i < CHUNK_LENGTH; i++) {
+		chunk[i] = 0;
+	}
 }
