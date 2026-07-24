@@ -2,11 +2,8 @@ name: C CI
 
 on:
   push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
   merge_group:
-    branches: [ "master" ]
   workflow_dispatch:
 
 
@@ -17,7 +14,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: get compiler version
+      run: make version
     - name: make project
       run: make
+    - name: run tests
+      run: make test
     - name: groundstation
       run: cd groundstation && make

@@ -19,8 +19,6 @@ Author:
 #include <inttypes.h>
 #include <math.h>
 
-#include "adcs_math/vector.h"
-
 #define PI 3.14159265358979323846
 #define PI_2 1.57079632679489661923
 
