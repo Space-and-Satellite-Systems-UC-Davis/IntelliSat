@@ -23,14 +23,11 @@ void testFunction_LogDownlink() {
     	chunk[0] = log.boot_number;
     	bool test1 = radio_push(chunk, sizeof(chunk));
 
-    	// Cast into byte array for sending it
-//    	bool test1 = radio_push((uint8_t*)&log, sizeof(log));
-
-    	delay_ms(1000);
-//    	bool test2 = radio_downlink(NULL, sizeof(log));
+    	delay_ms(2000);
+    	bool test2 = radio_downlink(NULL, sizeof(log));
     	printMsg("%d", test1);
-//    	printMsg("%d", test2);
+    	printMsg("%d", test2);
 
-    	delay_ms(1000);
+    	delay_ms(2000);
     }
 }

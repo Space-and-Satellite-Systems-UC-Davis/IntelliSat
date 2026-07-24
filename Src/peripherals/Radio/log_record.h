@@ -8,6 +8,8 @@
 #define PERIPHERALS_RADIO_LOG_RECORD_H_
 
 #include "ADCS/logging_records.h"
+#include "ADCS/determination/determination.h"
+#include "ADCS/adcs_math/sensors.h"
 #include "RTC/rtc.h"
 #include "MAG/QMC5883L.h"
 #include "IMU/ASM330LHH.h"

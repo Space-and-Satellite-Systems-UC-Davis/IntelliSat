@@ -25,8 +25,8 @@ log_record_idle fill_log_idle() {
     log_record_idle log;
     uint8_t dummyUInt8_t;
 
-    // WIP
-    log.boot_number = (uint8_t)(RTC->BKP0R);
+    // DONE
+    log.boot_number = (uint8_t)(rtc_getBootCounter());
 
 
     // DONE
@@ -73,7 +73,6 @@ log_record_idle fill_log_idle() {
     log.mag_y = mag_read_Y();
     // float mag_z;
     log.mag_z = mag_read_Z();
-
 
     // WIP
     float reading = 0;
@@ -133,9 +132,15 @@ log_record_idle fill_log_idle() {
     log.error_msg = NOT_IMPLEMENTED;
 
 
-    log.attitude = (mat3){0}; // TODO: convert to euler angles
+    // WIP
+    // mat3 attitude; // TODO: convert to euler angles
+    mat3 attitude;
+    determination(&attitude);
+    log.attitude = attitude;
 
 
-    log.is_in_eclipse = NOT_IMPLEMENTED;
+    // DONE
+    log.is_in_eclipse = (unsigned int) is_in_eclipse();
+
     return log;
 }
