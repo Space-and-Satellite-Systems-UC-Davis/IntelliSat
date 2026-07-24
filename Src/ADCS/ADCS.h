@@ -21,8 +21,7 @@ typedef enum {
     ADCS_TESTING,
     ADCS_COILS_TESTING,
     ADCS_HDD_TESTING,
-    ADCS_ROTISSERIE,
-    ADCS_NO_OP
+    ADCS_ROTISSERIE
 } adcs_mode; // TODO: full list
 
 typedef enum {
