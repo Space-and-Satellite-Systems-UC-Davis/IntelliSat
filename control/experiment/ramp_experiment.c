@@ -2,6 +2,7 @@
 #include "adcs_math/calibration.h"
 #include "adcs_math/sensors.h"
 #include "virtual_intellisat.h"
+#include "virtual_ros.h"
 
 // TODO: HDD alternation?
 #define HDD_CHOICE VI_HDD1
@@ -31,12 +32,20 @@ run_ramp_experiment_status ramp_experiment()
             return RUN_RAMP_EXPERIMENT_MILLIS_FAILURE;
         }
 
+        vi_enter_critical();
+        if (vi_task_has_restarted()) {
+            // Return to Schedulers to restart ramp_experiment
+            return RUN_RAMP_EXPERIMENT_HAS_RESTARTED;
+        }
+
         double command = linear_ramp_command(ti, &controller);
 
         command_status = vi_hdd_command(Hdd, command);
         if (command_status == HDD_COMMAND_FAILURE) {
             return RUN_RAMP_EXPERIMENT_COMMAND_FAILURE;
         }
+
+        vi_exit_critical();
     }
 
     return RUN_RAMP_EXPERIMENT_SUCCESS;

@@ -1,0 +1,13 @@
+# Example host-specific build overrides.
+#
+# The Makefile does `-include local.mk` (gitignored), so copy this file to
+# local.mk and uncomment what you need:
+#
+#   cp local.mk.example local.mk
+#
+#
+# SYSROOT is consumed by both CFLAGS (library build) and TEST_FLAGS (make test).
+#CC = gcc-15
+#SYSROOT := -isysroot $(shell xcrun --show-sdk-path)
+#CFLAGS += $(SYSROOT)
+#TEST_FLAGS += $(SYSROOT)

@@ -24,6 +24,8 @@
 
 #include <stdint.h>
 
+#include "determination/determination.h"
+
 
 /*################ SENSORS AND ACTUATORS ################*/
 
@@ -507,3 +509,6 @@ vi_end_control_transaction();
 
 
 #endif//VIRTUAL_INTELLISAT_H
+
+
+
