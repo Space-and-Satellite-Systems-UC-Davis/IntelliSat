@@ -16,18 +16,30 @@
 
 #include "globals.h"
 
-#include "system_config/core_config.h"
-#include "system_config/Timers/timers.h"
-#include "system_config/Buttons/buttons.h"
-#include "system_config/SPI/spi.h"
-#include "system_config/QSPI/qspi.h"
-#include "system_config/LED/led.h"
-#include "system_config/RTC/rtc.h"
-#include "system_config/UART/uart.h"
-#include "peripherals/IMU/ASM330LHH.h"
-#include "peripherals/MAG/QMC5883L.h"
-#include "tools/print_scan.h"
+#include <core_config.h>
+#include <Timers/timers.h>
+#include <Buttons/buttons.h>
+#include <SPI/spi.h>
+#include <QSPI/qspi.h>
+#include <LED/led.h>
+#include <RTC/rtc.h>
+#include <UART/uart.h>
+#include <IMU/ASM330LHH.h>
+#include <MAG/QMC5883L.h>
+#include <DMA/DMA.h>
+#include <print_scan.h>
+#include <SunSensors/sun_sensors.h>
+#include <WDG/watchdog.h>
 
+#define SCB_CPACR_CP10_POS 20U
+#define SCB_CPACR_CP11_POS 22U
+
+enum scb_cpacr_cpn_privileges {
+    SCB_CPACR_CPN_ACCESS_DENIED,
+    SCB_CPACR_CPN_PRIVILEGED_ONLY,
+    SCB_CPACR_CPN__RESERVED,
+    SCB_CPACR_CPN_FULL_ACCESS
+};
 
 /**
  * Configures only what is necessary to boot.
@@ -60,22 +72,28 @@ void init_first_time() {
 /**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
- *
- * @param run_scheduler If set to true, IntelliSat Scheduler will be active
- *        in the background
  * @returns None
  */
-void init_platform(bool run_scheduler) {
+void init_platform() {
+
+    SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
+    | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
+    debug_init();
+    set_IMU(IMU0);
 	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+    set_IMU(IMU1);
+    imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
+    sun_sensor_init();
     //TODO: hdd_init().
-    //TODO: initialize intercomm.
+    //TODO: initialize intercom.
     //TODO: fetch flash header.
     //TODO: increment boot counter.
-
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
+    // systick_init();
+	printer_init();
 	led_init();
 	buttons_init();
 	printer_init();
@@ -83,6 +101,9 @@ void init_platform(bool run_scheduler) {
 	systick_init(run_scheduler);
 
 	qspi_config(23, 2, 0);
+	dma_initializePeripheralConstants();
+	watchdog_init(WWDG_TIMEOUT_TIME);
+	heartbeat_timer_init();
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

@@ -1,0 +1,6 @@
+-Wall
+-I./Drivers/Device
+-I./Src/inc
+-I./Src/peripherals
+-I./Src/system_config
+-I./Src/tools

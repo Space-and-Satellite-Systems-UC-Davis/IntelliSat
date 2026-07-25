@@ -15,7 +15,7 @@
 
 #if OP_REV == 1
 #define ConsoleUART 	USART3
-#elif OP_REV == 2
+#elif OP_REV == 2 || OP_REV == 3
 #define ConsoleUART 	LPUART1
 #endif
 
@@ -32,5 +32,5 @@ int printMsg(const char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	usart_transmitBytes(ConsoleUART, buff);
+	usart_transmitStr(ConsoleUART, buff);
 }

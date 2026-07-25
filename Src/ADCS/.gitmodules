@@ -1,0 +1,6 @@
+[submodule "coilsTesting/BDOT_control_with_IMU/src/imu"]
+	path = coilsTesting/BDOT_control_with_IMU/src/imu
+	url = https://github.com/dtornqvist/icm-20948-arduino-library.git
+[submodule "coilsTesting/BDOT_control_with_IMU/src/digital_potentiometer"]
+	path = coilsTesting/BDOT_control_with_IMU/src/digital_potentiometer
+	url = https://github.com/RobTillaart/AD520X.git

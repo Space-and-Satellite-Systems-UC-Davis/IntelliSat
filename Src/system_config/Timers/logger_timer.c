@@ -25,7 +25,7 @@ bool logger_initExpTimer() {
 	//		RCR =  0
 
 	// Prescaler
-	uint32_t PSC = 1065;		// Random Numebr
+	uint32_t PSC = 1065;		// Random Number
 	// Auto Reload Counter
 	uint32_t ARR = 468 * 2;		// (F/(R(PSC + 1)) - 1) , The doubling is due to some unknown oddity
 
