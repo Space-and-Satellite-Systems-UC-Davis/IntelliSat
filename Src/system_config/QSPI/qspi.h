@@ -62,7 +62,7 @@ enum qspi_imodes {
 
 /**
  * Configures the QSPI hardware so that it can be used later
- * 
+ *
  * @param flash_size      An integer that obeys : FLASH_SIZE_BITS = 2^(flash_size-1)
  * @param address_size    # of Bytes used by an address in the FLASH
  * @param alternateb_size # of Bytes used by an Alternate Bytes
@@ -139,11 +139,11 @@ bool qspi_statusPoll(
 		uint32_t timeout_period
 );
 
-#define QSPI_READY            '4'	// qspi_set_command() has been run
-#define QSPI_BUSY             '3'	// executing a previous command
-#define QSPI_SUCCESSFUL       '2'	// status of the previously executed command
-#define QSPI_TIMEDOUT         '1'	// status of the previously executed command
-#define QSPI_TRANSFER_ERROR   '0'	// status of the previously executed command
+#define QSPI_READY            4	// qspi_set_command() has been run
+#define QSPI_BUSY             3	// executing a previous command
+#define QSPI_SUCCESSFUL       2	// status of the previously executed command
+#define QSPI_TIMEDOUT         1	// status of the previously executed command
+#define QSPI_TRANSFER_ERROR   0	// status of the previously executed command
 
 /**
  * Returns the status of the QUADSPI hardware

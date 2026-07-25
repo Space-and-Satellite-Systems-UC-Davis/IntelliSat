@@ -14,7 +14,7 @@
 #ifndef REALOP1_PLATFORM_INIT_H
 #define REALOP1_PLATFORM_INIT_H
 
-#include <globals.h>
+#include "globals.h"
 
 #include <core_config.h>
 #include <Timers/timers.h>
@@ -96,6 +96,11 @@ void init_platform() {
 	printer_init();
 	led_init();
 	buttons_init();
+	printer_init();
+
+	systick_init(run_scheduler);
+
+	qspi_config(23, 2, 0);
 	dma_initializePeripheralConstants();
 	watchdog_init(WWDG_TIMEOUT_TIME);
 	heartbeat_timer_init();

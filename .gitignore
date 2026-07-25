@@ -61,6 +61,8 @@ release
 
 # Launch file
 *.launch
+
+**/.DS_Store
 .vscode/*
 
 # CMake build files
