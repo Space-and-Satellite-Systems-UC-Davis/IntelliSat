@@ -143,6 +143,15 @@ bool rtc_readFromADCSVariable(SensorOffset offset);
  */
 void rtc_writeToADCSVariable(bool status, SensorOffset offset);
 
+/**
+ * Reads 4 bytes from any of the 32 backup registers on the RTC
+ *
+ * @param bkp  	The register to read from (an int between 0-31)
+ *
+ * @returns The 4 bytes stored in the register, or 0 if bkp is out of range
+ */
+uint32_t rtc_readFromBKPNumber(uint32_t bkp);
+
 /****************************** RTC TIME SETTERS *****************************/
 
 /**
