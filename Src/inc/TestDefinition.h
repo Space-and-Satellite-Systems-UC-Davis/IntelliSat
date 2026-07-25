@@ -4,12 +4,26 @@
 //                           TEST DECLARATIONS
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-extern void testFunction_Nothing();
+void testFunction_Nothing() { while(1); };
 extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_FLASH();
+extern void testFunction_IMU_Dupe_Reads();
+extern void testFunction_Diode_Reads();
+extern void testFunction_INA_TMP_Outputs();
+extern void testFunction_DMA_ADC();
+extern void testFunction_watchdog();
+extern void testFunction_AssTest();
+extern void testFunction_getCalendar();
+extern void testFunction_LPSleep();
+extern void testFunction_RTC_Alarm();
+extern void testFunction_mgtIntercom();
+extern void testFunction_RadioIntercom();
+extern void testFunction_mgtSleep();
+extern void testFunction_RadioSleep();
+extern void testFunction_RTC_storage();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -31,17 +45,36 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 5:
 			return testFunction_FLASH;
+		case 8:
+			return testFunction_IMU_Dupe_Reads;
+		case 11:
+			return testFunction_INA_TMP_Outputs;
+		case 12:
+			return testFunction_Diode_Reads;
+		case 14: 
+			return testFunction_watchdog;
+		case 16:
+			return testFunction_mgtIntercom;
+		case 17:
+			return testFunction_AssTest;
+		case 18:
+			return testFunction_RTC_Alarm;
+		case 19:
+			return testFunction_getCalendar;
+		case 20:
+			return testFunction_DMA_ADC;
+		case 21:
+			return testFunction_RadioIntercom;
+		case 23:
+			return testFunction_LPSleep;
+		case 26:
+			return testFunction_RTC_storage;
+		case 27:
+			return testFunction_mgtSleep;
+		case 28:
+			return testFunction_RadioSleep;
 		default:
 			return testFunction_Nothing;
 	}
 	return testFunction_Nothing;
-}
-
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-//                           	  EXTRAS
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-
-void testFunction_Nothing() {
-	while(1);
 }
