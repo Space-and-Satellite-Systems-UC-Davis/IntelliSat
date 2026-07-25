@@ -1,7 +1,6 @@
-#include <stdint.h>
-#include <string.h>
 #include "loggers_to_fram.h"
 
+#include <string.h>
 
 bool FRAM_fetch(uint16_t page, size_t data_size, void *data) {
     if (data_size > FRAM_PAGE_SIZE) {
@@ -33,4 +32,3 @@ bool FRAM_push(uint16_t page, size_t data_size, void *data) {
 
     return true;
 }
-
