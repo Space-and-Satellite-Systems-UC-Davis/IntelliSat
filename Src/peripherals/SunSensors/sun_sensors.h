@@ -20,14 +20,22 @@ typedef enum DIODE_ENUM {DIODE0, DIODE1} DIODES;
 
 typedef enum TEMP_ENUM {TEMP0, TEMP1} TEMP;
 
-
+/**
+ * Panel-to-face mapping convention.
+ *
+ * Doesnt' matter for assembly but matters so diffrent subsystems (beaconing, logging, ADCS, etc.) agree on which panel is which.
+ *
+ *   PANEL0 = +X   PANEL1 = -X
+ *   PANEL2 = +Y   PANEL3 = -Y
+ *   PANEL4 = +Z   PANEL5 = -Z
+ */
 typedef enum PANELS_ENUM {
-    PANEL0,
-    PANEL1,
-    PANEL2,
-    PANEL3,
-    PANEL4,
-    PANEL5
+    PANEL0, // +X
+    PANEL1, // -X
+    PANEL2, // +Y
+    PANEL3, // -Y
+    PANEL4, // +Z
+    PANEL5  // -Z
 } PANELS;
 
 /**
