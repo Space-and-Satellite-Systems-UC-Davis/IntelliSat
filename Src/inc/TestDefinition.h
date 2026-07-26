@@ -72,7 +72,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 28:
 			return testFunction_RadioSleep;
 		case 29:
-			testFunction_LogDownlink();
+			return testFunction_LogDownlink;
 		default:
 			return testFunction_Nothing;
 	}
