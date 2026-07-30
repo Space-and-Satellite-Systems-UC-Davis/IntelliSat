@@ -11,6 +11,7 @@
 #define ADCS_H
 
 #include "adcs_math/matrix.h"
+#include <stdint.h>
 
 typedef enum {
     ADCS_DETUMBLE,
@@ -45,6 +46,13 @@ typedef enum{
     GET_ATTITUDE_MAG_FAILURE,
     GET_ATTITUDE_CSS_FAILURE
 } adcs_get_attitude_status;
+
+typedef struct {
+    uint8_t error;
+    uint32_t unix_timestamp;
+} __attribute__((packed)) adcs_err;
+
+#define ADCS_ERROR_LOG_SIZE 15
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,6 +89,8 @@ int ADCS_is_in_eclipse();
  * @return Status code
  */
 adcs_get_attitude_status ADCS_get_attitude(mat3 *attitude);
+
+void ADCS_get_n_error(int n, adcs_err *err);
 
 #ifdef __cplusplus
 }

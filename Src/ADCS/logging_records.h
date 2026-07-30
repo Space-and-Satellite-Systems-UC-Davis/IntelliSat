@@ -54,7 +54,7 @@ typedef struct __attribute__((packed)) {
     uint8_t temp_nx;
     uint8_t temp_py;
     uint8_t temp_ny;
-    uint8_t error_msg;
+    adcs_err error_msg[ADCS_ERROR_LOG_SIZE];
     mat3 attitude; // TODO: convert to euler angles
     unsigned int is_in_eclipse : 1;
 } log_record_idle;
