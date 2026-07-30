@@ -62,8 +62,7 @@ void build_beacon_record(log_record_idle *out,
     out->temp_py = snap->temp_py;
     out->temp_ny = snap->temp_ny;
 
-    // TODO: no error/fault aggregation mechanism exists yet.
-    out->error_msg = 0;
+    ADCS_get_n_error(ADCS_ERROR_LOG_SIZE, out->error_msg);
 
     // ADCS_get_attitude() can fail; only trust the attitude output on
     // success, otherwise leave it zeroed (memset above) rather than
