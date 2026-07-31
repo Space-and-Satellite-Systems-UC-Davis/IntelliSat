@@ -1,4 +1,5 @@
-/**@file sun_sensors/sun_sensors.h
+/**
+ * @file sun_sensors/sun_sensors.h
  *
  * @brief Functions to determine orientation relative to the sun and eclipse
  * status
@@ -15,7 +16,8 @@
 
 #include "adcs_math/vector.h"
 
-/**@brief Estimate the Sun direction from coarse photodiode measurements.
+/**
+ * @brief Estimate the Sun direction from coarse photodiode measurements.
  *
  * Selects the illuminated face on each axis (+/- X,Y,Z), forms a signed
  * vector from the three strongest axis readings, and normalizes it.
@@ -43,6 +45,6 @@ int estimate_sun_photodiodes(double photodiode_currVals[NUM_SUN_SENSORS],
  *
  * @return 1 if eclipsed, 0 otherwise.
  */
-int is_eclipsed_photodiodes(float sensor_readings[NUM_SUN_SENSORS]);
+int is_eclipsed_photodiodes(double sensor_readings[NUM_SUN_SENSORS]);
 
 #endif

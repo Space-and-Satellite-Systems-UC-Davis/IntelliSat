@@ -32,6 +32,9 @@ release
 *.map
 *.exp
 
+# Test binaries
+tests/bin/
+
 # Libraries
 *.lib
 *.a
