@@ -106,7 +106,19 @@ static void test_unimplemented_fields_are_zero(void) {
     TEST_ASSERT(out.last_uplink_minute == 0);
     TEST_ASSERT(out.last_uplink_second == 0);
     TEST_ASSERT(out.num_new_experiments == 0);
-    TEST_ASSERT(out.error_msg == 0);
+}
+
+static void test_error_msg_populated(void) {
+    beacon_sensor_snapshot_t snap = make_snapshot();
+    beacon_battery_window_t window = make_batt_window();
+    log_record_idle out;
+
+    build_beacon_record(&out, &snap, &window);
+
+    for (int i = 0; i < ADCS_ERROR_LOG_SIZE; i++) {
+        TEST_ASSERT(out.error_msg[i].error == (uint8_t) i);
+        TEST_ASSERT(out.error_msg[i].unix_timestamp == 1000u + (uint32_t) i);
+    }
 }
 
 static void test_css_temp_passthrough(void) {
@@ -164,6 +176,7 @@ int main(void) {
     TEST_SUITE("beacon_record");
     RUN_TEST(test_passthrough_fields);
     RUN_TEST(test_unimplemented_fields_are_zero);
+    RUN_TEST(test_error_msg_populated);
     RUN_TEST(test_css_temp_passthrough);
     RUN_TEST(test_attitude_only_set_on_success);
     RUN_TEST(test_eclipse_flag_normalized);

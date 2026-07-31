@@ -14,6 +14,7 @@ TEST_DIR := tests
 INCLUDES := -I. -I../../ADCS -I../tests -I$(TEST_DIR)/stubs
 
 FRAM_STUB := $(TEST_DIR)/stubs/fram_stub.c
+ADCS_STUB := $(TEST_DIR)/stubs/adcs_stub.c
 
 TEST_BINS := \
 	$(TEST_DIR)/bin/test_beacon_record \
@@ -21,7 +22,8 @@ TEST_BINS := \
 
 $(TEST_DIR)/bin/test_beacon_record: \
 	$(TEST_DIR)/test_beacon_record.c \
-	beacon_record.c
+	beacon_record.c \
+	$(ADCS_STUB)
 
 $(TEST_DIR)/bin/test_beacon_stats: \
 	$(TEST_DIR)/test_beacon_stats.c \
