@@ -10,7 +10,7 @@ typedef struct __attribute__((packed)) {
     float high;
     float sum;
     uint32_t count;
-    uint8_t date_of_month;
+    uint32_t day_number;
 } beacon_batt_bucket_t;
 
 typedef struct __attribute__((packed)) {
@@ -39,25 +39,22 @@ void beacon_stats_init(void) {
     save_blob(&blob);
 }
 
-void beacon_stats_update(float new_batt_reading, uint8_t weekday, uint8_t date_of_month) {
-    if (weekday < 1 || weekday > BEACON_STATS_NUM_BUCKETS) {
-        return; // TODO: handle out-of-range weekday
-    }
-    uint8_t bucket_index = weekday - 1;
+void beacon_stats_update(float new_batt_reading, uint32_t day_number) {
+    uint8_t bucket_index = day_number % BEACON_STATS_NUM_BUCKETS;
 
     beacon_stats_blob_t blob;
     load_blob(&blob);
 
     beacon_batt_bucket_t *bucket = &blob.buckets[bucket_index];
 
-    if (bucket->date_of_month != date_of_month || bucket->count == 0) {
-        // Stale (last written on a previous occurrence of this weekday,
-        // possibly last week) or never-used bucket - start fresh for today.
+    if (bucket->day_number != day_number || bucket->count == 0) {
+        // Stale (last written on a previous occurrence of this bucket
+        // slot) or never-used bucket - start fresh for today.
         bucket->low = new_batt_reading;
         bucket->high = new_batt_reading;
         bucket->sum = new_batt_reading;
         bucket->count = 1;
-        bucket->date_of_month = date_of_month;
+        bucket->day_number = day_number;
     } else {
         if (new_batt_reading < bucket->low) {
             bucket->low = new_batt_reading;
