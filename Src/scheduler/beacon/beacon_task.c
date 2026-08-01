@@ -24,6 +24,7 @@
 
 bool beacon_task_cycle(log_record_idle *out_record) {
     beacon_sensor_snapshot_t snap = {0};
+    snap.boot_number = rtc_readFromBKPNumber(BootCounter);
     snap.batt_voltage = pwrmon_getBusVoltage(BATMON_GPIO, BATMON_SCL, BATMON_SDA);
 
     snap.imu_gx = imu_readGyro_X();

@@ -13,6 +13,7 @@
  * Raw sensor values for one beacon cycle, gathered by beacon_task.c.
  */
 typedef struct {
+    uint8_t boot_number;
     float batt_voltage;
 
     float imu_gx;

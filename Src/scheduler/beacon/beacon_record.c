@@ -7,8 +7,7 @@ void build_beacon_record(log_record_idle *out,
                           const beacon_battery_window_t *batt_window) {
     memset(out, 0, sizeof(*out));
 
-    // TODO: no boot counter exists anywhere in the codebase yet.
-    out->boot_number = 0;
+    out->boot_number = snap->boot_number;
 
     out->current_year = snap->year;
     out->current_month = snap->month;
