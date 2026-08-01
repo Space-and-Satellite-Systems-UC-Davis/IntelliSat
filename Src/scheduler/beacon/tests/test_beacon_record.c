@@ -5,6 +5,8 @@
 static beacon_sensor_snapshot_t make_snapshot(void) {
     beacon_sensor_snapshot_t snap = {0};
 
+    snap.boot_number = 42;
+
     snap.batt_voltage = 3.75f;
 
     snap.imu_gx = 1.5f;
@@ -67,6 +69,8 @@ static void test_passthrough_fields(void) {
 
     build_beacon_record(&out, &snap, &window);
 
+    TEST_ASSERT(out.boot_number == snap.boot_number);
+
     TEST_ASSERT(out.current_year == snap.year);
     TEST_ASSERT(out.current_month == snap.month);
     TEST_ASSERT(out.current_date == snap.date);
@@ -97,7 +101,6 @@ static void test_unimplemented_fields_are_zero(void) {
 
     build_beacon_record(&out, &snap, &window);
 
-    TEST_ASSERT(out.boot_number == 0);
     TEST_ASSERT(out.last_action_taken == 0);
     TEST_ASSERT(out.last_uplink_year == 0);
     TEST_ASSERT(out.last_uplink_month == 0);
