@@ -3,5 +3,9 @@
         "globals.h": "c",
         "cmath": "c"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "clangd.arguments": [
+        "--enable-config",
+        "--query-driver=**/arm-none-eabi-gcc*"
+    ]
 }

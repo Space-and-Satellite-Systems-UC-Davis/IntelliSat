@@ -1,12 +1,18 @@
-# CompileFlags:
-#   CompilationDatabase: "Debug/compile_commands.json"
+CompileFlags:
+  CompilationDatabase: "Debug"
+  Add: [
+    -xc
+  ]
+  Remove: [
+    -fcyclomatic-complexity
+  ]
 
 # Other common configuration options (optional)
-# Diagnostics:
-#   ClangTidy:
-#     Add: ["*"]
-#     Remove: ["modernize-use-trailing-return-type"]
+Diagnostics:
+  ClangTidy:
+    Add: ["*"]
+    Remove: ["modernize-use-trailing-return-type"]
 
-# InlayHints:
-#   Enabled: Yes
-#   ParameterNames: Yes
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
