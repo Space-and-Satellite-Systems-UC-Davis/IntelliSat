@@ -1,3 +1,6 @@
+#ifndef LOGGING_RECORDS_H
+#define LOGGING_RECORDS_H
+
 #include <stdint.h>
 
 #include "ADCS.h"
@@ -206,3 +209,5 @@ typedef struct __attribute__((packed)) {
     unsigned int coil_y : 1;
     unsigned int coil_z : 1;
 } uplink_record_sensor_enable;
+
+#endif // LOGGING_RECORDS_H
