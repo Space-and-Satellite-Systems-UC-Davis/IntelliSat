@@ -98,17 +98,17 @@ void flash_readRegisterOne(uint8_t* register_one) {
 		printMsg("BUSY");
 	}
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
 		0,
-		QSPI_1_WIRE,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
 		false
   );
   qspi_sendCommand(
 		0x05, //READ_REGISTER_ONE
-		QSPI_UNUSED,
+		0,
 		1,
 		register_one,
 		QSPI_READ,
@@ -153,17 +153,17 @@ bool page_isClear(uint32_t page) {
 bool test_readJedecID() {
 	uint8_t id_receiver[3];
 	qspi_setCommand(
-	  QSPI_FMODE_INDIRECT_READ, //read
-	  QSPI_1_WIRE, //1 wire for instruction
-	  QSPI_UNUSED, //no wire for address
-	  QSPI_UNUSED, //no wire for alt bytes
-	  QSPI_UNUSED, //0 dummy cycles for JEDEC
-	  QSPI_1_WIRE, //1 wire for data
+	  QSPI_CCR_FMODE_INDIRECT_READ, //read
+	  QSPI_CCR_IMODE_1_INSTRUCTION_LINES, //1 wire for instruction
+	  QSPI_CCR_ADMODE_0_ADDRESS_LINES, //no wire for address
+	  0, //no wire for alt bytes
+	  0, //0 dummy cycles for JEDEC
+	  QSPI_CCR_DMODE_1_DATA_LINES, //1 wire for data
 	  false //no DMA
 	);
 	qspi_sendCommand(
 	  0x9F, //JEDEC ID
-	  QSPI_UNUSED, //no address
+	  0, //no address
 	  3, //3 bytes data
 	  id_receiver, //where data goes
 	  QSPI_READ,

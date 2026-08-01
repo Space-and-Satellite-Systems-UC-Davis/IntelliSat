@@ -46,12 +46,12 @@ bool flash_readSector(uint16_t sector, uint8_t* buffer) {
 	}
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ, //Instruction type
-		QSPI_1_WIRE, //Number of wires for Instruction Phase
-		QSPI_1_WIRE, //Number of wires for Address Phase
-		QSPI_UNUSED, //Number of wires for Alternative Bytes Phase
-		QSPI_UNUSED, //Number of dummy cycles
-	    QSPI_1_WIRE, //Number of wires for Data Phase
+		QSPI_CCR_FMODE_INDIRECT_READ, //Instruction type
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES, //Number of wires for Instruction Phase
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES, //Number of wires for Address Phase
+		0, //Number of wires for Alternative Bytes Phase
+		0, //Number of dummy cycles
+	    QSPI_CCR_DMODE_1_DATA_LINES, //Number of wires for Data Phase
 	    false //DMA in use?
 	);
 	qspi_sendCommand(
@@ -83,19 +83,19 @@ bool flash_eraseSector(uint16_t sector) {
 	flash_writeEnable();
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
-		QSPI_1_WIRE,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_0_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
 		QSPI_SECTOR_ERASE,
 		address,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		0,
+		NULL,
 		QSPI_WRITE,
 		QSPI_TIMEOUT_PERIOD
 	);
@@ -117,12 +117,12 @@ bool flash_writePage(uint16_t page, uint8_t* buffer) {
 	flash_writeEnable();
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
-		QSPI_1_WIRE,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_1_WIRE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
@@ -149,12 +149,12 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 	}
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
-		QSPI_1_WIRE,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_1_WIRE,
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
@@ -181,12 +181,12 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
 	}
 
   	qspi_setCommand(
-      	QSPI_FMODE_INDIRECT_READ,
-      	QSPI_1_WIRE,
-      	QSPI_1_WIRE,
-      	QSPI_UNUSED,
+      	QSPI_CCR_FMODE_INDIRECT_READ,
+      	QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+      	QSPI_CCR_ADMODE_1_ADDRESS_LINES,
       	0,
-      	QSPI_1_WIRE,
+      	0,
+      	QSPI_CCR_DMODE_1_DATA_LINES,
       	false
   	);
   	qspi_sendCommand(
@@ -235,19 +235,19 @@ bool flash_writeEnable() {
 		return false;
 	}
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_0_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
 		QSPI_WRITE_ENABLE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		0,
+		0,
+		NULL,
       	QSPI_WRITE,
 		QSPI_TIMEOUT_PERIOD
 	);
@@ -261,19 +261,19 @@ bool flash_writeDisable() {
 		return false;
 	}
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_0_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
 		QSPI_WRITE_DISABLE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		0,
+		0,
+		NULL,
 		QSPI_WRITE,
 		QSPI_TIMEOUT_PERIOD
 	);
@@ -296,17 +296,17 @@ bool flash_quadEnable() {
 	register_two |= (1 << 1);
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_1_WIRE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
 		QSPI_WRITE_REGISTER_TWO,
-		QSPI_UNUSED,
+		0,
 		1,
 		&register_two,
 		QSPI_WRITE,
@@ -320,17 +320,17 @@ bool flash_quadEnable() {
 void flash_readRegisterTwo(uint8_t* ptr_register_two) {
 	//Subsidiary function. QSPI busy check not needed
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
 		0,
-		QSPI_1_WIRE,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
 		false
 	);
 	qspi_sendCommand(
 		QSPI_READ_REGISTER_TWO,
-		QSPI_UNUSED,
+		0,
 		1,
 		ptr_register_two,
 		QSPI_READ,
@@ -351,12 +351,12 @@ uint8_t flash_getStatus() {
 	}
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
-		QSPI_1_WIRE,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_UNUSED,
-		QSPI_1_WIRE,
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
 		false
 	);
 
