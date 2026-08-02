@@ -27,19 +27,21 @@ void testFunction_LogDownlink() {
     printMsg("%d", small_chunk);
 
     while (true) {
-//    	radio_push(chunk, sizeof(chunk));
-//    	delay_ms(2000);
+    	radio_push(chunk, sizeof(chunk));
+    	delay_ms(2000);
+    	// See how memory is overwritten. Needs a solution as of writing.
+    	// Ring buffer suggested.
+    	radio_push(small_chunk, sizeof(small_chunk));
 
-//    	radio_push(small_chunk, sizeof(small_chunk));
-//    	delay_ms(2000);
-//
+    	delay_ms(5000);
+
     	log_record_idle log = fill_log_idle();
     	uint8_t* log_bytes = (uint8_t*) &log;
-//    	uint8_t test = log_bytes[sizeof(log_bytes)-1];
 		radio_push(log_bytes, sizeof(log));
 		delay_ms(2000);
 
-    	radio_downlink(NULL, sizeof(chunk));
+		// radio_push to stuff what we need into memory. Downlink later.
+    	radio_downlink(NULL, sizeof(log));
     	delay_ms(2000);
     }
 }
