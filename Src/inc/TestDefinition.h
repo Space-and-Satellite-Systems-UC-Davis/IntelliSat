@@ -71,7 +71,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_mgtSleep;
 		case 28:
 			return testFunction_RadioSleep;
-		case 29:
+		case 30:
 			return testFunction_LogDownlink;
 		default:
 			return testFunction_Nothing;
