@@ -123,12 +123,21 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
 bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int lchunks) {
     int nchunks = ((nbytes - 1) / lchunks) + 1;
     bool cumulative_success = true;
+    int bytes_copied = 0;
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     for (int i = 0; i < nchunks; i++) {
         subchunk[0] = i;
-        memcpy(&subchunk[1], payload + i*lchunks, lchunks);
-        // printMsg("TC: %s\r\n", &subchunk[1]);
-        if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
+        if (bytes_copied + lchunks < nbytes) {
+        	// Regular step
+            memcpy(&subchunk[1], payload + i*lchunks, lchunks);
+            bytes_copied += lchunks;
+
+            if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
+        } else {
+        	// Copy remainder. Avoid sending random junk
+            memcpy(&subchunk[1], payload + i*lchunks, nbytes-bytes_copied);
+            if (!crc_transmit(bus, subchunk, nbytes-bytes_copied+1)) return -1;
+        }
     }
     return cumulative_success;
 }

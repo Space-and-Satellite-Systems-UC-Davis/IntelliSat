@@ -24,8 +24,8 @@ void testFunction_LogDownlink() {
     for (size_t i = 0; i < small_len; i++) {
         small_chunk[i] = i+big_len;
     }
-    printMsg("%d", small_chunk);
 
+	delay_ms(3000);
     while (true) {
     	radio_push(chunk, sizeof(chunk));
     	delay_ms(2000);
