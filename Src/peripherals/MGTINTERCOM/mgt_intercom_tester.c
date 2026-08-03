@@ -7,7 +7,7 @@
 
 void testFunction_mgtIntercom() {
     mgt_intercom_init();
-    int testtype = TEST_SPEED;
+    int testtype = TEST_FUNCTIONALITY;
 
     if(testtype == TEST_SPEED){
         int i = 5;
