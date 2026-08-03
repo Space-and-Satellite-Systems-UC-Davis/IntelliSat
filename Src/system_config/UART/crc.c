@@ -11,7 +11,10 @@
 #include "print_scan.h"
 
 int crc_wait(USART_TypeDef *bus) {
-    uint8_t ack[1];
+    uint8_t ack[MAX_MESSAGE_BYTES];
+    memset(ack, 0, sizeof ack);
+    int count = usart_receiveBytes(bus, ack, MAX_MESSAGE_BYTES);
+    printMsg("<%s>\r\n", ack);
     bool acked = false;
     int count = 0;
     for(int i = 0; i<10; i++){
@@ -27,7 +30,8 @@ int crc_wait(USART_TypeDef *bus) {
 }
 
 void crc_ack(USART_TypeDef *bus) {
-    uint8_t ack[1];
+    uint8_t ack[MAX_MESSAGE_BYTES];
+    memset(ack, 0, sizeof ack);
     ack[0] = 'A';
     usart_transmitBytes(bus, ack, sizeof(ack));
 }
@@ -91,15 +95,7 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     uint8_t buffer[MAX_MESSAGE_BYTES];
-    memset(buffer, 0, sizeof(buffer));
-    uint8_t temp[1];
-    int size = 0;
-    do{
-        int count = usart_receiveBytes(bus, temp, 1);
-        if(count == 0) break;
-        buffer[size] = temp[0];
-        size++;
-    }while(buffer[size-1] != ';' && size <= MAX_MESSAGE_BYTES);
+    int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
     if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
