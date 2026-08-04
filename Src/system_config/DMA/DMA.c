@@ -6,54 +6,7 @@ volatile bool usart1_tx_ready = true; //Flag to indicate if USART1 is ready for 
 volatile bool usart1_rx_ready = true; //Flag to indicate if USART1 has received data. Set in DMA1_Channel5_IRQHandler
 
 
-//Template function to create USART TX DMAConfig
-
-DMAConfig USART_TX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length) {
-	DMAConfig config;
-
-	config.selection = selection;
-	if (selection == SELECT_USART2_TX) {
-		config.peripheral_addr = (uint32_t)&USART2->TDR;
-	} else if (selection == SELECT_USART1_TX) {
-		config.peripheral_addr = (uint32_t)&USART1->TDR;
-	}
-	config.memory_addr = memory_addr;
-	config.length = length;
-	config.pdata_size = 1;
-	config.mdata_size = 1;
-	config.circular = false;
-	config.peripheral_to_memory = false;
-	config.peripheral_increment = false;
-	config.memory_increment = true;
-	config.transfer_interrupt = true;
-
-	return config;
-}
-
-DMAConfig USART_RX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length) {
-    DMAConfig config;
-
-    config.selection = selection;
-    if (selection == SELECT_USART2_RX) {
-        config.peripheral_addr = (uint32_t)&USART2->RDR;
-    } else if (selection == SELECT_USART1_RX) {
-        config.peripheral_addr = (uint32_t)&USART1->RDR;
-    }
-    config.memory_addr = memory_addr;
-    config.length = length;
-    config.pdata_size = 1;
-    config.mdata_size = 1;
-    config.circular = true;
-    config.peripheral_to_memory = true;
-    config.peripheral_increment = false;
-    config.memory_increment = true;
-    config.transfer_interrupt = true;
-
-    return config;
-}
-
-
-void dma_configureAndEnableChannel(DMAConfig config) {
+void configure_channel(DMAConfig config) {
 	DMAPeripheral* peripheral = dma_selectPeripheral(config.selection);
 	DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
@@ -120,14 +73,11 @@ void dma_configureAndEnableChannel(DMAConfig config) {
 	channel_ptr->CMAR  = (uint32_t)config.memory_addr;
 	channel_ptr->CPAR  = (uint32_t)config.peripheral_addr;
 	channel_ptr->CNDTR = (uint16_t)config.length;
-
-	// Turn it on
-	dma_enableChannel(config.selection);
 }
 
 // Actually turn the DMA on
-void dma_enable_channel(enum_DMAPeripherals selection) {
-    DMAPeripheral* peripheral = DMA_selectPeripheral(selection);
+void dma_enableChannel(enum_DMAPeripherals selection) {
+    DMAPeripheral* peripheral = dma_selectPeripheral(selection);
     DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
     // clear the 4-bit CSELR field for this channel first
@@ -148,8 +98,8 @@ void dma_enable_channel(enum_DMAPeripherals selection) {
     channel_ptr->CCR |= DMA_CCR_EN;
 }
 
-void dma_disable_channel(enum_DMAPeripherals selection) {
-    DMAPeripheral* peripheral = DMA_selectPeripheral(selection);
+void dma_disableChannel(enum_DMAPeripherals selection) {
+    DMAPeripheral* peripheral = dma_selectPeripheral(selection);
     DMA_Channel_TypeDef* channel_ptr = peripheral->channel;
 
     // clear the CSELR mapping without corrupting other channels
@@ -159,6 +109,59 @@ void dma_disable_channel(enum_DMAPeripherals selection) {
     channel_ptr->CCR &= ~(DMA_CCR_EN);
 }
 
+
+
+void dma_configureAndEnableChannel(DMAConfig config) {
+	configure_channel(config);
+
+	// Turn it on
+	dma_enableChannel(config.selection);
+}
+
+//Template function to create USART TX DMAConfig
+DMAConfig USART_TX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length) {
+	DMAConfig config;
+
+	config.selection = selection;
+	if (selection == SELECT_USART2_TX) {
+		config.peripheral_addr = (uint32_t)&USART2->TDR;
+	} else if (selection == SELECT_USART1_TX) {
+		config.peripheral_addr = (uint32_t)&USART1->TDR;
+	}
+	config.memory_addr = memory_addr;
+	config.length = length;
+	config.pdata_size = 1;
+	config.mdata_size = 1;
+	config.circular = false;
+	config.peripheral_to_memory = false;
+	config.peripheral_increment = false;
+	config.memory_increment = true;
+	config.transfer_interrupt = true;
+
+	return config;
+}
+
+DMAConfig USART_RX_Config(enum_DMAPeripherals selection, uint32_t memory_addr, uint16_t length) {
+    DMAConfig config;
+
+    config.selection = selection;
+    if (selection == SELECT_USART2_RX) {
+        config.peripheral_addr = (uint32_t)&USART2->RDR;
+    } else if (selection == SELECT_USART1_RX) {
+        config.peripheral_addr = (uint32_t)&USART1->RDR;
+    }
+    config.memory_addr = memory_addr;
+    config.length = length;
+    config.pdata_size = 1;
+    config.mdata_size = 1;
+    config.circular = true;
+    config.peripheral_to_memory = true;
+    config.peripheral_increment = false;
+    config.memory_increment = true;
+    config.transfer_interrupt = true;
+
+    return config;
+}
 
 /*
 Transmit bytes over USART1 or USART2 using DMA, selection must be USARTx_TX
@@ -180,7 +183,7 @@ bool usart_transmitBytesDMA(enum_DMAPeripherals selection, const uint8_t *tx_buf
 
 	// get config
 	DMAConfig config = USART_TX_Config(selection, (uint32_t)tx_buffer, length);
-	DMAPeripheral* peripheral = DMA_selectPeripheral(config.selection);
+	DMAPeripheral* peripheral = dma_selectPeripheral(config.selection);
 	
 	// leave if the DMA channel is already active
 	if (peripheral->channel->CCR & DMA_CCR_EN_Msk) return false; 
@@ -199,7 +202,7 @@ bool usart_transmitBytesDMA(enum_DMAPeripherals selection, const uint8_t *tx_buf
 	usart_ptr->CR3 |= USART_CR3_DMAT;
 	usart_ptr->CR1 |= USART_CR1_TE | USART_CR1_UE;
 	
-	dma_enable_channel(config.selection);
+	dma_enableChannel(config.selection);
 	return true;
 }
 
@@ -221,7 +224,7 @@ bool usart_receiveBytesDMA(enum_DMAPeripherals selection, uint8_t *rx_buffer, ui
 
 	// 1. get config
 	DMAConfig config = USART_RX_Config(selection, (uint32_t)rx_buffer, length);
-	DMAPeripheral* peripheral = DMA_selectPeripheral(config.selection);
+	DMAPeripheral* peripheral = dma_selectPeripheral(config.selection);
 	
 	// 2. leave if the DMA channel is already active
 	if (peripheral->channel->CCR & DMA_CCR_EN_Msk) return false; 
@@ -233,7 +236,7 @@ bool usart_receiveBytesDMA(enum_DMAPeripherals selection, uint8_t *rx_buffer, ui
 	usart_ptr->ICR |= USART_ICR_ORECF;
 	// enable DMA receiver and USART
 	
-	dma_enable_channel(config.selection);
+	dma_enableChannel(config.selection);
 
 	usart_ptr->CR3 |= USART_CR3_DMAR;
 	usart_ptr->CR1 |= USART_CR1_RE | USART_CR1_UE;
@@ -241,7 +244,7 @@ bool usart_receiveBytesDMA(enum_DMAPeripherals selection, uint8_t *rx_buffer, ui
 }
 
 void dma_init() {
-	DMA_initializePeripheralConstants();
+	dma_initializePeripheralConstants();
 	NVIC_EnableIRQ(DMA1_Channel4_IRQn); //Enable the IRQ for the channel we will be using for USART1 TX. We can enable other IRQs when we use other channels
 	NVIC_EnableIRQ(DMA1_Channel5_IRQn); //Enable the IRQ for the channel we will be using for USART1 RX.
 }

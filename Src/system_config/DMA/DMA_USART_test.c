@@ -6,7 +6,7 @@
 
 #include "globals.h"
 #include "UART/uart.h"
-#include "DMA.h"
+#include "DMA/DMA.h"
 #include "print_scan.h"
 
 void testFunction_DMA_USART(void) {
