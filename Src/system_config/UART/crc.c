@@ -13,8 +13,6 @@
 int crc_wait(USART_TypeDef *bus) {
     uint8_t ack[MAX_MESSAGE_BYTES];
     memset(ack, 0, sizeof ack);
-    int count = usart_receiveBytes(bus, ack, MAX_MESSAGE_BYTES);
-    printMsg("<%s>\r\n", ack);
     bool acked = false;
     int count = 0;
     for(int i = 0; i<10; i++){

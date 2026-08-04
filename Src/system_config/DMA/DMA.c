@@ -262,4 +262,16 @@ void DMA1_Channel5_IRQHandler(void) {
 	}
 }
 
-
+// Functions entirely for testing
+bool get_dma_usart_tx() {
+	return usart1_tx_ready;
+}
+bool get_dma_usart_rx(){
+	return usart1_rx_ready;
+}
+void set_dma_usart_tx(bool value) {
+	usart1_tx_ready = value;
+}
+void set_dma_usart_rx(bool value) {
+	usart1_rx_ready = value;
+}

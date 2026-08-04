@@ -38,13 +38,6 @@ void testFunction_LogDownlink() {
 
 
     	// THE ACTUAL "sending log via downlink" PART IS HERE
-    	log_record_idle log = fill_log_idle();
-    	uint8_t* log_bytes = (uint8_t*) &log;
-		radio_push(log_bytes, sizeof(log));
-		delay_ms(2000);
-
-		// radio_push to stuff what we need into memory. Downlink later.
-    	radio_downlink(NULL, sizeof(log));
-    	delay_ms(2000);
+    	radio_downlink_idle_log();
     }
 }

@@ -71,4 +71,10 @@ bool usart_transmitBytesDMA(enum_DMAPeripherals selection, const uint8_t *tx_buf
 void dma_init();
 void DMA1_Channel4_IRQHandler(void);
 
+// Functions for testing
+bool get_dma_usart_tx();
+bool get_dma_usart_rx();
+void set_dma_usart_tx(bool value);
+void set_dma_usart_rx(bool value);
+
 #endif 

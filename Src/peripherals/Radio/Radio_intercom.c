@@ -57,26 +57,6 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
 }
 
 /**
- * Sends the log beacon to the radio to be send via radio to our home radio.
- * 
- * @param log  The data log to be sent. Generate with fill_log_idle();
- * 
- * @returns success or failure
- */
-bool radio_push_beacon(log_record_idle log) {
-    if (!are_talking()) return false;
-    uint8_t* chunk = (uint8_t*)(&log);
-    size_t nbytes = sizeof(log_record_idle);
-    uint8_t header[2];
-    header[0] = 'T';
-    header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
-    if (crc_transmit(RADIO_USART, header, 2)) {
-        return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
-    }
-}
-
-
-/**
  * Force the radio to send data to the PFC
  * 
  * @param chunk  A storage location for the data to be received
@@ -145,6 +125,17 @@ bool radio_downlink(uint8_t chunk[], size_t nchunks) {
     packet[0] = TransferToGround;
     packet[1] = nchunks;
     return crc_transmit(RADIO_USART, packet, 2);
+}
+
+bool radio_downlink_idle_log() {
+	log_record_idle log = fill_log_idle();
+	uint8_t* log_bytes = (uint8_t*) &log;
+	bool success = radio_push(log_bytes, sizeof(log));
+	if (!success) return false;
+
+	// radio_push to stuff what we need into memory. Downlink later.
+	success = radio_downlink(NULL, sizeof(log));
+	return success;
 }
 
 void echo() {

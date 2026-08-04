@@ -4,6 +4,11 @@
  *  Created on: Jul 7, 2026
  */
 
+#include "globals.h"
+#include "UART/uart.h"
+#include "DMA.h"
+#include "print_scan.h"
+
 void testFunction_DMA_USART(void) {
     printMsg("Starting DMA Test...\n");
 
@@ -12,8 +17,8 @@ void testFunction_DMA_USART(void) {
     uint8_t rx_buf[sizeof(message)] = {0};
 
     // Clear stale state
-    usart1_tx_ready = true;
-    usart1_rx_ready = false;
+    set_dma_usart_tx(true);
+    set_dma_usart_rx(false);
 
     if (!usart_receiveBytesDMA(SELECT_USART1_RX, rx_buf, sizeof(rx_buf))) {
         printMsg("DMA RX start failed\n");
@@ -26,17 +31,17 @@ void testFunction_DMA_USART(void) {
     }
 
     uint64_t start = getSysTime();
-    while (!usart1_tx_ready && !is_time_out(start, timeout_ms)) {
+    while (!get_dma_usart_tx() && !is_time_out(start, timeout_ms)) {
     }
-    if (!usart1_tx_ready) {
+    if (!get_dma_usart_tx()) {
         printMsg("DMA TX timeout\n");
         return;
     }
 
     start = getSysTime();
-    while (!usart1_rx_ready && !is_time_out(start, timeout_ms)) {
+    while (!get_dma_usart_rx() && !is_time_out(start, timeout_ms)) {
     }
-    if (!usart1_rx_ready) {
+    if (!get_dma_usart_rx()) {
         printMsg("DMA RX timeout\n");
         return;
     }
