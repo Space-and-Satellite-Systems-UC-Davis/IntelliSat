@@ -11,8 +11,7 @@
 #include "print_scan.h"
 
 int crc_wait(USART_TypeDef *bus) {
-    uint8_t ack[MAX_MESSAGE_BYTES];
-    memset(ack, 0, sizeof ack);
+    uint8_t ack[1];
     bool acked = false;
     int count = 0;
     for(int i = 0; i<10; i++){
@@ -28,10 +27,9 @@ int crc_wait(USART_TypeDef *bus) {
 }
 
 void crc_ack(USART_TypeDef *bus) {
-    uint8_t ack[MAX_MESSAGE_BYTES];
-    memset(ack, 0, sizeof ack);
+    uint8_t ack[1];
     ack[0] = 'A';
-    usart_transmitBytes(bus, ack, sizeof(ack));
+    usart_transmitBytes(bus, ack, 1));
 }
 
 /**
