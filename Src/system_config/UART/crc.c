@@ -29,7 +29,7 @@ int crc_wait(USART_TypeDef *bus) {
 void crc_ack(USART_TypeDef *bus) {
     uint8_t ack[1];
     ack[0] = 'A';
-    usart_transmitBytes(bus, ack, 1));
+    usart_transmitBytes(bus, ack, 1);
 }
 
 /**
