@@ -97,7 +97,7 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	dma_initializePeripheralConstants();
-	watchdog_init(WWDG_TIMEOUT_TIME);
+	watchdog_init(DEFAULT_TIMEOUT_MS+10); //+10 in case race condition
 	heartbeat_timer_init();
 }
 
