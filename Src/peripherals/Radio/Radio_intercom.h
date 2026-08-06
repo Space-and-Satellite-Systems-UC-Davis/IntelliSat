@@ -93,6 +93,16 @@ PFC2RadioState radio_get_state();
  */
 void radio_killall();
 
+/**
+ * Order Radio to send a given amount of memory in the buffer to be transmitted
+ * down to the ground.
+ * NOTE: radio_push() your data into memory first, THEN call radio_downlink().
+ *
+ * @param chunk  The data to be sent
+ * @param nbytes  The size of the data to be sent.
+ *
+ * @returns success or failure
+ */
 bool radio_downlink(uint8_t chunk[], size_t nchunks);
 
 void echo();
