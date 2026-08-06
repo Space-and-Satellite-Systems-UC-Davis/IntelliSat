@@ -9,7 +9,7 @@
 #ifndef SUN_LOOKUP_H
 #define SUN_LOOKUP_H
 
-#include "ADCS/adcs_math/vector.h"
+#include "adcs_math/vector.h"
 
 
 typedef enum {

@@ -11,7 +11,7 @@
  */
 
 #include "sun_lookup.h"
-#include "ADCS/determination/sun_lookup/spa.h"
+#include "determination/sun_lookup/spa.h"
 #include <math.h>
 
 sun_lookup_status sun_lookup(double longitude, double latitude, double altitude,
