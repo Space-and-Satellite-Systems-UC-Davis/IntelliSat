@@ -13,7 +13,7 @@
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"
-#include "ADCS/logging_records.h"
+#include "Radio/log_record.h"
 
 bool talking;
 
@@ -55,26 +55,6 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
         return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
     }
 }
-
-/**
- * Sends the log beacon to the radio to be send via radio to our home radio.
- * 
- * @param log  The data log to be sent. Generate with fill_log_idle();
- * 
- * @returns success or failure
- */
-bool radio_push_beacon(log_record_idle log) {
-    if (!are_talking()) return false;
-    uint8_t* chunk = (uint8_t*)(&log);
-    size_t nbytes = sizeof(log_record_idle);
-    uint8_t header[2];
-    header[0] = 'T';
-    header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
-    if (crc_transmit(RADIO_USART, header, 2)) {
-        return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
-    }
-}
-
 
 /**
  * Force the radio to send data to the PFC
@@ -152,6 +132,17 @@ void echo() {
     uint8_t packet[MAX_MESSAGE_BYTES];
     size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
     printMsg("Radio Says: <%s>", packet);
+}
+
+bool radio_downlink_idle_log() {
+	log_record_idle log = fill_log_idle();
+	uint8_t* log_bytes = (uint8_t*) &log;
+	bool success = radio_push(log_bytes, sizeof(log));
+	if (!success) return false;
+
+	// radio_push to stuff what we need into memory. Downlink later.
+	success = radio_downlink(NULL, sizeof(log));
+	return success;
 }
 
 void initEmptyChunk(uint8_t chunk[]) {
