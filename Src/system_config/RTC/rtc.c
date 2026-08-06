@@ -33,6 +33,7 @@ void init_callbacks() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		CallbackEntry dummy_entry;
 		dummy_entry.id = NULL_ID;
+		dummy_entry.unix_time = NULL_UNIX_TIME;
 		callbacks[i] = dummy_entry;
 	}
 }
@@ -125,10 +126,12 @@ void rtc_config(char clock_source, int forced_config) {
 	// Bypass the Shadow registers to read RTC directly
 	RTC->CR |= RTC_CR_BYPSHAD;
 
-	rtc_closeWritingPrivilege();
+	init_callbacks();
 
 	// Increment boot counter
 	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
+
+	rtc_closeWritingPrivilege();
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -534,7 +537,13 @@ void setAlarm() {
 	rtc_openWritingPrivilege();
 
 	const CallbackEntry entry = callbacks[0];
-	if (entry.id == NULL_ID) return;
+	// If called after full delete, prevent interrupt triggering for nothing
+	// Just in case.
+	if (entry.id == NULL_ID) {
+		NVIC_DisableIRQ(RTC_Alarm_IRQn);
+		rtc_closeWritingPrivilege();
+		return;
+	}
 
     // Disable alarm
 	// Needs to be done to edit
@@ -604,7 +613,8 @@ uint32_t rtc_insertEntry(CallbackEntry entry) {
 
 			setAlarm();
 
-			return id_counter++;
+			id_counter++;
+			return entry.id;
 		}
 	}
 
@@ -628,8 +638,6 @@ bool rtc_deleteEntry(uint32_t id) {
 
 			setAlarm();
 
-			id_counter--;
-
 			return true;
 		}
 	}
@@ -641,6 +649,8 @@ void rtc_deleteAllEntries() {
 		callbacks[i].id = NULL_ID;
 		callbacks[i].unix_time = NULL_UNIX_TIME;
 	}
+	// Just in case, to prevent a stale interrupt
+	setAlarm();
 }
 
 CallbackEntry rtc_getEntry(uint32_t id) {
