@@ -10,8 +10,6 @@
  * 
  ********************************************************/
 
-#pragma once
-
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"

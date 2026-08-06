@@ -15,7 +15,7 @@ int crc_wait(USART_TypeDef *bus) {
     bool acked = false;
     int count = 0;
     for(int i = 0; i<10; i++){
-        count = usart_receiveBytes(bus, ack, 1);
+        count = usart_receiveBytes(bus, ack, sizeof(ack));
         if (ack[0] == 'A'){
             acked = true;
             break;
