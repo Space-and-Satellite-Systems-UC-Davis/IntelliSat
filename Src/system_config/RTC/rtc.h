@@ -225,6 +225,13 @@ bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)());
 
 typedef void(*timer_callback)();
 
+/**
+ * Must be run before callbacks may be used
+ *
+ * @returns none
+ */
+void init_callbacks();
+
 //Stores all information
 typedef struct {
     timer_callback callback;

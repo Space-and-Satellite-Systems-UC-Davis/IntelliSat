@@ -50,6 +50,12 @@ enum scb_cpacr_cpn_privileges {
 void init_init() {
 	init_coreClocks();
 	rtc_config(LSI, 0);
+
+	init_callbacks();
+
+	// Increment boot counter
+	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
+
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
 }

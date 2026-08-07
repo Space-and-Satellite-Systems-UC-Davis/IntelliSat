@@ -6,10 +6,6 @@ static int IWDG_timeout;
 void watchdog_init(int ms){
      IWDG_timeout = ms;
      watchdog_iwdg_config(ms);
-     if(ms > WWDG_MAX){
-         ms = WWDG_MAX;
-     }
-     watchdog_wwdg_config(ms);
     watchdog_interrupt_config(ms);
 }
 

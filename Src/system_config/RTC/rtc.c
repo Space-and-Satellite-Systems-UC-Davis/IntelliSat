@@ -126,11 +126,6 @@ void rtc_config(char clock_source, int forced_config) {
 	// Bypass the Shadow registers to read RTC directly
 	RTC->CR |= RTC_CR_BYPSHAD;
 
-	init_callbacks();
-
-	// Increment boot counter
-	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
-
 	rtc_closeWritingPrivilege();
 }
 
