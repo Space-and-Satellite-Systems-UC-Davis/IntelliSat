@@ -26,6 +26,7 @@ void testFunction_RTC_storage() {
 
 	printMsg("\n");
 	bool first = rtc_isFirstTime();
+
 	printMsg("First time: %s\n", first ? "true" : "false");
 
 	printMsg("State of previous ADCS Variables: %d\n", RTC->BKP1R);

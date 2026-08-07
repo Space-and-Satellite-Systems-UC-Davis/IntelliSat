@@ -4,9 +4,9 @@ static int WWDG_timeout;
 static int IWDG_timeout;
 
 void watchdog_init(int ms){
-     IWDG_timeout = ms;
-     watchdog_iwdg_config(ms);
-    watchdog_interrupt_config(ms);
+	IWDG_timeout = ms;
+	watchdog_iwdg_config(ms);
+	watchdog_interrupt_config(ms);
 }
 
 void watchdog_iwdg_config(int ms){

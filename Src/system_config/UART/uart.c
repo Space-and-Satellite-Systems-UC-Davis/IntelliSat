@@ -303,12 +303,14 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
-			uart_8bit_1stop(USART1, baud_rate, true);
+			uart_8bit_1stop(USART1, baud_rate, false);
+            NVIC_EnableIRQ(USART1_IRQn);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 			usart2_gpio_init();
 			uart_8bit_1stop(USART2, baud_rate, false);
+            NVIC_EnableIRQ(USART2_IRQn);
 			break;
 		case (int)USART3:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
@@ -439,11 +441,13 @@ void usart_flushrx(USART_TypeDef* bus) {
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
+#if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
 		enqueueBuffer(USART1_RxBuffer, USART1);
+#endif
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
+		// USART1->ISR &= ~USART_ISR_RTOF;
 		USART1->ICR &= ~USART_ICR_RTOCF;
-		USART1_RxBuffer.timedout = true;
 	}
 }
 
@@ -465,15 +469,9 @@ void USART2_IRQHandler() {
 void USART3_IRQHandler() {
 	if (USART3->ISR & USART_ISR_RXNE) {
 		USART3->ISR &= ~USART_ISR_RXNE;
-#if OP_REV == 1
-		enqueueBuffer(USART3_RxBuffer, USART3);
-#endif
 	}
 	if (USART3->ISR & USART_ISR_RTOF) {
 		USART3->ISR &= ~USART_ISR_RTOF;
-#if OP_REV == 1
-		USART3_RxBuffer.timedout = true;
-#endif
 	}
 }
 
@@ -504,9 +502,5 @@ void LPUART1_IRQHandler() {
 	}
 	if (LPUART1->ISR & USART_ISR_RTOF) {
 		LPUART1->ISR &= ~USART_ISR_RTOF;
-#if OP_REV == 2
-		LPUART1_RxBuffer.timedout = true;
-#endif
 	}
 }
-
