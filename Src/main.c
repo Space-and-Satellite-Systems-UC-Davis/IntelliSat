@@ -5,7 +5,7 @@
 #include "stm32l476xx.h"
 
 #define RUN_TEST	    1	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	    18	// ID of the test to run in case RUN_TEST = 1
+#define TEST_ID 	    26	// ID of the test to run in case RUN_TEST = 1
 #define RTOS_TEST       0   // 0 to run branch_main, 1 to run branch_test
 #define RUN_UNIT_TESTS  0   // 1 to run unit tests  
 

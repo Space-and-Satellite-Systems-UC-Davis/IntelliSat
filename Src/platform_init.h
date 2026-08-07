@@ -51,10 +51,6 @@ void init_init() {
 	init_coreClocks();
 	rtc_config(LSI, 0);
 
-	init_callbacks();
-
-	// Increment boot counter
-	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
 
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
@@ -81,6 +77,7 @@ void init_first_time() {
  * @returns None
  */
 void init_platform() {
+	init_callbacks();
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
@@ -103,8 +100,15 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	dma_initializePeripheralConstants();
-	watchdog_init(5000);
+
 	heartbeat_timer_init();
+	delay_ms(20000);
+	rtc_increment_boot_counter();
+
+	watchdog_init(5000);
+
+
+
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

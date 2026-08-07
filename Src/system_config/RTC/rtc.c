@@ -306,7 +306,11 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 }
 
 uint32_t rtc_getBootCounter() {
-	return RTC->BKP0R;
+	return RTC->BKP2R;
+}
+
+void rtc_increment_boot_counter() {
+	rtc_writeToBKPNumber(RTC->BKP2R + 1, BootCounter);
 }
 
 bool rtc_isFirstTime() {

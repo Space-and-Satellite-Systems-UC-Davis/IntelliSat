@@ -105,7 +105,7 @@ void rtc_config(char clock_source, int forced_config);
 void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
 
 enum BKPDesignations {
-  BootCounter = 0,
+  BootCounter = 2,
   ADCSVars = 1,
 };
 
@@ -115,6 +115,13 @@ enum BKPDesignations {
  * @returns true if it's the first time being on for the board.
  */
 uint32_t rtc_getBootCounter();
+
+/**
+ * Simply increments BKP0. Explicitly prevent write access to BKP directly
+ *
+ * @returns true if it's the first time being on for the board.
+ */
+void rtc_increment_boot_counter();
 
 /**
  * Reads BKP0 to tell whether it's the first time this board was turned on.

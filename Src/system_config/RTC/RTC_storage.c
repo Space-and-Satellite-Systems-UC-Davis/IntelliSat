@@ -10,7 +10,7 @@
 // WARNING: THIS TEST REQUIRES SEVERAL RUNS.
 void testFunction_RTC_storage() {
 	// Uncomment if you want to clear first flag
-	rtc_writeToBKPNumber(0, 0);
+//	rtc_writeToBKPNumber(0, 0);
 	switch (RTC->BKP0R) {
 		case 0:
 			printMsg("Flag is in Default after-erase state. This should not happen if called after init\n");
