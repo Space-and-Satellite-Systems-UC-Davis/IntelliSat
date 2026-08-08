@@ -25,14 +25,16 @@ adcs_main_status detumbleEX(vec3 needle, uint64_t minTime, uint64_t maxTime)
     switch (detumble(needle, false, minTime, maxTime)) {
         case DETUMBLING_SUCCESS:
             return ADCS_MAIN_SUCCESS;
+        case DETUMBLING_HAS_RESTARTED:
+            return ADCS_MAIN_RESTARTED;
         case DETUMBLING_FAILURE_CURR_MILLIS:
         case DETUMBLING_FAILURE_MAGNETOMETER:
         case DETUMBLING_FAILURE_IMU:
         case DETUMBLING_FAILURE_CONTROL_COILS:
         case DETUMBLING_FAILURE_DELAY_MS:
-        case DETUMBLING_HAS_RESTARTED:
             return ADCS_MAIN_DETUMBLE_ERR;
     }
+    return ADCS_MAIN_DETUMBLE_ERR;
 }
 
 adcs_main_status ADCS_MAIN(adcs_mode mode)
@@ -65,15 +67,21 @@ adcs_main_status ADCS_MAIN(adcs_mode mode)
             break;
 
         case ADCS_HDD_EXP_ANGVEL:
-            PID_experiment(0, 0);
+            if (PID_experiment(0, 0) == PID_EXPERIMENT_HAS_RESTARTED) {
+                return ADCS_MAIN_RESTARTED;
+            }
             break;
 
         case ADCS_HDD_EXP_TRIAD:
-            determination_experiment();
+            if (determination_experiment() == DETERMINATION_EXPERIMENT_HAS_RESTARTED) {
+                return ADCS_MAIN_RESTARTED;
+            }
             break;
 
         case ADCS_HDD_EXP_RAMP:
-            ramp_experiment();
+            if (ramp_experiment() == RUN_RAMP_EXPERIMENT_HAS_RESTARTED) {
+                return ADCS_MAIN_RESTARTED;
+            }
             break;
 
         case ADCS_HDD_TESTING:
@@ -96,6 +104,7 @@ adcs_main_status ADCS_MAIN(adcs_mode mode)
 
             return ADCS_MAIN_SUCCESS;
     }
+    return ADCS_MAIN_SUCCESS;
 }
 
 adcs_mode ADCS_recommend_mode()

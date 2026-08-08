@@ -138,7 +138,7 @@ vi_get_sensor_calibration(
 vi_get_constant_status
 vi_get_sensor_status(
 	vi_sensor sensor,
-	int *sensor_status
+	sensor_status *sensor_status
 ){
 	//TODO: Implement
 
