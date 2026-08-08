@@ -4,16 +4,28 @@
 #include "queue.h"
 #include "stm32l476xx.h"
 
-#define RUN_TEST	0	// 0 = run IntelliSat, 1 = run a very specific test
-#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
-#define RTOS_TEST   0   // 0 to run branch_main, 1 to run branch_test
+#define RUN_TEST	1	// 0 = run IntelliSat, 1 = run a very specific test
+#define TEST_ID 	25	// ID of the test to run in case RUN_TEST = 1
 
 #include <TestDefinition.h>
 
-#if RTOS_TEST
-    #include "scheduler/ledtask.h"
-    #include "scheduler/testqueue.h"
-    #include "queue.h"
+int main() {
+    init_init();
+    init_platform(!RUN_TEST);
+
+
+#if (RUN_TEST==1) && (TEST_ID != 0)
+
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
+
+    #else
+
+	while (1) {
+		continue;
+	}
+
 #endif
 
 static ledTask_struct led2task_t = {1000,2};
