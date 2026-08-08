@@ -32,7 +32,8 @@ typedef enum {
     ADCS_MAIN_IMU_ERR,
     ADCS_MAIN_DETUMBLE_ERR,
     ADCS_MAIN_COILS_TESTING_ERR,
-    ADCS_ROTISSERIE_ERR
+    ADCS_ROTISSERIE_ERR,
+    ADCS_MAIN_RESTARTED
 } adcs_main_status; // TODO: full list
 
 typedef enum{
