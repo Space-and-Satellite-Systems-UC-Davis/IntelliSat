@@ -1,7 +1,7 @@
 #include "PID_experiment.h"
 #include "adcs_math/sensors.h"
 #include "virtual_intellisat.h"
-#include "virtual_ros.h"
+#include "virtual_rtos.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -50,6 +50,7 @@ PID_status PID_experiment(double target, int infinite)
         vi_enter_critical();
         if (vi_task_has_restarted()) {
             // Return to Schedulers to restart Detumbling
+            vi_exit_critical();
             return PID_EXPERIMENT_HAS_RESTARTED;
         }
 

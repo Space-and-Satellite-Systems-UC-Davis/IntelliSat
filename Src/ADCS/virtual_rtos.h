@@ -31,3 +31,12 @@ void vi_exit_critical();
  * time it ran.
  */
 int vi_task_has_restarted();
+
+
+/**
+ * @brief Reset the calling task's staleness timer. Call once at the
+ * start of each scheduled run (before any retries) so the next
+ * vi_task_has_restarted() check measures elapsed time within this run,
+ * not the gap since the previous scheduled run.
+ */
+void vi_reset_stale_timer();

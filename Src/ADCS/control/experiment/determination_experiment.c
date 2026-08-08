@@ -45,6 +45,7 @@ determination_exp_status determination_experiment()
         vi_enter_critical();
         if (vi_task_has_restarted()) {
             // Return to Schedulers to restart Detumbling
+            vi_exit_critical();
             return DETERMINATION_EXPERIMENT_HAS_RESTARTED;
         }
 

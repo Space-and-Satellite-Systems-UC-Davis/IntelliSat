@@ -50,7 +50,7 @@
 
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES                       3
 
-#define configUSE_MUTEXES                                           0
+#define configUSE_MUTEXES                                           1
 
 #define configUSE_RECURSIVE_MUTEXES                                 0
 

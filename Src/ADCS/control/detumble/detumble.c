@@ -12,7 +12,7 @@
 #include "control/detumble/bdot_control.h"
 #include "control/detumble/detumble_util.h"
 #include "virtual_intellisat.h"
-#include "virtual_ros.h"
+#include "virtual_rtos.h"
 
 #include <math.h>
 
@@ -51,6 +51,7 @@ detumble_status detumble(vec3 needle, bool isTesting, uint64_t maxTime,
 
         if (vi_task_has_restarted()) {
             // Return to Schedulers to restart Detumbling
+            vi_exit_critical();
             return DETUMBLING_HAS_RESTARTED;
         }
 
