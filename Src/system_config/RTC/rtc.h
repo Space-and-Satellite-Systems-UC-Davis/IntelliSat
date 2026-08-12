@@ -104,8 +104,10 @@ void rtc_config(char clock_source, int forced_config);
  */
 void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
 
+// WARNING:
+// MUST EDIT rtc_config() TO SAVE ANY NEW BKP REGISTERS BEING USED!
 enum BKPDesignations {
-  BootCounter = 2,
+  BootCounter = 0,
   ADCSVars = 1,
 };
 

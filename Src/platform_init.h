@@ -102,7 +102,7 @@ void init_platform() {
 	dma_initializePeripheralConstants();
 
 	heartbeat_timer_init();
-	delay_ms(20000);
+	delay_ms(15000);
 	rtc_increment_boot_counter();
 
 	watchdog_init(5000);
