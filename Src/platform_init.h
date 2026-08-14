@@ -49,7 +49,7 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
-	rtc_config(LSI, 0);
+	rtc_config(LSE, false);
 
 
     //TODO: retrieve RTC vars
@@ -102,7 +102,8 @@ void init_platform() {
 	dma_initializePeripheralConstants();
 
 	heartbeat_timer_init();
-	delay_ms(15000);
+	// Without delay, boot number is incremented several times per flashing
+//	delay_ms(15000);
 	rtc_increment_boot_counter();
 
 	watchdog_init(5000);

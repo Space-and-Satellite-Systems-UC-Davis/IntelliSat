@@ -105,7 +105,14 @@ void rtc_config(char clock_source, int forced_config) {
 	}
 
 	//Restore from reset
+	//This handles LSE as well
 	RCC->BDCR |= backup;
+
+	if ((backup & RCC_BDCR_LSEON) != 0) {
+		// wait for the LSE Oscillator to stabilize
+		wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS);
+	}
+
 	// Enable the RTC Clock
 	RCC->BDCR |= RCC_BDCR_RTCEN;
 
