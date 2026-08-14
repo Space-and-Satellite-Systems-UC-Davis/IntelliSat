@@ -441,13 +441,11 @@ void usart_flushrx(USART_TypeDef* bus) {
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
-#if OP_REV == 1 || OP_REV == 2 || OP_REV == 3
 		enqueueBuffer(USART1_RxBuffer, USART1);
-#endif
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
-		// USART1->ISR &= ~USART_ISR_RTOF;
 		USART1->ICR &= ~USART_ICR_RTOCF;
+		USART1_RxBuffer.timedout = true;
 	}
 }
 
