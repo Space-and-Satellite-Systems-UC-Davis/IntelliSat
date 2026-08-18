@@ -6,7 +6,6 @@
 
 bool low_pwr_time();
 bool detumble_time();
-bool comms_time();
 bool experiment_time();
 bool ecc_time();
 bool pizza_time();
@@ -18,7 +17,6 @@ bool idle_time();
 
 void config_low_pwr();
 void config_detumble();
-void config_comms();
 void config_experiment();
 void config_ecc();
 void config_pizza();
@@ -29,7 +27,7 @@ void config_idle();
 
 void low_pwr();
 void run_detumble();
-void comms();
+static void comms(void *args);
 void experiment();
 void ecc();
 void pizza();
@@ -40,7 +38,6 @@ void idle();
 
 void clean_low_pwr();
 void clean_detumble();
-void clean_comms();
 void clean_experiment();
 void clean_ecc();;
 void clean_pizza();void clean_idle();
