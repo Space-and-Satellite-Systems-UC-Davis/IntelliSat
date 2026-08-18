@@ -99,6 +99,7 @@ void init_platform() {
 	dma_initializePeripheralConstants();
 	watchdog_init(5000);
 	heartbeat_timer_init();
+	spi_config(SPI1);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

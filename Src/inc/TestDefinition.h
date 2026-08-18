@@ -9,6 +9,7 @@ extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
+extern void testFunction_FRAM();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
@@ -44,6 +45,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogTimer_Callback;
 		case 4:
 			return testerFunction_PWMGeneration;
+		case 7:
+			return testFunction_FRAM;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
 		case 11:
