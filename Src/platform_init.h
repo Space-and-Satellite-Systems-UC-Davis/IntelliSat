@@ -97,6 +97,7 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	dma_initializePeripheralConstants();
+	qspi_config(23, 2, 0);
 	watchdog_init(5000);
 	heartbeat_timer_init();
 	spi_config(SPI1);
