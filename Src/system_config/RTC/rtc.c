@@ -128,7 +128,7 @@ void rtc_config(char clock_source, int forced_config) {
 	rtc_closeWritingPrivilege();
 
 	// Increment boot counter
-	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
+	rtc_writeToBKPNumber(rtc_getBootCounter()+1, BootCounter);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -307,8 +307,13 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		rtc_closeWritingPrivilege();
 }
 
+uint32_t rtc_getBootCounter() {
+	return RTC->BKP0R;
+}
+
 bool rtc_isFirstTime() {
-	if (RTC->BKP0R == 0 || RTC->BKP0R == 1) {
+	int boot_counter = rtc_getBootCounter();
+	if (boot_counter == 0 || boot_counter == 1) {
 		return true;
 	} else {
 		return false;

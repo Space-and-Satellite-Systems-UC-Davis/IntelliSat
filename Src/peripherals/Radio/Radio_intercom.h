@@ -15,6 +15,7 @@
 
 #include "globals.h"
 #include "UART/crc.h"
+#include "ADCS/logging_records.h"
 
 #define RADIO_USART USART1
 #define PFC2Radio_BAUDRATE 9600
@@ -78,7 +79,7 @@ RadioPacket radio_force_pull(uint8_t chunk[]);
  * 
  * @returns number of bytes read and the data type
  */
-RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType datatype);
+RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType datatype);
 
 /**
  * Retrieve the radio's state
@@ -105,6 +106,16 @@ void radio_killall();
  */
 bool radio_downlink(uint8_t chunk[], size_t nchunks);
 
+/**
+ * Sends the idle log to the radio to be sent via radio to our home radio.
+ * The idle log is filled inside the function at the time of calling.
+ *
+ * @returns success or failure
+ */
+bool radio_downlink_idle_log();
+
 void echo();
+
+void initEmptyChunk(uint8_t chunk[]);
 
 #endif /* __RADIO_INTERCOM__ */

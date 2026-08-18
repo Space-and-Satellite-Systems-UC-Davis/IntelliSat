@@ -13,6 +13,7 @@
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"
+#include "Radio/log_record.h"
 
 bool talking;
 
@@ -46,7 +47,11 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
     uint8_t header[2];
     header[0] = 'D';
     header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
-    if (crc_transmit(RADIO_USART, header, 2)) {
+    header[2] = nbytes % CHUNK_LENGTH; //remainder, to calculate total num bytes
+    if(header[2] == 0){
+        header[2] = CHUNK_LENGTH;
+    }
+    if (crc_transmit(RADIO_USART, header, 3)) {
         return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
     }
 }
@@ -64,7 +69,8 @@ RadioPacket radio_force_pull(uint8_t chunk[]) {
     if (!crc_transmit(RADIO_USART, "U", 1)) return fail;
     uint8_t buffer[MAX_PAYLOAD_BYTES];
     crc_read(RADIO_USART, buffer);
-    return radio_pull(chunk, buffer[1], buffer[2]);
+    int totalBytes = (buffer[1]-1) * CHUNK_LENGTH + buffer[2];
+    return radio_pull(chunk, totalBytes, buffer[3]);
 }
 
 /**
@@ -75,15 +81,15 @@ RadioPacket radio_force_pull(uint8_t chunk[]) {
  * 
  * @returns number of bytes read and the data type
  */
-RadioPacket radio_pull(uint8_t chunk[], size_t nchunks, PFC2RadioMessageType datatype) {
+RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType datatype) {
     RadioPacket fail;
     fail.size = 0;
     fail.datatype = 0;
     if (!are_talking()) return fail;
-    uint8_t subchunk[MAX_PAYLOAD_BYTES];
-    int read = crc_chunked_read(RADIO_USART, chunk, CHUNK_LENGTH, nchunks);
+    int nchunks = (nbytes-1)/CHUNK_LENGTH + 1;
+    crc_chunked_read(RADIO_USART, chunk, CHUNK_LENGTH, nchunks);
     RadioPacket success;
-    success.size = read;
+    success.size = nbytes;
     success.datatype = datatype;
     return success;
 }
@@ -126,4 +132,21 @@ void echo() {
     uint8_t packet[MAX_MESSAGE_BYTES];
     size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
     printMsg("Radio Says: <%s>", packet);
+}
+
+bool radio_downlink_idle_log() {
+	log_record_idle log = fill_log_idle();
+	uint8_t* log_bytes = (uint8_t*) &log;
+	bool success = radio_push(log_bytes, sizeof(log));
+	if (!success) return false;
+
+	// radio_push to stuff what we need into memory. Downlink later.
+	success = radio_downlink(NULL, sizeof(log));
+	return success;
+}
+
+void initEmptyChunk(uint8_t chunk[]) {
+	for (size_t i = 0; i < CHUNK_LENGTH; i++) {
+		chunk[i] = 0;
+	}
 }

@@ -108,6 +108,14 @@ enum BKPDesignations {
   BootCounter = 0,
   ADCSVars = 1,
 };
+
+/**
+ * Reads BKP0 to tell how many times we booted, incremented by rtc_config
+ *
+ * @returns true if it's the first time being on for the board.
+ */
+uint32_t rtc_getBootCounter();
+
 /**
  * Reads BKP0 to tell whether it's the first time this board was turned on.
  * NOTE: Not reliable before rtc_configure updates the flag.
