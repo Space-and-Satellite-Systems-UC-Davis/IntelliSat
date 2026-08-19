@@ -104,6 +104,8 @@ void rtc_config(char clock_source, int forced_config);
  */
 void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
 
+// WARNING:
+// MUST EDIT rtc_config() TO SAVE ANY NEW BKP REGISTERS BEING USED!
 enum BKPDesignations {
   BootCounter = 0,
   ADCSVars = 1,
@@ -115,6 +117,13 @@ enum BKPDesignations {
  * @returns true if it's the first time being on for the board.
  */
 uint32_t rtc_getBootCounter();
+
+/**
+ * Simply increments BKP0. Explicitly prevent write access to BKP directly
+ *
+ * @returns true if it's the first time being on for the board.
+ */
+void rtc_increment_boot_counter();
 
 /**
  * Reads BKP0 to tell whether it's the first time this board was turned on.
@@ -232,6 +241,13 @@ bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)());
 #define NULL_UNIX_TIME UINT32_MAX
 
 typedef void(*timer_callback)();
+
+/**
+ * Must be run before callbacks may be used
+ *
+ * @returns none
+ */
+void init_callbacks();
 
 //Stores all information
 typedef struct {

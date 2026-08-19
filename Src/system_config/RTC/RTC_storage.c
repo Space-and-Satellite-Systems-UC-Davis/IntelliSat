@@ -32,7 +32,7 @@ void testFunction_RTC_storage() {
 	printMsg("State of previous ADCS Variables: %d\n", RTC->BKP1R);
 
 	// Clear ADCS vars
-	rtc_writeToBKPNumber(0, 1);
+	rtc_writeToBKPNumber(0, ADCSVars);
 	printMsg("State of cleared ADCS Variables: %d\n", RTC->BKP1R);
 
 	rtc_writeToADCSVariable(true, Sun0);
