@@ -26,12 +26,13 @@ void testFunction_RTC_storage() {
 
 	printMsg("\n");
 	bool first = rtc_isFirstTime();
+
 	printMsg("First time: %s\n", first ? "true" : "false");
 
 	printMsg("State of previous ADCS Variables: %d\n", RTC->BKP1R);
 
 	// Clear ADCS vars
-	rtc_writeToBKPNumber(0, 1);
+	rtc_writeToBKPNumber(0, ADCSVars);
 	printMsg("State of cleared ADCS Variables: %d\n", RTC->BKP1R);
 
 	rtc_writeToADCSVariable(true, Sun0);

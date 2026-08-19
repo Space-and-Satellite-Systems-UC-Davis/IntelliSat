@@ -13,6 +13,7 @@
 #include "Radio_intercom.h"
 #include "MGTINTERCOM/mgt_intercom.h"
 #include "print_scan.h"
+#include "Radio/log_record.h"
 
 bool talking;
 
@@ -131,6 +132,17 @@ void echo() {
     uint8_t packet[MAX_MESSAGE_BYTES];
     size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
     printMsg("Radio Says: <%s>", packet);
+}
+
+bool radio_downlink_idle_log() {
+	log_record_idle log = fill_log_idle();
+	uint8_t* log_bytes = (uint8_t*) &log;
+	bool success = radio_push(log_bytes, sizeof(log));
+	if (!success) return false;
+
+	// radio_push to stuff what we need into memory. Downlink later.
+	success = radio_downlink(NULL, sizeof(log));
+	return success;
 }
 
 void initEmptyChunk(uint8_t chunk[]) {

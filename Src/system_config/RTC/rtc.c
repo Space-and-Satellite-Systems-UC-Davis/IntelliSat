@@ -33,6 +33,7 @@ void init_callbacks() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		CallbackEntry dummy_entry;
 		dummy_entry.id = NULL_ID;
+		dummy_entry.unix_time = NULL_UNIX_TIME;
 		callbacks[i] = dummy_entry;
 	}
 }
@@ -65,6 +66,7 @@ void rtc_closeWritingPrivilege() {
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
+bool is_BDRST_not_set() { return (RCC->BDCR & RCC_BDCR_BDRST) == 0; }
 void rtc_config(char clock_source, int forced_config) {
 	// do nothing if clock is already configured
 	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
@@ -74,10 +76,17 @@ void rtc_config(char clock_source, int forced_config) {
 	backup_domain_controlEnable();
 
 	// store the current clock configuration, in case of bad input
-	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
+	uint32_t backup = RCC->BDCR & ~RCC_BDCR_RTCSEL;
+	uint32_t backup_rtcsel = RCC->BDCR & RCC_BDCR_RTCSEL;
+	// MAKE SURE TO ADD MORE IF USING MORE BKP REGISTERS!
+	uint32_t backup_boot = RTC->BKP0R;
+	uint32_t backup_adcs = RTC->BKP1R;
+
 
 	// reset the clock
-	RCC->BDCR &= ~RCC_BDCR_RTCSEL;
+	RCC->BDCR |= RCC_BDCR_BDRST;
+	wait_with_timeout(is_BDRST_not_set, DEFAULT_TIMEOUT_MS);
+	RCC->BDCR &= ~RCC_BDCR_BDRST;
 
 	// Select the RTC clock source
 	switch (clock_source) {
@@ -91,12 +100,25 @@ void rtc_config(char clock_source, int forced_config) {
 			RCC->BDCR |= RCC_BDCR_RTCSEL_Msk;
 			break;
 		default:
-			RCC->BDCR |= temp;	// restore the original configuration
+			RCC->BDCR |= backup_rtcsel;	// restore the original configuration
 			break;
+	}
+
+	//Restore from reset
+	//This handles LSE as well
+	RCC->BDCR |= backup;
+
+	if ((backup & RCC_BDCR_LSEON) != 0) {
+		// wait for the LSE Oscillator to stabilize
+		wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS);
 	}
 
 	// Enable the RTC Clock
 	RCC->BDCR |= RCC_BDCR_RTCEN;
+
+	// MAKE SURE TO ADD MORE IF USING MORE BKP REGISTERS!
+	RTC->BKP0R = backup_boot;
+	RTC->BKP1R = backup_adcs;
 
 	backup_domain_controlDisable();
 
@@ -126,9 +148,6 @@ void rtc_config(char clock_source, int forced_config) {
 	RTC->CR |= RTC_CR_BYPSHAD;
 
 	rtc_closeWritingPrivilege();
-
-	// Increment boot counter
-	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -307,8 +326,17 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		rtc_closeWritingPrivilege();
 }
 
+uint32_t rtc_getBootCounter() {
+	return RTC->BKP0R;
+}
+
+void rtc_increment_boot_counter() {
+	rtc_writeToBKPNumber(RTC->BKP0R + 1, BootCounter);
+}
+
 bool rtc_isFirstTime() {
-	if (RTC->BKP0R == 0 || RTC->BKP0R == 1) {
+	int boot_counter = rtc_getBootCounter();
+	if (boot_counter == 0 || boot_counter == 1) {
 		return true;
 	} else {
 		return false;
@@ -534,7 +562,13 @@ void setAlarm() {
 	rtc_openWritingPrivilege();
 
 	const CallbackEntry entry = callbacks[0];
-	if (entry.id == NULL_ID) return;
+	// If called after full delete, prevent interrupt triggering for nothing
+	// Just in case.
+	if (entry.id == NULL_ID) {
+		NVIC_DisableIRQ(RTC_Alarm_IRQn);
+		rtc_closeWritingPrivilege();
+		return;
+	}
 
     // Disable alarm
 	// Needs to be done to edit
@@ -604,7 +638,8 @@ uint32_t rtc_insertEntry(CallbackEntry entry) {
 
 			setAlarm();
 
-			return id_counter++;
+			id_counter++;
+			return entry.id;
 		}
 	}
 
@@ -628,8 +663,6 @@ bool rtc_deleteEntry(uint32_t id) {
 
 			setAlarm();
 
-			id_counter--;
-
 			return true;
 		}
 	}
@@ -641,6 +674,8 @@ void rtc_deleteAllEntries() {
 		callbacks[i].id = NULL_ID;
 		callbacks[i].unix_time = NULL_UNIX_TIME;
 	}
+	// Just in case, to prevent a stale interrupt
+	setAlarm();
 }
 
 CallbackEntry rtc_getEntry(uint32_t id) {
