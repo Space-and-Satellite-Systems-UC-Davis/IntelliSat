@@ -24,6 +24,7 @@ extern void testFunction_DMA_USART();
 extern void testFunction_mgtSleep();
 extern void testFunction_RadioSleep();
 extern void testFunction_RTC_storage();
+extern void testFunction_INA3221_PDB();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -73,6 +74,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RadioSleep;
  		case 29:
 			return testFunction_DMA_USART;
+ 		case 31:
+ 			return testFunction_INA3221_PDB;
 		default:
 			return testFunction_Nothing;
 	}
