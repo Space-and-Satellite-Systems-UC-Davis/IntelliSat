@@ -54,7 +54,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_getCalendar;
 		case 20:
 			return testFunction_DMA_ADC;
-    case 21:
+    	case 21:
 			return testFunction_RadioIntercom;
 		case 23:
 			return testFunction_LPSleep;
