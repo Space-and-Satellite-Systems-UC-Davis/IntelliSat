@@ -25,6 +25,7 @@ extern void testFunction_mgtSleep();
 extern void testFunction_RadioSleep();
 extern void testFunction_RTC_storage();
 extern void testFunction_Beacon();
+extern void testFunction_LogDownlink();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -76,6 +77,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RadioSleep;
  		case 29:
 			return testFunction_DMA_USART;
+		case 30:
+			return testFunction_LogDownlink;
 		default:
 			return testFunction_Nothing;
 	}

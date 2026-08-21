@@ -18,7 +18,8 @@ typedef struct PANEL_STRUCT {
 
 typedef enum DIODE_ENUM {DIODE0, DIODE1} DIODES;
 
-typedef enum TEMP_ENUM {TEMP0, TEMP1} TEMP;
+// Virtual Intellisat declares a TEMP enum, so it's TEMPR here
+typedef enum TEMPR_ENUM {TEMP0, TEMP1} TEMPR;
 
 /**
  * Panel-to-face mapping convention.
@@ -98,12 +99,12 @@ float sun_sensors_readCurrent(PANELS panelNum);
  * Read the shunt voltage from power moniter
  * 
  * @param panelNum: A PANELS_ENUM to identify which panel to read from 
- * @param tempNum: A TEMP_ENUM to identify which temp sensor to read from
+ * @param tempNum: A TEMPR_ENUM to identify which temp sensor to read from
  * 
  * @return temperature in Celsius
  * 
  */
-float sun_sensors_readTemp(PANELS panelNum, TEMP tempNum);
+float sun_sensors_readTemp(PANELS panelNum, TEMPR tempNum);
 
 /**
  * Power down all temp sensors and power moniters

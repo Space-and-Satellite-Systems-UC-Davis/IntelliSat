@@ -128,7 +128,7 @@ void rtc_config(char clock_source, int forced_config) {
 	rtc_closeWritingPrivilege();
 
 	// Increment boot counter
-	rtc_writeToBKPNumber(RTC->BKP0R+1, BootCounter);
+	rtc_writeToBKPNumber(rtc_getBootCounter()+1, BootCounter);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -307,80 +307,13 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		rtc_closeWritingPrivilege();
 }
 
-uint32_t rtc_readFromBKPNumber(uint32_t bkp) {
-		switch (bkp) {
-		    case 0:
-		        return RTC->BKP0R;
-		    case 1:
-		        return RTC->BKP1R;
-		    case 2:
-		        return RTC->BKP2R;
-		    case 3:
-		        return RTC->BKP3R;
-		    case 4:
-		        return RTC->BKP4R;
-		    case 5:
-		        return RTC->BKP5R;
-		    case 6:
-		        return RTC->BKP6R;
-		    case 7:
-		        return RTC->BKP7R;
-		    case 8:
-		        return RTC->BKP8R;
-		    case 9:
-		        return RTC->BKP9R;
-		    case 10:
-		        return RTC->BKP10R;
-		    case 11:
-		        return RTC->BKP11R;
-		    case 12:
-		        return RTC->BKP12R;
-		    case 13:
-		        return RTC->BKP13R;
-		    case 14:
-		        return RTC->BKP14R;
-		    case 15:
-		        return RTC->BKP15R;
-		    case 16:
-		        return RTC->BKP16R;
-		    case 17:
-		        return RTC->BKP17R;
-		    case 18:
-		        return RTC->BKP18R;
-		    case 19:
-		        return RTC->BKP19R;
-		    case 20:
-		        return RTC->BKP20R;
-		    case 21:
-		        return RTC->BKP21R;
-		    case 22:
-		        return RTC->BKP22R;
-		    case 23:
-		        return RTC->BKP23R;
-		    case 24:
-		        return RTC->BKP24R;
-		    case 25:
-		        return RTC->BKP25R;
-		    case 26:
-		        return RTC->BKP26R;
-		    case 27:
-		        return RTC->BKP27R;
-		    case 28:
-		        return RTC->BKP28R;
-		    case 29:
-		        return RTC->BKP29R;
-		    case 30:
-		        return RTC->BKP30R;
-		    case 31:
-		        return RTC->BKP31R;
-		    default:
-		        // Handle case when var is not in the range 0 to 31
-		        return 0;
-		}
+uint32_t rtc_getBootCounter() {
+	return RTC->BKP0R;
 }
 
 bool rtc_isFirstTime() {
-	if (RTC->BKP0R == 0 || RTC->BKP0R == 1) {
+	int boot_counter = rtc_getBootCounter();
+	if (boot_counter == 0 || boot_counter == 1) {
 		return true;
 	} else {
 		return false;
