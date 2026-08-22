@@ -26,8 +26,7 @@ void build_beacon_record(log_record_idle *out,
     out->last_uplink_minute = 0;
     out->last_uplink_second = 0;
 
-    // TODO: no experiment-count tracking exists yet.
-    out->num_new_experiments = 0;
+    out->num_new_experiments = snap->num_new_experiments;
 
     out->batt_level = snap->batt_voltage;
     out->batt_7_day_low = batt_window->batt_low;

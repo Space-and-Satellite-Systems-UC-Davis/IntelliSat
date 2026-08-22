@@ -17,6 +17,7 @@
 #include "RTC/rtc.h"
 #include "Radio/Radio_intercom.h"
 #include "SunSensors/sun_sensors.h"
+#include "virtual_intellisat.h"
 
 // TODO: tune retry/backoff values
 #define RADIO_PUSH_RETRY_COUNT 3
@@ -77,6 +78,7 @@ static bool beacon_task_cycle(log_record_idle *out_record) {
 
   snap.last_action_taken = last_task_id;
 
+  snap.num_new_experiments = vi_get_experiments_since_uplink();
   snap.det_status = ADCS_get_attitude(&snap.attitude);
   snap.is_in_eclipse = ADCS_is_in_eclipse();
 
