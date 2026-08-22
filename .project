@@ -3,6 +3,7 @@
 	<name>Proj</name>
 	<comment></comment>
 	<projects>
+		<project>IntelliSat</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
