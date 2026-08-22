@@ -20,6 +20,48 @@
 
 #include <stdbool.h>
 
+adcs_main_status detumbleEX(vec3 needle, uint64_t minTime, uint64_t maxTime);
+
+void ADCS_DETUMBLING_MODE (void *pvParameters)
+{
+    for (;;)
+        detumbleEX((vec3){ 0, 0, 0 }, 0, 3600);
+}
+
+void ADCS_INITIAL_DETUMBLING_MODE (void *pvParameters)
+{
+    for (;;)
+        detumbleEX((vec3){ 0, 0, 0 }, 3600, 36000);
+}
+
+// note ADCS_COILS_TESTING is not included here, see OG thing below
+
+void ADCS_HDD_EXP_ANGVEL_MODE (void *pvParamters)
+{
+    for (;;)
+        PID_experiment(0, 0);
+}
+
+void ADCS_HDD_EXP_TRIAD_MODE (void *pvParameters)
+{
+    for (;;)
+        determination_experiment();
+}
+
+void ADCS_HDD_EXP_RAMP_MODE (void *pvParameters)
+{
+    for (;;)
+        ramp_experiment();
+}
+
+// note testing modes are not included here either, see below for OG
+
+void ADCS_ROTISSERIE_MODE (void *pvParameters)
+{
+    for (;;)
+        PID_experiment(.0872665, 1);
+}
+
 adcs_main_status detumbleEX(vec3 needle, uint64_t minTime, uint64_t maxTime)
 {
     switch (detumble(needle, false, minTime, maxTime)) {
@@ -142,4 +184,9 @@ adcs_get_attitude_status ADCS_get_attitude(mat3 *attitude)
         case DET_CSS_FAILURE:
             return GET_ATTITUDE_CSS_FAILURE;
     }
+}
+
+vi_choice ADCS_get_sensor_alteration(vi_sensor sensor){
+    int generation = get_vi_get_experiment_generation();
+    return sensor_pair_choice(sensor, generation);
 }

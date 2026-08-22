@@ -421,6 +421,11 @@ int vi_get_determination_generation();
  */
 void vi_increment_determination_generation();
 
+/**
+ * @brief Get the number of experiments since last uplink.
+ */
+void vi_get_experiments_since_uplink();
+
 
 /*###################### OPERATIONS ######################*/
 
