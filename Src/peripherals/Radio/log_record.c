@@ -129,7 +129,7 @@ log_record_idle fill_log_idle() {
     log.temp_ny = reading >= 0 ? (uint8_t)(reading * 255) : 0;
 
     // WIP
-    log.error_msg = NOT_IMPLEMENTED;
+//    log.error_msg = NOT_IMPLEMENTED;
 
 
     // WIP
