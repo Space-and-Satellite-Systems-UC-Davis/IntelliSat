@@ -8,8 +8,7 @@
 static bool led2_state=true;
 static bool led3_state=true;
 static bool led4_state=true;
-static bool led5_state=true;
-
+static bool led5_state = true;
 
 typedef struct {
     uint32_t delay_ms;
