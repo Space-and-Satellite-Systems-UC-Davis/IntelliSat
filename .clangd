@@ -1,17 +1,28 @@
 CompileFlags:
   CompilationDatabase: "Debug"
-  Add: [
-    -xc
-  ]
-  Remove: [
-    -fcyclomatic-complexity
-  ]
+  Add:
+    [
+      -xc,
+      -Wcovered-switch-default,
+      -Wunsafe-buffer-usage,
+      -Wno-declaration-after-statement,
+      -Wno-missing-noreturn,
+      -Wno-padded,
+    ]
+  Remove: [-fcyclomatic-complexity]
 
 # Other common configuration options (optional)
 Diagnostics:
   ClangTidy:
-    Add: ["*"]
-    Remove: ["modernize-use-trailing-return-type"]
+    Add:
+      [
+        cert-*,
+        google-*,
+        readability-*,
+        readability-avoid-const-params-in-decls,
+        readability-magic-numbers,
+      ]
+    Remove: [modernize-use-trailing-return-type]
 
 InlayHints:
   Enabled: Yes
