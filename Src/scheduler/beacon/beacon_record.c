@@ -16,8 +16,7 @@ void build_beacon_record(log_record_idle *out,
     out->current_minute = snap->minute;
     out->current_second = snap->second;
 
-    // TODO: no action-tracking mechanism exists yet.
-    out->last_action_taken = 0;
+    out->last_action_taken = snap->last_action_taken;
 
     // TODO: no uplink-timestamp storage exists yet.
     out->last_uplink_year = 0;

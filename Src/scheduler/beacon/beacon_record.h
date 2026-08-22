@@ -48,6 +48,7 @@ typedef struct {
     uint8_t year;
     uint8_t month;
     uint8_t date;
+    uint8_t last_action_taken;
 
     mat3 attitude;
     adcs_get_attitude_status det_status;

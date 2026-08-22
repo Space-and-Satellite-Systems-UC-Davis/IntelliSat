@@ -201,6 +201,18 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 
 /* A header file that defines trace macro can be included here. */
+#include <stdint.h>
+extern volatile uint8_t last_task_id;
+
+#define traceTASK_SWITCHED_IN() \
+    do { \
+        UBaseType_t id = uxTaskGetTaskNumber(pxCurrentTCB); \
+        if (id != 0) { \
+            last_task_id = (uint8_t)id; \
+        } \
+    } while (0)
+
+    
 // ! Should not get call as we do the inits ourselves
 
 /* Redirect FreeRTOS post interrupts. */
