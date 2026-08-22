@@ -41,6 +41,7 @@ static beacon_sensor_snapshot_t make_snapshot(void) {
     snap.year = 26;
     snap.month = 7;
     snap.date = 24;
+    snap.last_action_taken = 3;
 
     snap.attitude = (mat3) {
         .x1 = 1, .x2 = 2, .x3 = 3,
@@ -78,6 +79,8 @@ static void test_passthrough_fields(void) {
     TEST_ASSERT(out.current_minute == snap.minute);
     TEST_ASSERT(out.current_second == snap.second);
 
+    TEST_ASSERT(out.last_action_taken == snap.last_action_taken);
+
     TEST_ASSERT_FLT(out.batt_level, snap.batt_voltage, 1e-6);
     TEST_ASSERT_FLT(out.batt_7_day_low, window.batt_low, 1e-6);
     TEST_ASSERT_FLT(out.batt_7_day_avg, window.batt_avg, 1e-6);
@@ -101,7 +104,6 @@ static void test_unimplemented_fields_are_zero(void) {
 
     build_beacon_record(&out, &snap, &window);
 
-    TEST_ASSERT(out.last_action_taken == 0);
     TEST_ASSERT(out.last_uplink_year == 0);
     TEST_ASSERT(out.last_uplink_month == 0);
     TEST_ASSERT(out.last_uplink_date == 0);

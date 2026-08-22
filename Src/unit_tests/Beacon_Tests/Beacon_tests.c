@@ -17,6 +17,7 @@
 
 #include "scheduler/beacon/beacon_task.h"
 #include "scheduler/beacon/beacon_stats.h"
+#include "logging_records.h"
 
 #define FRAM_SCRATCH_PAGE (FRAM_BEACON_STATS_PAGE + 10)
 

@@ -1,7 +1,7 @@
 #include "framework.h"
 
 #include "beacon_stats.h"
-#include "loggers_to_fram.h" // for fram_stub_reset()
+#include "FRAM/loggers_to_fram.h" // for fram_stub_reset()
 
 static void test_first_boot_zeroes_and_is_empty(void) {
     fram_stub_reset();

@@ -8,10 +8,12 @@
 
 TEST_DIR := tests
 
-# ../tests (Src/scheduler/tests) has the shared framework.h.
-# tests/stubs is listed before ../../peripherals so "loggers_to_fram.h"
-# resolves to the stub, not the real hardware-backed header.
-INCLUDES := -I. -I../../ADCS -I../tests -I$(TEST_DIR)/stubs
+# $(TEST_DIR) (Src/scheduler/beacon/tests) has the shared framework.h.
+# The FRAM stub lives at $(TEST_DIR)/stubs/FRAM/loggers_to_fram.h so that
+# the production include "FRAM/loggers_to_fram.h" resolves to the stub
+# (mirroring the real Src/peripherals/FRAM/loggers_to_fram.h) instead of
+# pulling in the hardware-backed header.
+INCLUDES := -I. -I../../ADCS -I$(TEST_DIR) -I$(TEST_DIR)/stubs
 
 FRAM_STUB := $(TEST_DIR)/stubs/fram_stub.c
 ADCS_STUB := $(TEST_DIR)/stubs/adcs_stub.c
@@ -30,4 +32,4 @@ $(TEST_DIR)/bin/test_beacon_stats: \
 	beacon_stats.c \
 	$(FRAM_STUB)
 
-include ../tests/common.mk
+include $(TEST_DIR)/common.mk
