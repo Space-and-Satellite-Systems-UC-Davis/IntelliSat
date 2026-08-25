@@ -142,7 +142,7 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
     return cumulative_success;
 }
 
-int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks) {
+int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int nchunks) {
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = 0;
     for (int i = 0; i < nchunks; i++) {

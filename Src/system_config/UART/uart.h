@@ -77,4 +77,6 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
  */
 void usart_flushrx(USART_TypeDef* bus);
 
+void setCommunicatingRadio(bool isCommunicating);
+
 #endif	// REALOP1_UART_H_

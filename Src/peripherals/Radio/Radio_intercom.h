@@ -114,6 +114,14 @@ bool radio_downlink(uint8_t chunk[], size_t nchunks);
  */
 bool radio_downlink_idle_log();
 
+/**
+ * @param chunk An array to store the uplink data
+ * 
+ * @returns number of bytes uplinked
+ */
+int radio_uplink(uint8_t chunk[]);
+
+
 void radio_getLastUplink(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *hour, uint8_t *minute, uint8_t *second);
 
 void echo();

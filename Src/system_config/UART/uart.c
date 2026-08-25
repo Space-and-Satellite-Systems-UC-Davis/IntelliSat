@@ -438,10 +438,23 @@ void usart_flushrx(USART_TypeDef* bus) {
 
 /**************************** USART INTERRUPTS ****************************/
 
+volatile bool communicatingWithRadio = false;
+
+void setCommunicatingRadio(bool isCommunicaing){
+	communicatingWithRadio = isCommunicaing;
+}
+
+
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
 		enqueueBuffer(USART1_RxBuffer, USART1);
+		if(!communicatingWithRadio){
+			communicatingWithRadio = true;
+			//CALL TASK FLAG SCHEDULER FOR UPLINKING HEREEEEEEEEEEEEE
+			//TASK SHOULD CALL THIS FUNCTION: 
+			//radio_uplink(uint8_t chunk[])
+		}
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ICR &= ~USART_ICR_RTOCF;

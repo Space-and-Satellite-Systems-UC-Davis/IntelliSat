@@ -16,6 +16,7 @@
 #include "Radio/log_record.h"
 
 bool talking;
+bool initiatingCommunication = false;
 
 /**
  * Initialize the radio USART ports
@@ -30,7 +31,9 @@ void radio_init() {
  */
 bool are_talking() {
     if (talking) return true;
-    if (crc_transmit(RADIO_USART, "?", 1)) talking = true;
+    initiatingCommunication = true;
+    bool talking = crc_transmit(RADIO_USART, "?", 1);
+    initiatingCommunication = false;
     return talking;
 }
 
@@ -44,6 +47,7 @@ bool are_talking() {
  */
 bool radio_push(uint8_t chunk[], size_t nbytes) {
     if (!are_talking()) return false;
+    initiatingCommunication = true;    
     uint8_t header[2];
     header[0] = 'D';
     header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
@@ -52,7 +56,9 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
         header[2] = CHUNK_LENGTH;
     }
     if (crc_transmit(RADIO_USART, header, 3)) {
-        return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
+        bool transmited = crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
+        initiatingCommunication = false;
+        return transmitted;
     }
 }
 
@@ -102,9 +108,11 @@ RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType data
  */
 PFC2RadioState radio_get_state() {
     if (!are_talking()) return Idle;
+    initiatingCommunication = true;
     crc_transmit(RADIO_USART, "S", 1);
     PFC2RadioState buffer[MAX_PAYLOAD_BYTES];
     crc_read(RADIO_USART, buffer);
+    initiatingCommunication = false;
     return buffer[0];
 }
 
@@ -124,13 +132,31 @@ bool radio_downlink(uint8_t chunk[], size_t nchunks) {
     uint8_t packet[2];
     packet[0] = TransferToGround;
     packet[1] = nchunks;
-    return crc_transmit(RADIO_USART, packet, 2);
+    initiatingCommunication = true;
+    bool transmitted = crc_transmit(RADIO_USART, packet, 2);
+    initiatingCommunication = false;
+    return trasnmited;
+}
+
+
+int radio_uplink(uint8_t chunk[]){
+    int read_status = crc_read(RADIO_USART, chunk);
+    if (read_status != -1) return -1;
+    if(chunks[0] != 'U') return -1;
+    int numchunks = chunks[1];
+    int remainder = chunks[2];
+    for(int i = 0; i<numchunks; i++){
+        crc_chunked_read(RADIO_USART, chunk, numchunks);
+    }
+    return numchunks *CHUNK_LENGTH + remainder;
 }
 
 void echo() {
     if (!are_talking()) return;
     uint8_t packet[MAX_MESSAGE_BYTES];
+    initiatingCommunication = true;
     size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
+    initiatingCommunication = false;
     printMsg("Radio Says: <%s>", packet);
 }
 
@@ -145,11 +171,15 @@ bool radio_downlink_idle_log() {
 	return success;
 }
 
+
+
+
 void initEmptyChunk(uint8_t chunk[]) {
 	for (size_t i = 0; i < CHUNK_LENGTH; i++) {
 		chunk[i] = 0;
 	}
 }
+
 
 
 void radio_getLastUplink(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *hour, uint8_t *minute, uint8_t *second){
