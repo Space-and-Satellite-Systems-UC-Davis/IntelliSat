@@ -5,13 +5,14 @@
  */
 
 #include "rtc.h"
+#include "peripherals/FRAM/FRAM.h"
 #include "print_scan.h"
 
 // WARNING: THIS TEST REQUIRES SEVERAL RUNS.
 void testFunction_RTC_storage() {
 	// Uncomment if you want to clear first flag
-//	rtc_writeToBKPNumber(0, 0);
-	switch (RTC->BKP0R) {
+	// FRAM_writeDWord(FRAM_BOOT_COUNTER_ADDR, 0);
+	switch (FRAM_getBootCounter()) {
 		case 0:
 			printMsg("Flag is in Default after-erase state. This should not happen if called after init\n");
 			break;
@@ -25,26 +26,26 @@ void testFunction_RTC_storage() {
 	}
 
 	printMsg("\n");
-	bool first = rtc_isFirstTime();
+	bool first = FRAM_isFirstTime();
 
 	printMsg("First time: %s\n", first ? "true" : "false");
 
-	printMsg("State of previous ADCS Variables: %d\n", RTC->BKP1R);
+	printMsg("State of previous ADCS Variables: %d\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
 
 	// Clear ADCS vars
-	rtc_writeToBKPNumber(0, 1);
-	printMsg("State of cleared ADCS Variables: %d\n", RTC->BKP1R);
+	FRAM_writeDWord(FRAM_ADCS_VARIABLE_ADDR, 1);
+	printMsg("State of cleared ADCS Variables: %d\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
 
-	rtc_writeToADCSVariable(true, Sun0);
-	rtc_writeToADCSVariable(true, Sun1);
-	rtc_writeToADCSVariable(true, Coil1);
-	rtc_writeToADCSVariable(true, Hdd0);
+	FRAM_writeToADCSVariable(true, Sun0);
+	FRAM_writeToADCSVariable(true, Sun1);
+	FRAM_writeToADCSVariable(true, Coil1);
+	FRAM_writeToADCSVariable(true, Hdd0);
 
-	printMsg("New state ADCS Variables: %d\n", RTC->BKP1R);
+	printMsg("New state ADCS Variables: %d\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
 
-	printMsg("State of variable at offset Sun1: %d\n", rtc_readFromADCSVariable(Sun1));
-	printMsg("State of variable at offset Hdd0: %d\n", rtc_readFromADCSVariable(Hdd0));
-	printMsg("State of variable at offset Hdd1: %d\n", rtc_readFromADCSVariable(Hdd1));
+	printMsg("State of variable at offset Sun1: %d\n", FRAM_readFromADCSVariable(Sun1));
+	printMsg("State of variable at offset Hdd0: %d\n", FRAM_readFromADCSVariable(Hdd0));
+	printMsg("State of variable at offset Hdd1: %d\n", FRAM_readFromADCSVariable(Hdd1));
 
 	nop(1);
 
