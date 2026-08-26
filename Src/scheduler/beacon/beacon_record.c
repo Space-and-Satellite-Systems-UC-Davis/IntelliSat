@@ -1,6 +1,7 @@
 #include "beacon_record.h"
 
 #include <string.h>
+#include "radio/Radio_intercom.h"
 
 void build_beacon_record(log_record_idle *out,
                           const beacon_sensor_snapshot_t *snap,
@@ -18,13 +19,7 @@ void build_beacon_record(log_record_idle *out,
 
     out->last_action_taken = snap->last_action_taken;
 
-    // TODO: no uplink-timestamp storage exists yet.
-    out->last_uplink_year = 0;
-    out->last_uplink_month = 0;
-    out->last_uplink_date = 0;
-    out->last_uplink_hour = 0;
-    out->last_uplink_minute = 0;
-    out->last_uplink_second = 0;
+    radio_getLastUplink(&out->last_uplink_year, &out->last_uplink_month, &out->last_uplink_date, &out->last_uplink_hour, &out->last_uplink_minute, &out->last_uplink_second);
 
     out->num_new_experiments = snap->num_new_experiments;
 

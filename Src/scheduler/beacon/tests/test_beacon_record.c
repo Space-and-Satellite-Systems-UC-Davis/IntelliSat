@@ -1,6 +1,7 @@
 #include "framework.h"
 
 #include "beacon_record.h"
+#include "radio/Radio_intercom.h"
 
 static beacon_sensor_snapshot_t make_snapshot(void) {
     beacon_sensor_snapshot_t snap = {0};
@@ -42,6 +43,7 @@ static beacon_sensor_snapshot_t make_snapshot(void) {
     snap.month = 7;
     snap.date = 24;
     snap.last_action_taken = 3;
+    snap.num_new_experiments = 7;
 
     snap.attitude = (mat3) {
         .x1 = 1, .x2 = 2, .x3 = 3,
@@ -80,6 +82,7 @@ static void test_passthrough_fields(void) {
     TEST_ASSERT(out.current_second == snap.second);
 
     TEST_ASSERT(out.last_action_taken == snap.last_action_taken);
+    TEST_ASSERT(out.num_new_experiments == snap.num_new_experiments);
 
     TEST_ASSERT_FLT(out.batt_level, snap.batt_voltage, 1e-6);
     TEST_ASSERT_FLT(out.batt_7_day_low, window.batt_low, 1e-6);
@@ -97,20 +100,24 @@ static void test_passthrough_fields(void) {
     TEST_ASSERT(out.is_in_eclipse == 1);
 }
 
-static void test_unimplemented_fields_are_zero(void) {
+static void test_uplink_fields_passed_through(void) {
+    radio_stub_reset();
+    radio_stub_set_last_uplink(25, 6, 15, 9, 30, 45);
+
     beacon_sensor_snapshot_t snap = make_snapshot();
     beacon_battery_window_t window = make_batt_window();
     log_record_idle out;
 
     build_beacon_record(&out, &snap, &window);
 
-    TEST_ASSERT(out.last_uplink_year == 0);
-    TEST_ASSERT(out.last_uplink_month == 0);
-    TEST_ASSERT(out.last_uplink_date == 0);
-    TEST_ASSERT(out.last_uplink_hour == 0);
-    TEST_ASSERT(out.last_uplink_minute == 0);
-    TEST_ASSERT(out.last_uplink_second == 0);
-    TEST_ASSERT(out.num_new_experiments == 0);
+    TEST_ASSERT(out.last_uplink_year == 25);
+    TEST_ASSERT(out.last_uplink_month == 6);
+    TEST_ASSERT(out.last_uplink_date == 15);
+    TEST_ASSERT(out.last_uplink_hour == 9);
+    TEST_ASSERT(out.last_uplink_minute == 30);
+    TEST_ASSERT(out.last_uplink_second == 45);
+
+    radio_stub_reset();
 }
 
 static void test_error_msg_populated(void) {
@@ -180,7 +187,7 @@ static void test_eclipse_flag_normalized(void) {
 int main(void) {
     TEST_SUITE("beacon_record");
     RUN_TEST(test_passthrough_fields);
-    RUN_TEST(test_unimplemented_fields_are_zero);
+    RUN_TEST(test_uplink_fields_passed_through);
     RUN_TEST(test_error_msg_populated);
     RUN_TEST(test_css_temp_passthrough);
     RUN_TEST(test_attitude_only_set_on_success);
