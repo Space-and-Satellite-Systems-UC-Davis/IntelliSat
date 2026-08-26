@@ -75,8 +75,8 @@ void testFunction_RTC_Alarm() {
 	 *
 	 */
 
-	while (true) {
-		continue;
-	}
+    while (true) {
+        continue;
+    }
 }
 
