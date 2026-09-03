@@ -28,7 +28,7 @@ bool FRAM_isFirstTime() {
 }
 
 bool FRAM_readFromADCSVariable(SensorOffset offset) {
-	return FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR) >> (uint32_t) offset;
+	return (FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR) >> (uint32_t) offset) & 0b1;
 }
 
 void FRAM_writeToADCSVariable(bool status, SensorOffset offset) {
