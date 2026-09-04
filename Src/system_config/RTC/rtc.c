@@ -129,7 +129,7 @@ void rtc_config(char clock_source, int forced_config) {
 	rtc_closeWritingPrivilege();
 
 	// Increment boot counter
-	FRAM(FRAM_getBootCounter()+1, BootCounter);
+	FRAM_writeDWord(BootCounter, FRAM_getBootCounter()+1);
 }
 
 /****************************** RTC TIME SETTERS *****************************/
