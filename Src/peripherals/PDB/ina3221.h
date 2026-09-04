@@ -13,7 +13,7 @@
 // TODO: THESE ARE COPIED, GET REAL VALUES
 //Address
 // Possible either 0x40 or 0x41 address
-#define SENSOR_ADDRESS 0x40
+//#define SENSOR_ADDRESS 0x40
 //#define SENSOR_ADDRESS 0x41
 
 //#define SENSOR_ADDRESS 0x42
@@ -22,15 +22,16 @@
 //#define SENSOR_ADDRESS 0x6
 //#define SENSOR_ADDRESS 0x7
 
-//#define SENSOR_ADDRESS 0x0
+#define SENSOR_ADDRESS 0x0
 
 #define CONFIG_REGISTER 0
 #define CAL_REGISTER 5
 
 //Macros for the INA3221 pins
-#define INA3221_GPIO GPIOF
+#define INA3221_SDA_GPIO GPIOD
+#define INA3221_SCL_GPIO GPIOE
 #define INA3221_SDA_PIN 14
-#define INA3221_SCL_PIN 15
+#define INA3221_SCL_PIN 8
 
 #define MODE_CONTINUOUS     7
 
