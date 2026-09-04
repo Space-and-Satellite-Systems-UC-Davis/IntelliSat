@@ -13,6 +13,7 @@
 #include "FLASH/W25Q128JV.h"
 #include <globals.h>
 #include <print_scan.h>
+#include "Src/system_config/QSPI/qspi.h"
 
 // Defines for test parameters.
 #define FLASH_NUM_TESTS     9
@@ -24,7 +25,7 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // Print a byte in binary. Useful for visualizing status registers.
-void printBinary(uint8_t byte) {
+void FLASH_printBinary(uint8_t byte) {
 	for (int i = 7; i >= 0; i--) {
 		printMsg("%c", (byte & (1 << i)) ? '1' : '0');
 	}
@@ -39,7 +40,7 @@ void printIndented(char* printme) {
 }
 
 // Print an array with spaces between elements, marking every 256 bytes (pages).
-void printBuf(uint8_t buf[], int size) {
+void FLASH_printBuf(uint8_t buf[], int size) {
 	printMsg("\n\r");
 	for (int i = 0; i < size; i++) {
 		if (i % 256 == 0) {
@@ -52,7 +53,7 @@ void printBuf(uint8_t buf[], int size) {
 }
 
 // Fill an array with some integer x.
-void fillBuf(uint8_t buf[], int size, int x) {
+void FLASH_fillBuf(uint8_t buf[], int size, int x) {
 	for (int i = 0; i < size; i++) {
 		buf[i] = x;
 	}
@@ -98,7 +99,7 @@ void flash_readRegisterOne(uint8_t* register_one) {
 		printMsg("BUSY");
 	}
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
+		QSPI_CCR_FMODE_INDIRECT_READ,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
 		QSPI_UNUSED,
@@ -123,7 +124,7 @@ void fillTestSector() {
 
 	for (int i = 0; i < 16; i++) {
 		uint8_t bufferWrite[FLASH_PAGE_SIZE];
-		fillBuf(bufferWrite, FLASH_PAGE_SIZE, i);
+		FLASH_fillBuf(bufferWrite, FLASH_PAGE_SIZE, i);
 
 		flash_writePage(page+i, bufferWrite);
 	}
@@ -153,7 +154,7 @@ bool page_isClear(uint32_t page) {
 bool test_readJedecID() {
 	uint8_t id_receiver[3];
 	qspi_setCommand(
-	  QSPI_FMODE_INDIRECT_READ, //read
+	  QSPI_CCR_FMODE_INDIRECT_READ, //read
 	  QSPI_1_WIRE, //1 wire for instruction
 	  QSPI_UNUSED, //no wire for address
 	  QSPI_UNUSED, //no wire for alt bytes
@@ -237,7 +238,7 @@ bool test_writePage() {
 	uint8_t bufferWrite[FLASH_PAGE_SIZE];
 	uint8_t bufferRead[FLASH_PAGE_SIZE];
 
-	fillBuf(bufferWrite, FLASH_PAGE_SIZE, 5); // 5 is arbitrary
+	FLASH_fillBuf(bufferWrite, FLASH_PAGE_SIZE, 5); // 5 is arbitrary
 
 	if ( !page_isClear(page) ) {
 		printMsg("writePage: page is not clear, trying eraseSector\n\r");
@@ -283,7 +284,7 @@ bool test_eraseSector() {
 		//printMsg("eraseSector: all pages empty. Trying pageWrite...\n\r");
 
 		uint8_t bufferWrite[FLASH_PAGE_SIZE];
-		fillBuf(bufferWrite, FLASH_PAGE_SIZE, 3); //3 is arbitrary
+		FLASH_fillBuf(bufferWrite, FLASH_PAGE_SIZE, 3); //3 is arbitrary
 
 		flash_writePage(page, bufferWrite);
 		flash_readPage(page, bufferRead);
@@ -421,7 +422,7 @@ bool test_writeCustom() {
 
 	uint8_t buffer_customWrite[500]; //arbitrary size
 	uint8_t buffer_sectorRead[FLASH_SECTOR_SIZE];
-	fillBuf(buffer_customWrite, 500, 2); //2 is arbitrary
+	FLASH_fillBuf(buffer_customWrite, 500, 2); //2 is arbitrary
 
 	flash_eraseSector(sector);
 	flash_readSector(sector, buffer_sectorRead);
@@ -495,7 +496,7 @@ void time_readPage() {
 //
 void time_writePage() {
 	uint8_t writeBuffer[FLASH_PAGE_SIZE];
-	fillBuf(writeBuffer, FLASH_PAGE_SIZE, 1);
+	FLASH_fillBuf(writeBuffer, FLASH_PAGE_SIZE, 1);
 
 	flash_eraseSector(20); flash_eraseSector(21);
 	printMsg("start"); //asynch serial helps demarcate commands
@@ -536,7 +537,7 @@ void time_readSector() {
 void time_writeSector() {
 	uint8_t writeBuffer[FLASH_SECTOR_SIZE];
 	uint64_t netTimes[30];
-	fillBuf(writeBuffer, FLASH_SECTOR_SIZE, 1);
+	FLASH_fillBuf(writeBuffer, FLASH_SECTOR_SIZE, 1);
 	flash_eraseSector(0); flash_eraseSector(1);
 
 	for (uint8_t i = 0; i < 30; i++) {
@@ -601,7 +602,7 @@ void test_fillSector() {
 	uint32_t page = 0;
 	for (uint8_t i = 0; i < 16; i++) {
 		flash_readPage(page+i, bufferMiso);
-		printBuf(bufferMiso, 256);
+		FLASH_printBuf(bufferMiso, 256);
 	}
 }
 
@@ -609,12 +610,12 @@ void test_fillSector() {
 bool test_readRegisterOne() {
 	uint8_t register_one = 0;
 	printIndented("Empty register one:");
-	printBinary(register_one);
+	FLASH_printBinary(register_one);
 
 	flash_readRegisterOne(&register_one);
 
 	printIndented("Full register one:");
-	printBinary(register_one);
+	FLASH_printBinary(register_one);
 
 	return true;
 }

@@ -3,15 +3,15 @@
 
 uint32_t FRAM_readDWord(uint16_t address) {
     uint32_t buffer[FRAM_PAGE_SIZE_DWORDS];
-    FRAM_readData(address, buffer);
+    FRAM_readData(address / FRAM_PAGE_SIZE_BYTES * FRAM_PAGE_SIZE_BYTES, buffer);
     return buffer[address % FRAM_PAGE_SIZE_DWORDS];
 }
 
-bool FRAM_writeDWord(uint16_t address, bool value) {
+bool FRAM_writeDWord(uint16_t address, uint32_t value) {
     uint32_t buffer[FRAM_PAGE_SIZE_DWORDS];
-    if (!FRAM_readData(address, buffer)) return false;
+    if (!FRAM_readData(address / FRAM_PAGE_SIZE_BYTES * FRAM_PAGE_SIZE_BYTES, buffer)) return false;
     buffer[address % FRAM_PAGE_SIZE_DWORDS] = value;
-    return FRAM_writeData(address, buffer);
+    return FRAM_writeData(address, buffer, FRAM_PAGE_SIZE_BYTES);
 }
 
 uint32_t FRAM_getBootCounter() {

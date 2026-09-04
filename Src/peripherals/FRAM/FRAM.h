@@ -1,10 +1,14 @@
+#include <globals.h>
+#include "Src/system_config/RTC/rtc.h"
+
 #define FRAM_BOOT_COUNTER_ADDR 0
 #define FRAM_ADCS_VARIABLE_ADDR 4 // boot counter and ADCS variable register are 4 bytes wide
 #define FRAM_PAGE_SIZE_DWORDS 64 // 256 bytes (8 bit) is 128 words (16 bit) or 64 double-words (32 bit)
+#define FRAM_PAGE_SIZE_BYTES 256
 
 uint32_t FRAM_readDWord(uint16_t address);
 
-bool FRAM_writeDWord(uint16_t address, bool value);
+bool FRAM_writeDWord(uint16_t address, uint32_t value);
 
 /**
  * Reads BKP0 to tell how many times we booted, incremented by rtc_config

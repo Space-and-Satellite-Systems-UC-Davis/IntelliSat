@@ -45,6 +45,9 @@ enum qspi_imodes {
 	QSPI_CCR_IMODE_4_INSTRUCTION_LINES
 };
 
+#define QSPI_1_WIRE 1
+#define QSPI_UNUSED 0
+
 #define QSPI_REG_RESET 0
 
 #define QSPI_READ	false

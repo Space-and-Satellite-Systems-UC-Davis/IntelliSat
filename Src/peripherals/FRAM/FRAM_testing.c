@@ -20,7 +20,7 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 // Print a byte in binary. Useful for visualizing status registers.
-void printBinary(uint8_t byte)
+void FRAM_printBinary(uint8_t byte)
 {
     for (int i = 7; i >= 0; i--)
     {
@@ -30,7 +30,7 @@ void printBinary(uint8_t byte)
 }
 
 // Print the contents of a buffer in hexadecimal, 16 bytes per line.
-void printBuf(uint8_t buf[], uint16_t size) {
+void FRAM_printBuf(uint8_t buf[], uint16_t size) {
     for (uint16_t i = 0; i < size; i++) {
         printMsg("0x%02X ", buf[i]);
         if ((i + 1) % 16 == 0) {
@@ -40,7 +40,7 @@ void printBuf(uint8_t buf[], uint16_t size) {
 }
 
 // Fill buffer
-void fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
+void FRAM_fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
     for (uint16_t i = 0; i < size; i++) {
         buf[i] = value;
     }
@@ -49,7 +49,7 @@ void fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
 // Clear entire FRAM with 0xFF
 bool FRAM_clearAll() {
     uint8_t buffer[256];
-    fillBuf(buffer, 256, 0xFF);  // Fill the buffer with 0xFF
+    FRAM_fillBuf(buffer, 256, 0xFF);  // Fill the buffer with 0xFF
 
     for (uint16_t page = 0; page < (FRAM_MAX_BYTES / 256); ++page) {
         if (!FRAM_writePage(page, buffer)) {
@@ -128,7 +128,7 @@ bool FRAMtest_readData()
 
 	if (FRAM_readData(address, buffer)) {
 		printMsg("FRAM Data Read Starting...\n\r");
-		printBuf(buffer, 256);
+		FRAM_printBuf(buffer, 256);
 		return true;
 	}
 	printMsg("fatal: FRAM Read attempt failed\n\r");
@@ -145,7 +145,7 @@ bool FRAMtest_readPage()
 
 	if (FRAM_readPage(page, buffer)) {
 		printMsg("FRAM Page Read (Page %u):\n\r", page);
-		printBuf(buffer, 256);
+		FRAM_printBuf(buffer, 256);
 		return true;
 	}
 	printMsg("fatal: FRAM Read Page Read attempt failed.\n\r");
@@ -161,7 +161,7 @@ bool FRAMtest_readSector()
 
     if (FRAM_readSector(sector, buffer)) {
         printMsg("FRAM Sector Read (Sector %u):\n\r", sector);
-        printBuf(buffer, 256); // Print only the first 256 bytes for readability
+        FRAM_printBuf(buffer, 256); // Print only the first 256 bytes for readability
         return true;
     }
     printMsg("fatal: FRAM Read Sector Read attempt failed.\n\r");

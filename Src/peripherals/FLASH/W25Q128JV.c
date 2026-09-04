@@ -46,7 +46,7 @@ bool flash_readSector(uint16_t sector, uint8_t* buffer) {
 	}
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ, //Instruction type
+		QSPI_CCR_FMODE_INDIRECT_READ, //Instruction type
 		QSPI_1_WIRE, //Number of wires for Instruction Phase
 		QSPI_1_WIRE, //Number of wires for Address Phase
 		QSPI_UNUSED, //Number of wires for Alternative Bytes Phase
@@ -83,7 +83,7 @@ bool flash_eraseSector(uint16_t sector) {
 	flash_writeEnable();
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
 		QSPI_1_WIRE,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
@@ -117,7 +117,7 @@ bool flash_writePage(uint16_t page, uint8_t* buffer) {
 	flash_writeEnable();
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
 		QSPI_1_WIRE,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
@@ -149,7 +149,7 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 	}
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
+		QSPI_CCR_FMODE_INDIRECT_READ,
 		QSPI_1_WIRE,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
@@ -181,7 +181,7 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
 	}
 
   	qspi_setCommand(
-      	QSPI_FMODE_INDIRECT_READ,
+      	QSPI_CCR_FMODE_INDIRECT_READ,
       	QSPI_1_WIRE,
       	QSPI_1_WIRE,
       	QSPI_UNUSED,
@@ -235,7 +235,7 @@ bool flash_writeEnable() {
 		return false;
 	}
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
 		QSPI_UNUSED,
@@ -261,7 +261,7 @@ bool flash_writeDisable() {
 		return false;
 	}
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
 		QSPI_UNUSED,
@@ -296,7 +296,7 @@ bool flash_quadEnable() {
 	register_two |= (1 << 1);
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
 		QSPI_UNUSED,
@@ -320,7 +320,7 @@ bool flash_quadEnable() {
 void flash_readRegisterTwo(uint8_t* ptr_register_two) {
 	//Subsidiary function. QSPI busy check not needed
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
+		QSPI_CCR_FMODE_INDIRECT_READ,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
 		QSPI_UNUSED,
@@ -351,7 +351,7 @@ uint8_t flash_getStatus() {
 	}
 
 	qspi_setCommand(
-		QSPI_FMODE_INDIRECT_READ,
+		QSPI_CCR_FMODE_INDIRECT_READ,
 		QSPI_1_WIRE,
 		QSPI_UNUSED,
 		QSPI_UNUSED,
