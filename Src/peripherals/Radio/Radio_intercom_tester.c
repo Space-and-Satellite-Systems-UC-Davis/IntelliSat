@@ -2,10 +2,25 @@
 #include "print_scan.h"
 #include "globals.h"
 #include <string.h>
+#include <UART/uart.h>
 
 
 void testFunction_RadioIntercom() {
     radio_init();
+    char chunk[300];
+    while(true){
+        if(gotUplink){
+            int size = radio_uplink(chunk);
+            printMsg("GOT UPLINK! %d\r\n", size);
+            for(int i = 0; i<size; i++){
+                printMsg("%c", chunk[i]);
+            }
+            gotUplink = false;
+        }
+        char str[500] = "Hello World! I hope you are receiving this message right now :) I just wanted to test if like 200 characters worked through the intercom. Hope you have a lot of fun debugging everything radio! yippee!";
+        printMsg("SENDING MSG!\r\n");
+        radio_push(str, 200);
+    }
     while(true){
         char str[500] = "Hello World! I hope you are receiving this message right now :) I just wanted to test if like 200 characters worked through the intercom. Hope you have a lot of fun debugging everything radio! yippee!";
         printMsg("SENDING MSG!\r\n");
@@ -13,12 +28,12 @@ void testFunction_RadioIntercom() {
         printMsg("State: %d\r\n", radio_get_state());
         delay_ms(1000);
         initEmptyChunk(str);
-        RadioPacket packet = radio_force_pull(str);
-        printMsg("Radio-->PFC received: \r\n");
-        for(int i = 0; i<packet.size; i++){
-            printMsg("%c", str[i]);
-        }
-        printMsg("\r\n");
+        // RadioPacket packet = radio_force_pull(str);
+        // printMsg("Radio-->PFC received: \r\n");
+        // for(int i = 0; i<packet.size; i++){
+        //     printMsg("%c", str[i]);
+        // }
+        // printMsg("\r\n");
     }
     while (true) {
         uint8_t chunk[CHUNK_LENGTH*4];
