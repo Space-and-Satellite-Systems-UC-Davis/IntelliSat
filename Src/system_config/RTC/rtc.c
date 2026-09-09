@@ -15,7 +15,7 @@
  */
 
 #include "rtc.h"
-#include "peripherals/FRAM/FRAM.h"
+#include "Src/peripherals/FRAM/FRAM.h"
 #include <stdint.h>
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//

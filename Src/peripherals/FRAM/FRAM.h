@@ -1,5 +1,9 @@
+#ifndef _FRAM_H_
+#define _FRAM_H_
+
 #include <globals.h>
-#include "Src/system_config/RTC/rtc.h"
+// #include "Src/system_config/RTC/rtc.h"
+#define SensorOffset uint16_t
 
 #define FRAM_BOOT_COUNTER_ADDR 0
 #define FRAM_ADCS_VARIABLE_ADDR 4 // boot counter and ADCS variable register are 4 bytes wide
@@ -42,3 +46,5 @@ bool FRAM_readFromADCSVariable(SensorOffset offset);
  *
  */
 void FRAM_writeToADCSVariable(bool status, SensorOffset offset);
+
+#endif // _FRAM_H_

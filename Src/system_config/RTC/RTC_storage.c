@@ -5,7 +5,7 @@
  */
 
 #include "rtc.h"
-#include "peripherals/FRAM/FRAM.h"
+#include "Src/peripherals/FRAM/FRAM.h"
 #include "print_scan.h"
 
 // WARNING: THIS TEST REQUIRES SEVERAL RUNS.
