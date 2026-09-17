@@ -15,6 +15,7 @@
 #define REALOP1_PLATFORM_INIT_H
 
 #include "globals.h"
+#include "data_management/lfs_config.h"
 
 #include <core_config.h>
 #include <Timers/timers.h>
@@ -101,6 +102,7 @@ void init_platform() {
 	systick_init(run_scheduler);
 
 	qspi_config(23, 2, 0);
+	fs_mount();
 	dma_initializePeripheralConstants();
 	watchdog_init(WWDG_TIMEOUT_TIME);
 	heartbeat_timer_init();
