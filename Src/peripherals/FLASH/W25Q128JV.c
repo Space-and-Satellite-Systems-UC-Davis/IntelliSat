@@ -39,11 +39,11 @@ bool flash_readSector(uint16_t sector, uint8_t* buffer) {
 		return false;
 	}
 
-	uint32_t page = sector * FLASH_PAGES_PER_SECTOR; //convert sector to pages
-	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	if (sector > FLASH_MAX_SECTOR) {
 		return false;
 	}
+	uint32_t page = sector * FLASH_PAGES_PER_SECTOR; //convert sector to pages
+	uint32_t address = flash_getPageAddr(page);
 
 	qspi_setCommand(
 		QSPI_CCR_FMODE_INDIRECT_READ, //Instruction type
@@ -76,9 +76,6 @@ bool flash_eraseSector(uint16_t sector) {
 	}
 	uint32_t page = sector * FLASH_PAGES_PER_SECTOR;
 	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
-		return false;
-	}
 
 	flash_writeEnable();
 
@@ -109,10 +106,10 @@ bool flash_writePage(uint16_t page, uint8_t* buffer) {
 		return false;
 	}
 
-	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	if (page > FLASH_MAX_PAGE) {
 		return false;
 	}
+	uint32_t address = flash_getPageAddr(page);
 
 	flash_writeEnable();
 
@@ -143,10 +140,10 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 		return false;
 	}
 
-	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	if (page > FLASH_MAX_PAGE) {
 		return false;
 	}
+	uint32_t address = flash_getPageAddr(page);
 
 	qspi_setCommand(
 		QSPI_CCR_FMODE_INDIRECT_READ,
@@ -158,7 +155,7 @@ bool flash_readPage(uint16_t page, uint8_t* buffer) {
 		false
 	);
 	qspi_sendCommand(
-		0x03,
+		QSPI_READ_DATA,
 		address,
 		256,
 		buffer,
@@ -175,10 +172,10 @@ bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
     	return false;
   	}
 
-	uint32_t address = flash_getPageAddr(page);
-	if (address == NULL) {
+	if (page > FLASH_MAX_PAGE) {
 		return false;
 	}
+	uint32_t address = flash_getPageAddr(page);
 
   	qspi_setCommand(
       	QSPI_CCR_FMODE_INDIRECT_READ,
