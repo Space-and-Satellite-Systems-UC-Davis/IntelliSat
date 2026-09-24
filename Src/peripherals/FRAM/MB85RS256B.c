@@ -3,6 +3,9 @@
  *
  *  Created on: Sep 3, 2024
  *      Author: green
+ * 
+ *  Adapted to OPR3: 17 September 2026
+ *      Author: 
  */
 
 #include "MB85RS256B.h"
