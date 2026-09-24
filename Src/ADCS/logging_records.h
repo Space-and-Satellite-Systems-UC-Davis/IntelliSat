@@ -2,8 +2,9 @@
 
 #include <stdint.h>
 
+#include "adcs_math.h"
 #include "ADCS.h"
-#include "adcs_math/matrix.h"
+
 
 /**
  *  Tagged structs for all data DOWNLINKED from REALOP
@@ -41,15 +42,15 @@ typedef struct __attribute__((packed)) {
     float mag_y;
     float mag_z;
     uint8_t css_px0;
-    uint8_t css_px1;
+    uint8_t css_px1
     uint8_t css_py0;
-    uint8_t css_py1;
+    uint8_t css_py1
     uint8_t css_pz0;
-    uint8_t css_pz1;
+    uint8_t css_pz1
     uint8_t css_nx0;
-    uint8_t css_nx1;
+    uint8_t css_nx1
     uint8_t css_ny0;
-    uint8_t css_ny1;
+    uint8_t css_ny1
     uint8_t css_nz0;
     uint8_t css_nz1;
     uint8_t temp_px;
@@ -95,6 +96,7 @@ typedef struct __attribute__((packed)) {
     float hdd_output_0;
     float hdd_output_1;
 } log_record_experiment_continue;
+
 
 /**
  *  Tagged structs for all data UPLINKED to REALOP
@@ -208,3 +210,4 @@ typedef struct __attribute__((packed)) {
     unsigned int coil_y : 1;
     unsigned int coil_z : 1;
 } uplink_record_sensor_enable;
+

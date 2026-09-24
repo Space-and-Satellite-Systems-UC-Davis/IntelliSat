@@ -18,22 +18,31 @@
 
 #include <stdbool.h>
 
+adcs_main_status detumbleEX(vec3 needle, uint64_t minTime, uint64_t maxTime)
+{
+    switch (detumble(needle, false, minTime, maxTime)) {
+        case DETUMBLING_SUCCESS:
+            return ADCS_MAIN_SUCCESS;
+        case DETUMBLING_FAILURE_CURR_MILLIS:
+        case DETUMBLING_FAILURE_MAGNETOMETER:
+        case DETUMBLING_FAILURE_IMU:
+        case DETUMBLING_FAILURE_CONTROL_COILS:
+        case DETUMBLING_FAILURE_DELAY_MS:
+        case DETUMBLING_HAS_RESTARTED:
+            return ADCS_MAIN_DETUMBLE_ERR;
+    }
+}
+
 adcs_main_status ADCS_MAIN(adcs_mode mode)
 {
     switch (mode) {
-        case ADCS_DETUMBLE:
-            switch (detumble((vec3){ 0, 0, 0 }, false, 0, 3600)) {
-                case DETUMBLING_SUCCESS:
-                    break;
-                case DETUMBLING_FAILURE_CURR_MILLIS:
-                case DETUMBLING_FAILURE_MAGNETOMETER:
-                case DETUMBLING_FAILURE_IMU:
-                case DETUMBLING_FAILURE_CONTROL_COILS:
-                case DETUMBLING_FAILURE_DELAY_MS:
-                    return ADCS_MAIN_DETUMBLE_ERR;
-            }
-            break;
+        case ADCS_INITIAL_DETUMBLE:
+            return detumbleEX((vec3){ 0, 0, 0 }, 3600, 36000);
 
+        case ADCS_DETUMBLE:
+            return detumbleEX((vec3){ 0, 0, 0 }, 0, 3600);
+
+        // SHOULD NEVER EVER EVER BE ENGAGED IN PRODUCTION (SPACE)
         case ADCS_COILS_TESTING:
             switch (detumble((vec3){ 0, 0, 0 }, true, 0, 3600)) {
                 case DETUMBLING_SUCCESS:
@@ -41,8 +50,12 @@ adcs_main_status ADCS_MAIN(adcs_mode mode)
                 case DETUMBLING_FAILURE_CURR_MILLIS:
                 case DETUMBLING_FAILURE_MAGNETOMETER:
                 case DETUMBLING_FAILURE_IMU:
+                    // Do something
                 case DETUMBLING_FAILURE_CONTROL_COILS:
+                    // Do something
                 case DETUMBLING_FAILURE_DELAY_MS:
+                    // Do something
+                case DETUMBLING_HAS_RESTARTED:
                     return ADCS_MAIN_COILS_TESTING_ERR;
             }
             break;
