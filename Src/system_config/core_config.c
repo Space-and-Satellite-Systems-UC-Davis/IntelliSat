@@ -70,8 +70,11 @@ void init_coreClocks() {
 	RCC->CR |= RCC_CR_HSION; 					// enable HSI
 	RCC->CSR |= RCC_CSR_LSION;					// Turn on the LSI Oscillator
 	wait_with_timeout(is_LSI_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSI Oscillator to stabilize
-	// RCC->BDCR |= RCC_BDCR_LSEON;				// Turn on the LSE Oscillator
-	// wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSE Oscillator to stabilize
+
+	backup_domain_controlEnable();
+	RCC->BDCR |= RCC_BDCR_LSEON;				// Turn on the LSE Oscillator
+	wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS); // wait for the LSE Oscillator to stabilize
+	backup_domain_controlDisable();
 
 	// configure Phased Lock Loop
 	RCC->PLLCFGR =

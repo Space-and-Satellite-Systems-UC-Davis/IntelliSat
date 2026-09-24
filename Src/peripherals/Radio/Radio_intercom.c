@@ -150,3 +150,9 @@ void initEmptyChunk(uint8_t chunk[]) {
 		chunk[i] = 0;
 	}
 }
+
+
+void radio_getLastUplink(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *hour, uint8_t *minute, uint8_t *second){
+    //TODO
+    //lalalalalala does something here 
+}
