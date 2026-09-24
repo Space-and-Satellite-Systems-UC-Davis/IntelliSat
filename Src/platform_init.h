@@ -23,6 +23,7 @@
 #include <QSPI/qspi.h>
 #include <LED/led.h>
 #include <RTC/rtc.h>
+#include <FRAM/FRAM.h>
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
@@ -104,7 +105,7 @@ void init_platform() {
 	heartbeat_timer_init();
 	// Without delay, boot number is incremented several times per flashing
 //	delay_ms(15000);
-	rtc_increment_boot_counter();
+	FRAM_increment_boot_counter();
 
 	watchdog_init(5000);
 }
