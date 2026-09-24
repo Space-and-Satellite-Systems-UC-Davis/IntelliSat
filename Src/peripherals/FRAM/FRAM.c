@@ -20,7 +20,7 @@ uint32_t FRAM_getBootCounter() {
 }
 
 void FRAM_increment_boot_counter() {
-	FRAM_writeDword(FRAM_BOOT_COUNTER_ADDR, FRAM_readDWord(FRAM_BOOT_COUNTER_ADDR) + 1);
+	FRAM_writeDWord(FRAM_BOOT_COUNTER_ADDR, FRAM_readDWord(FRAM_BOOT_COUNTER_ADDR) + 1);
 }
 
 bool FRAM_isFirstTime() {
