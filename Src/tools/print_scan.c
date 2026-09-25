@@ -30,7 +30,13 @@ int printMsg(const char *message, ...) {
 
 	va_list args;
 	va_start(args, message);
-	vsprintf(buff,message,args);
+	int len = vsnprintf(buff, sizeof(buff), message, args);	// longer messages get cut off instead of overflowing buff
+	va_end(args);
 
-	usart_transmitStr(ConsoleUART, buff);
+	usart_transmitStr(ConsoleUART, (uint8_t *)buff);
+	return len;
+}
+
+bool scanChar(char *c) {
+	return usart_receiveBytes(ConsoleUART, (uint8_t *)c, 1) == 1;
 }
