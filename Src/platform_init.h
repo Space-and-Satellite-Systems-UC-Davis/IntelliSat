@@ -107,7 +107,7 @@ void init_platform() {
 //	delay_ms(15000);
 	FRAM_increment_boot_counter();
 
-	watchdog_init(5000);
+	// watchdog_init(5000);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

@@ -72,7 +72,7 @@ bool FRAM_clearAll() {
 // but otherwise, GOOD!
 bool FRAMtest_read_deviceID()
 {
-	uint8_t MOSI[5];
+	uint8_t MOSI[5] = {2, 3, 5, 7, 11};
 	FRAM_read_deviceID(MOSI);
 	for (uint8_t i = 0; i < 5; ++i)
 	{
