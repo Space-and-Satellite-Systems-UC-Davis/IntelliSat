@@ -39,12 +39,12 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes);
 int crc_read(USART_TypeDef* bus, uint8_t* buf);
 
 /**
- * Send a series of consistently-sized chunks
+ * Send a series of chunks of length <= lchunks
  */
 bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int lchunks);
 
 /**
- * Read a series of consistently-sized chunks
+ * Read a series of chunks of length <= lchunks
  */
 int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks);
 
