@@ -1,4 +1,4 @@
-#include "IMU_tests.h"
+#include "IMU_Tests.h"
 #include "../Assertions/Ass.h"
 #include <math.h>
 #include <float.h>
@@ -24,6 +24,11 @@ void test_initial_state()
         float cur_gyro_x = imu_readGyro_X();
         float cur_gyro_y = imu_readGyro_Y();
         float cur_gyro_z = imu_readGyro_Z();
+
+        if (!assert_equal_int(isfinite(cur_gyro_x) && isfinite(cur_gyro_y)
+                              && isfinite(cur_gyro_z), 1)) {
+            return;
+        }
 
         max_gyro_x = fmax(max_gyro_x, cur_gyro_x);
         max_gyro_y = fmax(max_gyro_y, cur_gyro_y);

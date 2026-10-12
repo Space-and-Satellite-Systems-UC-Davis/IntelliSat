@@ -16,6 +16,7 @@
  */
 
 #include "ASM330LHH.h"
+#include <math.h>
 
 //GLOBAL VARIABLES
 #define ACCEL_RATE_REG 0x10
@@ -59,7 +60,7 @@ void set_IMU(enum IMU_SELECT select){
 
 #endif
 
-void imu_spiWriteReg(void *address, uint8_t data) {
+void imu_spiWriteReg(uint8_t address, uint8_t data) {
 	uint8_t spiDATA[2];
 	spiDATA[0] = (uint8_t)address & IMU_SPI_DATA_DI_Msk;
 	spiDATA[1] = data;
@@ -85,41 +86,45 @@ void imu_spiWriteReg(void *address, uint8_t data) {
 
 }
 
-int16_t imu_spiReadHighLow(void *low_address) {
-  
-	uint8_t instruction = (uint8_t)low_address | IMU_SPI_RW;
-	uint8_t datah = 0;
-	uint8_t datal = 0;
+static bool imu_spiRead(uint8_t address, uint8_t *data, uint16_t size) {
+	uint8_t instruction = address | IMU_SPI_RW;
 
 #if OP_REV == 2
-
+	SPI_TypeDef *spi = IMU_SPI;
 	spi_startCommunication(IMU_SPI_CS);
-	spi_transmitReceive(IMU_SPI, &instruction, NULL, 1, false);
-	spi_transmitReceive(IMU_SPI, NULL, &datal, 1, false);
-	spi_transmitReceive(IMU_SPI, NULL, &datah, 1, false);
-	spi_stopCommunication(IMU_SPI_CS);
-
 #elif OP_REV == 3
-
-	if (IMU_global == IMU0) {
+	enum IMU_SELECT selected = IMU_global;
+	SPI_TypeDef *spi = selected == IMU0 ? IMU0_SPI : IMU1_SPI;
+	if (selected == IMU0) {
 		spi_startCommunication(IMU0_SPI_CS);
-		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
-		spi_transmitReceive(IMU0_SPI, NULL, &datal, 1, false);
-		spi_transmitReceive(IMU0_SPI, NULL, &datah, 1, false);
-		spi_stopCommunication(IMU0_SPI_CS);
 	} else {
 		spi_startCommunication(IMU1_SPI_CS);
-		spi_transmitReceive(IMU1_SPI, &instruction, NULL, 1, false);
-		spi_transmitReceive(IMU1_SPI, NULL, &datal, 1, false);
-		spi_transmitReceive(IMU1_SPI, NULL, &datah, 1, false);
-		spi_stopCommunication(IMU1_SPI_CS);
 	}
-
 #endif
 
+	bool success = spi_transmitReceive(spi, &instruction, NULL, 1, false)
+		&& spi_transmitReceive(spi, NULL, data, size, false);
+	// Release the device even when the command or data transfer fails.
+#if OP_REV == 2
+	spi_stopCommunication(IMU_SPI_CS);
+#elif OP_REV == 3
+	if (selected == IMU0) {
+		spi_stopCommunication(IMU0_SPI_CS);
+	} else {
+		spi_stopCommunication(IMU1_SPI_CS);
+	}
+#endif
 	nop(10);
+	return success;
+}
 
-	return (datah << 8) | datal;
+static bool imu_spiReadHighLow(uint8_t low_address, int16_t *value) {
+	uint8_t data[2];
+	if (!imu_spiRead(low_address, data, sizeof(data))) {
+		return false;
+	}
+	*value = (int16_t)((uint16_t)data[1] << 8 | data[0]);
+	return true;
 }
 
 /**
@@ -296,7 +301,7 @@ float imu_readAcel_X() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data =  imu_spiReadHighLow((uint8_t*)0x28);
+	if (!imu_spiReadHighLow(0x28, &data)) return NAN;
 
 #endif
 
@@ -317,7 +322,7 @@ float imu_readAcel_Y() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data = imu_spiReadHighLow((uint8_t*)0x2A);
+	if (!imu_spiReadHighLow(0x2A, &data)) return NAN;
 
 #endif
 
@@ -338,7 +343,7 @@ float imu_readAcel_Z() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data = imu_spiReadHighLow((uint8_t*)0x2C);
+	if (!imu_spiReadHighLow(0x2C, &data)) return NAN;
 
 #endif
 
@@ -358,7 +363,7 @@ float imu_readGyro_X() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data = imu_spiReadHighLow((uint8_t*)0x22);
+	if (!imu_spiReadHighLow(0x22, &data)) return NAN;
 
 #endif
 
@@ -378,7 +383,7 @@ float imu_readGyro_Y() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data = imu_spiReadHighLow((uint8_t*)0x24);
+	if (!imu_spiReadHighLow(0x24, &data)) return NAN;
 
 #endif
 
@@ -398,7 +403,7 @@ float imu_readGyro_Z() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data = imu_spiReadHighLow((uint8_t*)0x26);
+	if (!imu_spiReadHighLow(0x26, &data)) return NAN;
 
 #endif
 
@@ -418,7 +423,7 @@ float imu_readTemp() {
 
 #elif OP_REV == 2 || OP_REV == 3
 
-	data = imu_spiReadHighLow((uint8_t*)0x20);
+	if (!imu_spiReadHighLow(0x20, &data)) return NAN;
 
 #endif
 
@@ -427,33 +432,21 @@ float imu_readTemp() {
 
 /**                            Debugging Functions                                      */
 bool imu_isCommunicationWorking() {
-
-	uint8_t value;
-	uint8_t instruction = 0x0F | 0x80;
-	
-	if (IMU_global == IMU0) {
-		spi_startCommunication(IMU0_SPI_CS);
-		spi_transmitReceive(IMU0_SPI, &instruction, NULL, 1, false);
-		spi_transmitReceive(IMU0_SPI, NULL, &value, 1, false);
-		spi_stopCommunication(IMU0_SPI_CS);
-	} else {
-		spi_startCommunication(IMU1_SPI_CS);
-		spi_transmitReceive(IMU1_SPI, &instruction, NULL, 1, false);
-		spi_transmitReceive(IMU1_SPI, NULL, &value, 1, false);
-		spi_stopCommunication(IMU1_SPI_CS);
-	}
-
-	return value == 0x6B;
+	uint8_t value = 0;
+	return imu_spiRead(0x0F, &value, 1) && value == 0x6B;
 }
 
 bool imu_hasExpectedValuesAccel() {
-	return imu_readAcel_Z() < 1.2 && imu_readAcel_Z() > 0.8;
+	float value = imu_readAcel_Z();
+	return isfinite(value) && value < 1.2 && value > 0.8;
 }
 
 bool imu_hasExpectedValuesGyro() {
 	int correctCount = 0;
 	for (int i  = 0; i < 10; i++) {
-		 if( imu_readGyro_X() < 6 && imu_readGyro_X() > -6)
+		 float value = imu_readGyro_X();
+		 if (!isfinite(value)) return false;
+		 if (value < 6 && value > -6)
 		 	correctCount++;
 	}
 	return correctCount > 8;

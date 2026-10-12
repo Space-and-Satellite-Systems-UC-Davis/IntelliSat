@@ -3,6 +3,7 @@
 #include <globals.h>
 #include "../peripherals/IMU/ASM330LHH.h"
 #include <Timers/timers.h>
+#include <math.h>
 
 /*################## ACTUATOR COMMANDS ##################*/
 
@@ -63,9 +64,17 @@ vi_get_angvel(
 
 	set_IMU(imu_select);
 
-	*angvel_x = imu_readGyro_X();
-	*angvel_y = imu_readGyro_Y();
-	*angvel_z = imu_readGyro_Z();
+	// Do not expose a partial vector or leave a previous sample on failure.
+	*angvel_x = *angvel_y = *angvel_z = NAN;
+	float x = imu_readGyro_X();
+	if (!isfinite(x)) return GET_ANGVEL_FAILURE;
+	float y = imu_readGyro_Y();
+	if (!isfinite(y)) return GET_ANGVEL_FAILURE;
+	float z = imu_readGyro_Z();
+	if (!isfinite(z)) return GET_ANGVEL_FAILURE;
+	*angvel_x = x;
+	*angvel_y = y;
+	*angvel_z = z;
 	return GET_ANGVEL_SUCCESS;
 }
 
