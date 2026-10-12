@@ -170,6 +170,7 @@ typedef enum {
 
 /**
  * @brief Retrieve angular velocity data from the IMU.
+ * On a read failure, returns GET_ANGVEL_FAILURE and sets all outputs to NAN.
  * 
  * @param imuSensor Which inertial measurement unit to read from.
  * 		  (w/ component & choice)

@@ -15,13 +15,13 @@ void testFunction_IMU_AcelGyro_Reads() {
 
 	while (1) {
 		if (get_buttonStatus_1()) {
-			acel_X = ((int16_t)imu_readAcel_X() * 0.061) / 1000;
-			acel_Y = ((int16_t)imu_readAcel_Y() * 0.061) / 1000;
-			acel_Z = ((int16_t)imu_readAcel_Z() * 0.061) / 1000;
+			acel_X = imu_readAcel_X();
+			acel_Y = imu_readAcel_Y();
+			acel_Z = imu_readAcel_Z();
 
-			gyro_X = ((int16_t)imu_readGyro_X() * 35.0) / 1000;
-			gyro_Y = ((int16_t)imu_readGyro_Y() * 35.0) / 1000;
-			gyro_Z = ((int16_t)imu_readGyro_Z() * 35.0) / 1000;
+			gyro_X = imu_readGyro_X();
+			gyro_Y = imu_readGyro_Y();
+			gyro_Z = imu_readGyro_Z();
 		}
 	}
 }
