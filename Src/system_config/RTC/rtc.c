@@ -149,9 +149,6 @@ void rtc_config(char clock_source, int forced_config) {
 	RTC->CR |= RTC_CR_BYPSHAD;
 
 	rtc_closeWritingPrivilege();
-
-	// Increment boot counter
-	FRAM_writeDWord(BootCounter, FRAM_getBootCounter()+1);
 }
 
 /****************************** RTC TIME SETTERS *****************************/

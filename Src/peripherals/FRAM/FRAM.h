@@ -7,8 +7,9 @@
 
 #define FRAM_BOOT_COUNTER_ADDR 0
 #define FRAM_ADCS_VARIABLE_ADDR 4 // boot counter and ADCS variable register are 4 bytes wide
+#define FRAM_BYTES_PER_DWORD 4
 #define FRAM_PAGE_SIZE_DWORDS 64 // 256 bytes (8 bit) is 128 words (16 bit) or 64 double-words (32 bit)
-#define FRAM_PAGE_SIZE_BYTES 256
+#define FRAM_PAGE_SIZE_BYTES FRAM_BYTES_PER_DWORD * FRAM_PAGE_SIZE_DWORDS
 
 uint32_t FRAM_readDWord(uint16_t address);
 
