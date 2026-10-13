@@ -72,17 +72,20 @@ bool FRAM_clearAll() {
 // but otherwise, GOOD!
 bool FRAMtest_read_deviceID()
 {
-	uint8_t MOSI[5] = {2, 3, 5, 7, 11};
+	uint8_t MOSI[4] = {2, 3, 5, 7};
+    uint8_t correct[4] = {0x04, 0x7F, 0x05, 0x09};
 	FRAM_read_deviceID(MOSI);
-	for (uint8_t i = 0; i < 5; ++i)
+    bool pcorrect = true;
+	for (uint8_t i = 0; i < 4; ++i)
 	{
 		printMsg("%u ", MOSI[i]);
+        if (MOSI[i] != correct[i]) pcorrect = false;
 	}
-	return true;
+	return pcorrect;
 }
 /*  Check whether Initial WEL bit is 0. Then see if write_enable passes or not.
     * expected: Write Enable: PASS
-    * actual: fatal: WEL bit incorrect
+    * actual: fatal: initial WEL bit incorrect (1, expected 0) (I'm not sure why we test for that...)
 */
 bool FRAMtest_writeEnable()
 {
@@ -91,12 +94,16 @@ bool FRAMtest_writeEnable()
     FRAM_writeEnable();
     uint8_t updatedWEL = (FRAM_readStatusRegister() >> 1) & 0x01;
 
-    // Test if the WEL bit is set
-    if (updatedWEL == 1 && initialWEL == 0) {
-        return true;
+    if (initialWEL != 0) {
+        printMsg("fatal: initial WEL bit incorrect (%d, expected 0)\n\r", initialWEL);
+        return false;
     }
-	printMsg("fatal: WEL bit incorrect\n\r");
-	return false;
+    // Test if the WEL bit is set
+    if (updatedWEL != 1) {
+	    printMsg("fatal: final WEL bit incorrect (%d, expected 1)\n\r", updatedWEL);
+	    return false;
+    }
+    return true;
 }
 /*  Reads current Status Register values
     * expect: "Read Status Register: PASS"
@@ -126,7 +133,7 @@ bool FRAMtest_readData()
 	uint16_t address = 0x000000;
     if (!FRAM_clearAll()) return false;
 
-	if (FRAM_readData(address, buffer)) {
+	if (FRAM_readData(address, buffer, 256)) {
 		printMsg("FRAM Data Read Starting...\n\r");
 		FRAM_printBuf(buffer, 256);
 		return true;
@@ -197,7 +204,7 @@ bool FRAMtest_basicWriteData() {
     // Test 1: Basic Write and Read
     printMsg("Starting Basic Write and Read Test...\n\r");
     if (FRAM_writeData(address, writeBuffer, 256)) {
-        FRAM_readData(address, readBuffer);
+        FRAM_readData(address, readBuffer, 256);
 
         // Verify written and read data
         for (uint16_t i = 0; i < 256; i++) {
@@ -218,7 +225,7 @@ bool FRAMtest_BoundaryWriteData() {
     printMsg("Starting Boundary Condition Test at 0x7F00...\n\r");
     if (FRAM_writeData(address, writeBuffer, 256)) {
 
-    	FRAM_readData(address, readBuffer);
+    	FRAM_readData(address, readBuffer, 256);
         for (uint16_t i = 0; i < 256; i++) {
             if (writeBuffer[i] != readBuffer[i]) {
                 printMsg("fatal: Boundary Condition Test Data Mismatch at index %d: Sent %02X, Read %02X\n\r", i, writeBuffer[i], readBuffer[i]);

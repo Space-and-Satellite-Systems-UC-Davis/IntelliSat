@@ -34,7 +34,7 @@ uint8_t FRAM_readStatusRegister();
 // FRAM Read Functions
 
 bool FRAM_readPage(uint16_t page, uint8_t *buffer);
-bool FRAM_readData(uint16_t address, uint8_t *buffer);
+bool FRAM_readData(uint16_t address, uint8_t *buffer, uint16_t size);
 bool FRAM_readSector(uint16_t sector, uint8_t *buffer);
 
 // FRAM Write Functions
