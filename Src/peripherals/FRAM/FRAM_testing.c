@@ -268,9 +268,13 @@ bool FRAMtest_WriteProtect() {
         return false;
     }
     // Attempt write (should fail)
+    /* 10/16/2026: The test doesn't really make sense with current design
+     * The function enables and disables WEL inside. Does WEL protect from
+     * bit flips?
+     */
     uint8_t dummy = 0xAA;
     if (FRAM_writeData(0x0000, &dummy, 1)) {
-        printMsg("fatal: Write Protect: Write succeeded despite WEL=0\n\r");
+        printMsg("fatal: Write Protect: Write succeeded despite WEL=0. SEE COMMENTS\n\r");
         return false;
     }
     return true;

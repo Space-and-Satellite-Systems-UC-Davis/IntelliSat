@@ -159,6 +159,8 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     FRAM_wait();
     spi_stopCommunication(FRAM_SPI_CS);
 
+    FRAM_writeDisable();
+
     return true;
 }
 
