@@ -134,6 +134,8 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
         return false;
     }
 
+    if (FRAM_readStatusRegister() & 0x02 == 0) return false;
+
     uint8_t MOSI[3] = {
         FRAM_WRITE,
         (address >> 8) & 0x7F, // Mask MSB (bit 15)
