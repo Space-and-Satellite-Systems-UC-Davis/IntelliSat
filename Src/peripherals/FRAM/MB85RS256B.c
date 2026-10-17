@@ -133,10 +133,6 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES) {
         return false;
     }
-    // Enable write operations
-    if (!FRAM_writeEnable()) {
-        return false;
-    }
 
     uint8_t MOSI[3] = {
         FRAM_WRITE,
@@ -158,8 +154,6 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     }
     FRAM_wait();
     spi_stopCommunication(FRAM_SPI_CS);
-
-    FRAM_writeDisable();
 
     return true;
 }
