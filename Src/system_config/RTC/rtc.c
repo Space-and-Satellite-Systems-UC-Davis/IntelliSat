@@ -15,6 +15,7 @@
  */
 
 #include "rtc.h"
+#include "Src/peripherals/FRAM/FRAM.h"
 #include <stdint.h>
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -220,7 +221,7 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second) {
 	rtc_closeWritingPrivilege();
 }
 
-void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
+void FRAM_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		rtc_openWritingPrivilege();
 		switch (bkp) {
 		    case 0:
@@ -325,36 +326,6 @@ void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		}
 		rtc_closeWritingPrivilege();
 }
-
-uint32_t rtc_getBootCounter() {
-	return RTC->BKP0R;
-}
-
-void rtc_increment_boot_counter() {
-	rtc_writeToBKPNumber(RTC->BKP0R + 1, BootCounter);
-}
-
-bool rtc_isFirstTime() {
-	int boot_counter = rtc_getBootCounter();
-	if (boot_counter == 0 || boot_counter == 1) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-bool rtc_readFromADCSVariable(SensorOffset offset) {
-	return RTC->BKP1R >> (uint32_t) offset;
-}
-void rtc_writeToADCSVariable(bool status, SensorOffset offset) {
-	uint32_t variables = RTC->BKP1R;
-
-	variables &= ~(1 << (uint32_t) offset);
-	variables |= (status << (uint32_t) offset);
-
-	rtc_writeToBKPNumber(variables, ADCSVars);
-}
-
 
 /****************************** RTC TIME GETTERS *****************************/
 

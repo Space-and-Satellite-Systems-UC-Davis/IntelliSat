@@ -26,7 +26,7 @@ log_record_idle fill_log_idle() {
     uint8_t dummyUInt8_t;
 
     // DONE
-    log.boot_number = (uint8_t)(rtc_getBootCounter());
+    log.boot_number = (uint8_t)(FRAM_getBootCounter());
 
 
     // DONE
