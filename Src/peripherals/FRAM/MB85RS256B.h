@@ -39,6 +39,7 @@ bool FRAM_readSector(uint16_t sector, uint8_t *buffer);
 
 // FRAM Write Functions
 bool FRAM_writeEnable();
+// WARNING: It appears writeEnable is necessary per write operation
 bool FRAM_writeDisable();
 bool FRAM_writePage(uint16_t page, const uint8_t *data);
 bool FRAM_writeSector(uint16_t sector, const uint8_t *data);

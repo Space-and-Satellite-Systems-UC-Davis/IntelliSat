@@ -48,10 +48,12 @@ void FRAM_fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
 
 // Clear entire FRAM with 0xFF
 bool FRAM_clearAll() {
+
     uint8_t buffer[256];
     FRAM_fillBuf(buffer, 256, 0xFF);  // Fill the buffer with 0xFF
 
     for (uint16_t page = 0; page < (FRAM_MAX_BYTES / 256); ++page) {
+        FRAM_writeEnable();
         if (!FRAM_writePage(page, buffer)) {
             printMsg("fatal: Failed to clear FRAM at page %u.\n\r", page);
             return false;
@@ -137,6 +139,12 @@ bool FRAMtest_readData()
 {
 	uint8_t buffer[256] = {0};
 	uint16_t address = 0x000000;
+
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (!FRAM_clearAll()) return false;
 
 	if (FRAM_readData(address, buffer, 256)) {
@@ -170,6 +178,12 @@ bool FRAMtest_readSector()
 {
     uint8_t buffer[4096] = {0};
     uint16_t sector = 1; // Read from sector 1 for testing
+
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (!FRAM_clearAll()) return false;
 
     if (FRAM_readSector(sector, buffer)) {
