@@ -452,6 +452,10 @@ void testFunction_FRAM() {
     for (uint8_t i = 0; i < FRAM_NUM_TESTS; i++) {
         printMsg("%s: %s\n\r", testNames[i], testFunctions[i]() ? "PASS" : "FAIL");
     }
+
+    while(1) {
+
+    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
