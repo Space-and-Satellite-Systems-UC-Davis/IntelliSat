@@ -128,51 +128,51 @@ void imu_gyroCtrl(int gyro_rate, int gyro_scale);
 void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale);
 
 /**
- * Reads the X-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads X-axis acceleration from the selected IMU.
  *
- * @returns The X-axis acceleration value as a 16-bit signed integer.
+ * @returns Acceleration in g, or NAN if the SPI read fails.
  */
 float imu_readAcel_X();
 
 /**
- * Reads the y-axis acceleration value from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads Y-axis acceleration from the selected IMU.
  *
- * @returns The y-axis acceleration value as a 16-bit signed integer.
+ * @returns Acceleration in g, or NAN if the SPI read fails.
  */
 float imu_readAcel_Y();
 
 /**
- * Reads the acceleration value of the z-axis from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads Z-axis acceleration from the selected IMU.
  *
- * @returns The acceleration value of the z-axis.
+ * @returns Acceleration in g, or NAN if the SPI read fails.
  */
 float imu_readAcel_Z();
 
 /**
- * Reads the X-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads X-axis angular velocity from the selected IMU.
  *
- * @returns The X-axis gyroscope data as a 16-bit signed integer.
+ * @returns Angular velocity in degrees/s, or NAN if the SPI read fails.
  */
 float imu_readGyro_X();
 
 /**
- * Reads the y-axis gyroscope value from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads Y-axis angular velocity from the selected IMU.
  *
- * @returns The y-axis gyroscope value as a 16-bit signed integer.
+ * @returns Angular velocity in degrees/s, or NAN if the SPI read fails.
  */
 float imu_readGyro_Y();
 
 /**
- * Reads the Z-axis gyroscope data from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads Z-axis angular velocity from the selected IMU.
  *
- * @returns The Z-axis gyroscope data as a 16-bit signed integer.
+ * @returns Angular velocity in degrees/s, or NAN if the SPI read fails.
  */
 float imu_readGyro_Z();
 
 /**
- * Reads the temperature from the IMU sensor connected to the I2C2 bus of OP1.
+ * Reads temperature from the selected IMU.
  *
- * @returns The temperature value in 16-bit signed integer format.
+ * @returns Temperature in degrees C, or NAN if the SPI read fails.
  */
 float imu_readTemp();
 

@@ -106,7 +106,9 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin);
  * @param size         The number of bytes involved in the instruction
  * @param dma		   Don't worry about this for now
  * 
- * @returns Boolean to indicate if the communication was successful or not
+ * @returns true if all bytes were transferred, false on timeout.
+ * The whole transfer shares DEFAULT_TIMEOUT_MS. On failure, reception may
+ * contain a partial result. The caller remains responsible for releasing CS.
 */
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma);
 

@@ -310,11 +310,17 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
 	uint64_t start_time = getSysTime(); //time in ms
-	while ((size-- >= 1) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))) {
-		uint64_t inner_start_time = getSysTime();
+	while (size > 0) {
+		if (is_time_out(start_time, DEFAULT_TIMEOUT_MS)) {
+			return false;
+		}
 
-		// wait for TXFIFO to be empty
-		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));	// TXE = TX Empty
+		// wait for space in TXFIFO
+		while (!(spi->SR & SPI_SR_TXE)) {
+			if (is_time_out(start_time, DEFAULT_TIMEOUT_MS)) {
+				return false;
+			}
+		}
 		if (transmission == NULL) {
 			// send a dummy byte to trigger the clock pulses
 			*((volatile uint8_t*) &(spi->DR)) = SPI_DUMMY_BYTE;
@@ -324,23 +330,23 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			transmission++;
 		}
 
-    
-		inner_start_time = getSysTime();
-		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
-		inner_start_time = getSysTime();
-		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
-
-		// read the reception line until it's empty
-		inner_start_time = getSysTime();
-		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
-			if (reception == NULL) {
-				spi->DR;
-			} else {
-				uint16_t value = spi->DR;
-				*reception = value;
-				reception++;
+		while (!(spi->SR & SPI_SR_TXE)) {
+			if (is_time_out(start_time, DEFAULT_TIMEOUT_MS)) {
+				return false;
 			}
 		}
+		while (!(spi->SR & SPI_SR_RXNE)) {
+			if (is_time_out(start_time, DEFAULT_TIMEOUT_MS)) {
+				return false;
+			}
+		}
+
+		// Each transmitted byte has one received byte, even for transmit-only calls.
+		uint8_t value = *((volatile uint8_t*) &(spi->DR));
+		if (reception != NULL) {
+			*reception++ = value;
+		}
+		size--;
 	}
 	return true;
 }
