@@ -48,10 +48,12 @@ void FRAM_fillBuf(uint8_t buf[], uint16_t size, uint8_t value) {
 
 // Clear entire FRAM with 0xFF
 bool FRAM_clearAll() {
+
     uint8_t buffer[256];
     FRAM_fillBuf(buffer, 256, 0xFF);  // Fill the buffer with 0xFF
 
     for (uint16_t page = 0; page < (FRAM_MAX_BYTES / 256); ++page) {
+        FRAM_writeEnable();
         if (!FRAM_writePage(page, buffer)) {
             printMsg("fatal: Failed to clear FRAM at page %u.\n\r", page);
             return false;
@@ -72,6 +74,12 @@ bool FRAM_clearAll() {
 // but otherwise, GOOD!
 bool FRAMtest_read_deviceID()
 {
+	// Tests return early all the time. For the sake of simplicity,
+	// Disabling is handled at the beginning
+    if (!FRAM_writeDisable()) {
+        printMsg("Write Protect: WRDI command failed\n\r");
+    }
+
 	uint8_t MOSI[4] = {2, 3, 5, 7};
     uint8_t correct[4] = {0x04, 0x7F, 0x05, 0x09};
 	FRAM_read_deviceID(MOSI);
@@ -131,6 +139,12 @@ bool FRAMtest_readData()
 {
 	uint8_t buffer[256] = {0};
 	uint16_t address = 0x000000;
+
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (!FRAM_clearAll()) return false;
 
 	if (FRAM_readData(address, buffer, 256)) {
@@ -164,6 +178,12 @@ bool FRAMtest_readSector()
 {
     uint8_t buffer[4096] = {0};
     uint16_t sector = 1; // Read from sector 1 for testing
+
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (!FRAM_clearAll()) return false;
 
     if (FRAM_readSector(sector, buffer)) {
@@ -195,6 +215,12 @@ uint8_t readBuffer[256] = {0};
 uint32_t address = 0x0000;
 
 bool FRAMtest_basicWriteData() {
+	// Tests return early all the time. For the sake of simplicity,
+	// Disabling is handled at the beginning
+    if (!FRAM_writeDisable()) {
+        printMsg("Write Protect: WRDI command failed\n\r");
+    }
+
 
     // Fill the buffer with a recognizable pattern
     for (uint16_t i = 0; i < 256; ++i) {
@@ -203,6 +229,11 @@ bool FRAMtest_basicWriteData() {
 
     // Test 1: Basic Write and Read
     printMsg("Starting Basic Write and Read Test...\n\r");
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (FRAM_writeData(address, writeBuffer, 256)) {
         FRAM_readData(address, readBuffer, 256);
 
@@ -215,14 +246,26 @@ bool FRAMtest_basicWriteData() {
         }
         return true;
     }
+
     printMsg("fatal: Write Command FAIL.\n\r");
     return false;
 }
 
 bool FRAMtest_BoundaryWriteData() {
+	// Tests return early all the time. For the sake of simplicity,
+	// Disabling is handled at the beginning
+    if (!FRAM_writeDisable()) {
+        printMsg("Write Protect: WRDI command failed\n\r");
+    }
+
     // Test 2: Boundary Condition Write
     address = 0x7F00; // Near upper boundary of memory
     printMsg("Starting Boundary Condition Test at 0x7F00...\n\r");
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (FRAM_writeData(address, writeBuffer, 256)) {
 
     	FRAM_readData(address, readBuffer, 256);
@@ -239,13 +282,26 @@ bool FRAMtest_BoundaryWriteData() {
 }
 
 bool FRAMtest_InvalidAddressWriteData() {
+	// Tests return early all the time. For the sake of simplicity,
+	// Disabling is handled at the beginning
+    if (!FRAM_writeDisable()) {
+        printMsg("Write Protect: WRDI command failed\n\r");
+    }
+
     // Test 3: Invalid Address Write (Expect Failure) (0x0000 - 0x7FFF valid range)
     address = 0x8000; // Invalid address
     printMsg("Starting Invalid Address Test at 0x8000...\n\r");
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
+
     if (!FRAM_writeData(address, writeBuffer, 256)) {
         printMsg("Invalid Address Test (Command Rejected as Expected).\n\r");
         return true;
     }
+
     printMsg("fatal: Invalid Address Test (Command Unexpectedly Accepted).\n\r");
     return false;
 }
@@ -268,13 +324,9 @@ bool FRAMtest_WriteProtect() {
         return false;
     }
     // Attempt write (should fail)
-    /* 10/16/2026: The test doesn't really make sense with current design
-     * The function enables and disables WEL inside. Does WEL protect from
-     * bit flips?
-     */
     uint8_t dummy = 0xAA;
     if (FRAM_writeData(0x0000, &dummy, 1)) {
-        printMsg("fatal: Write Protect: Write succeeded despite WEL=0. SEE COMMENTS\n\r");
+        printMsg("fatal: Write Protect: Write succeeded despite WEL=0\n\r");
         return false;
     }
     return true;
@@ -283,6 +335,12 @@ bool FRAMtest_WriteProtect() {
 /*  Write a pattern to a page and verify it by reading back */
 bool FRAMtest_writePage()
 {
+	// Tests return early all the time. For the sake of simplicity,
+	// Disabling is handled at the beginning
+    if (!FRAM_writeDisable()) {
+        printMsg("Write Protect: WRDI command failed\n\r");
+    }
+
     uint8_t writeBuffer[256];
     uint8_t readBuffer[256] = {0};
     uint16_t page = 2;
@@ -294,6 +352,11 @@ bool FRAMtest_writePage()
 
     printMsg("Starting Write Page Test at page %u...\n\r", page);
 
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (!FRAM_writePage(page, writeBuffer)) {
         printMsg("fatal: Write to page %u failed.\n\r", page);
         return false;
@@ -319,6 +382,12 @@ bool FRAMtest_writePage()
 /*  Write a pattern to a sector and verify it by reading back */
 bool FRAMtest_writeSector()
 {
+	// Tests return early all the time. For the sake of simplicity,
+	// Disabling is handled at the beginning
+    if (!FRAM_writeDisable()) {
+        printMsg("Write Protect: WRDI command failed\n\r");
+    }
+
     uint8_t writeBuffer[4096];
     uint8_t readBuffer[4096] = {0};
     uint16_t sector = 1;
@@ -330,6 +399,11 @@ bool FRAMtest_writeSector()
 
     printMsg("Starting Write Sector Test at sector %u...\n\r", sector);
 
+    // Enable write operations
+    if (!FRAM_writeEnable()) {
+        printMsg("fatal: Write Protect: Could not set WEL\n\r");
+        return false;
+    }
     if (!FRAM_writeSector(sector, writeBuffer)) {
         printMsg("fatal: Write to sector %u failed.\n\r", sector);
         return false;
@@ -391,6 +465,10 @@ void testFunction_FRAM() {
 
     for (uint8_t i = 0; i < FRAM_NUM_TESTS; i++) {
         printMsg("%s: %s\n\r", testNames[i], testFunctions[i]() ? "PASS" : "FAIL");
+    }
+
+    while(1) {
+
     }
 }
 

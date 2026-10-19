@@ -23,6 +23,13 @@ bool FRAM_writeDWord(uint16_t address, uint32_t value);
 uint32_t FRAM_getBootCounter();
 
 /**
+ * Increments BKP0 to record how many times we booted
+ *
+ * @returns true if it's the first time being on for the board.
+ */
+void FRAM_increment_boot_counter();
+
+/**
  * Reads BKP0 to tell whether it's the first time this board was turned on.
  * NOTE: Not reliable before rtc_configure updates the flag.
  *

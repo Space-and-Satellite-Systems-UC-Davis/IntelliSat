@@ -29,6 +29,7 @@ void FRAM_read_deviceID(uint8_t *MISO)
     spi_stopCommunication(FRAM_SPI_CS);
 }
 
+// WARNING: It appears writeEnable is necessary per write operation
 bool FRAM_writeEnable() {
     uint8_t MOSI = FRAM_WRITE_ENABLE;
 
@@ -63,6 +64,7 @@ bool FRAM_writeDisable() {
     spi_stopCommunication(FRAM_SPI_CS);
     return success;
 }
+
 
 uint8_t FRAM_readStatusRegister() {
     uint8_t MOSI = FRAM_READ_SR;
@@ -133,10 +135,8 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES) {
         return false;
     }
-    // Enable write operations
-    if (!FRAM_writeEnable()) {
-        return false;
-    }
+
+    if ((FRAM_readStatusRegister() & 0x02) == 0) return false;
 
     uint8_t MOSI[3] = {
         FRAM_WRITE,
@@ -158,8 +158,6 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     }
     FRAM_wait();
     spi_stopCommunication(FRAM_SPI_CS);
-
-    FRAM_writeDisable();
 
     return true;
 }

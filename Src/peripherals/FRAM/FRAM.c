@@ -8,7 +8,9 @@ uint32_t FRAM_readDWord(uint16_t address) {
 }
 
 bool FRAM_writeDWord(uint16_t address, uint32_t value) {
+	FRAM_writeEnable();
     return FRAM_writeData(address, &value, FRAM_BYTES_PER_DWORD);
+	FRAM_writeDisable();
 }
 
 uint32_t FRAM_getBootCounter() {
@@ -16,7 +18,9 @@ uint32_t FRAM_getBootCounter() {
 }
 
 void FRAM_increment_boot_counter() {
+	FRAM_writeEnable();
 	FRAM_writeDWord(FRAM_BOOT_COUNTER_ADDR, FRAM_readDWord(FRAM_BOOT_COUNTER_ADDR) + 1);
+	FRAM_writeDisable();
 }
 
 bool FRAM_isFirstTime() {
@@ -33,10 +37,14 @@ bool FRAM_readFromADCSVariable(SensorOffset offset) {
 }
 
 void FRAM_writeToADCSVariable(bool status, SensorOffset offset) {
+	FRAM_writeEnable();
+
 	uint32_t variables = FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR);
 
 	variables &= ~(1 << (uint32_t) offset);
 	variables |= (status << (uint32_t) offset);
 
 	FRAM_writeDWord(FRAM_ADCS_VARIABLE_ADDR, variables);
+
+	FRAM_writeDisable();
 }
