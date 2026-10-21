@@ -143,11 +143,13 @@ int radio_uplink(uint8_t chunk[]){
     if (read_status == -1) {
         return -1;
     }
-    if(chunk[0] != 'U'){
-        return -1;
+    int i = 0;
+    while(chunk[i] != 'U'){
+        if(chunk[i++] != 0x00 || i >= read_status)
+            return -1;
     }
-    int numchunks = chunk[1];
-    int remainder = chunk[2];
+    int numchunks = chunk[i+1];
+    int remainder = chunk[i+2];
     crc_chunked_read(RADIO_USART, chunk, numchunks);
     if(remainder != 0)
         numchunks --;

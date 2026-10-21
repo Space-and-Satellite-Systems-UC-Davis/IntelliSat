@@ -19,7 +19,7 @@
 
 #define RADIO_USART USART1
 #define PFC2Radio_BAUDRATE 9600
-#define CHUNK_LENGTH 8
+#define CHUNK_LENGTH 50
 #define MAX_UINT8_T 255
 
 typedef enum {
