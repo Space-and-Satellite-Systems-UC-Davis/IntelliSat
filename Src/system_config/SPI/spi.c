@@ -154,11 +154,41 @@ void spi2_gpioInit() {
 }
 
 void spi1_gpioInit() {
+	/* OP R3 GPIO pinout
+	 * 		SPI1 NCS		A4		(Output)
+	 * 		SPI1 SCK		A5		(Alternate Function, AF5)
+	 * 		SPI2 MISO		A6		(Alternate Function, AF5)
+	 * 		SPI2 MOSI		A7		(Alternate Function, AF5)
+	 */
+	// Reset mode on each SPI1 pin
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 
-#if OP_REV == 2
+	wait_with_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
+	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD4_0;
 
-#endif
+	GPIOA->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED5_Msk;
 
+	GPIOA->MODER &= ~(
+		  GPIO_MODER_MODE4_Msk
+		| GPIO_MODER_MODE5_Msk
+		| GPIO_MODER_MODE6_Msk
+		| GPIO_MODER_MODE7_Msk);
+	// set each pin to Alternate function except CS
+	GPIOA->MODER |=
+		  GPIO_MODER_MODE4_0
+		| GPIO_MODER_MODE5_1
+		| GPIO_MODER_MODE6_1
+		| GPIO_MODER_MODE7_1;
+	// Reset alternate function selection on each SPI1 pin
+	GPIOA->AFR[0] &= ~(
+		  GPIO_AFRL_AFSEL5_Msk
+		| GPIO_AFRL_AFSEL6_Msk
+		| GPIO_AFRL_AFSEL7_Msk);
+	// set each pin to AF5
+	GPIOA->AFR[0] |=
+		  GPIO_AFRL_AFSEL_AF5 << GPIO_AFRL_AFSEL5_Pos
+		| GPIO_AFRL_AFSEL_AF5 << GPIO_AFRL_AFSEL6_Pos
+		| GPIO_AFRL_AFSEL_AF5 << GPIO_AFRL_AFSEL7_Pos;
 }
 
 /**************************** SPI INITIALIZATIONS ****************************/
@@ -191,6 +221,18 @@ void spi1_config() {
 	SPI1->CR2 = SPI_CR_RESET;
 	// CR1
 	// CR2
+	SPI1->CR1 |=
+		  SPI_CR1_BR_R2 << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/2` (2.5 MHz)
+		| SPI_CR1_SSM				// (CS is controlled by software)
+		| SPI_CR1_SSI				// (CS is controlled by software)
+		| SPI_CR1_MSTR
+		| SPI_CR1_CPOL
+		| SPI_CR1_CPHA;				
+	SPI1->CR1 &= ~(SPI_CR1_BIDIMODE | SPI_CR1_RXONLY);
+
+	SPI1->CR2 |=
+		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
+		| SPI_CR2_DS_8_BIT << SPI_CR2_DS_Pos;	// Transfer Data Length is 1 Byte
 
 	spi_enable(SPI1);
 

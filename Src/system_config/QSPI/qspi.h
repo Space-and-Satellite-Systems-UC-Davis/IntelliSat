@@ -45,6 +45,9 @@ enum qspi_imodes {
 	QSPI_CCR_IMODE_4_INSTRUCTION_LINES
 };
 
+#define QSPI_1_WIRE 1
+#define QSPI_UNUSED 0
+
 #define QSPI_REG_RESET 0
 
 #define QSPI_READ	false
@@ -139,11 +142,11 @@ bool qspi_statusPoll(
 		uint32_t timeout_period
 );
 
-#define QSPI_READY            '4'	// qspi_set_command() has been run
-#define QSPI_BUSY             '3'	// executing a previous command
-#define QSPI_SUCCESSFUL       '2'	// status of the previously executed command
-#define QSPI_TIMEDOUT         '1'	// status of the previously executed command
-#define QSPI_TRANSFER_ERROR   '0'	// status of the previously executed command
+#define QSPI_READY            4	// qspi_set_command() has been run
+#define QSPI_BUSY             3	// executing a previous command
+#define QSPI_SUCCESSFUL       2	// status of the previously executed command
+#define QSPI_TIMEDOUT         1	// status of the previously executed command
+#define QSPI_TRANSFER_ERROR   0	// status of the previously executed command
 
 /**
  * Returns the status of the QUADSPI hardware
