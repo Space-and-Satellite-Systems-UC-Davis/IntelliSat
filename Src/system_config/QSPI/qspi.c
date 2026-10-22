@@ -39,7 +39,7 @@ extern int core_Hz;	// from core_config.h
 
 void qspi_gpioInit() {
 
-#if OP_REV == 2
+#if OP_REV == 2 || OP_REV == 3
 	// GPIO
 	/* OP R2 GPIO pinout
 	 * 		QSPI SCK		E10		(Alternate Function, AF10)
