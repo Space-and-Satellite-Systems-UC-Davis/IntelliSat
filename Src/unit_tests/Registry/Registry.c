@@ -5,7 +5,7 @@
 
 void add_suite(UT_Registry *registry, UT_Suite *suite)
 {
-    UT_Suite* new_suites = realloc(registry->suites, (registry->num_suites + 1) * sizeof(UT_Suite));
+    UT_Suite** new_suites = realloc(registry->suites, (registry->num_suites + 1) * sizeof(UT_Suite*));
     registry->suites = new_suites;
     registry->suites[registry->num_suites] = suite;
 
