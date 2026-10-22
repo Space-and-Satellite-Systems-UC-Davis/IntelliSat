@@ -94,6 +94,8 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 
 #define enqueueBuffer(buff,usart) buff.buffer[buff.rear] = usart->RDR; \
 							      buff.rear = (buff.rear + 1) % ReceiveBufferLen;
+								  
+#define getLastFromBuffer(buff) buff.buffer[(buff.rear - 1 + ReceiveBufferLen) % ReceiveBufferLen]
 
 /************************ GPIO INITIALIZATION HELPERS ************************/
 
@@ -438,10 +440,36 @@ void usart_flushrx(USART_TypeDef* bus) {
 
 /**************************** USART INTERRUPTS ****************************/
 
+volatile bool communicatingWithRadio = false;
+volatile bool gotUplink = false;
+volatile bool gotFullPacket  = false;
+volatile bool escaped = false;
+
+volatile bool isUplinkReady(){
+	return gotUplink;
+}
+
+void setCommunicatingRadio(bool isCommunicaing){
+	communicatingWithRadio = isCommunicaing;
+}
+
+
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
 		enqueueBuffer(USART1_RxBuffer, USART1);
+		char currentChar = getLastFromBuffer(USART1_RxBuffer);
+		if(!escaped && currentChar == ';'){
+			gotFullPacket = true;
+		}
+		escaped = !escaped && currentChar == '\\';
+		if(!communicatingWithRadio &&  gotFullPacket){
+			//CALL TASK FLAG SCHEDULER FOR UPLINKING HEREEEEEEEEEEEEE
+			//TASK SHOULD CALL THIS FUNCTION: 
+			//radio_uplink(uint8_t chunk[])
+			gotUplink = true;
+			gotFullPacket = false;
+		}
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ICR &= ~USART_ICR_RTOCF;

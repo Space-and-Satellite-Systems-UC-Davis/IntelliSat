@@ -19,7 +19,7 @@
 
 #define RADIO_USART USART1
 #define PFC2Radio_BAUDRATE 9600
-#define CHUNK_LENGTH 8
+#define CHUNK_LENGTH 50
 #define MAX_UINT8_T 255
 
 typedef enum {
@@ -113,6 +113,14 @@ bool radio_downlink(uint8_t chunk[], size_t nchunks);
  * @returns success or failure
  */
 bool radio_downlink_idle_log();
+
+/**
+ * @param chunk An array to store the uplink data
+ * 
+ * @returns number of bytes uplinked
+ */
+int radio_uplink(uint8_t chunk[]);
+
 
 void radio_getLastUplink(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *hour, uint8_t *minute, uint8_t *second);
 
