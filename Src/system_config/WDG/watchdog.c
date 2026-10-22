@@ -1,16 +1,11 @@
 #include "watchdog.h"
 
-static int WWDG_timeout;
 static int IWDG_timeout;
 
 void watchdog_init(int ms){
-     IWDG_timeout = ms;
-     watchdog_iwdg_config(ms);
-     if(ms > WWDG_MAX){
-         ms = WWDG_MAX;
-     }
-     watchdog_wwdg_config(ms);
-    watchdog_interrupt_config(ms);
+	IWDG_timeout = ms;
+	watchdog_iwdg_config(ms);
+	watchdog_interrupt_config(ms);
 }
 
 void watchdog_iwdg_config(int ms){
@@ -36,23 +31,12 @@ void watchdog_iwdg_config(int ms){
     IWDG->KR = IWDG_KICK;
 }
 
-void watchdog_wwdg_config(int ms){
-    //configure WWDG
-    RCC->APB1ENR1 |= RCC_APB1ENR1_WWDGEN;
-    RCC->APB1SMENR1 &= ~RCC_APB1SMENR1_WWDGSMEN; //disable during sleep
-    WWDG->CFR |= WWDG_CFR_WDGTB;
-    float seconds = ms / 1000.0;
-    WWDG_timeout = seconds / WWDG_CALCULATE_TIMEOUT - 1;
-    WWDG->CR |= WWDG_CR_WDGA | WWDG_CR_T_6 | WWDG_timeout;
-}
-
 //timeout is approx 0.5 seconds for IWDG,
 //timeout is 262144 cycles ~50ms
 void watchdog_hardware_config() {
 	IWDG->KR = IWDG_KICK; //PLEASE DO NOT REMOVE :) (Just deal with the consequences i guess if you really want to)
-	WWDG->CR |= WWDG_CR_T_6 | WWDG_timeout;
 
-    if(!(FLASH->OPTR & (FLASH_OPTR_IWDG_SW |FLASH_OPTR_WWDG_SW))){
+    if(!(FLASH->OPTR & (FLASH_OPTR_IWDG_SW))){
         return;
     }
     //if reset by watchdog or flash loading, don't need to reconfigure.
@@ -73,7 +57,6 @@ void watchdog_hardware_config() {
 
     //enable hardware watchdog for IWDG and WWDG
     FLASH->OPTR &= ~FLASH_OPTR_IWDG_SW_Msk;
-    FLASH->OPTR &= ~FLASH_OPTR_WWDG_SW_Msk;
 
     //set option start bit in Flash control
     FLASH->CR |= FLASH_CR_OPTSTRT_Msk;
@@ -114,7 +97,6 @@ void TIM3_IRQHandler(){
 		WATCHDOG_TIMER->SR &= ~TIM_SR_UIF; //check for interrupt flag and update
     }
     IWDG->KR |= IWDG_KICK; //kick iwdg
-    WWDG->CR |= WWDG_CR_T_6 | WWDG_timeout; //kick wwdg
 }
 
 void watchdog_IWDGSleepMode()

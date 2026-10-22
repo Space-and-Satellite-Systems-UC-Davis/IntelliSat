@@ -9,6 +9,7 @@ extern void testFunction_IMU_AcelGyro_Reads();
 extern void testFunction_MAG_Reads();
 extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
+extern void testFunction_FRAM();
 extern void testFunction_FLASH();
 extern void testFunction_FS();
 extern void testFunction_LOGGER();
@@ -23,9 +24,12 @@ extern void testFunction_LPSleep();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_mgtIntercom();
 extern void testFunction_RadioIntercom();
+extern void testFunction_DMA_USART();
 extern void testFunction_mgtSleep();
 extern void testFunction_RadioSleep();
 extern void testFunction_RTC_storage();
+extern void testFunction_LogDownlink();
+extern void testFunction_RTC2FRAM();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -50,9 +54,11 @@ void (*getTestFunction(int test_id))(void) {
 		case 6:
 			return testFunction_FS;
 		case 7:
-			return testFunction_LOGGER;
+			return testFunction_FRAM;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
+		case 9:
+			return testFunction_LOGGER;
 		case 11:
 			return testFunction_INA_TMP_Outputs;
 		case 12:
@@ -79,6 +85,12 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_mgtSleep;
 		case 28:
 			return testFunction_RadioSleep;
+ 		case 29:
+			return testFunction_DMA_USART;
+		case 30:
+			return testFunction_LogDownlink;
+		case 32:
+			return testFunction_RTC2FRAM;
 		default:
 			return testFunction_Nothing;
 	}

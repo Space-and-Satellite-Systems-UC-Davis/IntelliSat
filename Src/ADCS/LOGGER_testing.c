@@ -1,7 +1,7 @@
 /**
  * @file LOGGER_testing.c
  *
- * @brief Tests for virtual_loggers on littlefs. Run as TEST_ID 7.
+ * @brief Tests for virtual_loggers on littlefs. Run as TEST_ID 9.
  *
  * Every run formats the FLASH, erasing anything stored on it. The tests run in
  * order, and each one closes the log file it opens so the next can open one.
