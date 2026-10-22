@@ -421,7 +421,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="FreeRTOS"/>
-						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runners" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
 					</sourceEntries>
 				</configuration>
@@ -753,7 +753,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="FreeRTOS"/>
-						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runners" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
 					</sourceEntries>
 				</configuration>
