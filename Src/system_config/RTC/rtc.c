@@ -15,6 +15,8 @@
  */
 
 #include "rtc.h"
+#include "Src/peripherals/FRAM/FRAM.h"
+#include <stdint.h>
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Callbacks for the timers are stored here.
@@ -24,10 +26,15 @@ CallbackEntry callbacks[TIMER_CALLBACK_ARRAY_SIZE];
 //Incremeted every time a callback is added to be unique. Not index.
 uint32_t id_counter = 0;
 
+uint32_t getUnixTime(uint32_t d_seconds, uint32_t d_minutes, uint32_t d_hours);
+
+static void (*on_cycle_callback)() = NULL;
+
 void init_callbacks() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		CallbackEntry dummy_entry;
 		dummy_entry.id = NULL_ID;
+		dummy_entry.unix_time = NULL_UNIX_TIME;
 		callbacks[i] = dummy_entry;
 	}
 }
@@ -60,6 +67,7 @@ void rtc_closeWritingPrivilege() {
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
+bool is_BDRST_not_set() { return (RCC->BDCR & RCC_BDCR_BDRST) == 0; }
 void rtc_config(char clock_source, int forced_config) {
 	// do nothing if clock is already configured
 	if ((RTC->ISR & RTC_ISR_INITS) && !forced_config) {
@@ -69,10 +77,17 @@ void rtc_config(char clock_source, int forced_config) {
 	backup_domain_controlEnable();
 
 	// store the current clock configuration, in case of bad input
-	uint32_t temp = RCC->BDCR | RCC_BDCR_RTCSEL;
+	uint32_t backup = RCC->BDCR & ~RCC_BDCR_RTCSEL;
+	uint32_t backup_rtcsel = RCC->BDCR & RCC_BDCR_RTCSEL;
+	// MAKE SURE TO ADD MORE IF USING MORE BKP REGISTERS!
+	uint32_t backup_boot = RTC->BKP0R;
+	uint32_t backup_adcs = RTC->BKP1R;
+
 
 	// reset the clock
-	RCC->BDCR &= ~RCC_BDCR_RTCSEL;
+	RCC->BDCR |= RCC_BDCR_BDRST;
+	wait_with_timeout(is_BDRST_not_set, DEFAULT_TIMEOUT_MS);
+	RCC->BDCR &= ~RCC_BDCR_BDRST;
 
 	// Select the RTC clock source
 	switch (clock_source) {
@@ -86,12 +101,25 @@ void rtc_config(char clock_source, int forced_config) {
 			RCC->BDCR |= RCC_BDCR_RTCSEL_Msk;
 			break;
 		default:
-			RCC->BDCR |= temp;	// restore the original configuration
+			RCC->BDCR |= backup_rtcsel;	// restore the original configuration
 			break;
+	}
+
+	//Restore from reset
+	//This handles LSE as well
+	RCC->BDCR |= backup;
+
+	if ((backup & RCC_BDCR_LSEON) != 0) {
+		// wait for the LSE Oscillator to stabilize
+		wait_with_timeout(is_LSE_not_ready, DEFAULT_TIMEOUT_MS);
 	}
 
 	// Enable the RTC Clock
 	RCC->BDCR |= RCC_BDCR_RTCEN;
+
+	// MAKE SURE TO ADD MORE IF USING MORE BKP REGISTERS!
+	RTC->BKP0R = backup_boot;
+	RTC->BKP1R = backup_adcs;
 
 	backup_domain_controlDisable();
 
@@ -121,7 +149,6 @@ void rtc_config(char clock_source, int forced_config) {
 	RTC->CR |= RTC_CR_BYPSHAD;
 
 	rtc_closeWritingPrivilege();
-
 }
 
 /****************************** RTC TIME SETTERS *****************************/
@@ -194,7 +221,7 @@ void rtc_setTime(uint8_t hour, uint8_t minute, uint8_t second) {
 	rtc_closeWritingPrivilege();
 }
 
-void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp){
+void FRAM_writeToBKPNumber(uint32_t bits, uint32_t bkp){
 		rtc_openWritingPrivilege();
 		switch (bkp) {
 		    case 0:
@@ -383,6 +410,12 @@ void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day)
 	*day = (dr_reg & RTC_DR_WDU_Msk) >> RTC_DR_WDU_Pos;
 }
 
+uint32_t rtc_getUnixTime(void) {
+	uint8_t h, m, s;
+	rtc_getTime(&h, &m, &s);
+	return getUnixTime(s,m,h);
+}
+
 /******************************** RTC WAKEUP *********************************/
 
 //Watchdog will be mad if we don't notify it every ~32 seconds
@@ -392,7 +425,8 @@ const uint16_t MAX_SLEEP = 30; // in seconds, must be under 32
 bool is_WUTWF_not_ready() { return (RTC->ISR & RTC_ISR_WUTWF) == 0; }
 
 // There are ways to allow it to wait longer if we need to
-bool rtc_wakeUp(uint16_t seconds) {
+bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)()) {
+	on_cycle_callback = on_cycle;
 	// Only LSI and LSE will be on for Stop modes.
 	// Stop modes not currently implemented
 	uint32_t current_source = RCC->BDCR & RCC_BDCR_RTCSEL;
@@ -415,7 +449,10 @@ bool rtc_wakeUp(uint16_t seconds) {
 
 	RTC->CR &= ~(RTC_CR_WUTE); //clear
 	//Can't access WUCKSEL/WUT otherwise
-	wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+	// wait_with_timeout(is_WUTWF_not_ready, DEFAULT_TIMEOUT_MS);
+	// ^^ Replaced with below since TIM 7 is diabled when in low power sleep
+	uint32_t timeout = 1000000;
+	while(!(RTC -> ISR & RTC_ISR_WUTWF) && timeout--);
 
 	//Set auto-reload to number of seconds we wait
 	RTC->WUTR &= ~(RTC_WUTR_WUT);
@@ -456,6 +493,7 @@ void RTC_WKUP_IRQHandler() {
 	if (sleep_cycles == 0 || (sleep_cycles == 1 && sleep_remainder == 0)) {
 		RTC->CR &= ~(RTC_CR_WUTE); //Turn off wake-up
 	    NVIC_DisableIRQ(RTC_WKUP_IRQn); //Turn off wake-up interrupt
+		on_cycle_callback = NULL;
 		return; // Do not maintain sleep
 	} else if (sleep_cycles == 1) {
 		RTC->CR &= ~(RTC_CR_WUTE);
@@ -482,7 +520,7 @@ void RTC_WKUP_IRQHandler() {
 	}
 
 	sleep_cycles--;
-	PWR_maintainLPSleep();
+	if (on_cycle_callback != NULL) on_cycle_callback();
 
 	rtc_closeWritingPrivilege();
 }
@@ -495,7 +533,13 @@ void setAlarm() {
 	rtc_openWritingPrivilege();
 
 	const CallbackEntry entry = callbacks[0];
-	if (entry.id == NULL_ID) return;
+	// If called after full delete, prevent interrupt triggering for nothing
+	// Just in case.
+	if (entry.id == NULL_ID) {
+		NVIC_DisableIRQ(RTC_Alarm_IRQn);
+		rtc_closeWritingPrivilege();
+		return;
+	}
 
     // Disable alarm
 	// Needs to be done to edit
@@ -565,7 +609,8 @@ uint32_t rtc_insertEntry(CallbackEntry entry) {
 
 			setAlarm();
 
-			return id_counter++;
+			id_counter++;
+			return entry.id;
 		}
 	}
 
@@ -600,6 +645,8 @@ void rtc_deleteAllEntries() {
 		callbacks[i].id = NULL_ID;
 		callbacks[i].unix_time = NULL_UNIX_TIME;
 	}
+	// Just in case, to prevent a stale interrupt
+	setAlarm();
 }
 
 CallbackEntry rtc_getEntry(uint32_t id) {

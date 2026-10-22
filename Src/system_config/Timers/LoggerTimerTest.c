@@ -10,6 +10,6 @@ void testFunction_LogTimer_Callback() {
 		logger_expTimerOn();
 		delay_ms(1000);
 		logger_expTimerOff();
-		printMsg("\r\n");
+		printMsg("\n");
 	}
 }

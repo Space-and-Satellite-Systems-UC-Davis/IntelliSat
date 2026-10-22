@@ -1,0 +1,5 @@
+#!/bin/bash
+
+[ -e pointdish ] || make
+
+{ echo "38.53"; echo "-121.76"; curl -s 'https://tle.ivanstanojevic.me/api/tle/25544' | jq '.line1, .line2' | tr -d '"'; curl -s "https://ssd-api.jpl.nasa.gov/jd_cal.api?cd=$(date -u +%F_%T)" | jq -r '.jd'; } | ./pointdish

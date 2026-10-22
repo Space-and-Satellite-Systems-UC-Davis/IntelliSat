@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+BreakBeforeBraces: WebKit
+Cpp11BracedListStyle: false
+IndentCaseLabels: true

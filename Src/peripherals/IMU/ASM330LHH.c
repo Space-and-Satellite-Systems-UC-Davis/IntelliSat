@@ -281,8 +281,6 @@ void imu_init(int acel_rate, int acel_scale, int gyro_rate, int gyro_scale) {
 	//initialize accelerometer and gyroscope
 	imu_acelCtrl(acel_rate, acel_scale, 0);
 	imu_gyroCtrl(gyro_rate, gyro_scale);
-
-
 }
 
 float imu_readAcel_X() {
@@ -462,13 +460,13 @@ bool imu_hasExpectedValuesGyro() {
 }
 
 void imu_printAllValues() {
-	printMsg("Gyro\r\n");
-	printMsg("X: %f\r\n", imu_readGyro_X());
-	printMsg("Y: %f\r\n", imu_readGyro_Y());
-	printMsg("Z: %f\r\n", imu_readGyro_Z());
-	printMsg("Accel:\r\n");
-	printMsg("X: %f\r\n", imu_readAcel_X());
-	printMsg("Y: %f\r\n", imu_readAcel_Y());
-	printMsg("Z: %f\r\n", imu_readAcel_Z());
-	printMsg("%f\r\n", imu_readTemp());
+	printMsg("Gyro\n");
+	printMsg("X: %f\n", imu_readGyro_X());
+	printMsg("Y: %f\n", imu_readGyro_Y());
+	printMsg("Z: %f\n", imu_readGyro_Z());
+	printMsg("Accel:\n");
+	printMsg("X: %f\n", imu_readAcel_X());
+	printMsg("Y: %f\n", imu_readAcel_Y());
+	printMsg("Z: %f\n", imu_readAcel_Z());
+	printMsg("%f\n", imu_readTemp());
 }

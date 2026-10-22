@@ -23,6 +23,7 @@
 #include <QSPI/qspi.h>
 #include <LED/led.h>
 #include <RTC/rtc.h>
+#include <FRAM/FRAM.h>
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
@@ -49,7 +50,9 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
-	rtc_config(LSI, 0);
+	rtc_config(LSE, false);
+
+
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
 }
@@ -72,22 +75,18 @@ void init_first_time() {
 /**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
- *
- * @param run_scheduler If set to true, IntelliSat Scheduler will be active
- *        in the background
  * @returns None
  */
-void init_platform(bool run_scheduler) {
+void init_platform() {
+	init_callbacks();
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
     debug_init();
     set_IMU(IMU0);
-    imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
+	imu_init(IMU_ODR_3333_Hz, IMU_FS_2_g, IMU_ODR_3333_Hz, IMU_FS_1000_dps);
     set_IMU(IMU1);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
-
-
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
 //    sun_sensor_init();
     //TODO: hdd_init().
@@ -97,12 +96,18 @@ void init_platform(bool run_scheduler) {
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
+    // systick_init();
 	printer_init();
 	led_init();
 	buttons_init();
-  dma_initializePeripheralConstants();
-//  watchdog_init(WWDG_TIMEOUT_TIME);
-  heartbeat_timer_init();
+	dma_initializePeripheralConstants();
+	spi_config(SPI1);
+	heartbeat_timer_init();
+	// Without delay, boot number is incremented several times per flashing
+//	delay_ms(15000);
+	FRAM_increment_boot_counter();
+
+	watchdog_init(300);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

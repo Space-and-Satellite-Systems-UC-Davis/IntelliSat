@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <globals.h>
 #include <core_config.h>
-#include "PWR/sleep.h"
 #include "WDG/watchdog.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
@@ -95,14 +94,19 @@ typedef enum WUCKSEL {
  */
 void rtc_config(char clock_source, int forced_config);
 
-/**
- * Stores 4 bytes into any of the 32 backup registers on the RTC
- *
- * @param bits 	The bits to be stored
- * @param bkp  	The register to store into (an int between 0-31)
- *
- */
-void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp);
+enum BKPDesignations {
+  BootCounter = 0,
+  ADCSVars = 1,
+};
+
+typedef enum SensorOffset_enum {
+	Sun0=0, Sun1, Sun2, Sun3, Sun4, Sun5, Sun6,
+	Sun7, Sun8, Sun9, Sun10, Sun11,
+	Coil0, Coil1, Coil2,
+	Imu0, Imu1,
+	Mag0, Mag1,
+	Hdd0, Hdd1
+} SensorOffset;
 
 /****************************** RTC TIME SETTERS *****************************/
 
@@ -159,6 +163,13 @@ void rtc_getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  */
 void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day);
 
+/**
+ * @brief Returns the current unix time
+ * 
+ * @return uint32_t The unix time
+ */
+uint32_t rtc_getUnixTime(void);
+
 /********************************* RTC ALARMS ********************************/
 
 /**
@@ -170,7 +181,7 @@ void rtc_getCalendar(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day)
  *
  * @returns false if called with an RTC clock other than LSE/LSI
  */
-bool rtc_wakeUp(uint16_t seconds);
+bool rtc_wakeUp(uint16_t seconds, void (*on_cycle)());
 
 /************************** RTC SCHEDULE CALLBACK *****************************/
 
@@ -178,6 +189,13 @@ bool rtc_wakeUp(uint16_t seconds);
 #define NULL_UNIX_TIME UINT32_MAX
 
 typedef void(*timer_callback)();
+
+/**
+ * Must be run before callbacks may be used
+ *
+ * @returns none
+ */
+void init_callbacks();
 
 //Stores all information
 typedef struct {

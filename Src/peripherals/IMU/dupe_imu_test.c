@@ -6,7 +6,7 @@
 
 void testFunction_IMU_Dupe_Reads() {
 	while(1){
-//	printMsg("IMU0 Selected\r\n");
+//	printMsg("IMU0 Selected\n");
 	if (get_buttonStatus_SW1()) {
 			set_IMU(IMU0);
 			imu_printAllValues();

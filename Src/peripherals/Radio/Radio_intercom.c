@@ -1,0 +1,158 @@
+/*********************************************************
+ * Radio_intercomm.h
+ * 
+ * Driver for communication with the Radio
+ * 
+ * Author: James Knepper (2025)
+ * 
+ * Log:
+ *  12 November 2025 - Initial
+ * 
+ ********************************************************/
+
+#include "Radio_intercom.h"
+#include "MGTINTERCOM/mgt_intercom.h"
+#include "print_scan.h"
+#include "Radio/log_record.h"
+
+bool talking;
+
+/**
+ * Initialize the radio USART ports
+ */
+void radio_init() {
+    usart_init(RADIO_USART, PFC2Radio_BAUDRATE);
+    talking = false;
+}
+
+/**
+ * 
+ */
+bool are_talking() {
+    if (talking) return true;
+    if (crc_transmit(RADIO_USART, "?", 1)) talking = true;
+    return talking;
+}
+
+/**
+ * Send data into the radio for transmission down to the ground
+ * 
+ * @param chunk  The data to be sent
+ * @param nbytes  The size of the data to be sent.
+ * 
+ * @returns success or failure
+ */
+bool radio_push(uint8_t chunk[], size_t nbytes) {
+    if (!are_talking()) return false;
+    uint8_t header[2];
+    header[0] = 'D';
+    header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
+    header[2] = nbytes % CHUNK_LENGTH; //remainder, to calculate total num bytes
+    if(header[2] == 0){
+        header[2] = CHUNK_LENGTH;
+    }
+    if (crc_transmit(RADIO_USART, header, 3)) {
+        return crc_chunked_transmit(RADIO_USART, chunk, nbytes, CHUNK_LENGTH);
+    }
+}
+
+/**
+ * Force the radio to send data to the PFC
+ * 
+ * @param chunk  A storage location for the data to be received
+ * 
+ * @returns number of bytes read and the data type
+ */
+RadioPacket radio_force_pull(uint8_t chunk[]) {
+    RadioPacket fail = {-1, 'u'};
+    if (!are_talking()) return fail;
+    if (!crc_transmit(RADIO_USART, "U", 1)) return fail;
+    uint8_t buffer[MAX_PAYLOAD_BYTES];
+    crc_read(RADIO_USART, buffer);
+    int totalBytes = (buffer[1]-1) * CHUNK_LENGTH + buffer[2];
+    return radio_pull(chunk, totalBytes, buffer[3]);
+}
+
+/**
+ * Receive data from the radio. This should be called by a signal handler.
+ * I assume the first packet has already been received and processed.
+ * 
+ * @param chunk  an empty storage vessel
+ * 
+ * @returns number of bytes read and the data type
+ */
+RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType datatype) {
+    RadioPacket fail;
+    fail.size = 0;
+    fail.datatype = 0;
+    if (!are_talking()) return fail;
+    int nchunks = (nbytes-1)/CHUNK_LENGTH + 1;
+    crc_chunked_read(RADIO_USART, chunk, CHUNK_LENGTH, nchunks);
+    RadioPacket success;
+    success.size = nbytes;
+    success.datatype = datatype;
+    return success;
+}
+
+/**
+ * Retrieve the radio's state
+ * (t: transferring to earth, r: receiving from earth, o: neither)
+ * 
+ * @returns the state
+ */
+PFC2RadioState radio_get_state() {
+    if (!are_talking()) return Idle;
+    crc_transmit(RADIO_USART, "S", 1);
+    PFC2RadioState buffer[MAX_PAYLOAD_BYTES];
+    crc_read(RADIO_USART, buffer);
+    return buffer[0];
+}
+
+/**
+ * Receive the kill command from the ground. 
+ */
+void radio_killall() {
+    if (!are_talking()) return;
+    if (mgt_killall()) {
+        // TODO: Here Be Dragons
+        // Kill the PFC
+    }
+}
+
+bool radio_downlink(uint8_t chunk[], size_t nchunks) {
+    if (!are_talking()) return false;
+    uint8_t packet[2];
+    packet[0] = TransferToGround;
+    packet[1] = nchunks;
+    return crc_transmit(RADIO_USART, packet, 2);
+}
+
+void echo() {
+    if (!are_talking()) return;
+    uint8_t packet[MAX_MESSAGE_BYTES];
+    size_t bytes = usart_receiveBytes(RADIO_USART, packet, MAX_MESSAGE_BYTES);
+    printMsg("Radio Says: <%s>", packet);
+}
+
+bool radio_downlink_idle_log() {
+	log_record_idle log = fill_log_idle();
+	uint8_t* log_bytes = (uint8_t*) &log;
+	bool success = radio_push(log_bytes, sizeof(log));
+	if (!success) return false;
+
+	// radio_push to stuff what we need into memory. Downlink later.
+	success = radio_downlink(NULL, sizeof(log));
+	return success;
+}
+
+void initEmptyChunk(uint8_t chunk[]) {
+	for (size_t i = 0; i < CHUNK_LENGTH; i++) {
+		chunk[i] = 0;
+	}
+}
+
+
+void radio_getLastUplink(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *hour, uint8_t *minute, uint8_t *second){
+    //TODO
+    //lalalalalala does something here 
+}

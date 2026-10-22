@@ -23,6 +23,8 @@
 
 #define GPIO_AFRH_AFSEL_AF5 5U
 #define GPIO_AFRH_AFSEL_AF6 6U
+#define GPIO_AFRL_AFSEL_AF5 5U
+#define GPIO_AFRL_AFSEL_AF6 6U
 
 #define SPI_CR_RESET 0U
 #define SPI_CR1_BR_R2 0U
@@ -36,7 +38,7 @@
 #define SPI2_CS			  GPIOB,12
 #define SPI3_CS			  UNUSED_GPIO
 
-#elif OP_REV == 2 
+#elif OP_REV == 2
 
 #define SPI1_CS			  GPIOA,4
 #define SPI2_CS			  UNUSED_GPIO
