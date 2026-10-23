@@ -112,22 +112,28 @@ getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal)
 
 TIMESTAMP getTimeStamp()
 {
-    TIMESTAMP time;
+    TIMESTAMP time = { 0 };
 
+    // On a failed RTC read the zeroed struct is returned, so callers format a
+    // recognisably-bogus timestamp instead of whatever was on the stack.
     vi_get_epoch(&time.year, &time.month, &time.day, &time.hour, &time.minute,
                  &time.second);
 
     return time;
 }
 
+// Both of these return a pointer into a static buffer rather than onto the
+// stack, so the caller can use the result after the function returns. The
+// trade-off is that each call overwrites the previous result, and that they
+// are not reentrant -- fine here, since only the single ADCS task calls them.
+
 char *getTimeString()
 {
+    static char timeString[TIMESTAMP_LEN];
     TIMESTAMP time = getTimeStamp();
-    char *timeString;
 
-    // Convert TIMESTAMP to string safely
-    // YYYY - MM - DD_HH - MM - SS
-    snprintf(timeString, TIMESTAMP_LEN, "%04d-%02d-%02d-%02d-%02d-%02d",
+    // YYYY-MM-DD_HH-MM-SS, matching the format virtual_loggers.h documents.
+    snprintf(timeString, sizeof(timeString), "%04d-%02d-%02d_%02d-%02d-%02d",
              time.year, time.month, time.day, time.hour, time.minute,
              time.second);
 
@@ -136,8 +142,8 @@ char *getTimeString()
 
 char *prependTimeStamp(char *fileType)
 {
-    char fileName[MAX_FILENAME];
-    snprintf(fileName, MAX_FILENAME, "%s_%s", getTimeString(), fileType);
+    static char fileName[MAX_FILENAME];
+    snprintf(fileName, sizeof(fileName), "%s_%s", getTimeString(), fileType);
     return fileName;
 }
 

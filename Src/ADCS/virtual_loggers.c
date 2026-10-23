@@ -11,6 +11,12 @@
  */
 
 #include "virtual_loggers.h"
+
+// LOG_FILE only needs lfs_file_t, which virtual_loggers.h pulls from
+// littlefs/lfs.h. The bound filesystem -- lfs, fs_file_cfg and the W25Q128JV
+// geometry behind them -- is needed here and nowhere else, which keeps the
+// STM32 headers out of every module that merely logs.
+#include "../data_management/lfs_config.h"
 #include "virtual_intellisat.h"
 
 #include <stdbool.h>
@@ -140,6 +146,12 @@ LOG_FILE *openFile(char *name) {
 }
 
 void closeFile(LOG_FILE *file, char *message) {
+  // Callers treat logging as best-effort and pass whatever createFile() gave
+  // them, which is NULL when the filesystem refused the open.
+  if (file == NULL) {
+    return;
+  }
+
   TIMESTAMP ts;
   stampNow(&ts);
 
@@ -173,6 +185,10 @@ void logHeader(LOG_FILE *file) {
 }
 
 void logRecord(LOG_FILE *file, void *record) {
+  if (file == NULL) {
+    return; // see closeFile()
+  }
+
   TIMESTAMP ts;
   stampNow(&ts);
 

@@ -12,8 +12,8 @@
 #include "adcs_math/matrix.h"
 #include "adcs_math/vector.h"
 #include "determination/novasc3.1/novas.h"
+#include "timestamp.h"
 #include "virtual_intellisat.h"
-#include "virtual_loggers.h"
 
 #include <limits.h>
 #include <stdint.h>

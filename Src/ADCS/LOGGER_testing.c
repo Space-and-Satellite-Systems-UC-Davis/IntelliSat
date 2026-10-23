@@ -17,6 +17,11 @@
  */
 
 #include "virtual_loggers.h"
+
+// The tests format and mount the filesystem themselves, so unlike ordinary
+// logger callers they need the bound lfs/cfg that virtual_loggers.c uses.
+#include "../data_management/lfs_config.h"
+
 #include <print_scan.h>
 #include <stdlib.h>
 #include <string.h>

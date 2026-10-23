@@ -13,8 +13,10 @@
 #ifndef VIRTUAL_LOGGERS_H
 #define VIRTUAL_LOGGERS_H
 
-#include "../data_management/lfs_config.h"
+#include "../data_management/littlefs/lfs.h"
 #include "adcs_math/vector.h"
+#include "timestamp.h"
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -23,15 +25,6 @@
 #define LOG_TS_WIDTH 19  // YYYY-MM-DD_HH-MM-SS
 #define LOG_NUM_WIDTH 13 // "%13.5e", wide enough for any finite double
 #define LOG_ROW_MAX 155  // the largest row_size of any file_tag
-
-typedef struct {
-    int year;
-    int month;
-    int day;
-    int hour;
-    int minute;
-    int second;
-} TIMESTAMP;
 
 /**
  * @brief Tag denoting which kind of log file
