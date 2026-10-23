@@ -4,7 +4,7 @@
 #include "adcs_math/vector.h"
 #include "control/PID/PID.h"
 #include "virtual_intellisat.h"
-#include "virtual_ros.h"
+#include "virtual_rtos.h"
 
 typedef enum determination_experiment {
     DETERMINATION_EXPERIMENT_SUCCESS,

@@ -46,6 +46,7 @@ determination_exp_status determination_experiment()
         vi_enter_critical();
         if (vi_task_has_restarted()) {
             // Return to Schedulers to restart Detumbling
+            vi_exit_critical();
             return DETERMINATION_EXPERIMENT_HAS_RESTARTED;
         }
 
@@ -56,8 +57,10 @@ determination_exp_status determination_experiment()
 
         determination(&currAttitude);
         // Get the current time (Virtual Intellisat)
-        if (vi_get_curr_millis(&curr_millis) == GET_CURR_MILLIS_FAILURE)
+        if (vi_get_curr_millis(&curr_millis) == GET_CURR_MILLIS_FAILURE) {
+            vi_exit_critical();
             return DETERMINATION_EXPERIMENT_MILLIS_FAILURE;
+        }
 
         int delta_t = get_delta_t(curr_millis, prev_millis);
 
@@ -71,8 +74,10 @@ determination_exp_status determination_experiment()
             PID_command(target, zrotation, curr_millis, &controller);
 
         // Take output and plug it into HDD
-        if (vi_hdd_command(hdd, throttle) == HDD_COMMAND_FAILURE)
+        if (vi_hdd_command(hdd, throttle) == HDD_COMMAND_FAILURE) {
+            vi_exit_critical();
             return DETERMINATION_EXPERIMENT_HDD_COMMAND_FAILURE;
+        }
         prevAttitude = currAttitude;
         prev_millis = curr_millis;
 
