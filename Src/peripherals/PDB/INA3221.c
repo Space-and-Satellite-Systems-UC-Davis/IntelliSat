@@ -5,6 +5,7 @@
  */
 
 #include "INA3221.h"
+#include "I2C/I2C.h"
 
 static int current_lsb; //in microamps
 static int16_t config;
@@ -14,7 +15,10 @@ int ceiling2(float num){
 }
 
 void ina3221_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current){
-    softi2c_init(INA3221_GPIO, INA3221_SCL_PIN, INA3221_GPIO, INA3221_SDA_PIN);
+    softi2c_init(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
+
+//	softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 0);
+//	softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
 
     ina3221_config(averages, bus_time, shunt_time, rshunt, max_current);
 }
@@ -28,7 +32,7 @@ void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int 
 
 
     //battery monitor
-    softi2c_writeReg16(INA3221_GPIO, INA3221_SCL_PIN, INA3221_GPIO, INA3221_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER, 0x7127);
+    softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER, 0x7127);
 
-    softi2c_readReg16(INA3221_GPIO, INA3221_SCL_PIN, INA3221_GPIO, INA3221_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER);
+//    softi2c_readReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, SENSOR_ADDRESS, CONFIG_REGISTER);
 }
