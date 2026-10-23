@@ -10,7 +10,7 @@
 #ifndef REALOP1_PERIPHERALS_FLASH_H_
 #define REALOP1_PERIPHERALS_FLASH_H_
 
-#include "../../system_config/QSPI/QSPI.h"
+#include "../../system_config/QSPI/qspi.h"
 
 //Register and mask macros
 #define QSPI_READ_REGISTER_TWO    0x35
