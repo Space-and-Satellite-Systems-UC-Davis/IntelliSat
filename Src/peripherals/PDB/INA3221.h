@@ -22,6 +22,7 @@
 //#define INA3221_ADDRESS 0x6
 //#define INA3221_ADDRESS 0x7
 
+//#define INA3221_ADDRESS 0x1
 //#define INA3221_ADDRESS 0x0
 
 #define CONFIG_REGISTER 0
