@@ -20,7 +20,7 @@
 
 adcs_main_status detumbleEX(vec3 needle, uint64_t minTime, uint64_t maxTime)
 {
-    switch (detumble(needle, false, minTime, maxTime)) {
+    switch (detumble(needle, false, maxTime, minTime)) {
         case DETUMBLING_SUCCESS:
             return ADCS_MAIN_SUCCESS;
         case DETUMBLING_FAILURE_CURR_MILLIS:
