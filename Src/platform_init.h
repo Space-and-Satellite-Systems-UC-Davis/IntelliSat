@@ -23,6 +23,7 @@
 #include <QSPI/qspi.h>
 #include <LED/led.h>
 #include <RTC/rtc.h>
+#include <FRAM/FRAM.h>
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
@@ -49,7 +50,9 @@ enum scb_cpacr_cpn_privileges {
  */
 void init_init() {
 	init_coreClocks();
-	rtc_config(LSI, 0);
+	rtc_config(LSE, false);
+
+
     //TODO: retrieve RTC vars
     //   and set scheduler flags?
 }
@@ -75,6 +78,7 @@ void init_first_time() {
  * @returns None
  */
 void init_platform() {
+	init_callbacks();
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
@@ -97,8 +101,13 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	dma_initializePeripheralConstants();
-	watchdog_init(WWDG_TIMEOUT_TIME);
+	spi_config(SPI1);
 	heartbeat_timer_init();
+	// Without delay, boot number is incremented several times per flashing
+//	delay_ms(15000);
+	FRAM_increment_boot_counter();
+
+	watchdog_init(300);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

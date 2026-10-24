@@ -76,4 +76,12 @@ void backup_domain_controlEnable();
  */
 void backup_domain_controlDisable();
 
+/**
+ * Timeout function that happens to be used in rtc as well
+ *
+ * @param   None
+ * @returns true if LSE is not ready
+ */
+bool is_LSE_not_ready();
+
 #endif /* REALOP1_CORE_CONFIG_H_ */
