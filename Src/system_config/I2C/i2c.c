@@ -39,6 +39,7 @@
 	 sda_port->BSRR = 1 << (sda_pin + 16);
 	 softi2c_lineMode(scl_port, scl_pin, 1);
 	 softi2c_lineMode(sda_port, sda_pin, 1);
+	 softi2c_delay();
  }
  
  void softi2c_delay() {

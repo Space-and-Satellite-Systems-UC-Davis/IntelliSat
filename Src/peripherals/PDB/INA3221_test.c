@@ -1,4 +1,5 @@
 #include "INA3221.h"
+#include "I2C/i2c.h"
 #include "GPIO/gpio.h"
 
 void testFunction_INA3221() {
@@ -21,9 +22,22 @@ void testFunction_INA3221() {
 //			GPIO_PUPDR_PULL_DOWN
 //	);
 
+//	while (true) {
+//		ina3221_init(0, 4, 4, 68, 30);
+//		delay_ms(2000);
+//	}
+
+    softi2c_init(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
 	while (true) {
-		ina3221_init(0, 4, 4, 68, 30);
-		delay_ms(2000);
+//	    bool test = softi2c_probe(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, INA3221_ADDRESS);
+
+		softi2c_sigStart(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
+		softi2c_send8(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, INA3221_ADDRESS << 1 | 1);
+		softi2c_readNack(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
+		softi2c_sigStop(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
+
+	    delay_ms(2000);
+//	    softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, INA3221_ADDRESS, CONFIG_REGISTER, 0x7127);
 	}
 }
 
