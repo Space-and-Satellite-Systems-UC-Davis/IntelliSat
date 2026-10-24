@@ -87,6 +87,7 @@ adcs_main_status ADCS_MAIN(adcs_mode mode)
                 case PID_EXPERIMENT_ANGVEL_FAILURE:
                 case PID_EXPERIMENT_MILLIS_FAILURE:
                 case PID_EXPERIMENT_COMMAND_FAILURE:
+                case PID_EXPERIMENT_HAS_RESTARTED:
                     return ADCS_ROTISSERIE_ERR;
             }
     }
