@@ -8,8 +8,8 @@
 #ifndef PERIPHERALS_FRAM_MB85RS256B_H_
 #define PERIPHERALS_FRAM_MB85RS256B_H_
 
-#include "../../system_config/SPI/spi.h"
-#include "print_scan.h"
+#include "SPI/spi.h"
+#include "FRAM_layout.h"
 
 // Registers
 #define FRAM_SPI SPI1
@@ -23,7 +23,6 @@
 #define FRAM_WRITE_DISABLE 0x04
 #define FRAM_READ 0x03
 #define FRAM_WRITE 0x02
-#define FRAM_MAX_BYTES 0x8000
 
 // FRAM Device ID
 void FRAM_read_deviceID(uint8_t *MISO);
