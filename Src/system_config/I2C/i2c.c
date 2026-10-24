@@ -18,28 +18,11 @@
  }
  
  void softi2c_init(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
-//	 gpio_mode(
-//			 scl_port,
-//			 scl_pin,
-//			 GPIO_MODER_Output,
-//			 GPIO_OTYPER_PUHS_PULL,
-//			 GPIO_OSPEEDR_VERY_HIGH,
-//			 GPIO_PUPDR_PULL_UP
-//	 );
-//	 gpio_mode(
-//			 sda_port,
-//			 sda_pin,
-//			 GPIO_MODER_Output,
-//			 GPIO_OTYPER_PUHS_PULL,
-//			 GPIO_OSPEEDR_VERY_HIGH,
-//			 GPIO_PUPDR_PULL_UP
-//	 );
-
 	 gpio_mode(
 			 scl_port,
 			 scl_pin,
 			 GPIO_MODER_Output,
-			 GPIO_OTYPER_OPEN_DRAIN,
+			 GPIO_OTYPER_PUSH_PULL,
 			 GPIO_OSPEEDR_VERY_HIGH,
 			 GPIO_PUPDR_PULL_UP
 	 );
@@ -47,10 +30,27 @@
 			 sda_port,
 			 sda_pin,
 			 GPIO_MODER_Output,
-			 GPIO_OTYPER_OPEN_DRAIN,
+			 GPIO_OTYPER_PUSH_PULL,
 			 GPIO_OSPEEDR_VERY_HIGH,
 			 GPIO_PUPDR_PULL_UP
 	 );
+
+//	 gpio_mode(
+//			 scl_port,
+//			 scl_pin,
+//			 GPIO_MODER_Output,
+//			 GPIO_OTYPER_OPEN_DRAIN,
+//			 GPIO_OSPEEDR_VERY_HIGH,
+//			 GPIO_PUPDR_NO_PULL
+//	 );
+//	 gpio_mode(
+//			 sda_port,
+//			 sda_pin,
+//			 GPIO_MODER_Output,
+//			 GPIO_OTYPER_OPEN_DRAIN,
+//			 GPIO_OSPEEDR_VERY_HIGH,
+//			 GPIO_PUPDR_NO_PULL
+//	 );
 
 	 scl_port->BSRR = 1 << (scl_pin + 16); // drive low when asserted
 	 sda_port->BSRR = 1 << (sda_pin + 16);
@@ -60,7 +60,7 @@
  }
  
  void softi2c_delay() {
-	 nop(50);
+	 nop(100);
 //	 nop(10);
  }
  
