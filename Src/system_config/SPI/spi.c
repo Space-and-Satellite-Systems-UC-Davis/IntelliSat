@@ -19,6 +19,7 @@
  */
 
 #include "spi.h"
+#include "GPIO/gpio.h"
 
 /**
  * Configures GPIO for the SPI-2 Peripheral
@@ -39,7 +40,6 @@ void spi3_gpioInit() {
 
 	wait_with_timeout(is_GPIOB_not_ready, DEFAULT_TIMEOUT_MS);
 	wait_with_timeout(is_GPIOG_not_ready, DEFAULT_TIMEOUT_MS);
-
 
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE3_Msk
@@ -80,6 +80,7 @@ void spi3_gpioInit() {
 
 	GPIOB->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED3_Msk;
 
+	gpio_high(SPI3_CS);
 
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE3_Msk
@@ -127,6 +128,8 @@ void spi2_gpioInit() {
 
 	GPIOB->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED13_Msk;
 
+	gpio_high(SPI2_CS);
+
 	GPIOB->MODER &= ~(
 		  GPIO_MODER_MODE12_Msk
 		| GPIO_MODER_MODE13_Msk
@@ -168,6 +171,7 @@ void spi1_gpioInit() {
 
 	GPIOA->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED5_Msk;
 
+	gpio_high(SPI1_CS);
 	GPIOA->MODER &= ~(
 		  GPIO_MODER_MODE4_Msk
 		| GPIO_MODER_MODE5_Msk
@@ -204,10 +208,9 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	spi->CR1 &= ~SPI_CR1_SPE;
 
 	start_time = getSysTime();
-	uint8_t temp;
 	while(spi->SR & SPI_SR_FRLVL && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))){
 		// Wait till all data is received
-		temp = spi->DR;
+		(void)spi->DR;
 	}
 }
 
@@ -309,12 +312,17 @@ void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
 }
 
 bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *reception, uint16_t size, bool dma) {
+	(void)dma;
+	const uint32_t error_flags = SPI_SR_OVR | SPI_SR_MODF | SPI_SR_FRE;
 	uint64_t start_time = getSysTime(); //time in ms
-	while ((size-- >= 1) && !(is_time_out(start_time, DEFAULT_TIMEOUT_MS))) {
+	while (size-- >= 1) {
+		if (is_time_out(start_time, DEFAULT_TIMEOUT_MS) || (spi->SR & error_flags)) return false;
 		uint64_t inner_start_time = getSysTime();
 
 		// wait for TXFIFO to be empty
 		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));	// TXE = TX Empty
+		if (!(spi->SR & SPI_SR_TXE) || (spi->SR & error_flags)
+			|| is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)) return false;
 		if (transmission == NULL) {
 			// send a dummy byte to trigger the clock pulses
 			*((volatile uint8_t*) &(spi->DR)) = SPI_DUMMY_BYTE;
@@ -324,23 +332,27 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 			transmission++;
 		}
 
-    
 		inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_TXE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+		if (!(spi->SR & SPI_SR_TXE) || (spi->SR & error_flags)
+			|| is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)) return false;
 		inner_start_time = getSysTime();
 		while(!(spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+		if (!(spi->SR & SPI_SR_RXNE) || (spi->SR & error_flags)
+			|| is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)) return false;
 
-		// read the reception line until it's empty
-		inner_start_time = getSysTime();
-		while ((spi->SR & SPI_SR_RXNE) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS))) {	// RXNE = RX Not Empty
-			if (reception == NULL) {
-				spi->DR;
-			} else {
-				uint16_t value = spi->DR;
-				*reception = value;
-				reception++;
-			}
+		// Read one 8-bit frame for the byte transmitted above.
+		if (reception == NULL) {
+			(void)*((volatile uint8_t*) &(spi->DR));
+		} else {
+			uint8_t value = *((volatile uint8_t*) &(spi->DR));
+			*reception = value;
+			reception++;
 		}
 	}
+	// Wait for the last frame before the caller releases CS.
+	uint64_t inner_start_time = getSysTime();
+	while((spi->SR & SPI_SR_BSY) && !(is_time_out(inner_start_time, DEFAULT_TIMEOUT_MS)));
+	if ((spi->SR & (SPI_SR_BSY | error_flags)) || is_time_out(start_time, DEFAULT_TIMEOUT_MS)) return false;
 	return true;
 }
