@@ -29,7 +29,7 @@
 #define SPI_CR_RESET 0U
 #define SPI_CR1_BR_R2 0U
 #define SPI_CR1_BR_R64 5U
-#define SPI_CR2_DS_8_BIT 5U
+#define SPI_CR2_DS_8_BIT 7U
 
 // predefined macros for cs_port,cs_pin (useful for later spi functions)
 #if OP_REV == 1
