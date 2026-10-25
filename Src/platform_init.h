@@ -102,7 +102,11 @@ void init_platform() {
 	led_init();
 	buttons_init();
 	qspi_config(23, 2, 0);
-	fs_mount();
+	// Boot carries on without a filesystem; fs_isMounted() tells the logger.
+	int fs_err = fs_mount();
+	if (fs_err) {
+		printMsg("fs_mount failed (%d), logging disabled\n\r", fs_err);
+	}
 	dma_initializePeripheralConstants();
 	spi_config(SPI1);
 	heartbeat_timer_init();

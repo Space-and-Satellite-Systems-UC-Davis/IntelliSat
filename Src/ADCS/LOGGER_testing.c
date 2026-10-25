@@ -406,8 +406,8 @@ void testFunction_LOGGER() {
 
   printMsg("\n\rLOGGER Tests\n\r\n\r");
 
-  // init_platform() already ran fs_mount(), but threw away its result. Mount
-  // again here to get a result we can check. Unmounting first is safe: with
+  // init_platform() already ran fs_mount(). Mount again here so this test
+  // checks a mount of its own, not the boot one. Unmounting first is safe: with
   // every buffer static, it only resets littlefs's state.
   lfs_unmount(&lfs);
   if (lfs_mount(&lfs, &cfg) == 0) {

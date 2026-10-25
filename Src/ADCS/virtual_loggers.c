@@ -80,7 +80,10 @@ static void stampNow(TIMESTAMP *ts) {
 }
 
 LOG_FILE *createFile(char *name, file_tag tag) {
-  if (log_file_open) {
+  // littlefs must not be used unmounted, and with a dead FLASH every call
+  // would also wait out the driver's timeout. createFile(), openFile() and
+  // lsRecord() are the only ways in that don't need an open file.
+  if (log_file_open || !fs_isMounted()) {
     return NULL;
   }
 
@@ -108,7 +111,7 @@ LOG_FILE *createFile(char *name, file_tag tag) {
 }
 
 LOG_FILE *openFile(char *name) {
-  if (log_file_open) {
+  if (log_file_open || !fs_isMounted()) { // see createFile()
     return NULL;
   }
 
@@ -259,7 +262,7 @@ char *lsRecord() {
   // Always return a valid (possibly empty) string, even if the root can't be
   // opened.
   ls_buf[0] = '\0';
-  if (lfs_dir_open(&lfs, &dir, "/") < 0) {
+  if (!fs_isMounted() || lfs_dir_open(&lfs, &dir, "/") < 0) { // see createFile()
     return ls_buf;
   }
 

@@ -38,4 +38,12 @@ extern const struct lfs_file_config fs_file_cfg;
  */
 int fs_mount(void);
 
+/**
+ * Whether the last fs_mount() succeeded. littlefs must not be used on a
+ * filesystem that failed to mount, so callers check this first.
+ *
+ * @returns true if the filesystem is mounted.
+ */
+bool fs_isMounted(void);
+
 #endif /* DATA_MANAGEMENT_LFS_CONFIG_H_ */

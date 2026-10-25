@@ -12,6 +12,9 @@
 
 lfs_t lfs;
 
+// Set by fs_mount(), read through fs_isMounted().
+static bool mounted = false;
+
 // Static buffers, 32-bit aligned. LFS_NO_MALLOC is set in lfs_util.h, so
 // littlefs will not allocate these itself.
 static uint32_t global_read_buf[FS_CACHE_SIZE / 4];
@@ -154,10 +157,12 @@ int fs_mount() {
   if (err) {
     // No valid filesystem on the part yet (or it is corrupt) - lay one down.
     err = lfs_format(&lfs, &cfg);
-    if (err) {
-      return err;
+    if (!err) {
+      err = lfs_mount(&lfs, &cfg);
     }
-    err = lfs_mount(&lfs, &cfg);
   }
+  mounted = (err == 0);
   return err;
 }
+
+bool fs_isMounted() { return mounted; }
