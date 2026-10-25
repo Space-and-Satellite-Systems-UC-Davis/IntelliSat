@@ -1,9 +1,10 @@
 /* Actual init_init() source-body model, NOT a full native/target firmware link.
  *
- * The PDB safe state lives in init_init() now, so this guards the ordering that
- * used to sit in main(): GPIOA/GPIOC clocked with a separate readback before any
- * GPIO access, the pyro commanded OFF before the fallible clock/RTC work, and no
- * ON command anywhere in the entry prefix.
+ * The PDB safe state lives in init_init(), so this guards the ordering that used
+ * to sit in main(): GPIOA/GPIOC clocked with a separate readback before any GPIO
+ * access, the pyro commanded OFF before the fallible clock/RTC work, and no ON
+ * command anywhere in the entry prefix. The RTC keeps its original source,
+ * non-forced, for the consumers that still use the calendar.
  *
  * The real power_distribution.c is compiled here; only the STM32 registers and
  * the fallible init steps are modeled. This models ordering, not bus timing or
@@ -21,6 +22,11 @@
     fprintf(stderr, "init entry regression: %s (line %d)\n", #condition, __LINE__); \
     exit(1); \
 } } while (0)
+
+/* Only the source selector the entry prefix needs from Src/system_config/RTC/rtc.h. */
+#define LSE 'l'
+static char rtc_source;
+static int rtc_forced;
 
 typedef struct { volatile uint32_t AHB2ENR; } InitRCC;
 static InitRCC rcc;
@@ -79,11 +85,18 @@ static void fallible_step(unsigned index) {
     CHECK(completed_steps == index);
     ++completed_steps;
 }
-void startup_clock_capture_boot_evidence(void) { fallible_step(0); }
-void init_coreClocks(void) { fallible_step(1); }
-void led_init(void) { fallible_step(2); }
-void heartbeat_timer_init(void) { fallible_step(3); }
-void startup_clock_init(void) { fallible_step(4); }
+void init_coreClocks(void) { fallible_step(0); }
+void led_init(void) { fallible_step(1); }
+void heartbeat_timer_init(void) { fallible_step(2); }
+void rtc_config(char clock_source, int forced_config) {
+    /* Original source, non-forced, and only after the heartbeat timer exists: the
+     * driver's getSysTime() waits need a live TIM7 to stay bounded. */
+    CHECK(clock_source == LSE);
+    CHECK(forced_config == 0);
+    rtc_source = clock_source;
+    rtc_forced = forced_config;
+    fallible_step(3);
+}
 
 #include "init_init_function.inc"
 
@@ -92,6 +105,8 @@ static void check_init(int stall, const char *name) {
     startup_test_gpio_a = (GPIO_TypeDef){.MODER = UINT32_MAX, .ODR = UINT32_MAX};
     startup_test_gpio_c = (GPIO_TypeDef){.MODER = UINT32_MAX, .ODR = UINT32_MAX};
     rcc_accesses = gpio_accesses = off_commands = completed_steps = 0;
+    rtc_source = 0;
+    rtc_forced = -1;
     stall_at_step = stall;
     if (setjmp(stop_init) == 0) {
         init_init();
@@ -104,15 +119,18 @@ static void check_init(int stall, const char *name) {
     CHECK(!(startup_test_gpio_c.ODR & (1u << 9)));
     CHECK((startup_test_gpio_a.MODER & (15u << 16)) == (5u << 16));
     CHECK((rcc.AHB2ENR & PDB_CLOCKS) == PDB_CLOCKS);
-    CHECK(completed_steps == (unsigned)(stall < 0 ? 5 : stall));
+    CHECK(completed_steps == (unsigned)(stall < 0 ? 4 : stall));
+    if (completed_steps >= 4) {
+        CHECK(rtc_source == LSE && rtc_forced == 0);
+    }
     printf("PASS init-entry source-body model: %s\n", name);
 }
 
 int main(void) {
     check_init(-1, "safe outputs, then every fallible step in order");
-    check_init(0, "stall at boot evidence leaves the latch off");
-    check_init(1, "stall in core clocks leaves the latch off");
-    check_init(4, "stall in startup clock leaves the latch off");
+    check_init(0, "stall in core clocks leaves the latch off");
+    check_init(2, "stall in the heartbeat timer leaves the latch off");
+    check_init(3, "stall in the non-forced RTC config leaves the latch off");
     puts("4 init-entry source-body model scenarios passed (not full target link)");
     return 0;
 }

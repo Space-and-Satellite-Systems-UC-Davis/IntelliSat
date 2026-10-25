@@ -1,51 +1,81 @@
 #pragma once
-/* Independent wire fixtures, not persistence encoder calls. Addresses from v3 contract. */
-static void fixture_le(uint8_t *p, uint64_t value, unsigned n) {
-    for (unsigned i = 0; i < n; ++i) p[i] = (uint8_t)(value >> (i * 8));
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+/*
+ * Independent SSP1 wire fixtures: a second, deliberately separate
+ * implementation of the 20-byte record used to state expected bytes and to
+ * decode media, so a mistake in the production encoder cannot make a test
+ * agree with itself. The literal in CONTRACT-VECTOR.json anchors both.
+ */
+
+enum {
+    SSP1_TAG = 0,
+    SSP1_SEQUENCE = 4,
+    SSP1_STATE = 8,
+    SSP1_ATTEMPTS = 9,
+    SSP1_FLAGS = 10,
+    SSP1_REMAINING = 11,
+    SSP1_CRC = 15,
+    SSP1_COMMIT = 19,
+    SSP1_SLOT_SIZE = 20,
+    SSP1_IMAGE_SIZE = 48,
+    SSP1_ADDRESS = 8,
+};
+
+typedef struct {
+    uint32_t sequence;
+    uint8_t state;
+    uint8_t attempts;
+    uint8_t flags;
+    uint32_t remaining;
+    bool committed;
+} Ssp1Record;
+
+static void ssp1_le(uint8_t *out, uint32_t value, size_t size) {
+    for (size_t i = 0; i < size && i < 4; ++i) out[i] = (uint8_t)(value >> (8 * i));
 }
-static uint32_t fixture_crc(const uint8_t *p, size_t n) {
-    uint32_t c = UINT32_MAX;
-    while (n--) {
-        c ^= *p++;
-        for (unsigned b = 0; b < 8; ++b) c = (c >> 1) ^ ((c & 1) ? 0xedb88320U : 0);
-    }
-    return c ^ UINT32_MAX;
+
+static uint32_t ssp1_le_read(const uint8_t *in, size_t size) {
+    uint32_t value = 0;
+    for (size_t i = 0; i < size && i < 4; ++i) value |= (uint32_t)in[i] << (8 * i);
+    return value;
 }
-static void fixture_seed(uint8_t *fram, StPhase phase, unsigned count,
-                         uint64_t elapsed, uint64_t reference, bool authorized) {
-    uint8_t c[96] = {0}, p[64] = {0};
-    uint64_t reservation = count ? 2 * count + 1 : 0;
-    uint64_t seq = phase == ST_PHASE_PREPARED ? 0 :
-                   phase == ST_PHASE_INHIBIT ? 1 :
-                   phase == ST_PHASE_ELIGIBLE ? 2 :
-                   phase == ST_PHASE_RESERVED ? reservation :
-                   phase == ST_PHASE_RETRY_WAIT ? reservation + 1 :
-                   phase == ST_PHASE_RETIRED ? (count ? reservation + 2 : 3) :
-                                              (count ? reservation + 3 : 4);
-    bool waiting = phase == ST_PHASE_INHIBIT || phase == ST_PHASE_RETRY_WAIT;
-    uint64_t duration = phase == ST_PHASE_INHIBIT ? 1800000 :
-                        count < 7 ? 172800000 : 604800000;
-    memcpy(c, "STC3", 4);
-    fixture_le(c + 4, 3, 2); fixture_le(c + 6, 96, 2);
-    fixture_le(c + 8, 1, 8); fixture_le(c + 16, seq, 8);
-    fixture_le(c + 24, reservation, 8);
-    if (waiting) {
-        fixture_le(c + 32, seq, 8); fixture_le(c + 40, duration, 8);
-        fixture_le(c + 56, reference, 8); fixture_le(c + 64, 1, 4);
-        c[75] = 1;
+
+static uint32_t ssp1_crc(const uint8_t *data, size_t size) {
+    uint32_t crc = 0xFFFFFFFFu;
+    for (size_t i = 0; i < size; ++i) {
+        crc ^= data[i];
+        for (unsigned bit = 0; bit < 8; ++bit) crc = (crc >> 1) ^ (0xEDB88320u & (0u - (crc & 1u)));
     }
-    fixture_le(c + 68, phase >= ST_PHASE_ELIGIBLE ? 1 : 0, 4);
-    c[72] = (uint8_t)phase; c[73] = (uint8_t)count; c[74] = authorized;
-    fixture_le(c + 92, fixture_crc(c + 4, 88), 4);
-    memset(fram + 8, 0, 320);
-    memcpy(fram + 8, c, 96); memcpy(fram + 104, c, 96);
-    if (waiting && elapsed) {
-        memcpy(p, "STP3", 4);
-        fixture_le(p + 4, 3, 2); fixture_le(p + 6, 64, 2);
-        fixture_le(p + 8, 1, 8); fixture_le(p + 16, seq, 8);
-        fixture_le(p + 24, 1, 8); fixture_le(p + 32, elapsed, 8);
-        fixture_le(p + 40, reference, 8); fixture_le(p + 48, 1, 4); p[52] = 1;
-        fixture_le(p + 60, fixture_crc(p + 4, 56), 4);
-        memcpy(fram + 200, p, 64);
-    }
+    return crc ^ 0xFFFFFFFFu;
+}
+
+/* Build one committed slot from fields. */
+static void ssp1_build(uint8_t slot[SSP1_SLOT_SIZE], uint32_t sequence, uint8_t state,
+                       uint8_t attempts, bool armed, uint32_t remaining) {
+    memset(slot, 0, SSP1_SLOT_SIZE);
+    memcpy(slot + SSP1_TAG, "SSP1", 4);
+    ssp1_le(slot + SSP1_SEQUENCE, sequence, 4);
+    slot[SSP1_STATE] = state;
+    slot[SSP1_ATTEMPTS] = attempts;
+    slot[SSP1_FLAGS] = armed ? 0x01u : 0x00u;
+    ssp1_le(slot + SSP1_REMAINING, remaining, 4);
+    ssp1_le(slot + SSP1_CRC, ssp1_crc(slot, SSP1_CRC), 4);
+    slot[SSP1_COMMIT] = 0xA5u;
+}
+
+
+/* Decode without trusting it: tag, commit marker, CRC and any interesting field. */
+static bool ssp1_read(const uint8_t slot[SSP1_SLOT_SIZE], Ssp1Record *out) {
+    out->committed = slot[SSP1_COMMIT] == 0xA5u;
+    out->sequence = ssp1_le_read(slot + SSP1_SEQUENCE, 4);
+    out->state = slot[SSP1_STATE];
+    out->attempts = slot[SSP1_ATTEMPTS];
+    out->flags = slot[SSP1_FLAGS];
+    out->remaining = ssp1_le_read(slot + SSP1_REMAINING, 4);
+    return out->committed && memcmp(slot + SSP1_TAG, "SSP1", 4) == 0 &&
+           ssp1_le_read(slot + SSP1_CRC, 4) == ssp1_crc(slot, SSP1_CRC);
 }

@@ -3,11 +3,10 @@
 #include <stdio.h>
 
 /*
- * Host-side test macro harness for Src/startup/startup_decisions.c, ported from
- * the pattern established in Src/scheduler/tests/framework.h (itself
- * ported from the ADCS codebase) - not present on this branch, so
- * copied in directly rather than shared, since there's a single
- * consumer here.
+ * Host-side test macro harness for the Startup tests in this directory, ported
+ * from the pattern established in Src/scheduler/tests/framework.h (itself ported
+ * from the ADCS codebase) - copied in directly rather than shared, since these
+ * are its only consumers.
  */
 
 static int _tests_run = 0;

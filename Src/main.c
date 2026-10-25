@@ -52,8 +52,8 @@ int main() {
 	    run_tests();
     #else
         if (!fram_ready) {
-            printMsg("Startup inhibited: FRAM boot counter I/O failed or counter exhausted.\r\n");
-            while (1) { __WFI(); }
+            /* Straight to the safe reset path: no blocking log, no peripheral call. */
+            startup_fault();
         }
 
         Startup();

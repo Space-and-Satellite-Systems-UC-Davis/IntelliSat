@@ -35,7 +35,6 @@
 #include <WDG/watchdog.h>
 
 #include <PDB/power_distribution.h>
-#include "startup/startup_clock.h"
 
 #define SCB_CPACR_CP10_POS 20U
 #define SCB_CPACR_CP11_POS 22U
@@ -53,7 +52,13 @@ enum scb_cpacr_cpn_privileges {
  * Establishes the safe output state first, then the fallible clock/RTC work:
  * PDB owns GPIOA/GPIOC, so those ports are clocked and read back here before
  * any GPIO access, and the pyro command is driven OFF before init_coreClocks(),
- * led_init(), heartbeat_timer_init() or startup_clock_init() can stall or reset.
+ * led_init(), heartbeat_timer_init() or rtc_config() can stall or reset.
+ *
+ * The RTC is configured for its original source without forcing a
+ * reconfiguration: Startup no longer depends on it for timing, but the other
+ * RTC consumers keep the calendar they had. It is configured after the
+ * heartbeat timer, because the driver's waits use getSysTime() and only stay
+ * bounded once TIM7 is running.
  *
  * @param   None
  * @returns None
@@ -64,11 +69,10 @@ void init_init() {
     pdb_init();
     pdb_pyro_off();                                  // Command OFF before fallible initialization.
 
-    startup_clock_capture_boot_evidence();
     init_coreClocks();
     led_init();
     heartbeat_timer_init();
-    startup_clock_init();
+    rtc_config(LSE, false);
 }
 
 

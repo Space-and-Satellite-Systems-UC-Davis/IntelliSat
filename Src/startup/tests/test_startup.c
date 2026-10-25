@@ -1,581 +1,790 @@
-#define _POSIX_C_SOURCE 200809L
-#include "framework.h"
+/*
+ * Actual Startup() against peripheral boundaries: memory FRAM, modeled PDB and
+ * radio, boot-local monotonic time, and a reset boundary the harness observes.
+ * Startup() is included exactly once and unmodified; startup_store.c is linked
+ * as a translation unit, so the byte codec under test is the real one.
+ *
+ * The modeled clock starts at zero on every modeled boot. Nothing here proves
+ * RTC behaviour, RF delivery, electrical cutoff or a real board. Expected
+ * persistent records are stated with the independent SSP1 fixture encoder,
+ * never with the production encoder.
+ */
 #include <inttypes.h>
-#include <stdarg.h>
+#include <setjmp.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <time.h>
-#include <unistd.h>
-#include "RTC/rtc.h" /* Fixture observes unchanged legacy backup registers. */
-#include "../startup.h" /* Actual blocking controller, included exactly once. */
-#include "../startup_persistence.h"
-#include "peripherals/FRAM/MB85RS256B.h"
+
+#include "framework.h"
+#include "FRAM/MB85RS256B.h"
+#include "startup/startup.h"
 #include "startup_fixtures.h"
-/* Execute the small existing PDB initializer against register/line boundary models. */
-#define pdb_init startup_test_real_pdb_init
-#define pdb_pyro_on startup_test_real_pyro_on
-#define pdb_pyro_off startup_test_real_pyro_off
-#define pdb_mgt_on startup_test_real_mgt_on
-#define pdb_mgt_off startup_test_real_mgt_off
-#define pdb_hdd_on startup_test_real_hdd_on
-#define pdb_hdd_off startup_test_real_hdd_off
-#include "../../peripherals/PDB/power_distribution.c"
-#undef pdb_init
-#undef pdb_pyro_on
-#undef pdb_pyro_off
-#undef pdb_mgt_on
-#undef pdb_mgt_off
-#undef pdb_hdd_on
-#undef pdb_hdd_off
-GPIO_TypeDef startup_test_gpio_a, startup_test_gpio_c;
-static unsigned off_latch_mode;
-void gpio_low(GPIO_TypeDef *port, int pin) {
-    off_latch_mode = (port->MODER >> (pin * 2)) & 3;
-    port->ODR &= ~(1u << pin);
-}
-void gpio_high(GPIO_TypeDef *port, int pin) { port->ODR |= 1u << pin; }
-#define N(a) (sizeof(a) / sizeof((a)[0]))
-typedef enum { INIT, OFF, AWAKE_WAIT, ON, RX, HELLO, READY, DOWNLINK, RETURNED } Action;
-typedef struct { Action action; uint64_t rtc, awake; uint8_t phase, count; } Event;
+
+#define FRAM_BYTES 32768u
+#define SENTINEL 0x5Au
+#define BOOT_COUNTER_VALUE 0x11223344u
+#define ADCS_MASK_VALUE 0x00000005u
+/* Awake polling adds at most a few STARTUP_POLL_MS before an action happens. */
+#define SLOP_MS (3u * STARTUP_POLL_MS)
+
+static uint8_t fram[FRAM_BYTES];
+static uint64_t now_ms;
+static uint64_t largest_delay_ms;
+static bool pyro_on;
+static unsigned on_count, off_count, reset_count, write_count;
+static bool fail_read, fail_write, fail_wren, fail_wrdi, ignore_writes;
+static long cut_budget = -1;
+static bool power_lost;
+static uint64_t stop_at;
+static bool battery_eligible;
+static jmp_buf run_env;
+
+typedef enum { INIT, OFF, ON, RX, HELLO, READY, DOWNLINK, PRINT, RESET, RETURNED } Action;
+typedef struct { Action action; uint64_t at_ms; } Event;
+static Event events[8192];
+static size_t event_count;
+
+typedef struct {
+    uint32_t sequence;
+    uint8_t state;
+    uint8_t attempts;
+    bool armed;
+    uint32_t remaining;
+    uint64_t at_ms;
+} Save;
+static Save saves[32768];
+static size_t save_count;
+
 typedef struct { const char *bytes; size_t size; uint64_t not_before; } Input;
-StartupTestRTC startup_test_rtc;
-static uint8_t fram[32768];
-static uint64_t rtc_ms, awake_ms, awake_waited_ms, early_wait_ms, stop_at, battery_at;
-static uint32_t source, revision;
-static bool retained, clock_valid, battery, pyro, enabled, fail_read, fail_write, fail_wrdi;
-static Event events[4096];
-static size_t event_count, input_pos, input_count;
 static Input inputs[64];
-static unsigned pulls, confirms, retained_reads, awake_waits, hello_failures, ready_failures;
-static unsigned confirm_failures, fail_confirm_at, confirm_rejections;
-static bool confirmation_ok, change_revision_on_confirmation;
-static uint64_t last_rejection_awake;
-static unsigned downlink_failures, revision_reads, change_revision_at;
-static unsigned discontinuity_wait, invalid_wait, backwards_wait, source_wait;
-static unsigned write_count, checkpoint_count;
-static uint64_t last_checkpoint, max_checkpoint_gap, restore_clock_at;
-static bool reset_on_phase, noop_write, corrupt_readback;
-static StPhase reset_phase;
-static int fail_write_phase;
-static bool fail_ready_downlink, last_push_ready;
-static jmp_buf reset_env;
-static bool jumping;
-static Action stop_action;
-static unsigned stop_occurrence, action_occurrences[RETURNED + 1];
-static int child_pipe = -1;
-static unsigned budget;
+static size_t input_count, input_pos;
+static unsigned pulls, start_available_at_pull;
+/* Modeled radio work time: real I/O advances the boot-local timer too. */
+static uint64_t poll_cost_ms;
+static unsigned delay_calls;
+
 static void require(bool condition, const char *why) {
-    if (!condition) { fprintf(stderr, "Harness: %s\n", why); exit(2); }
-}
-static void boundary(void) { require(budget-- > 0, "unexpected loop"); }
-static void event(Action a) {
-    boundary();
-    require(event_count < N(events), "event capacity");
-    events[event_count++] = (Event){a, rtc_ms, awake_ms, fram[80], fram[81]};
-    if (child_pipe >= 0) { char b = a == ON ? 'N' : a == RETURNED ? 'R' : a == OFF ? 'F' : '.'; (void)write(child_pipe, &b, 1); }
-    if (jumping && a == stop_action && ++action_occurrences[a] == stop_occurrence) longjmp(reset_env, 1);
-}
-void pdb_init(void) { event(INIT); }
-void pdb_pyro_on(void) {
-    require(fram[80] == ST_PHASE_RESERVED && !memcmp(fram + 8, fram + 104, 96), "ON before mirrored reservation");
-    pyro = true; event(ON);
-}
-void pdb_pyro_off(void) { pyro = false; event(OFF); }
-bool startup_test_battery_eligible(void) { return battery && rtc_ms >= battery_at; }
-uint64_t getSysTime(void) { return awake_ms; }
-void radio_init(void) { require(!pyro, "UART init while ON"); }
-void delay_ms(uint64_t ms) {
-    boundary();
-    /* Only a confirmed, still-inhibited wait counts; no modeled WFI or RTC IRQ. */
-    bool waiting = confirmation_ok && !pyro && fram[80] == ST_PHASE_INHIBIT;
-    if (waiting) {
-        require(ms > 0 && ms <= STARTUP_CHECKPOINT_MS, "awake wait must stay checkpoint bounded");
-        event(AWAKE_WAIT); ++awake_waits;
-        confirmation_ok = false;
-        if (early_wait_ms && ms > early_wait_ms) ms = early_wait_ms;
-        awake_waited_ms += ms;
+    if (!condition) {
+        fprintf(stderr, "startup harness: %s\n", why);
+        exit(2);
     }
-    awake_ms += ms; rtc_ms += ms;
-    if (waiting) {
-        if (awake_waits == discontinuity_wait) { ++revision; rtc_ms += 900000000; }
-        if (awake_waits == invalid_wait) clock_valid = false;
-        if (awake_waits == backwards_wait) rtc_ms = 1000;
-        if (awake_waits == source_wait) ++source;
-    }
-    if (restore_clock_at && rtc_ms >= restore_clock_at) clock_valid = true;
-    if (jumping && stop_at && rtc_ms >= stop_at) longjmp(reset_env, 1);
-}
-bool PWR_enterLPSleepMode(uint16_t seconds) {
-    (void)seconds;
-    require(false, "Startup must not enter RTC-backed low-power sleep");
-    return false;
-}
-/* Startup-private clock boundary substitute: the real module is exercised by
- * test_startup_clock.c and the real-adapter tracers in this directory. */
-static StClock invalid_clock(void) {
-    return (StClock){.epoch_ms = 0, .source = 0, .revision = 0, .valid = false};
-}
-StClock startup_clock_sample(void) {
-    uint32_t before = revision;
-    if (++revision_reads == change_revision_at) ++revision; /* modeled domain change mid-sample */
-    StClock clock = {.epoch_ms = rtc_ms, .source = source, .revision = revision,
-                     .valid = clock_valid && revision == before};
-    return clock;
-}
-StClock startup_clock_anchor(void) {
-    StClock first = startup_clock_sample();
-    if (!first.valid) return invalid_clock();
-    /* The anchor consumes one bounded witness step of real time. */
-    rtc_ms += STARTUP_CLOCK_ANCHOR_STEP_MS;
-    awake_ms += STARTUP_CLOCK_ANCHOR_STEP_MS;
-    StClock later = startup_clock_sample();
-    if (!later.valid || later.source != first.source || later.revision != first.revision ||
-        later.epoch_ms < first.epoch_ms + STARTUP_CLOCK_ANCHOR_STEP_MS) return invalid_clock();
-    return later;
-}
-bool startup_clock_retained(void) { ++retained_reads; return retained; }
-bool startup_clock_confirm_wait(uint32_t expected_source, uint32_t expected_revision) {
-    require(checkpoint_count > 0, "continuity confirmation before durable progress");
-    require(expected_source == source && expected_revision == revision, "wrong confirmation source/revision");
-    ++confirms;
-    if (confirms >= fail_confirm_at && confirm_failures) {
-        --confirm_failures; ++confirm_rejections;
-        if (change_revision_on_confirmation) ++revision;
-        last_rejection_awake = awake_ms;
-        confirmation_ok = false;
-        return false;
-    }
-    confirmation_ok = clock_valid;
-    return confirmation_ok;
-}
-uint32_t rtc_getUnixTime(void) { return (uint32_t)(rtc_ms / 1000); }
-void rtc_writeToBKPNumber(uint32_t bits, uint32_t bkp) { (void)bits; (void)bkp; require(false, "legacy mission BKP use"); }
-RadioPacket radio_force_pull(uint8_t *chunk) {
-    boundary(); require(!pyro, "radio while ON"); ++pulls;
-    if (input_pos == input_count || rtc_ms < inputs[input_pos].not_before) return (RadioPacket){0, 0};
-    Input p = inputs[input_pos++];
-    if (p.size && p.size <= MAX_PAYLOAD_BYTES && p.bytes) memcpy(chunk, p.bytes, p.size);
-    event(RX);
-    return (RadioPacket){p.size, 'u'};
-}
-bool radio_push(uint8_t *chunk, size_t size) {
-    require(!pyro, "TX while ON");
-    require(fram[80] == ST_PHASE_RETIRED && !memcmp(fram + 8, fram + 104, 96), "handshake before mirrored retirement");
-    bool hello = size == 5 && !memcmp(chunk, "HELLO", 5);
-    bool ready = size == 5 && !memcmp(chunk, "READY", 5);
-    /* The initial red tracer reports legacy HS1/HS3 without accepting them. */
-    last_push_ready = ready;
-    event(hello ? HELLO : READY);
-    require(hello || ready, "unexpected handshake bytes (legacy HS1/HS3)");
-    if (hello && hello_failures) { --hello_failures; return false; }
-    if (ready && ready_failures) { --ready_failures; return false; }
-    return true;
-}
-bool radio_downlink(uint8_t *chunk, size_t count) {
-    (void)chunk; require(count == 1, "short message is one CHUNK_LENGTH chunk");
-    event(DOWNLINK);
-    if (last_push_ready && fail_ready_downlink) return false;
-    if (downlink_failures) { --downlink_failures; return false; }
-    return true;
-}
-int printMsg(const char *format, ...) { (void)format; boundary(); return 0; }
-bool FRAM_readData(uint16_t address, uint8_t *out, uint16_t length) {
-    if (fail_read) return false;
-    require((size_t)address + length <= sizeof(fram), "FRAM read bounds");
-    memcpy(out, fram + address, length);
-    if (corrupt_readback && write_count && length < 320) out[0] ^= 1;
-    if (jumping && reset_on_phase && length == 320 && fram[80] == reset_phase &&
-        memcmp(fram + 8, fram + 104, 96) == 0) longjmp(reset_env, 1);
-    return true;
-}
-bool FRAM_writeEnable(void) { enabled = !fail_write; return enabled; }
-bool FRAM_writeDisable(void) { enabled = false; return !fail_wrdi; }
-bool FRAM_writeData(uint16_t address, uint8_t *in, uint16_t length) {
-    require(!pyro, "storage write while ON");
-    require(address >= 8 && (size_t)address + length <= 328, "startup FRAM bounds");
-    if (fail_write || !enabled ||
-        (length == 92 && (address == 12 || address == 108) && in[68] == fail_write_phase)) return false;
-    if (!noop_write) memcpy(fram + address, in, length);
-    ++write_count;
-    if ((address == 200 || address == 264) && length == 4 && !memcmp(in, "STP3", 4)) {
-        ++checkpoint_count;
-        if (last_checkpoint && rtc_ms - last_checkpoint > max_checkpoint_gap) max_checkpoint_gap = rtc_ms - last_checkpoint;
-        last_checkpoint = rtc_ms;
-    }
-    return true;
-}
-static void scenario(StPhase phase, unsigned count, uint64_t elapsed) {
-    memset(fram, 0xa5, sizeof(fram));
-    fixture_seed(fram, phase, count, elapsed, 100000, true);
-    startup_test_rtc = (StartupTestRTC){.BKP0R = 11, .BKP1R = 22, .BKP2R = 33,
-                                        .BKP3R = 44, .BKP4R = 55, .BKP5R = 66, .BKP6R = 77};
-    rtc_ms = 100000; awake_ms = awake_waited_ms = 0;
-    source = revision = 1; retained = clock_valid = battery = true;
-    pyro = enabled = fail_read = fail_write = fail_wrdi = false;
-    early_wait_ms = battery_at = stop_at = restore_clock_at = 0;
-    reset_on_phase = noop_write = corrupt_readback = false;
-    fail_write_phase = -1; fail_ready_downlink = last_push_ready = false;
-    event_count = input_pos = input_count = 0;
-    pulls = confirms = retained_reads = awake_waits = hello_failures = ready_failures = 0;
-    confirm_failures = fail_confirm_at = confirm_rejections = 0;
-    confirmation_ok = change_revision_on_confirmation = false;
-    last_rejection_awake = 0;
-    downlink_failures = revision_reads = change_revision_at = 0;
-    discontinuity_wait = invalid_wait = backwards_wait = source_wait = 0;
-    write_count = checkpoint_count = 0; last_checkpoint = max_checkpoint_gap = 0;
-    memset(action_occurrences, 0, sizeof(action_occurrences));
-    jumping = false; child_pipe = -1; budget = 100000000;
-}
-static void input(const char *s) { inputs[input_count++] = (Input){s, s ? strlen(s) : 0, 0}; }
-static void handshake(void) { input("START"); input("ACK"); }
-/* The firmware boot chain is init_init() then Startup(): init_init() owns the PDB
- * safe state (clocked ports, pdb_init(), explicit OFF) and runs on every boot, so
- * each modeled boot replays that prefix. Startup() itself must not re-init the PDB,
- * and its radio_init() refuses to run while the actuator is still commanded ON.
- */
-static void model_boot_entry(void) {
-    pdb_init();
-    pdb_pyro_off();
-}
-static void run(void) {
-    model_boot_entry();
-    Startup();
-    require(fram[80] == ST_PHASE_COMPLETE && !memcmp(fram + 8, fram + 104, 96), "return before mirrored completion");
-    event(RETURNED);
-}
-static size_t find(Action a, size_t from) {
-    for (size_t i = from; i < event_count; ++i) if (events[i].action == a) return i;
-    return event_count;
-}
-static unsigned count(Action a) {
-    unsigned n = 0; for (size_t i = 0; i < event_count; ++i) n += events[i].action == a; return n;
-}
-static void order(const Action *a, size_t n) {
-    size_t pos = 0;
-    for (size_t i = 0; i < n; ++i) { pos = find(a[i], pos); TEST_ASSERT(pos < event_count); ++pos; }
-}
-static void saved(StPhase phase, unsigned fast_count) {
-    StSnapshot s;
-    TEST_ASSERT(st_load(&s) == ST_OK);
-    TEST_ASSERT(s.control.phase == phase);
-    TEST_ASSERT(s.control.fast_count == fast_count);
-    for (unsigned i = 0; i < 8; ++i) TEST_ASSERT(fram[i] == 0xa5);
-    TEST_ASSERT(RTC->BKP0R == 11 && RTC->BKP1R == 22 && RTC->BKP2R == 33 &&
-                RTC->BKP3R == 44 && RTC->BKP4R == 55 && RTC->BKP5R == 66 && RTC->BKP6R == 77);
-}
-static void test_startup_normal_wait_command_handshake_return(void) {
-    scenario(ST_PHASE_PREPARED, 0, 0); handshake(); run();
-    for (size_t i = 0; i < event_count; ++i) {
-        printf("  action=%u rtc_ms=%" PRIu64 " awake_ms=%" PRIu64 " durable_phase=%u count=%u\n",
-               events[i].action, events[i].rtc, events[i].awake, events[i].phase, events[i].count);
-    }
-    const Action a[] = {INIT, OFF, AWAKE_WAIT, ON, OFF, RX, HELLO, DOWNLINK, RX, READY, DOWNLINK, RETURNED};
-    order(a, N(a));
-    size_t on = find(ON, 0), off = find(OFF, on + 1);
-    TEST_ASSERT(on < event_count && events[on].rtc >= 1900000);
-    TEST_ASSERT(off < event_count && events[off].awake - events[on].awake == 5000);
-    TEST_ASSERT(count(ON) == 1);
-    /* The entry witness already accrued 5 ms before awake waiting began. */
-    TEST_ASSERT(awake_waited_ms + STARTUP_CLOCK_ANCHOR_STEP_MS == 1800000);
-    TEST_ASSERT(awake_waits == 30);
-    TEST_ASSERT(rtc_ms - 100000 == awake_ms);
-    TEST_ASSERT(confirms >= 30 && retained_reads == 1);
-    TEST_ASSERT(max_checkpoint_gap <= 60000);
-    TEST_ASSERT(events[on].phase == ST_PHASE_RESERVED && events[on].count == 1);
-    saved(ST_PHASE_COMPLETE, 1);
-}
-/* Host-only reset injection abandons the invocation, never changes production control flow. */
-static void pause_startup(Action action, unsigned occurrence, uint64_t deadline) {
-    jumping = true; stop_action = action; stop_occurrence = occurrence; stop_at = deadline;
-    if (!setjmp(reset_env)) { run(); require(false, "expected modeled reset/observation boundary"); }
-    jumping = false;
-}
-static void model_reboot(void) {
-    awake_ms = 0; event_count = input_pos = input_count = 0;
-    memset(action_occurrences, 0, sizeof(action_occurrences));
-    reset_on_phase = false; stop_at = 0; jumping = false;
-    /* Preserve FRAM, clock and modeled actuator level until the next OFF command. */
-}
-static void test_startup_pdb_clears_latch_before_output_mode(void) {
-    startup_test_gpio_c = (GPIO_TypeDef){UINT32_MAX, UINT32_MAX};
-    startup_test_gpio_a = (GPIO_TypeDef){UINT32_MAX, UINT32_MAX};
-    off_latch_mode = 99;
-    startup_test_real_pdb_init();
-    TEST_ASSERT(off_latch_mode == 3);
-    TEST_ASSERT((startup_test_gpio_c.ODR & (1u << 9)) == 0);
-    TEST_ASSERT(((startup_test_gpio_c.MODER >> 18) & 3) == 1);
-}
-static void test_startup_exact_and_short_awake_waits(void) {
-    scenario(ST_PHASE_PREPARED, 0, 0); early_wait_ms = 13000; handshake(); run();
-    TEST_ASSERT(awake_waited_ms + STARTUP_CLOCK_ANCHOR_STEP_MS == 1800000 && awake_waits > 30);
-    TEST_ASSERT(events[find(ON, 0)].rtc >= 1900000);
-    scenario(ST_PHASE_INHIBIT, 0, 1799999); retained = false; handshake(); run();
-    TEST_ASSERT(awake_waited_ms == 1); /* Exact remaining millisecond, never early ON. */
-    scenario(ST_PHASE_INHIBIT, 0, 0); rtc_ms += 1800000; handshake(); run();
-    TEST_ASSERT(awake_waited_ms == 0 && count(ON) == 1);
-}
-static void test_startup_saved_progress_with_and_without_clock(void) {
-    scenario(ST_PHASE_INHIBIT, 0, 1500000); retained = false; rtc_ms += 900000000;
-    handshake(); run();
-    TEST_ASSERT(awake_waited_ms == 300000 && retained_reads == 1);
-    scenario(ST_PHASE_INHIBIT, 0, 1500000); rtc_ms += 300000; handshake(); run();
-    TEST_ASSERT(awake_waited_ms == 0 && count(ON) == 1);
-}
-static void test_startup_clock_discontinuities_drop_unsaved_credit(void) {
-    for (unsigned kind = 0; kind < 4; ++kind) {
-        scenario(ST_PHASE_PREPARED, 0, 0);
-        if (kind == 0) discontinuity_wait = 5;
-        if (kind == 1) backwards_wait = 5;
-        if (kind == 2) source_wait = 5;
-        if (kind == 3) { invalid_wait = 5; restore_clock_at = 405000; }
-        handshake(); run();
-        TEST_ASSERT(awake_waited_ms + STARTUP_CLOCK_ANCHOR_STEP_MS >= 1860000);
-        TEST_ASSERT(retained_reads == 1); /* Never re-credit the old clock domain. */
-        TEST_ASSERT(count(ON) == 1 && count(RETURNED) == 1);
-    }
-    scenario(ST_PHASE_PREPARED, 0, 0); change_revision_at = 2; handshake(); run();
-    TEST_ASSERT(events[find(ON, 0)].rtc >= 1901000); /* Torn first sample cannot anchor. */
-}
-static void test_startup_retry_torn_entry_clock_never_credits_old_domain(void) {
-    scenario(ST_PHASE_RETRY_WAIT, 1, 0);
-    rtc_ms += 172800000; change_revision_at = 2;
-    pause_startup(RETURNED, 1, rtc_ms + 120000);
-    TEST_ASSERT(count(ON) == 0);
-    saved(ST_PHASE_RETRY_WAIT, 1);
-}
-static void test_startup_low_energy_and_default_false(void) {
-    scenario(ST_PHASE_ELIGIBLE, 0, 0); battery = false;
-    pause_startup(RETURNED, 1, rtc_ms + 120000);
-    TEST_ASSERT(count(ON) == 0 && write_count == 0 && pulls == 0);
-    saved(ST_PHASE_ELIGIBLE, 0);
-    scenario(ST_PHASE_PREPARED, 0, 0); battery = false;
-    pause_startup(RETURNED, 1, rtc_ms + 1860000);
-    TEST_ASSERT(count(ON) == 0 && awake_waits == 30);
-    saved(ST_PHASE_ELIGIBLE, 0);
-    scenario(ST_PHASE_COMPLETE, 7, 0); battery = false; run();
-    TEST_ASSERT(count(ON) == 0 && pulls == 0 && count(RETURNED) == 1);
-    TEST_ASSERT(rtc_ms - 100000 <= 2000);
-    saved(ST_PHASE_COMPLETE, 7);
-}
-static void test_startup_low_energy_retry_keeps_due_wait(void) {
-    scenario(ST_PHASE_RETRY_WAIT, 6, 172770000); battery = false;
-    pause_startup(RETURNED, 1, rtc_ms + 120000);
-    TEST_ASSERT(count(ON) == 0 && checkpoint_count >= 1);
-    saved(ST_PHASE_RETRY_WAIT, 6);
-    StSnapshot s; TEST_ASSERT(st_load(&s) == ST_OK);
-    TEST_ASSERT(s.has_progress && s.progress.elapsed_ms == 172800000);
-    battery = true; model_reboot(); pause_startup(ON, 1, 0);
-    TEST_ASSERT(events[find(ON, 0)].count == 7);
-    model_reboot(); handshake(); run();
-    TEST_ASSERT(count(ON) == 0); saved(ST_PHASE_COMPLETE, 7);
-}
-static void test_startup_seven_total_then_weekly_without_catchup(void) {
-    scenario(ST_PHASE_ELIGIBLE, 0, 0);
-    pause_startup(ON, 9, 0); /* Seven fast reservations, then two weekly reservations. */
-    TEST_ASSERT(count(ON) == 9);
-    size_t previous = find(ON, 0);
-    for (unsigned n = 2; n <= 9; ++n) {
-        size_t next = find(ON, previous + 1);
-        uint64_t spacing = n <= 7 ? 172800000 : 604800000;
-        TEST_ASSERT(events[next].rtc - events[previous].rtc >= spacing + 5000);
-        TEST_ASSERT(events[next].rtc - events[previous].rtc < spacing + 10000);
-        TEST_ASSERT(events[next].count == (n < 7 ? n : 7));
-        previous = next;
-    }
-    TEST_ASSERT(max_checkpoint_gap <= 62000);
-    model_reboot(); handshake(); run(); saved(ST_PHASE_COMPLETE, 7);
-}
-static void test_startup_pending_start_wins_due_retry_and_late_reservation(void) {
-    for (unsigned stage = 0; stage < 3; ++stage) {
-        scenario(ST_PHASE_RETRY_WAIT, 6, 172800000);
-        for (unsigned i = 0; i < stage; ++i) input(NULL);
-        handshake(); run();
-        TEST_ASSERT(count(ON) == 0);
-        size_t hello = find(HELLO, 0);
-        TEST_ASSERT(hello < event_count && events[hello].phase == ST_PHASE_RETIRED);
-        saved(ST_PHASE_COMPLETE, stage == 2 ? 7 : 6);
-    }
-}
-static void test_startup_exact_packet_roles_reject_bad_and_duplicate_data(void) {
-    scenario(ST_PHASE_RETRY_WAIT, 1, 0);
-    input(NULL); inputs[input_count++] = (Input){NULL, (size_t)-1, 0};
-    inputs[input_count++] = (Input){NULL, MAX_PAYLOAD_BYTES + 1, 0};
-    input("start"); input("START\n"); input("STAR"); input("ACK"); input("HELLO");
-    inputs[input_count++] = (Input){"START", 6, 0}; /* Trailing NUL is not the exact token. */
-    input("START"); input("START"); input(NULL);
-    inputs[input_count++] = (Input){NULL, (size_t)-1, 0};
-    inputs[input_count++] = (Input){NULL, MAX_PAYLOAD_BYTES + 1, 0};
-    input("HELLO"); input("ACK\n"); input("AC");
-    inputs[input_count++] = (Input){"ACK", 4, 0};
-    input("ACK");
-    run();
-    TEST_ASSERT(count(HELLO) == 1 && count(READY) == 1 && input_pos == input_count);
-    TEST_ASSERT(count(ON) == 0);
-    size_t hello = find(HELLO, 0);
-    TEST_ASSERT(hello > 0 && events[hello].phase == ST_PHASE_RETIRED);
-    saved(ST_PHASE_COMPLETE, 1);
-}
-static void test_startup_failed_hello_paced_and_local_downlink_required(void) {
-    scenario(ST_PHASE_RETIRED, 1, 0); hello_failures = 2; input("ACK"); run();
-    TEST_ASSERT(count(HELLO) == 3 && count(DOWNLINK) == 2);
-    size_t a = find(HELLO, 0), b = find(HELLO, a + 1), c = find(HELLO, b + 1);
-    TEST_ASSERT(events[b].awake - events[a].awake >= STARTUP_HELLO_RETRY_MS);
-    TEST_ASSERT(events[c].awake - events[b].awake >= STARTUP_HELLO_RETRY_MS);
-    TEST_ASSERT(count(ON) == 0); saved(ST_PHASE_COMPLETE, 1);
-    scenario(ST_PHASE_RETIRED, 1, 0); downlink_failures = 1; input("ACK"); run();
-    TEST_ASSERT(count(HELLO) == 2 && count(DOWNLINK) == 3);
-    TEST_ASSERT(events[find(HELLO, find(HELLO, 0) + 1)].awake - events[find(HELLO, 0)].awake >= STARTUP_HELLO_RETRY_MS);
-}
-static void test_startup_lost_ack_timeout_restarts_hello(void) {
-    scenario(ST_PHASE_RETIRED, 1, 0);
-    inputs[input_count++] = (Input){"ACK", 3, rtc_ms + 2 * STARTUP_RESPONSE_MS + 10000};
-    run();
-    TEST_ASSERT(count(HELLO) >= 3 && count(READY) == 1 && count(ON) == 0);
-    size_t a = find(HELLO, 0), b = find(HELLO, a + 1);
-    TEST_ASSERT(events[b].awake - events[a].awake >= STARTUP_RESPONSE_MS);
-    saved(ST_PHASE_COMPLETE, 1);
-}
-static void test_startup_ready_failure_does_not_gate_mission_after_ack(void) {
-    scenario(ST_PHASE_RETIRED, 1, 0); ready_failures = 1; input("ACK"); run();
-    TEST_ASSERT(count(READY) == 1 && count(RETURNED) == 1 && count(DOWNLINK) == 1);
-    TEST_ASSERT(events[find(RETURNED, 0)].phase == ST_PHASE_COMPLETE);
-    saved(ST_PHASE_COMPLETE, 1);
-    scenario(ST_PHASE_RETIRED, 1, 0); fail_ready_downlink = true; input("ACK"); run();
-    TEST_ASSERT(count(READY) == 1 && count(DOWNLINK) == 2 && count(RETURNED) == 1);
-    saved(ST_PHASE_COMPLETE, 1);
-}
-static void test_startup_reset_reserved_on_off_never_replays_burn(void) {
-    for (unsigned stage = 0; stage < 3; ++stage) {
-        scenario(ST_PHASE_ELIGIBLE, 0, 0);
-        if (stage == 0) { reset_on_phase = true; reset_phase = ST_PHASE_RESERVED; }
-        pause_startup(stage == 2 ? OFF : ON, stage == 2 ? 2 : 1, 0);
-        TEST_ASSERT(fram[80] == ST_PHASE_RESERVED);
-        uint64_t recovery_time = rtc_ms + 900000000;
-        rtc_ms = recovery_time; retained = false; model_reboot(); handshake(); run();
-        TEST_ASSERT(count(ON) == 0 && count(OFF) >= 2);
-        TEST_ASSERT(events[find(HELLO, 0)].phase == ST_PHASE_RETIRED);
-        saved(ST_PHASE_COMPLETE, 1);
-    }
-    scenario(ST_PHASE_RESERVED, 6, 0); rtc_ms += 900000000; retained = false;
-    uint64_t recovered_at = rtc_ms;
-    pause_startup(RETURNED, 1, rtc_ms + 120000);
-    TEST_ASSERT(count(ON) == 0);
-    saved(ST_PHASE_RETRY_WAIT, 6);
-    StSnapshot s; TEST_ASSERT(st_load(&s) == ST_OK);
-    TEST_ASSERT(s.control.reference_ms >= recovered_at && s.control.duration_ms == 172800000);
-    TEST_ASSERT(s.has_progress && s.progress.elapsed_ms <= 120000);
-    model_reboot(); rtc_ms += 900000000;
-    pause_startup(RETURNED, 1, rtc_ms + 120000);
-    TEST_ASSERT(count(ON) == 0); /* Unknown off-time cannot finish the recovered wait. */
-    saved(ST_PHASE_RETRY_WAIT, 6);
-}
-static void test_startup_reset_retirement_and_completion(void) {
-    scenario(ST_PHASE_RETRY_WAIT, 1, 0); input("START");
-    reset_on_phase = true; reset_phase = ST_PHASE_RETIRED;
-    pause_startup(RETURNED, 1, 0);
-    model_reboot(); input("ACK"); run();
-    TEST_ASSERT(count(ON) == 0 && count(HELLO) == 1 && pulls == 2);
-    saved(ST_PHASE_COMPLETE, 1);
-    model_reboot(); run();
-    TEST_ASSERT(count(ON) == 0 && count(HELLO) == 0 && count(READY) == 0);
-    saved(ST_PHASE_COMPLETE, 1);
-    scenario(ST_PHASE_RETIRED, 1, 0); input("ACK");
-    pause_startup(READY, 1, 0);
-    TEST_ASSERT(fram[80] == ST_PHASE_RETIRED);
-    model_reboot(); input("ACK"); run();
-    TEST_ASSERT(count(HELLO) == 1 && count(ON) == 0);
-    saved(ST_PHASE_COMPLETE, 1);
-    scenario(ST_PHASE_RETIRED, 1, 0); input("ACK");
-    reset_on_phase = true; reset_phase = ST_PHASE_COMPLETE;
-    pause_startup(RETURNED, 1, 0);
-    model_reboot(); run(); TEST_ASSERT(count(HELLO) == 0 && count(ON) == 0);
-}
-static void test_startup_single_damaged_copy_repairs_before_on(void) {
-    scenario(ST_PHASE_ELIGIBLE, 0, 0); fram[8] ^= 1; handshake(); run();
-    TEST_ASSERT(count(ON) == 1);
-    saved(ST_PHASE_COMPLETE, 1);
-}
-static void expect_fatal(void) {
-    int fds[2]; require(pipe(fds) == 0, "pipe");
-    pid_t child = fork(); require(child >= 0, "fork");
-    if (!child) {
-        close(fds[0]); child_pipe = fds[1];
-        run(); _exit(3);
-    }
-    close(fds[1]);
-    struct timespec delay = {0, 100000000}; nanosleep(&delay, NULL);
-    int status = 0; pid_t result = waitpid(child, &status, WNOHANG);
-    TEST_ASSERT(result == 0); /* The actual void Startup fatal halt must not return. */
-    if (result == 0) { kill(child, SIGKILL); require(waitpid(child, &status, 0) == child, "reap"); }
-    char data[4096]; ssize_t n = read(fds[0], data, sizeof(data)); close(fds[0]);
-    TEST_ASSERT(n > 0 && memchr(data, 'F', (size_t)(n > 0 ? n : 0)) != NULL);
-    TEST_ASSERT(n <= 0 || (memchr(data, 'N', (size_t)n) == NULL && memchr(data, 'R', (size_t)n) == NULL));
-}
-static void test_startup_fram_faults_and_inhibited_records_fail_closed(void) {
-    for (unsigned kind = 0; kind < 8; ++kind) {
-        scenario(ST_PHASE_PREPARED, 0, 0);
-        if (kind == 0) memset(fram + 8, 0xff, 320);
-        if (kind == 1) { fram[8] ^= 1; fram[104] ^= 1; }
-        if (kind == 2) fixture_seed(fram, ST_PHASE_PREPARED, 0, 0, rtc_ms, false);
-        if (kind == 3) fail_read = true;
-        if (kind == 4) fail_write = true;
-        if (kind == 5) fail_wrdi = true;
-        if (kind == 6) noop_write = true;
-        if (kind == 7) corrupt_readback = true;
-        expect_fatal();
-    }
-    scenario(ST_PHASE_ELIGIBLE, 0, 0); fail_write_phase = ST_PHASE_RESERVED; expect_fatal();
-    scenario(ST_PHASE_RESERVED, 1, 0); fail_write_phase = ST_PHASE_RETRY_WAIT; expect_fatal();
-    scenario(ST_PHASE_RETRY_WAIT, 1, 0); input("START"); fail_write_phase = ST_PHASE_RETIRED; expect_fatal();
-    scenario(ST_PHASE_RETIRED, 1, 0); input("ACK"); fail_write_phase = ST_PHASE_COMPLETE; expect_fatal();
 }
 
-static void test_startup_false_clock_confirmation_reanchors_before_wait_or_finish(void) {
-    for (unsigned kind = 0; kind < 3; ++kind) {
-        scenario(ST_PHASE_INHIBIT, 0, kind == 2 ? 1800000 : 1799999);
-        fail_confirm_at = 1; confirm_failures = 1;
-        change_revision_on_confirmation = kind == 1;
-        handshake(); run();
-        TEST_ASSERT(confirm_rejections == 1 && confirms >= 2);
-        TEST_ASSERT(events[find(ON, 0)].awake >= last_rejection_awake + 1000);
-        TEST_ASSERT(retained_reads == 1);
-        saved(ST_PHASE_COMPLETE, 1);
-    }
-    scenario(ST_PHASE_INHIBIT, 0, 1800000);
-    fail_confirm_at = 1; confirm_failures = 100;
-    pause_startup(RETURNED, 1, rtc_ms + 5000);
-    TEST_ASSERT(confirm_rejections >= 5 && count(ON) == 0 && awake_waits == 0);
-    TEST_ASSERT(retained_reads == 1 && awake_ms >= 5000);
-    saved(ST_PHASE_INHIBIT, 0);
+static void event(Action action) {
+    require(event_count < sizeof(events) / sizeof(events[0]), "event capacity");
+    events[event_count++] = (Event){action, now_ms};
 }
+
+static size_t find_event(Action action, size_t from) {
+    for (size_t i = from; i < event_count; ++i) if (events[i].action == action) return i;
+    return event_count;
+}
+
+static unsigned count_events(Action action) {
+    unsigned count = 0;
+    for (size_t i = 0; i < event_count; ++i) count += events[i].action == action;
+    return count;
+}
+
+static void require_order(const Action *actions, size_t size) {
+    size_t position = 0;
+    for (size_t i = 0; i < size; ++i) {
+        position = find_event(actions[i], position);
+        if (position >= event_count) {
+            printf("  missing event %d in order\n", (int)actions[i]);
+            TEST_ASSERT(false);
+            return;
+        }
+        ++position;
+    }
+    TEST_ASSERT(true);
+}
+
+/***************************** Persistent media ******************************/
+
+static bool media_slot_valid(uint8_t slot, Ssp1Record *record) {
+    return ssp1_read(fram + SSP1_ADDRESS + slot * SSP1_SLOT_SIZE, record);
+}
+
+/* The newer committed record, as a fresh boot would select it. */
+static bool media_current(Ssp1Record *record) {
+    Ssp1Record a, b;
+    bool valid_a = media_slot_valid(0, &a);
+    bool valid_b = media_slot_valid(1, &b);
+    if (valid_a && valid_b) {
+        *record = a.sequence >= b.sequence ? a : b;
+        return true;
+    }
+    if (valid_a) { *record = a; return true; }
+    if (valid_b) { *record = b; return true; }
+    return false;
+}
+
+static void media_reset(void) {
+    memset(fram, SENTINEL, sizeof(fram));
+    memcpy(fram, &(uint32_t){BOOT_COUNTER_VALUE}, sizeof(uint32_t));
+    memcpy(fram + 4, &(uint32_t){ADCS_MASK_VALUE}, sizeof(uint32_t));
+}
+
+static void media_store(uint8_t state, uint8_t attempts, bool armed, uint32_t remaining) {
+    ssp1_build(fram + SSP1_ADDRESS, 1, state, attempts, armed, remaining);
+    ssp1_build(fram + SSP1_ADDRESS + SSP1_SLOT_SIZE, 1, state, attempts, armed, remaining);
+}
+
+static void require_media(uint8_t state, uint8_t attempts, uint32_t remaining) {
+    Ssp1Record record;
+    if (!media_current(&record)) {
+        require(false, "media holds no committed record");
+    }
+    if (record.state != state || record.attempts != attempts || record.remaining != remaining) {
+        printf("  media is state=%u attempts=%u remaining=%" PRIu32
+               ", expected state=%u attempts=%u remaining=%" PRIu32 "\n",
+               record.state, record.attempts, record.remaining, state, attempts, remaining);
+        TEST_ASSERT(false);
+    } else {
+        TEST_ASSERT(true);
+    }
+}
+
+static void require_boot_and_adcs_preserved(void) {
+    uint32_t boot = 0, adcs = 0;
+    memcpy(&boot, fram, sizeof(boot));
+    memcpy(&adcs, fram + 4, sizeof(adcs));
+    TEST_ASSERT(boot == BOOT_COUNTER_VALUE);
+    TEST_ASSERT(adcs == ADCS_MASK_VALUE);
+    for (size_t address = SSP1_ADDRESS + SSP1_IMAGE_SIZE; address < FRAM_BYTES; ++address) {
+        if (fram[address] != SENTINEL) {
+            TEST_ASSERT(false);
+            return;
+        }
+    }
+    TEST_ASSERT(true);
+}
+
+/***************************** Hardware boundaries ***************************/
+
+/* Electrical eligibility boundary: modeled, never a voltage or flight claim. */
+bool startup_test_battery_eligible(void) {
+    return battery_eligible;
+}
+
+void pdb_init(void) {
+    pyro_on = false;
+    event(INIT);
+}
+
+void pdb_pyro_on(void) {
+    require(!pyro_on, "pyro commanded ON while already ON");
+    /* The consumed attempt and a complete retry interval must already be durable. */
+    Ssp1Record record;
+    require(media_current(&record), "ON before any committed record");
+    require(record.state == WAITING_FOR_UPLINK && record.attempts >= 1,
+            "ON before the attempt was saved as a retry wait");
+    require(record.remaining == startup_store_retry_ms(record.attempts),
+            "ON before a full retry interval was saved");
+    pyro_on = true;
+    ++on_count;
+    event(ON);
+}
+
+void pdb_pyro_off(void) {
+    pyro_on = false;
+    ++off_count;
+    event(OFF);
+}
+
+uint64_t getSysTime(void) {
+    return now_ms;
+}
+
+void delay_ms(uint64_t ms) {
+    if (ms > largest_delay_ms) largest_delay_ms = ms;
+    require(ms > 0 && ms <= STARTUP_CHECKPOINT_MS, "awake pacing stays bounded");
+    ++delay_calls;
+    now_ms += ms;
+    if (stop_at != 0 && now_ms >= stop_at) longjmp(run_env, 2);
+}
+
+int printMsg(const char *message, ...) {
+    (void)message;
+    event(PRINT);
+    return 0;
+}
+
+void startup_request_reset(void) {
+    ++reset_count;
+    event(RESET);
+    longjmp(run_env, 1);
+}
+
+RadioPacket radio_force_pull(uint8_t *chunk) {
+    require(!pyro_on, "radio activity while the pyro is commanded ON");
+    ++pulls;
+    now_ms += poll_cost_ms;
+    if (pulls < start_available_at_pull) return (RadioPacket){0, 0};
+    if (input_pos >= input_count || now_ms < inputs[input_pos].not_before) return (RadioPacket){0, 0};
+    Input input = inputs[input_pos++];
+    if (input.size > 0 && input.size <= MAX_PAYLOAD_BYTES && input.bytes != NULL) {
+        memcpy(chunk, input.bytes, input.size);
+    }
+    event(RX);
+    return (RadioPacket){input.size, 'u'};
+}
+
+bool radio_push(uint8_t *chunk, size_t size) {
+    require(!pyro_on, "radio activity while the pyro is commanded ON");
+    bool hello = size == 5 && memcmp(chunk, "HELLO", 5) == 0;
+    bool ready = size == 5 && memcmp(chunk, "READY", 5) == 0;
+    require(hello || ready, "handshake sends only the exact HELLO/READY tokens");
+    if (hello) {
+        Ssp1Record record;
+        require(media_current(&record), "HELLO without a committed record");
+        require(record.state == SAT_TO_GROUND_1, "HELLO before the handshake entry was saved");
+    }
+    event(hello ? HELLO : READY);
+    return true;
+}
+
+bool radio_downlink(uint8_t *chunk, size_t count) {
+    (void)chunk;
+    require(count == 1, "a short message is one chunk");
+    event(DOWNLINK);
+    return true;
+}
+
+void radio_init(void) {
+    require(!pyro_on, "radio init while the pyro is commanded ON");
+}
+
+bool FRAM_readData(uint16_t address, uint8_t *buffer, uint16_t size) {
+    if (fail_read) return false;
+    require(address + size <= FRAM_BYTES, "FRAM read bounds");
+    memcpy(buffer, fram + address, size);
+    return true;
+}
+
+bool FRAM_writeEnable(void) {
+    ++write_count;
+    return !fail_wren;
+}
+
+bool FRAM_writeDisable(void) {
+    return !fail_wrdi;
+}
+
+bool FRAM_writeData(uint16_t address, uint8_t *data, uint16_t size) {
+    require(!pyro_on, "storage write while the pyro is commanded ON");
+    require(address >= SSP1_ADDRESS && address + size <= SSP1_ADDRESS + SSP1_IMAGE_SIZE,
+            "storage writes stay inside bytes 8..47");
+    require(size > 0, "non-empty write");
+    if (fail_write) return false;
+    if (cut_budget >= 0) {
+        if (power_lost) return false;
+        size_t applied = (size_t)cut_budget < size ? (size_t)cut_budget : size;
+        memcpy(fram + address, data, applied);
+        cut_budget -= (long)applied;
+        if (applied < size) { power_lost = true; return false; }
+        if (cut_budget == 0) power_lost = true;
+        return true;
+    }
+    if (ignore_writes) return true;
+    memcpy(fram + address, data, size);
+    /* A publication always commits with a final single-byte 0xA5 write. */
+    if (size == 1 && data[0] == 0xA5u && (address == SSP1_ADDRESS + SSP1_COMMIT ||
+                                          address == SSP1_ADDRESS + SSP1_SLOT_SIZE + SSP1_COMMIT)) {
+        uint8_t slot = address == SSP1_ADDRESS + SSP1_COMMIT ? 0 : 1;
+        Ssp1Record record;
+        require(media_slot_valid(slot, &record), "a committed record must decode");
+        require(record.state != GROUND_TO_SAT_1 && record.state != SAT_TO_GROUND_2 &&
+                record.state != DIAGNOSTICS_MODE, "transient handshake state was persisted");
+        require(save_count < sizeof(saves) / sizeof(saves[0]), "save capacity");
+        saves[save_count++] = (Save){record.sequence, record.state, record.attempts,
+                                     record.flags == 0x01u, record.remaining, now_ms};
+    }
+    return true;
+}
+
+/***************************** Scenarios *************************************/
+
+static void scenario(uint8_t state, uint8_t attempts, bool armed, uint32_t remaining) {
+    media_reset();
+    media_store(state, attempts, armed, remaining);
+    now_ms = 0;
+    pyro_on = false;
+    on_count = off_count = reset_count = write_count = 0;
+    fail_read = fail_write = fail_wren = fail_wrdi = ignore_writes = false;
+    cut_budget = -1;
+    power_lost = false;
+    stop_at = 0;
+    battery_eligible = true;
+    poll_cost_ms = 0;
+    delay_calls = 0;
+    event_count = 0;
+    save_count = 0;
+    input_count = input_pos = pulls = start_available_at_pull = 0;
+}
+
+static void input_at(const char *bytes, size_t size, uint64_t not_before) {
+    require(input_count < sizeof(inputs) / sizeof(inputs[0]), "input capacity");
+    inputs[input_count++] = (Input){bytes, size, not_before};
+}
+
+static void input(const char *bytes) {
+    input_at(bytes, bytes != NULL ? strlen(bytes) : 0, 0);
+}
+
+static void model_reboot(void) {
+    now_ms = 0;
+    pyro_on = false;
+    stop_at = 0;
+    event_count = 0;
+    input_count = input_pos = pulls = start_available_at_pull = 0;
+}
+
+/* init_init() owns the boot-time safe output state, so every modeled boot
+ * replays that prefix before Startup() runs. */
+static int model_run(void) {
+    pdb_init();
+    pdb_pyro_off();
+    int jumped = setjmp(run_env);
+    if (jumped == 0) {
+        Startup();
+        event(RETURNED);
+        return 0;
+    }
+    return jumped;
+}
+
+void test_startup_inhibit_saves_attempt_before_on_and_completes(void) {
+    scenario(INITIAL_CHECKS, 0, true, STARTUP_INHIBIT_MS);
+    /* The uplink arrives only after the first burn: the normal attempt precedes listening. */
+    input_at("START", 5, STARTUP_INHIBIT_MS + STARTUP_BURN_MS);
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+
+    const Action order[] = {INIT, OFF, ON, OFF, RX, HELLO, DOWNLINK, RX, READY, DOWNLINK, RETURNED};
+    require_order(order, sizeof(order) / sizeof(order[0]));
+    TEST_ASSERT(count_events(ON) == 1);
+    size_t on = find_event(ON, 0), off = find_event(OFF, on + 1);
+    TEST_ASSERT(on < event_count && off < event_count);
+    TEST_ASSERT(events[on].at_ms >= STARTUP_INHIBIT_MS);
+    TEST_ASSERT(events[on].at_ms <= STARTUP_INHIBIT_MS + SLOP_MS);
+    TEST_ASSERT(events[off].at_ms - events[on].at_ms == STARTUP_BURN_MS);
+
+    /* One checkpoint per counted minute of the inhibit, then the transition. */
+    unsigned inhibit_saves = 0;
+    uint64_t previous_at = 0;
+    for (size_t i = 0; i < save_count; ++i) {
+        if (saves[i].state != INITIAL_CHECKS) continue;
+        ++inhibit_saves;
+        TEST_ASSERT(saves[i].remaining == STARTUP_INHIBIT_MS - inhibit_saves * STARTUP_CHECKPOINT_MS);
+        TEST_ASSERT(saves[i].attempts == 0);
+        TEST_ASSERT(saves[i].armed);
+        if (previous_at != 0) TEST_ASSERT(saves[i].at_ms - previous_at <= STARTUP_CHECKPOINT_MS);
+        previous_at = saves[i].at_ms;
+    }
+    TEST_ASSERT(inhibit_saves == STARTUP_INHIBIT_MS / STARTUP_CHECKPOINT_MS - 1u);
+
+    /* The consumed attempt and the full retry interval are published before ON. */
+    bool seen_attempt = false;
+    for (size_t i = 0; i < save_count; ++i) {
+        if (saves[i].state == WAITING_FOR_UPLINK) {
+            TEST_ASSERT(saves[i].attempts == 1);
+            TEST_ASSERT(saves[i].remaining == STARTUP_RETRY_MS);
+            seen_attempt = true;
+            break;
+        }
+    }
+    TEST_ASSERT(seen_attempt);
+
+    /* Completion is durable before the handoff and carries no transient state. */
+    Ssp1Record final_record;
+    TEST_ASSERT(media_current(&final_record));
+    TEST_ASSERT(final_record.state == MAIN_OPS);
+    TEST_ASSERT(final_record.attempts == 1);
+    TEST_ASSERT(final_record.remaining == 0);
+    TEST_ASSERT(final_record.flags == 0x01u);
+    TEST_ASSERT(saves[save_count - 1].state == MAIN_OPS);
+    require_boot_and_adcs_preserved();
+}
+
+void test_startup_resume_never_credits_unknown_time(void) {
+    /* One millisecond of saved inhibit is still waited in full. */
+    scenario(INITIAL_CHECKS, 0, true, 1);
+    input_at("START", 5, 5000);
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    size_t on = find_event(ON, 0);
+    TEST_ASSERT(on < event_count);
+    TEST_ASSERT(events[on].at_ms >= 1 && events[on].at_ms <= 1 + SLOP_MS);
+
+    /* Saved remaining time is waited in full: time spent off is never credited. */
+    scenario(INITIAL_CHECKS, 0, true, 1500000);
+    now_ms = 900000000;
+    input_at("START", 5, 900000000 + 1500000 + STARTUP_BURN_MS);
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    on = find_event(ON, 0);
+    TEST_ASSERT(on < event_count);
+    TEST_ASSERT(events[on].at_ms >= 900000000 + 1500000);
+    TEST_ASSERT(events[on].at_ms <= 900000000 + 1500000 + SLOP_MS);
+
+    /* A finished inhibit proceeds straight to the attempt. */
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    input_at("START", 5, 5000);
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    on = find_event(ON, 0);
+    TEST_ASSERT(on < event_count && events[on].at_ms <= SLOP_MS);
+    TEST_ASSERT(count_events(ON) == 1);
+
+    /* Saved cooldown progress is counted from the checkpoint, not from zero. */
+    scenario(WAITING_FOR_UPLINK, 1, true, 300000);
+    input_at("START", 5, 300000 + STARTUP_BURN_MS);
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    on = find_event(ON, 0);
+    TEST_ASSERT(on < event_count);
+    TEST_ASSERT(events[on].at_ms >= 300000 && events[on].at_ms <= 300000 + SLOP_MS);
+    require_media(MAIN_OPS, 2, 0);
+}
+
+void test_startup_interval_boundaries_and_attempt_saturation(void) {
+    /* Fifth attempt used: the next interval is two days and the count advances. */
+    scenario(WAIT_POWER_ON, 5, true, 0);
+    stop_at = STARTUP_RETRY_MS + 2u * STARTUP_BURN_MS + SLOP_MS;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 2);
+    size_t first = find_event(ON, 0), second = find_event(ON, first + 1);
+    TEST_ASSERT(second < event_count);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms >= STARTUP_BURN_MS + STARTUP_RETRY_MS);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms <= STARTUP_BURN_MS + STARTUP_RETRY_MS + SLOP_MS);
+    require_media(WAITING_FOR_UPLINK, 7, STARTUP_WEEKLY_MS);
+
+    /* Seventh attempt used: the interval is one week from then on. */
+    scenario(WAIT_POWER_ON, 6, true, 0);
+    stop_at = STARTUP_WEEKLY_MS + 2u * STARTUP_BURN_MS + SLOP_MS;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 2);
+    first = find_event(ON, 0);
+    second = find_event(ON, first + 1);
+    TEST_ASSERT(second < event_count);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms >= STARTUP_BURN_MS + STARTUP_WEEKLY_MS);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms <= STARTUP_BURN_MS + STARTUP_WEEKLY_MS + SLOP_MS);
+    require_media(WAITING_FOR_UPLINK, 7, STARTUP_WEEKLY_MS);
+
+    /* Saturated: the count stays at seven and the weekly interval repeats. */
+    scenario(WAIT_POWER_ON, 7, true, 0);
+    stop_at = STARTUP_WEEKLY_MS + 2u * STARTUP_BURN_MS + SLOP_MS;
+    TEST_ASSERT(model_run() == 2);
+    first = find_event(ON, 0);
+    second = find_event(ON, first + 1);
+    TEST_ASSERT(second < event_count);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms >= STARTUP_BURN_MS + STARTUP_WEEKLY_MS);
+    require_media(WAITING_FOR_UPLINK, 7, STARTUP_WEEKLY_MS);
+
+    /* First attempt: two days, then the count is two. */
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    stop_at = STARTUP_RETRY_MS + 2u * STARTUP_BURN_MS + SLOP_MS;
+    TEST_ASSERT(model_run() == 2);
+    first = find_event(ON, 0);
+    second = find_event(ON, first + 1);
+    TEST_ASSERT(second < event_count);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms >= STARTUP_BURN_MS + STARTUP_RETRY_MS);
+    require_media(WAITING_FOR_UPLINK, 2, STARTUP_RETRY_MS);
+}
+
+void test_startup_pending_start_wins_without_a_burn(void) {
+    /* A START waiting during the cooldown skips the pending retry. */
+    scenario(WAITING_FOR_UPLINK, 3, true, STARTUP_RETRY_MS);
+    input("START");
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(find_event(HELLO, 0) < event_count);
+    require_media(MAIN_OPS, 3, 0);
+
+    /* A retry that receives START after the reservation was saved commands OFF and
+     * enters the saved handshake state, still without ON. */
+    scenario(WAIT_POWER_ON, 3, true, 0);
+    start_available_at_pull = 2;
+    input("START");
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(count_events(OFF) >= 2);
+    TEST_ASSERT(find_event(HELLO, 0) < event_count);
+    require_media(MAIN_OPS, 4, 0);
+
+    /* The first normal burn still precedes listening: a START already queued for
+     * the very first eligible boot must not skip that burn (SPEC item 3). */
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    start_available_at_pull = 1;
+    input("START");
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(ON) == 1);
+    require_media(MAIN_OPS, 1, 0);
+}
+
+void test_startup_handshake_requires_ack_and_ready_is_best_effort(void) {
+    /* The ground ACK gates success; HELLO is retried on the response timeout. */
+    scenario(SAT_TO_GROUND_1, 1, true, 0);
+    input_at("ACK", 3, 2u * STARTUP_RESPONSE_MS + 10u * STARTUP_POLL_MS);
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(count_events(HELLO) >= 3);
+    TEST_ASSERT(count_events(READY) == 1);
+    size_t first = find_event(HELLO, 0), second = find_event(HELLO, first + 1);
+    TEST_ASSERT(second < event_count);
+    TEST_ASSERT(events[second].at_ms - events[first].at_ms >= STARTUP_HELLO_RETRY_MS);
+    require_media(MAIN_OPS, 1, 0);
+
+    /* Only the exact tokens are accepted; near misses are ignored. */
+    scenario(SAT_TO_GROUND_1, 1, true, 0);
+    input("start");
+    input("START\n");
+    input("STAR");
+    input_at("START", 6, 0);
+    input_at("ACK", 4, 0);
+    input("AC");
+    input("HELLO");
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(HELLO) == 1);
+    TEST_ASSERT(count_events(READY) == 1);
+    require_media(MAIN_OPS, 1, 0);
+
+    /* A completed boot never repeats deployment or the handshake. */
+    unsigned on_before = on_count;
+    model_reboot();
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(on_count == on_before);
+    TEST_ASSERT(count_events(HELLO) == 0);
+    TEST_ASSERT(count_events(READY) == 0);
+    require_media(MAIN_OPS, 1, 0);
+}
+
+void test_startup_reset_recovery_never_replays_a_commitment(void) {
+    /* Reset after the handshake entry: the reboot resumes at the handshake. */
+    scenario(SAT_TO_GROUND_1, 1, true, 0);
+    stop_at = 1;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+    model_reboot();
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(ON) == 0);
+    require_media(MAIN_OPS, 1, 0);
+
+    /* Reset while the pre-ON save is torn: no ON is authorized, and the
+     * uncommitted decision is retried on the next boot. */
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    cut_budget = 5;
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+    size_t reset = find_event(RESET, 0);
+    TEST_ASSERT(reset > 0 && reset < event_count);
+    TEST_ASSERT(events[reset - 1].action == OFF);
+    cut_budget = -1;
+    power_lost = false;
+    require_media(WAIT_POWER_ON, 0, 0);
+    model_reboot();
+    start_available_at_pull = 2; /* the uplink arrives after the retried burn */
+    input("START");
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    TEST_ASSERT(count_events(ON) == 1);
+    require_media(MAIN_OPS, 1, 0);
+
+    /* Reset after the reservation committed: the consumed attempt waits out the
+     * full saved interval and is never replayed immediately. */
+    scenario(WAITING_FOR_UPLINK, 1, true, STARTUP_RETRY_MS);
+    stop_at = STARTUP_RETRY_MS - 1000;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+    Ssp1Record pending;
+    TEST_ASSERT(media_current(&pending));
+    TEST_ASSERT(pending.state == WAITING_FOR_UPLINK && pending.attempts == 1);
+    TEST_ASSERT(pending.remaining <= STARTUP_RETRY_MS);
+    model_reboot();
+    stop_at = 1000;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+}
+
+void test_startup_storage_faults_fail_closed_with_off_then_reset(void) {
+    /* No usable record at all. */
+    scenario(INITIAL_CHECKS, 0, true, 0);
+    memset(fram + SSP1_ADDRESS, 0xFF, SSP1_IMAGE_SIZE);
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(count_events(RETURNED) == 0);
+    size_t reset = find_event(RESET, 0);
+    TEST_ASSERT(reset > 0 && events[reset - 1].action == OFF);
+
+    /* Equal sequences with different payloads are ambiguous. */
+    scenario(INITIAL_CHECKS, 0, true, 1000);
+    ssp1_build(fram + SSP1_ADDRESS + SSP1_SLOT_SIZE, 1, INITIAL_CHECKS, 0, true, 2000);
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+
+    /* Unreadable media. */
+    scenario(INITIAL_CHECKS, 0, true, 1000);
+    fail_read = true;
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+
+    /* A save that cannot be verified never authorizes ON. */
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    fail_write = true;
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+    reset = find_event(RESET, 0);
+    TEST_ASSERT(reset > 0 && events[reset - 1].action == OFF);
+
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    fail_wren = true;
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    fail_wrdi = true;
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    ignore_writes = true;
+    TEST_ASSERT(model_run() == 1);
+    TEST_ASSERT(count_events(ON) == 0);
+}
+
+void test_startup_wait_counts_elapsed_time_once(void) {
+    /* Polling costs real time (radio RX with CRC retries). Every counted interval
+     * must be subtracted exactly once, so a saved remaining time always matches
+     * the real time that passed since the wait opened. */
+    const uint32_t open_remaining = 300000;
+    scenario(WAITING_FOR_UPLINK, 1, true, open_remaining);
+    poll_cost_ms = 2500;
+    stop_at = open_remaining + 2u * STARTUP_BURN_MS + SLOP_MS;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 1);
+    size_t on = find_event(ON, 0);
+    TEST_ASSERT(on < event_count);
+    /* No early expiry: the attempt is not reached before the saved time passed. */
+    TEST_ASSERT(events[on].at_ms >= open_remaining);
+
+    unsigned checkpoints = 0;
+    for (size_t i = 0; i < save_count; ++i) {
+        /* Checkpoints of this wait only: the later reservation stores the next interval. */
+        if (saves[i].state != WAITING_FOR_UPLINK || saves[i].at_ms > open_remaining) continue;
+        ++checkpoints;
+        uint64_t expected = open_remaining > saves[i].at_ms ? open_remaining - saves[i].at_ms : 0;
+        if (saves[i].remaining > expected + 1 || expected > saves[i].remaining + 1) {
+            printf("  checkpoint at %" PRIu64 " ms saved remaining %" PRIu32
+                   ", real remaining %" PRIu64 "\n",
+                   saves[i].at_ms, saves[i].remaining, expected);
+            TEST_ASSERT(false);
+            return;
+        }
+    }
+    TEST_ASSERT(checkpoints >= 4);
+}
+
+void test_startup_listening_polls_within_a_second(void) {
+    /* START must not wait behind a long blind sleep: the wait is polled at least
+     * once a second, so a command that arrives mid-cooldown is taken promptly. */
+    scenario(WAITING_FOR_UPLINK, 1, true, STARTUP_RETRY_MS);
+    input_at("START", 5, 2000);
+    input("ACK");
+    TEST_ASSERT(model_run() == 0);
+    size_t hello = find_event(HELLO, 0);
+    TEST_ASSERT(hello < event_count);
+    TEST_ASSERT(events[hello].at_ms >= 2000);
+    TEST_ASSERT(events[hello].at_ms <= 2000 + STARTUP_POLL_MS + SLOP_MS);
+    TEST_ASSERT(count_events(ON) == 0);
+    require_media(MAIN_OPS, 1, 0);
+
+    /* The minute FRAM cadence stays separate from the 1 s polling cadence. */
+    scenario(WAITING_FOR_UPLINK, 1, true, 180000);
+    stop_at = 130000;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(save_count >= 2);
+    for (size_t i = 1; i < save_count; ++i) {
+        TEST_ASSERT(saves[i].at_ms - saves[i - 1].at_ms <= STARTUP_CHECKPOINT_MS);
+        TEST_ASSERT(saves[i].at_ms - saves[i - 1].at_ms >= STARTUP_CHECKPOINT_MS - STARTUP_POLL_MS);
+    }
+}
+
+void test_startup_unarmed_record_stays_inhibited(void) {
+    largest_delay_ms = 0;
+    /* Deliberate inhibition never enters the countdown, even beyond 30 minutes. */
+    scenario(INITIAL_CHECKS, 0, false, STARTUP_INHIBIT_MS);
+    stop_at = STARTUP_INHIBIT_MS + STARTUP_CHECKPOINT_MS;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(count_events(RETURNED) == 0);
+    TEST_ASSERT(count_events(HELLO) == 0);
+    TEST_ASSERT(reset_count == 0);
+    TEST_ASSERT(write_count == 0);
+    TEST_ASSERT(delay_calls > 200); /* bounded awake pacing, not a stalled loop */
+    TEST_ASSERT(largest_delay_ms <= STARTUP_POLL_MS); /* no initial countdown wait */
+    Ssp1Record parked;
+    TEST_ASSERT(media_current(&parked));
+    TEST_ASSERT(parked.state == INITIAL_CHECKS);
+    TEST_ASSERT(parked.flags == 0x00u);
+    TEST_ASSERT(parked.remaining == STARTUP_INHIBIT_MS);
+
+    /* Same rule when nothing is left to count down. */
+    scenario(INITIAL_CHECKS, 0, false, 0);
+    stop_at = 10000;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(write_count == 0);
+    TEST_ASSERT(reset_count == 0);
+    require_media(INITIAL_CHECKS, 0, 0);
+}
+
+#ifdef STARTUP_TEST_DEFAULT_BATTERY
+void test_startup_production_default_battery_never_deploys(void) {
+    /* STARTUP_BATTERY_ELIGIBLE() is the production default (false): the attempt
+     * stays pending with the pyro OFF and nothing is rewritten. */
+    scenario(WAIT_POWER_ON, 0, true, 0);
+    stop_at = 10000;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+    TEST_ASSERT(write_count == 0);
+    TEST_ASSERT(reset_count == 0);
+    require_media(WAIT_POWER_ON, 0, 0);
+
+    /* The inhibit still runs and is recorded, then power-on stays inhibited. */
+    scenario(INITIAL_CHECKS, 0, true, STARTUP_INHIBIT_MS);
+    stop_at = STARTUP_INHIBIT_MS + 10000;
+    TEST_ASSERT(model_run() == 2);
+    TEST_ASSERT(count_events(ON) == 0);
+    require_media(WAIT_POWER_ON, 0, 0);
+}
+#endif
 
 int main(void) {
 #ifdef STARTUP_TEST_DEFAULT_BATTERY
-    RUN_TEST(test_startup_low_energy_and_default_false);
+    TEST_SUITE("actual Startup with the production battery default");
+    RUN_TEST(test_startup_production_default_battery_never_deploys);
+    TEST_RESULTS();
+#else
+    TEST_SUITE("actual Startup over modeled peripherals");
+    RUN_TEST(test_startup_inhibit_saves_attempt_before_on_and_completes);
+    RUN_TEST(test_startup_resume_never_credits_unknown_time);
+    RUN_TEST(test_startup_interval_boundaries_and_attempt_saturation);
+    RUN_TEST(test_startup_pending_start_wins_without_a_burn);
+    RUN_TEST(test_startup_wait_counts_elapsed_time_once);
+    RUN_TEST(test_startup_listening_polls_within_a_second);
+    RUN_TEST(test_startup_handshake_requires_ack_and_ready_is_best_effort);
+    RUN_TEST(test_startup_reset_recovery_never_replays_a_commitment);
+    RUN_TEST(test_startup_storage_faults_fail_closed_with_off_then_reset);
+    RUN_TEST(test_startup_unarmed_record_stays_inhibited);
     TEST_RESULTS();
 #endif
-    TEST_SUITE("actual blocking Startup FRAM integration");
-    RUN_TEST(test_startup_false_clock_confirmation_reanchors_before_wait_or_finish);
-    RUN_TEST(test_startup_normal_wait_command_handshake_return);
-    RUN_TEST(test_startup_pdb_clears_latch_before_output_mode);
-    RUN_TEST(test_startup_exact_and_short_awake_waits);
-    RUN_TEST(test_startup_saved_progress_with_and_without_clock);
-    RUN_TEST(test_startup_clock_discontinuities_drop_unsaved_credit);
-    RUN_TEST(test_startup_low_energy_and_default_false);
-    RUN_TEST(test_startup_retry_torn_entry_clock_never_credits_old_domain);
-    RUN_TEST(test_startup_low_energy_retry_keeps_due_wait);
-    RUN_TEST(test_startup_seven_total_then_weekly_without_catchup);
-    RUN_TEST(test_startup_pending_start_wins_due_retry_and_late_reservation);
-    RUN_TEST(test_startup_exact_packet_roles_reject_bad_and_duplicate_data);
-    RUN_TEST(test_startup_failed_hello_paced_and_local_downlink_required);
-    RUN_TEST(test_startup_lost_ack_timeout_restarts_hello);
-    RUN_TEST(test_startup_ready_failure_does_not_gate_mission_after_ack);
-    RUN_TEST(test_startup_reset_reserved_on_off_never_replays_burn);
-    RUN_TEST(test_startup_reset_retirement_and_completion);
-    RUN_TEST(test_startup_single_damaged_copy_repairs_before_on);
-    RUN_TEST(test_startup_fram_faults_and_inhibited_records_fail_closed);
-    TEST_RESULTS();
 }
