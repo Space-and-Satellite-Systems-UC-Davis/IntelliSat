@@ -70,8 +70,6 @@ void Startup() {
     switch (state) {
     case INITIAL_CHECKS: {
         if (!initialized) {
-            pdb_init();
-            pdb_pyro_off(); // Command only; reset polarity/electrical cutoff still require qualification.
             radio_init(); // Existing UART API, not a direct RF-power GPIO.
             startup_load(&snapshot);
             initialized = true;

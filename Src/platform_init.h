@@ -34,6 +34,7 @@
 #include <SunSensors/sun_sensors.h>
 #include <WDG/watchdog.h>
 
+#include <PDB/power_distribution.h>
 #include "startup/startup_clock.h"
 
 #define SCB_CPACR_CP10_POS 20U
@@ -49,14 +50,24 @@ enum scb_cpacr_cpn_privileges {
 /**
  * Configures only what is necessary to boot.
  *
+ * Establishes the safe output state first, then the fallible clock/RTC work:
+ * PDB owns GPIOA/GPIOC, so those ports are clocked and read back here before
+ * any GPIO access, and the pyro command is driven OFF before init_coreClocks(),
+ * led_init(), heartbeat_timer_init() or startup_clock_init() can stall or reset.
+ *
  * @param   None
  * @returns None
  */
 void init_init() {
-    startup_clock_capture_boot_evidence(); 
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOCEN;
+    (void)RCC->AHB2ENR;                              // read back before GPIO access
+    pdb_init();
+    pdb_pyro_off();                                  // Command OFF before fallible initialization.
+
+    startup_clock_capture_boot_evidence();
     init_coreClocks();
     led_init();
-    heartbeat_timer_init(); 
+    heartbeat_timer_init();
     startup_clock_init();
 }
 

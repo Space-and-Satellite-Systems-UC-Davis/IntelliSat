@@ -41,11 +41,6 @@ int branch_main() {
 }
 
 int main() {
-    // PDB uses GPIOA/GPIOC; enable and read back clocks before GPIO access.
-    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOCEN;
-    (void)RCC->AHB2ENR;
-    pdb_init();
-    pdb_pyro_off(); // Command OFF before fallible clock/RTC/peripheral initialization.
     init_init();
     bool fram_ready = init_platform(!RUN_TEST);
     #if (RUN_TEST==1) && (TEST_ID != 0)
