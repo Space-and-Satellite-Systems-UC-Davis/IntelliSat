@@ -5,9 +5,9 @@
  * FLASH. Run as TEST_ID 33.
  *
  * Talks to the chip with raw qspi_setCommand() / qspi_sendCommand() calls
- * instead of the FLASH driver, whose flash_wait() has no timeout. Every wait
- * here is bounded, so a missing or miswired chip prints FAIL instead of
- * hanging.
+ * instead of the FLASH driver, so the checks don't depend on the code that
+ * builds on them. Every wait is bounded, so a missing or miswired chip prints
+ * FAIL instead of hanging.
  *
  * The tests run in order and build on each other: the erase test leaves
  * TEST_SECTOR blank for the pattern and overwrite tests.
@@ -33,8 +33,6 @@
 #define JEDEC_ID 0x9F
 #define READ_REGISTER_THREE 0x15
 
-#define SR1_BUSY (1 << 0)
-#define SR1_WEL (1 << 1)
 #define SR1_BP (0x7 << 2)
 #define SR2_CMP (1 << 6)
 #define SR2_SUS (1 << 7)
@@ -86,7 +84,7 @@ static uint8_t readRegister(uint8_t instruction) {
  */
 static bool waitReady(const char *what, uint32_t maxUs, uint32_t *elapsedUs) {
   uint32_t start = DWT->CYCCNT;
-  if (!(readRegister(QSPI_READ_REGISTER_ONE) & SR1_BUSY)) {
+  if (!(readRegister(QSPI_READ_REGISTER_ONE) & FLASH_SR1_BUSY)) {
     printMsg("%s: chip not busy straight after the command\n\r", what);
     return false;
   }
@@ -97,7 +95,7 @@ static bool waitReady(const char *what, uint32_t maxUs, uint32_t *elapsedUs) {
                (unsigned long)*elapsedUs);
       return false;
     }
-  } while (readRegister(QSPI_READ_REGISTER_ONE) & SR1_BUSY);
+  } while (readRegister(QSPI_READ_REGISTER_ONE) & FLASH_SR1_BUSY);
   return true;
 }
 
@@ -154,8 +152,8 @@ static bool test_statusRegisters() {
 
   // Idle, not suspended, and nothing write protected. CMP set with BP clear
   // would protect the whole array, and WPS switches to per-block locks.
-  return (sr1 & (SR1_BUSY | SR1_BP)) == 0 && (sr2 & (SR2_CMP | SR2_SUS)) == 0 &&
-         (sr3 & SR3_WPS) == 0;
+  return (sr1 & (FLASH_SR1_BUSY | SR1_BP)) == 0 &&
+         (sr2 & (SR2_CMP | SR2_SUS)) == 0 && (sr3 & SR3_WPS) == 0;
 }
 
 // The latch only changes if the chip decodes the commands we send it.
@@ -165,7 +163,7 @@ static bool test_writeEnableLatch() {
   command(QSPI_WRITE_DISABLE, false, 0, NULL, 0, QSPI_WRITE);
   uint8_t cleared = readRegister(QSPI_READ_REGISTER_ONE);
 
-  if (!(set & SR1_WEL) || (cleared & SR1_WEL)) {
+  if (!(set & FLASH_SR1_WEL) || (cleared & FLASH_SR1_WEL)) {
     printMsg("writeEnableLatch: SR1 %02X after 06, %02X after 04\n\r", set,
              cleared);
     return false;
