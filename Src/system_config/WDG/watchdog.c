@@ -74,7 +74,7 @@ void watchdog_interrupt_config(int ms){
     ms -= 10; //give some time before the actual timeout time just in case
     
     uint16_t PSC = FREQOFF * APB1_FREQ * MS_TO_S * ms / ARR_MAX - 1; 
-    uint16_t ARR = FREQOFF * APB1_FREQ * MS_TO_S * ms / PSC - 1; 
+    uint16_t ARR = FREQOFF * APB1_FREQ * MS_TO_S * ms / (PSC + 1) - 1; 
     
     RCC->APB1ENR1 |= RCC_APB1ENR1_TIM3EN; //Enable Tim 3
     WATCHDOG_TIMER->CR1 &= ~TIM_CR1_CEN; //Disable timer from control register
