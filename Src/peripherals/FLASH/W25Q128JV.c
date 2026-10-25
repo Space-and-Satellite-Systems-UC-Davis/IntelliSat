@@ -19,6 +19,9 @@ uint32_t flash_getPageAddr(uint32_t page) {
 }
 
 bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
 	if (sector > FLASH_MAX_SECTOR) {
 		return false;
 	}
@@ -35,18 +38,45 @@ bool flash_writeSector(uint16_t sector, uint8_t* buffer) {
 }
 
 bool flash_readSector(uint16_t sector, uint8_t* buffer) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
+
 	if (sector > FLASH_MAX_SECTOR) {
 		return false;
 	}
 	uint32_t page = sector * FLASH_PAGES_PER_SECTOR; //convert sector to pages
 	uint32_t address = flash_getPageAddr(page);
 
-	flashSpi_command(QSPI_READ_DATA, true, address, NULL, buffer, 4096);
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_READ, //Instruction type
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES, //Number of wires for Instruction Phase
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES, //Number of wires for Address Phase
+		0, //Number of wires for Alternative Bytes Phase
+		0, //Number of dummy cycles
+	    QSPI_CCR_DMODE_1_DATA_LINES, //Number of wires for Data Phase
+	    false //DMA in use?
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+	    QSPI_READ_DATA, //Instruction
+	    address, //Address
+	    4096, //Data size (bytes)
+	    buffer, //Buffer where data is located/will be stored
+	    QSPI_READ, //Read or write?
+	    QSPI_TIMEOUT_PERIOD //Timeout period
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
 
 bool flash_eraseSector(uint16_t sector) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
 	if (sector > FLASH_MAX_SECTOR) {
 		return false;
 	}
@@ -57,12 +87,36 @@ bool flash_eraseSector(uint16_t sector) {
 		return false;
 	}
 
-	flashSpi_command(QSPI_SECTOR_ERASE, true, address, NULL, NULL, 0);
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_0_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_SECTOR_ERASE,
+		address,
+		0,
+		NULL,
+		QSPI_WRITE,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
 
 bool flash_writePage(uint16_t page, uint8_t* buffer) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
+
 	if (page > FLASH_MAX_PAGE) {
 		return false;
 	}
@@ -72,34 +126,105 @@ bool flash_writePage(uint16_t page, uint8_t* buffer) {
 		return false;
 	}
 
-	flashSpi_command(QSPI_PAGE, true, address, buffer, NULL, 256);
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_PAGE,
+		address,
+		256,
+		buffer,
+		QSPI_WRITE,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
 
 bool flash_readPage(uint16_t page, uint8_t* buffer) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
+
 	if (page > FLASH_MAX_PAGE) {
 		return false;
 	}
 	uint32_t address = flash_getPageAddr(page);
 
-	flashSpi_command(QSPI_READ_DATA, true, address, NULL, buffer, 256);
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_READ_DATA,
+		address,
+		256,
+		buffer,
+		QSPI_READ,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
 
 bool flash_readCustom(uint32_t page, uint8_t* buffer, uint16_t size) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+    	return false;
+  	}
+
 	if (page > FLASH_MAX_PAGE) {
 		return false;
 	}
 	uint32_t address = flash_getPageAddr(page);
 
-	flashSpi_command(QSPI_READ_DATA, true, address, NULL, buffer, size);
+  	if (!qspi_setCommand(
+      	QSPI_CCR_FMODE_INDIRECT_READ,
+      	QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+      	QSPI_CCR_ADMODE_1_ADDRESS_LINES,
+      	0,
+      	0,
+      	QSPI_CCR_DMODE_1_DATA_LINES,
+      	false
+  	)) {
+		return false;
+	}
+  	if (!qspi_sendCommand(
+      	QSPI_READ_DATA,
+      	address,
+      	size,
+      	buffer,
+      	0,
+      	QSPI_TIMEOUT_PERIOD
+  	)) {
+		return false;
+	}
 
   	return flash_wait();
 }
 
 bool flash_writeCustom(uint32_t page, uint8_t* userBuffer, uint16_t size) {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
 	uint16_t pagesToWrite = size / 256;
 	uint16_t remainingBytes = size % 256;
 
@@ -128,27 +253,94 @@ bool flash_writeCustom(uint32_t page, uint8_t* userBuffer, uint16_t size) {
 }
 
 // Reads register one in full. Shared by flash_getStatus() and flash_writeEnable().
-static void flash_readStatusOne(uint8_t* register_one) {
-	flashSpi_command(QSPI_READ_REGISTER_ONE, false, 0, NULL, register_one, 1);
+static bool flash_readStatusOne(uint8_t* register_one) {
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	return qspi_sendCommand(
+		QSPI_READ_REGISTER_ONE,
+		0,
+		1,
+		register_one,
+		QSPI_READ,
+		QSPI_TIMEOUT_PERIOD
+	);
 }
 
 bool flash_writeEnable() {
-	flashSpi_command(QSPI_WRITE_ENABLE, false, 0, NULL, NULL, 0);
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_0_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_WRITE_ENABLE,
+		0,
+		0,
+		NULL,
+      	QSPI_WRITE,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	// The latch only sets if the chip decoded the command, so a missing or
 	// miswired chip fails here instead of in the erase or program after it.
 	uint8_t register_one = 0;
-	flash_readStatusOne(&register_one);
-	return register_one & FLASH_SR1_WEL;
+	return flash_readStatusOne(&register_one) && (register_one & FLASH_SR1_WEL);
 }
 
 bool flash_writeDisable() {
-	flashSpi_command(QSPI_WRITE_DISABLE, false, 0, NULL, NULL, 0);
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_0_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_WRITE_DISABLE,
+		0,
+		0,
+		NULL,
+		QSPI_WRITE,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
 
 bool flash_quadEnable() {
+	if (qspi_getStatus() == QSPI_BUSY) {
+		return false;
+	}
+
 	uint8_t register_two;
 	if (!flash_readRegisterTwo(&register_two)) {
 		return false;
@@ -164,13 +356,54 @@ bool flash_quadEnable() {
 		return false;
 	}
 
-	flashSpi_command(QSPI_WRITE_REGISTER_TWO, false, 0, &register_two, NULL, 1);
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_WRITE,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_WRITE_REGISTER_TWO,
+		0,
+		1,
+		&register_two,
+		QSPI_WRITE,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
 
 bool flash_readRegisterTwo(uint8_t* ptr_register_two) {
-	flashSpi_command(QSPI_READ_REGISTER_TWO, false, 0, NULL, ptr_register_two, 1);
+	//Subsidiary function. QSPI busy check not needed
+	if (!qspi_setCommand(
+		QSPI_CCR_FMODE_INDIRECT_READ,
+		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
+		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
+		0,
+		0,
+		QSPI_CCR_DMODE_1_DATA_LINES,
+		false
+	)) {
+		return false;
+	}
+	if (!qspi_sendCommand(
+		QSPI_READ_REGISTER_TWO,
+		0,
+		1,
+		ptr_register_two,
+		QSPI_READ,
+		QSPI_TIMEOUT_PERIOD
+	)) {
+		return false;
+	}
 
 	return flash_wait();
 }
@@ -192,9 +425,9 @@ bool flash_wait() {
 }
 
 uint8_t flash_getStatus() {
-	// A missing chip reads 0xFF through the MISO pull-up, so it reads as busy
-	// and callers never mistake it for a ready chip.
-	uint8_t register_one;
+	// Reads as busy if the register can't be read, so callers never mistake a
+	// failed read for a ready chip.
+	uint8_t register_one = 0xFF;
 	flash_readStatusOne(&register_one);
 	return register_one & FLASH_SR1_BUSY;
 };

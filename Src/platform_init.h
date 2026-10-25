@@ -21,7 +21,7 @@
 #include <Timers/timers.h>
 #include <Buttons/buttons.h>
 #include <SPI/spi.h>
-#include <FLASH/flash_spi.h>
+#include <QSPI/qspi.h>
 #include <LED/led.h>
 #include <RTC/rtc.h>
 #include <FRAM/FRAM.h>
@@ -101,7 +101,7 @@ void init_platform() {
 	printer_init();
 	led_init();
 	buttons_init();
-	flashSpi_init();
+	qspi_config(23, 2, 0);
 	// Boot carries on without a filesystem; fs_isMounted() tells the logger.
 	int fs_err = fs_mount();
 	if (fs_err) {
