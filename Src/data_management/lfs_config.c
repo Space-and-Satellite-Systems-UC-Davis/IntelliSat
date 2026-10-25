@@ -1,7 +1,7 @@
 /**
  * @file lfs_config.c
  *
- * @brief Block device callbacks mapping littlefs onto the W25Q128JV QSPI FLASH.
+ * @brief Block device callbacks mapping littlefs onto the W25Q128JV SPI FLASH.
  *
  * @author Li, Chun Ho (lchli@ucdavis.edu)
  * @date 09/09/2026
@@ -146,7 +146,7 @@ const struct lfs_config cfg = {
 /**
  * @brief Mount the filesystem, formatting the FLASH first if needed
  *
- * @note Call once after qspi_config(). If the FLASH does not hold a valid
+ * @note Call once after flashSpi_init(). If the FLASH does not hold a valid
  *       littlefs image (first boot, or it is corrupt) it is formatted, which
  *       erases anything already on it.
  *

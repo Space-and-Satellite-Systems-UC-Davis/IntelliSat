@@ -30,7 +30,7 @@ extern void testFunction_RadioSleep();
 extern void testFunction_RTC_storage();
 extern void testFunction_LogDownlink();
 extern void testFunction_RTC2FRAM();
-extern void testFunction_QSPI();
+extern void testFunction_FLASH_SPI();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -93,7 +93,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 32:
 			return testFunction_RTC2FRAM;
 		case 33:
-			return testFunction_QSPI;
+			return testFunction_FLASH_SPI;
 		default:
 			return testFunction_Nothing;
 	}

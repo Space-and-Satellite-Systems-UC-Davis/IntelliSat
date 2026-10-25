@@ -13,7 +13,6 @@
 #include "FLASH/W25Q128JV.h"
 #include <globals.h>
 #include <print_scan.h>
-#include "Src/system_config/QSPI/qspi.h"
 
 // Defines for test parameters.
 #define FLASH_NUM_TESTS     9
@@ -95,26 +94,7 @@ uint64_t getVariance(uint64_t* data, uint16_t size, uint64_t mean) {
 
 // Helper function for test_writeEnable()
 void flash_readRegisterOne(uint8_t* register_one) {
-	if (qspi_getStatus() == QSPI_BUSY) {
-		printMsg("BUSY");
-	}
-	qspi_setCommand(
-		QSPI_CCR_FMODE_INDIRECT_READ,
-		QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
-		QSPI_CCR_ADMODE_0_ADDRESS_LINES,
-		0,
-		0,
-		QSPI_CCR_DMODE_1_DATA_LINES,
-		false
-  );
-  qspi_sendCommand(
-		0x05, //READ_REGISTER_ONE
-		0,
-		1,
-		register_one,
-		QSPI_READ,
-		QSPI_TIMEOUT_PERIOD
-  );
+	flashSpi_command(0x05, false, 0, NULL, register_one, 1); //READ_REGISTER_ONE
 }
 
 // Helper function to sector tests. Fills a sector incrementally.
@@ -153,22 +133,13 @@ bool page_isClear(uint32_t page) {
 //
 bool test_readJedecID() {
 	uint8_t id_receiver[3];
-	qspi_setCommand(
-	  QSPI_CCR_FMODE_INDIRECT_READ, //read
-	  QSPI_CCR_IMODE_1_INSTRUCTION_LINES, //1 wire for instruction
-	  QSPI_CCR_ADMODE_0_ADDRESS_LINES, //no wire for address
-	  0, //no wire for alt bytes
-	  0, //0 dummy cycles for JEDEC
-	  QSPI_CCR_DMODE_1_DATA_LINES, //1 wire for data
-	  false //no DMA
-	);
-	qspi_sendCommand(
+	flashSpi_command(
 	  0x9F, //JEDEC ID
-	  0, //no address
-	  3, //3 bytes data
+	  false, //no address
+	  0,
+	  NULL, //nothing to send
 	  id_receiver, //where data goes
-	  QSPI_READ,
-	  QSPI_TIMEOUT_PERIOD
+	  3 //3 bytes data
 	);
 
 	if (id_receiver[0] != 0xEF) {

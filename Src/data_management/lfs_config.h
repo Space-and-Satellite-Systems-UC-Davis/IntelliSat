@@ -1,7 +1,7 @@
 /**
  * @file lfs_config.h
  *
- * @brief littlefs bound to the W25Q128JV QSPI FLASH.
+ * @brief littlefs bound to the W25Q128JV SPI FLASH.
  *
  * @author Li, Chun Ho (lchli@ucdavis.edu)
  * @date 09/09/2026
@@ -32,7 +32,7 @@ extern const struct lfs_file_config fs_file_cfg;
 
 /**
  * Mounts the filesystem, formatting the FLASH first if it does not yet hold a
- * valid littlefs image. Call once after qspi_config().
+ * valid littlefs image. Call once after flashSpi_init().
  *
  * @returns 0 on success, or a negative LFS_ERR_* code.
  */

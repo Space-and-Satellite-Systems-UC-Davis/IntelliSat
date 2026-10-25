@@ -1,13 +1,13 @@
 /**
- * @file QSPI_testing.c
+ * @file FLASH_SPI_testing.c
  *
- * @brief Low-level checks that the QSPI link really reaches the W25Q128JV
- * FLASH. Run as TEST_ID 33.
+ * @brief Low-level checks that the bit-banged SPI link really reaches the
+ * W25Q128JV FLASH. Run as TEST_ID 33.
  *
- * Talks to the chip with raw qspi_setCommand() / qspi_sendCommand() calls
- * instead of the FLASH driver, so the checks don't depend on the code that
- * builds on them. Every wait is bounded, so a missing or miswired chip prints
- * FAIL instead of hanging.
+ * Talks to the chip with raw flashSpi_command() calls instead of the FLASH
+ * driver, so the checks don't depend on the code that builds on them. Every
+ * wait is bounded, so a missing or miswired chip prints FAIL instead of
+ * hanging.
  *
  * The tests run in order and build on each other: the erase test leaves
  * TEST_SECTOR blank for the pattern and overwrite tests.
@@ -24,7 +24,7 @@
 #include <print_scan.h>
 #include <string.h>
 
-#define QSPI_NUM_TESTS 7
+#define FLASH_SPI_NUM_TESTS 7
 
 // Not a power of two, so it stays clear of the address walk's sectors.
 #define TEST_SECTOR 100
@@ -47,33 +47,9 @@ extern int core_Hz; // from core_config.h
 static uint8_t expected[FLASH_PAGE_SIZE];
 static uint8_t actual[FLASH_PAGE_SIZE];
 
-/**
- * Runs one single-line command. Pass hasAddress false for commands with no
- * address phase, and len 0 for commands with no data phase.
- */
-static bool command(uint8_t instruction, bool hasAddress, uint32_t address,
-                    uint8_t *data, uint32_t len, bool r_or_w) {
-  bool ok = qspi_setCommand(
-      r_or_w == QSPI_READ ? QSPI_CCR_FMODE_INDIRECT_READ
-                          : QSPI_CCR_FMODE_INDIRECT_WRITE,
-      QSPI_CCR_IMODE_1_INSTRUCTION_LINES,
-      hasAddress ? QSPI_CCR_ADMODE_1_ADDRESS_LINES
-                 : QSPI_CCR_ADMODE_0_ADDRESS_LINES,
-      0, 0,
-      len ? QSPI_CCR_DMODE_1_DATA_LINES : QSPI_CCR_DMODE_0_DATA_LINES,
-      false);
-  if (!ok || !qspi_sendCommand(instruction, address, len, data, r_or_w,
-                               QSPI_TIMEOUT_PERIOD)) {
-    printMsg("QSPI refused command %02X\n\r", instruction);
-    return false;
-  }
-  return true;
-}
-
-// Starts at 0xFF so a refused read looks busy and write protected, not fine.
 static uint8_t readRegister(uint8_t instruction) {
-  uint8_t value = 0xFF;
-  command(instruction, false, 0, &value, 1, QSPI_READ);
+  uint8_t value;
+  flashSpi_command(instruction, false, 0, NULL, &value, 1);
   return value;
 }
 
@@ -100,27 +76,25 @@ static bool waitReady(const char *what, uint32_t maxUs, uint32_t *elapsedUs) {
 }
 
 static bool erase(uint32_t sector, uint32_t *elapsedUs) {
-  return command(QSPI_WRITE_ENABLE, false, 0, NULL, 0, QSPI_WRITE) &&
-         command(QSPI_SECTOR_ERASE, true, sector * FLASH_SECTOR_SIZE, NULL, 0,
-                 QSPI_WRITE) &&
-         waitReady("erase", ERASE_MAX_US, elapsedUs);
+  flashSpi_command(QSPI_WRITE_ENABLE, false, 0, NULL, NULL, 0);
+  flashSpi_command(QSPI_SECTOR_ERASE, true, sector * FLASH_SECTOR_SIZE, NULL,
+                   NULL, 0);
+  return waitReady("erase", ERASE_MAX_US, elapsedUs);
 }
 
 // Programs the page with the contents of expected.
 static bool program(uint32_t page, uint32_t *elapsedUs) {
-  return command(QSPI_WRITE_ENABLE, false, 0, NULL, 0, QSPI_WRITE) &&
-         command(QSPI_PAGE, true, page * FLASH_PAGE_SIZE, expected,
-                 FLASH_PAGE_SIZE, QSPI_WRITE) &&
-         waitReady("program", PROGRAM_MAX_US, elapsedUs);
+  flashSpi_command(QSPI_WRITE_ENABLE, false, 0, NULL, NULL, 0);
+  flashSpi_command(QSPI_PAGE, true, page * FLASH_PAGE_SIZE, expected, NULL,
+                   FLASH_PAGE_SIZE);
+  return waitReady("program", PROGRAM_MAX_US, elapsedUs);
 }
 
 // Reads the page and compares it with expected.
 static bool checkPage(uint32_t page, const char *what) {
   memset(actual, 0, FLASH_PAGE_SIZE);
-  if (!command(QSPI_READ_DATA, true, page * FLASH_PAGE_SIZE, actual,
-               FLASH_PAGE_SIZE, QSPI_READ)) {
-    return false;
-  }
+  flashSpi_command(QSPI_READ_DATA, true, page * FLASH_PAGE_SIZE, NULL, actual,
+                   FLASH_PAGE_SIZE);
   for (uint32_t j = 0; j < FLASH_PAGE_SIZE; j++) {
     if (actual[j] != expected[j]) {
       printMsg("%s: page %lu byte %lu read %02X, expected %02X\n\r", what,
@@ -138,7 +112,7 @@ static bool checkPage(uint32_t page, const char *what) {
 // A floating or shorted line can't produce Winbond's ID by accident.
 static bool test_jedecId() {
   uint8_t id[3] = {0};
-  command(JEDEC_ID, false, 0, id, 3, QSPI_READ);
+  flashSpi_command(JEDEC_ID, false, 0, NULL, id, 3);
   printMsg("jedecId: %02X %02X %02X\n\r", id[0], id[1], id[2]);
   return id[0] == 0xEF && id[1] == 0x40 && id[2] == 0x18;
 }
@@ -158,9 +132,9 @@ static bool test_statusRegisters() {
 
 // The latch only changes if the chip decodes the commands we send it.
 static bool test_writeEnableLatch() {
-  command(QSPI_WRITE_ENABLE, false, 0, NULL, 0, QSPI_WRITE);
+  flashSpi_command(QSPI_WRITE_ENABLE, false, 0, NULL, NULL, 0);
   uint8_t set = readRegister(QSPI_READ_REGISTER_ONE);
-  command(QSPI_WRITE_DISABLE, false, 0, NULL, 0, QSPI_WRITE);
+  flashSpi_command(QSPI_WRITE_DISABLE, false, 0, NULL, NULL, 0);
   uint8_t cleared = readRegister(QSPI_READ_REGISTER_ONE);
 
   if (!(set & FLASH_SR1_WEL) || (cleared & FLASH_SR1_WEL)) {
@@ -296,13 +270,13 @@ static bool test_addressWalk() {
 /*                            testFunction Core                              */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-void testFunction_QSPI() {
-  bool (*testFunctions[QSPI_NUM_TESTS])() = {
+void testFunction_FLASH_SPI() {
+  bool (*testFunctions[FLASH_SPI_NUM_TESTS])() = {
       test_jedecId,  test_statusRegisters, test_writeEnableLatch,
       test_erase,    test_patterns,        test_norOverwrite,
       test_addressWalk};
 
-  const char *testNames[QSPI_NUM_TESTS] = {
+  const char *testNames[FLASH_SPI_NUM_TESTS] = {
       "jedecId", "statusRegisters", "writeEnableLatch", "erase",
       "patterns", "norOverwrite",   "addressWalk"};
 
@@ -310,9 +284,9 @@ void testFunction_QSPI() {
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
   DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
-  printMsg("\n\rQSPI Tests\n\r\n\r");
+  printMsg("\n\rFLASH SPI Tests\n\r\n\r");
 
-  for (uint8_t i = 0; i < QSPI_NUM_TESTS; i++) {
+  for (uint8_t i = 0; i < FLASH_SPI_NUM_TESTS; i++) {
     printMsg("%s: %s\n\r", testNames[i], testFunctions[i]() ? "OK" : "FAIL");
   }
 }
