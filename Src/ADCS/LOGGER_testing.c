@@ -18,6 +18,7 @@
  */
 
 #include "virtual_loggers.h"
+#include "adcs_math/sensors.h"
 
 // The tests format and mount the filesystem themselves, so unlike ordinary
 // logger callers they need the bound lfs/cfg that virtual_loggers.c uses.
@@ -27,13 +28,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LOGGER_NUM_TESTS 7
+#define LOGGER_NUM_TESTS 8
 
 #define LOG_NAME "log_test.csv"
 #define START_NAME "start_test.csv"
 #define JUNK_NAME "not_a_log.txt"
 #define CLOSED_NAME "persist_closed.csv"
 #define OPEN_NAME "persist_open.csv"
+#define DETUMBLE_SUFFIX "detumbling.csv"
+// The exit message detumble() closes with today, since vi_control_coil() is
+// still a stub that always fails. It is also the longest one detumble() has.
+#define DETUMBLE_EXIT "DETUMBLING_FAILURE_CONTROL_COILS"
 
 // About 26 rows fit in a 4 KB block, so 60 rows cross two block boundaries.
 #define LOG_ROWS 60
@@ -333,6 +338,62 @@ static bool test_lsRecord() {
   return true;
 }
 
+// Makes the logger calls detumble() makes, in its order and with the file name
+// it builds. detumble() itself is not called: it does not link yet, since
+// virtual_rtos.c defines vr_enter_critical() and friends, not the vi_ names
+// detumble() calls.
+static bool test_detumbleLog() {
+  // detumble() passes on whatever createFile() returned, which is NULL when the
+  // filesystem is not mounted. Both of these must just return.
+  detumbleLOGdata data = {0};
+  logRecord(NULL, &data);
+  closeFile(NULL, DETUMBLE_EXIT);
+
+  char *name = prependTimeStamp(DETUMBLE_SUFFIX);
+  if (strlen(name) != LOG_TS_WIDTH + 1 + strlen(DETUMBLE_SUFFIX) ||
+      strcmp(name + LOG_TS_WIDTH, "_" DETUMBLE_SUFFIX) != 0) {
+    printMsg("detumbleLog: unexpected file name %s\n\r", name);
+    return false;
+  }
+
+  LOG_FILE *f = createFile(name, detumbleLOG);
+  if (!f) {
+    printMsg("detumbleLog: createFile failed\n\r");
+    return false;
+  }
+  // Like detumble(), one struct is reused and filled field by field, in a
+  // different order from the columns.
+  for (uint32_t i = 0; i < LOG_ROWS; i++) {
+    data.imu = (vec3){fieldValue(i, 3), fieldValue(i, 4), fieldValue(i, 5)};
+    data.mag = (vec3){fieldValue(i, 0), fieldValue(i, 1), fieldValue(i, 2)};
+    data.mdm = (vec3){fieldValue(i, 6), fieldValue(i, 7), fieldValue(i, 8)};
+    logRecord(f, &data);
+  }
+  closeFile(f, DETUMBLE_EXIT);
+
+  f = openFile(name);
+  if (!f) {
+    printMsg("detumbleLog: openFile failed\n\r");
+    return false;
+  }
+  bool ok = checkHeader(f, "detumbleLOG,") && checkRows(f, LOG_ROWS);
+  if (ok && !isExitRow(readRecord(f), DETUMBLE_EXIT)) {
+    printMsg("detumbleLog: exit row missing or cut short\n\r");
+    ok = false;
+  }
+  if (ok && readRecord(f)) {
+    printMsg("detumbleLog: rows after the exit row\n\r");
+    ok = false;
+  }
+  closeFile(f, "detumbleLog");
+
+  if (ok && !isListed(lsRecord(), name)) {
+    printMsg("detumbleLog: %s not listed\n\r", name);
+    ok = false;
+  }
+  return ok;
+}
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 /*                              PERSISTENCE                                  */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -428,11 +489,11 @@ static void writePersistence() {
 void testFunction_LOGGER() {
   bool (*testFunctions[LOGGER_NUM_TESTS])() = {
       test_format,    test_singleOpen,  test_logRecords, test_reopen,
-      test_startFile, test_openRejects, test_lsRecord};
+      test_startFile, test_openRejects, test_lsRecord,  test_detumbleLog};
 
   const char *testNames[LOGGER_NUM_TESTS] = {
       "format",    "singleOpen",  "logRecords", "reopen",
-      "startFile", "openRejects", "lsRecord"};
+      "startFile", "openRejects", "lsRecord",   "detumbleLog"};
 
   printMsg("\n\rLOGGER Tests\n\r\n\r");
 
