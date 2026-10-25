@@ -7,7 +7,8 @@
  * order, and each one closes the log file it opens so the next can open one.
  *
  * The run ends by leaving two log files behind: one closed, one still open.
- * Reset the board and the next run checks what survived, before formatting.
+ * Reset the board and the next run checks what survived, before formatting,
+ * and prints both files over UART so the stored rows can be read by eye.
  * The file left open is only reported, not failed: logRecord() does not sync,
  * so rows written since the last sync are expected to be lost until a sync
  * policy is chosen.
@@ -336,8 +337,37 @@ static bool test_lsRecord() {
 /*                              PERSISTENCE                                  */
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
+static void printRow(LOG_FILE *f, uint8_t *row) {
+  // printMsg() formats into a 128 byte buffer, shorter than the widest row, so
+  // each row goes out in two halves. Rows end in '\n' and the console wants
+  // "\n\r".
+  int half = f->row_size / 2;
+  printMsg("%.*s", half, (char *)row);
+  printMsg("%.*s\r", (int)f->row_size - half, (char *)row + half);
+}
+
 /**
- * Checks the files the previous run left behind. Needs a mounted filesystem.
+ * Prints the header and every row readRecord() has not returned yet, so the
+ * text read back from the FLASH can be checked by eye over UART.
+ */
+static uint32_t printFile(LOG_FILE *f, const char *name) {
+  printMsg("\n\r--- %s ---\n\r", name);
+  uint8_t *row = readHeader(f);
+  if (row) {
+    printRow(f, row);
+  }
+  uint32_t rows = 0;
+  while ((row = readRecord(f))) {
+    printRow(f, row);
+    rows++;
+  }
+  printMsg("--- end of %s ---\n\r\n\r", name);
+  return rows;
+}
+
+/**
+ * Checks the files the previous run left behind, and prints them. Needs a
+ * mounted filesystem.
  */
 static void checkPersistence() {
   LOG_FILE *f = openFile(CLOSED_NAME);
@@ -347,6 +377,9 @@ static void checkPersistence() {
   }
   bool ok = checkRows(f, LOG_ROWS) && isExitRow(readRecord(f), "Completed") &&
             !readRecord(f);
+  // Rewind and print it, before closeFile() appends its own exit row.
+  f->row = 0;
+  printFile(f, CLOSED_NAME);
   closeFile(f, "checked");
   printMsg("persistence (closed file): %s\n\r", ok ? "OK" : "FAIL");
 
@@ -355,10 +388,7 @@ static void checkPersistence() {
     printMsg("persistence (left open): file missing\n\r");
     return;
   }
-  uint32_t rows = 0;
-  while (readRecord(f)) {
-    rows++;
-  }
+  uint32_t rows = printFile(f, OPEN_NAME);
   closeFile(f, "checked");
   printMsg("persistence (left open): %lu of %u rows survived\n\r",
            (unsigned long)rows, LOG_ROWS);
