@@ -22,7 +22,7 @@
 #define configUSE_TICKLESS_IDLE                                     1
 
 // ... DON'T MODIFY
-#define configCPU_CLOCK_HZ                                          10000000 // Use AHB /8, not AHB. AHB = 80MHz
+#define configCPU_CLOCK_HZ                                          80000000 // HCLK configured by init_coreClocks
 
 // ... DON'T MODIFY
 #define configSYSTICK_CLOCK_HZ                                      ( configCPU_CLOCK_HZ / 8 )
@@ -208,8 +208,9 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define xPortPendSVHandler                      PendSV_Handler
 /* IMPORTANT: This define is commented when used with STM32Cube firmware, when the timebase source is SysTick,
               to prevent overwriting SysTick_Handler defined within STM32Cube HAL */
-// #define xPortSysTickHandler                     SysTick_Handler
+#define xPortSysTickHandler                     SysTick_Handler
 
-#define portSUPPRESS_TICKS_AND_SLEEP(x) vPortSuppressTicksAndSleep(x)
+// #define portSUPPRESS_TICKS_AND_SLEEP(x) vPortSuppressTicksAndSleep(x)
+/* Use the Cortex-M4 port's default tickless idle implementation. */
 
 #endif /* FREERTOS_CONFIG_H */

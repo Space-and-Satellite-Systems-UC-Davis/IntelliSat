@@ -69,3 +69,7 @@ build
 
 # MacOS 
 .DS_Store
+
+# Test files
+/Src/*/tests/bin
+tests

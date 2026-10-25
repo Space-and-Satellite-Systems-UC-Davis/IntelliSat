@@ -3,6 +3,8 @@
 #include "scheduler/utils/testqueue.h"
 #include "queue.h"
 #include "stm32l476xx.h"
+#include "startup/startup.h"
+#include "unit_tests/unit_tests.h"
 
 #define RUN_TEST	    0	// 0 = run IntelliSat, 1 = run a very specific test
 #define TEST_ID 	    0	// ID of the test to run in case RUN_TEST = 1
@@ -10,12 +12,6 @@
 #define RUN_UNIT_TESTS  0   // 1 to run unit tests  
 
 #include <TestDefinition.h>
-
-#if RTOS_TEST
-    #include "scheduler/ledtask.h"
-    #include "scheduler/testqueue.h"
-    #include "queue.h"
-#endif
 
 static ledTask_struct led2task_t = {1000,2};
 
@@ -45,8 +41,13 @@ int branch_main() {
 }
 
 int main() {
+    // PDB uses GPIOA/GPIOC; enable and read back clocks before GPIO access.
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOCEN;
+    (void)RCC->AHB2ENR;
+    pdb_init();
+    pdb_pyro_off(); // Command OFF before fallible clock/RTC/peripheral initialization.
     init_init();
-    init_platform();
+    bool fram_ready = init_platform(!RUN_TEST);
     #if (RUN_TEST==1) && (TEST_ID != 0)
 
         void (*testFunc)();
@@ -55,12 +56,13 @@ int main() {
     #elif (RUN_TEST == 0) && (RUN_UNIT_TESTS == 1)
 	    run_tests();
     #else
-        // #if RTOS_TEST
-        //     test_main();
-        // #else
-        //     branch_main();
-        // #endif
-        while(1);
+        if (!fram_ready) {
+            printMsg("Startup inhibited: FRAM boot counter I/O failed or counter exhausted.\r\n");
+            while (1) { __WFI(); }
+        }
+
+        Startup();
+        return branch_main(); /* Original startup returns after MAIN_OPS. */
     #endif
     return 0;
 }
