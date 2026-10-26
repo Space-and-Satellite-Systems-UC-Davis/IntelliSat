@@ -88,7 +88,7 @@ void init_platform() {
     set_IMU(IMU1);
     imu_init(IMU_ODR_3333_Hz, IMU_FS_8_g, IMU_ODR_3333_Hz, IMU_FS_500_dps);
 	mag_init(MAG_ODR_200_Hz, MAG_FS_8_G, MAG_OVERSAMPLE_512);
-//    sun_sensor_init();
+    sun_sensor_init();
     //TODO: hdd_init().
     //TODO: initialize intercom.
     //TODO: fetch flash header.
@@ -107,7 +107,7 @@ void init_platform() {
 //	delay_ms(15000);
 	FRAM_increment_boot_counter();
 
-//	watchdog_init(300);
+	watchdog_init(300);
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
