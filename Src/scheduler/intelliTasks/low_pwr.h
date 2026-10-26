@@ -2,9 +2,8 @@
 #include "task.h"
 
 /**
- * @brief Implements the port for vPortSuppressTicksAndSleep
+ * @brief The Cortex-M4 FreeRTOS port supplies its default tickless implementation.
  * 
  * @param xExpectedIdleTime The amount of ticks to be idle for
  */
-void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime);
 

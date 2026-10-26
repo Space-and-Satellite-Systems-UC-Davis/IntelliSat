@@ -11,6 +11,8 @@ extern void testFunction_LogTimer_Callback();
 extern void testerFunction_PWMGeneration();
 extern void testFunction_FRAM();
 extern void testFunction_FLASH();
+extern void testFunction_FS();
+extern void testFunction_LOGGER();
 extern void testFunction_IMU_Dupe_Reads();
 extern void testFunction_Diode_Reads();
 extern void testFunction_INA_TMP_Outputs();
@@ -29,6 +31,7 @@ extern void testFunction_RadioSleep();
 extern void testFunction_RTC_storage();
 extern void testFunction_LogDownlink();
 extern void testFunction_RTC2FRAM();
+extern void testFunction_QSPI();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -50,10 +53,14 @@ void (*getTestFunction(int test_id))(void) {
 			return testerFunction_PWMGeneration;
 		case 5:
 			return testFunction_FLASH;
+		case 6:
+			return testFunction_FS;
 		case 7:
 			return testFunction_FRAM;
 		case 8:
 			return testFunction_IMU_Dupe_Reads;
+		case 9:
+			return testFunction_LOGGER;
 		case 11:
 			return testFunction_INA_TMP_Outputs;
 		case 12:
@@ -88,6 +95,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_LogDownlink;
 		case 32:
 			return testFunction_RTC2FRAM;
+		case 33:
+			return testFunction_QSPI;
 		default:
 			return testFunction_Nothing;
 	}

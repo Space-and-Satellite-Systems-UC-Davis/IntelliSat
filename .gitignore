@@ -61,6 +61,8 @@ release
 
 # Launch file
 *.launch
+
+**/.DS_Store
 .vscode/*
 
 # CMake build files
@@ -69,3 +71,12 @@ build
 
 # MacOS 
 .DS_Store
+
+# ADCS host-specific build overrides
+Src/ADCS/local.mk
+
+# Test files
+/Src/*/tests/bin
+tests
+!/Src/startup/tests/
+!/tools/startup_fram/tests/

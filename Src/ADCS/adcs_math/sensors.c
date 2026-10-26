@@ -1,9 +1,23 @@
 #include "sensors.h"
 
 #define MAX_RETRIES 3
+#define TIMESTAMP_LEN 20
+#define MAX_FILENAME 50
+
+// Note: sensor calibration is performed in the body frame.
+// Ultimately, as long as prevVal and currVal are in the same frame,
+//  the calibration routine will work. Our approach is to convert
+//  all values to the body frame before applying any calibration.
 
 const vec3 undefined_vec3 = { NAN, NAN, NAN };
 
+const mat3 mag_to_body_transform = {
+    1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0
+};
+
+const mat3 imu_to_body_transform = {
+    1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0
+};
 vi_sensor makeSensor(vi_component component, vi_choice choice, vi_axis axis)
 {
     vi_sensor sensor;
@@ -31,12 +45,18 @@ getMag_status getMag(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 {
     int errorCount = 0;
 
+    // Temporarily store mag-frame values in currVal
     while (vi_get_mag(sensor, &(currVal->x), &(currVal->y), &(currVal->z))) {
         errorCount++;
         if (errorCount >= MAX_RETRIES)
             return GET_MAG_FAILURE;
     };
 
+    // Transform the mag-frame values into the satellite's body frame
+    mat_vec_mult(mag_to_body_transform, *currVal, currVal);
+
+    // Output calibrated body-frame values to currVal (return-by-reference)
+    errorCount = 0;
     while (calibrateVec3(sensor, prevVal, currVal) != CALIBRATION_SUCESS) {
         errorCount++;
         if (errorCount >= MAX_RETRIES)
@@ -48,15 +68,19 @@ getMag_status getMag(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 
 getIMU_status getIMU(vi_sensor sensor, vec3 prevVal, vec3 *currVal)
 {
-    int errorCount; // Local varible to store error occurances
+    int errorCount = 0; // Local varible to store error occurances
 
-    errorCount = 0;
+    // Temporarily store imu-frame values in currVal
     while (vi_get_angvel(sensor, &(currVal->x), &(currVal->y), &(currVal->z))) {
         errorCount++;
         if (errorCount >= MAX_RETRIES)
             return GET_IMU_FAILURE;
     };
 
+    // Transform the imu-frame values into the satellite's body frame
+    mat_vec_mult(imu_to_body_transform, *currVal, currVal);
+
+    // Output calibrated body-frame values to currVal (return-by-reference)
     errorCount = 0;
     while (calibrateVec3(sensor, prevVal, currVal)) {
         errorCount++;
@@ -76,6 +100,7 @@ getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal)
             return GET_CSS_FAILURE;
     }
 
+    errorCount = 0;
     while (calibrateDbl(sensor, prevVal, currVal)) {
         errorCount++;
         if (errorCount >= 3)
@@ -83,6 +108,43 @@ getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal)
     }
 
     return GET_CSS_SUCCESS;
+}
+
+TIMESTAMP getTimeStamp()
+{
+    TIMESTAMP time = { 0 };
+
+    // On a failed RTC read the zeroed struct is returned, so callers format a
+    // recognisably-bogus timestamp instead of whatever was on the stack.
+    vi_get_epoch(&time.year, &time.month, &time.day, &time.hour, &time.minute,
+                 &time.second);
+
+    return time;
+}
+
+// Both of these return a pointer into a static buffer rather than onto the
+// stack, so the caller can use the result after the function returns. The
+// trade-off is that each call overwrites the previous result, and that they
+// are not reentrant -- fine here, since only the single ADCS task calls them.
+
+char *getTimeString()
+{
+    static char timeString[TIMESTAMP_LEN];
+    TIMESTAMP time = getTimeStamp();
+
+    // YYYY-MM-DD_HH-MM-SS, matching the format virtual_loggers.h documents.
+    snprintf(timeString, sizeof(timeString), "%04d-%02d-%02d_%02d-%02d-%02d",
+             time.year, time.month, time.day, time.hour, time.minute,
+             time.second);
+
+    return timeString;
+}
+
+char *prependTimeStamp(char *fileType)
+{
+    static char fileName[MAX_FILENAME];
+    snprintf(fileName, sizeof(fileName), "%s_%s", getTimeString(), fileType);
+    return fileName;
 }
 
 int is_in_eclipse()

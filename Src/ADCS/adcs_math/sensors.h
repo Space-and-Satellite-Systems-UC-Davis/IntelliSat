@@ -9,24 +9,22 @@
 #define SENSORS_H
 
 #include "adcs_math/calibration.h"
+#include "adcs_math/matrix.h"
 #include "adcs_math/vector.h"
 #include "determination/novasc3.1/novas.h"
+#include "timestamp.h"
 #include "virtual_intellisat.h"
 
 #include <limits.h>
 #include <stdint.h>
 
-
 extern const vec3 undefined_vec3;
-
-
 
 vi_sensor makeSensor(vi_component component, vi_choice choice, vi_axis axis);
 
 vi_choice selectSensor(vi_sensor sensor, int generation);
 
-
-typedef enum getMag{
+typedef enum getMag {
     GET_MAG_SUCCESS,
     GET_MAG_FAILURE,
     MAG_CALIBRATION_FAILURE
@@ -65,11 +63,26 @@ typedef enum getCSS {
 /**
  * @brief Retrive sensor data from Virtual Intellisat and perform calibration
  *
- * @param sensor the sensor to read from 
+ * @param sensor the sensor to read from
  * @param prevValue previous sensor value
  * @param currValue the current sensor value to be read
  */
 getCSS_status getCSS(vi_sensor sensor, double prevVal, double *currVal);
+
+/**
+ *
+ */
+TIMESTAMP getTimeStamp();
+
+/**
+ *
+ */
+char *getTimeString();
+
+/**
+ *
+ */
+char *prependTimeStamp(char *fileType);
 
 /**
  * returns 1 if in eclipse, 0 if not

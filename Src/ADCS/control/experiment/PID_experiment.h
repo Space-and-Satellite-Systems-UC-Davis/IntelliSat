@@ -5,11 +5,12 @@
 #include "control/PID/PID.h"
 #include "virtual_intellisat.h"
 
-typedef enum PID_experiment{
+typedef enum PID_experiment {
     PID_EXPERIMENT_SUCCESS,
     PID_EXPERIMENT_ANGVEL_FAILURE,
     PID_EXPERIMENT_MILLIS_FAILURE,
-    PID_EXPERIMENT_COMMAND_FAILURE
+    PID_EXPERIMENT_COMMAND_FAILURE,
+    PID_EXPERIMENT_HAS_RESTARTED
 } PID_status;
 
 /**@brief Performs an experiement for the PID function.
@@ -18,5 +19,4 @@ typedef enum PID_experiment{
  */
 PID_status PID_experiment(double target, int infinite);
 
-
-#endif//PID_EXPERIMENT_H
+#endif // PID_EXPERIMENT_H

@@ -1,4 +1,4 @@
-#include "IMU_tests.h"
+#include "IMU_Tests.h"
 #include "../Assertions/Ass.h"
 #include <math.h>
 #include <float.h>
