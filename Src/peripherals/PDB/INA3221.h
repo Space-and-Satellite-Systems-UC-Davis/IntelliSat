@@ -8,27 +8,33 @@
 #define INA3221_H_
 
 #include <I2C/i2c.h>
+#include "globals.h"
 
 //Battery INA address
 #define INA3221_ADDR_0 0x40
+#define INA3221_ADDR_BATTERY 0x40
 // The other one
 #define INA3221_ADDR_1 0x41
 
+#define INA_CVRF_MSK 0x1 << 0
 // Do not uncomment or create unused registers defs
 typedef enum INA3221_REG_ENUM {
-    CONFIG_REG = 0x0,
-    CH1_SHUNT_REG = 0x01,
+    CONFIG_REG = 0x00,
+    // CH1_SHUNT_REG = 0x01,
     CH1_BUS_REG = 0x02,
-    CH2_SHUNT_REG = 0x03,
+    // CH2_SHUNT_REG = 0x03,
     CH2_BUS_REG = 0x04,
-    CH3_SHUNT_REG = 0x05,
+    // CH3_SHUNT_REG = 0x05,
     CH3_BUS_REG = 0x06,
+    BATTERY_BUS_REG = 0x06, //Dupe for readability
+    MASK_ENABLE_REG = 0x0F,
     FAB_ID_REG = 0xFE,
     DIE_ID_REG = 0xFF
 } INA3221_REG;
 
+#define INA_CFG_MODE_MSK 0x7 << 0
 typedef enum INA3221_MODE_ENUM {
-    SHUNT_SINGLE_SHOT = 0x1,
+    BUS_SINGLE_SHOT = 0x3,
     SHUNT_CONTINUOUS = 0x5,
     SHUNT_BUS_CONTINUOUS = 0x7
 
@@ -74,10 +80,11 @@ typedef enum INA3221_CONVERT_ENUM {
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
+ * @param mode The mode of the sensor (continuous, single-shot)
  *
  * @returns None
  */
-void ina3221_init(int averages, int bus_time, int shunt_time);
+void ina3221_init(int averages, int bus_time, int shunt_time, uint8_t mode);
 
 /**
  * Initial configuration of the sun sensor's config register and calibration register
@@ -85,53 +92,30 @@ void ina3221_init(int averages, int bus_time, int shunt_time);
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
+ * @param mode The mode of the sensor (continuous, single-shot)
  *
  * @returns None
  */
-void ina3221_config(int averages, int bus_time, int shunt_time);
+void ina3221_config(int averages, int bus_time, int shunt_time, uint8_t mode);
 
 /**
  * Reads the shunt voltage from the sun sensor
  * @param address: Address for 1 of 2 monitors
  * @param channel: Channel index for 1 of 3 channels
- * @param gpio: i2c port for scl and sda
+ * @param scl_port: i2c port for scl
  * @param scl_pin: i2c scl pin
+ * @param sda_port: i2c port sda
  * @param sda_pin: i2c sda_pin
  *
  * @returns Voltage in mV
  */
-float ina3221_getShuntVoltage(uint8_t address, INA3221_REG channel,
-		GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
-
-/**
- * Reads the power from the sun sensor
- * @param address: Address for 1 of 2 monitors
- * @param channel: Channel index for 1 of 3 channels
- * @param gpio: i2c port for scl and sda
- * @param scl_pin: i2c scl pin
- * @param sda_pin: i2c sda_pin
- *
- * @returns Wattage as a 16 bit integer
- */
-float ina3221_getPower(uint8_t address, INA3221_REG channel,
-		GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
-
-/**
- * Reads the current from the sun sensor
- * @param address: Address for 1 of 2 monitors
- * @param channel: Channel index for 1 of 3 channels
- * @param gpio: i2c port for scl and sda
- * @param scl_pin: i2c scl pin
- * @param sda_pin: i2c sda_pin
- *
- * @returns Amps as a 16 bit integer
- */
-float ina3221_getCurrent(uint8_t address, INA3221_REG channel,
-		GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
+float ina3221_getBusVoltage(uint8_t address, INA3221_REG channel,
+		GPIO_TypeDef* scl_port, int scl_pin, 
+        GPIO_TypeDef* sda_port, int sda_pin);
 
 /**
  * Resets the mode of the sensors
- * @param mode The mode of the sensor (ontinuous, powered down)
+ * @param mode The mode of the sensor (continuous, powered down)
  *
  * @returns None
  */
@@ -139,6 +123,8 @@ void ina3221_setMode(uint8_t mode);
 
 /**
  * Reads die ID of monitor
+ * NOTE: Expect to receive 0x3220
+ * 
  * @param address: Address for 1 of 2 monitors
  * @param scl_port: i2c port for scl
  * @param scl_pin: i2c scl pin
