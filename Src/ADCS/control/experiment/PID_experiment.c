@@ -12,8 +12,8 @@
 PID_status PID_experiment(double target, int infinite)
 {
 
-    vi_sensor imu = makeSensor(IMU, ONE, PX);
-    vi_sensor hdd = makeSensor(HDD, ONE, PX);
+    vi_sensor imu = makeSensor(IMU, One, PX);
+    vi_sensor hdd = makeSensor(HDD, One, PX);
 
     vec3 angVel_curr = undefined_vec3;
     vec3 angVel_prev = undefined_vec3;
@@ -58,11 +58,11 @@ PID_status PID_experiment(double target, int infinite)
 
         // Clamp the output
         if (throttle >= 0) {
-            hdd.choice = ONE;
+            hdd.choice = One;
             if (throttle > 2.5)
                 throttle = 2.5;
         } else {
-            hdd.choice = TWO;
+            hdd.choice = Two;
             if (throttle < -2.5)
                 throttle = -2.5;
         }

@@ -33,10 +33,10 @@ detumble_status detumble(vec3 needle, bool isTesting, uint64_t maxTime,
     int generation = vi_get_detumbling_generation();
 
     // Declare the sensors
-    vi_sensor magnetometer = makeSensor(MAG, ONE, PX);
+    vi_sensor magnetometer = makeSensor(MAG, One, PX);
     magnetometer.choice = selectSensor(magnetometer, generation);
 
-    vi_sensor imu = makeSensor(IMU, ONE, PX);
+    vi_sensor imu = makeSensor(IMU, One, PX);
     imu.choice = selectSensor(imu, generation);
 
 

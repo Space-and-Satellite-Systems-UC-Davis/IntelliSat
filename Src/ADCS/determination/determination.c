@@ -87,7 +87,7 @@ determination_status determination(mat3 *attitude)
 
     // Ger magotometer choice
     magnotometer.choice =
-        sensor_pair_choice(magnotometer, generation) == 1 ? ONE : TWO;
+        sensor_pair_choice(magnotometer, generation) == 1 ? One : Two;
 
     // Get current Time
     if (vi_get_epoch(&year, &month, &day, &hour, &minute, &second) ==

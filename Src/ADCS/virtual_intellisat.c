@@ -49,15 +49,15 @@ vi_get_epoch(
     int *year,
     int *month,
 	int *date,
-    int *weekday,
     int *hour, //rtc get time
     int *minute,
     int *second
 ){
 	//TODO: Implement
 	// May need to change int parameter types to uint_8
+	int weekday;
 	rtc_getTime(hour, minute, second);
-	rtc_getCalendar(year, month, date, weekday);
+	rtc_getCalendar(year, month, date, &weekday);
 	return GET_EPOCH_SUCCESS;
 }
 

@@ -16,13 +16,13 @@ vi_sensor makeSensor(vi_component component, vi_choice choice, vi_axis axis)
 vi_choice selectSensor(vi_sensor sensor, int generation)
 {
     // Sensor Alteration
-    sensor.choice = sensor_pair_choice(sensor, generation) == 1 ? ONE : TWO;
+    sensor.choice = sensor_pair_choice(sensor, generation) == 1 ? One : Two;
 
     // Logic to swap the sensor is the sensor is OFF
     sensor_status status;
     vi_get_sensor_status(sensor, &status);
     if (status == SENSOR_OFF)
-        sensor.choice = (sensor.choice == ONE) ? TWO : ONE;
+        sensor.choice = (sensor.choice == One) ? Two : One;
 
     return sensor.choice;
 }
@@ -94,8 +94,8 @@ int is_in_eclipse()
     double readingsTwo[6];
     double prevValOne = NAN, prevValTwo = NAN;
 
-    vi_sensor sensorOne = { CSS, ONE, PX };
-    vi_sensor sensorTwo = { CSS, TWO, PX };
+    vi_sensor sensorOne = { CSS, One, PX };
+    vi_sensor sensorTwo = { CSS, Two, PX };
 
     for (int face = PX; face <= NZ; face++) {
 
@@ -193,8 +193,8 @@ vi_choice sensor_pair_choice(vi_sensor sensor, int generation)
     }
 
     if ((alternations[generation % 256] | (1 << mask)) != 0) {
-        return TWO;
+        return Two;
     } else {
-        return ONE;
+        return One;
     }
 }
