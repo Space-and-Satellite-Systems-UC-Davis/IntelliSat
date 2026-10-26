@@ -12,6 +12,7 @@
 #include "control/detumble/bdot_control.h"
 #include "control/detumble/detumble_util.h"
 #include "virtual_intellisat.h"
+#include "print_scan.h"
 
 #include <math.h>
 
@@ -57,9 +58,11 @@ detumble_status detumble(vec3 needle, bool isTesting, uint64_t maxTime,
         mag_prev = mag_curr;
         if (getMag(magnetometer, mag_prev, &mag_curr))
             return DETUMBLING_FAILURE_MAGNETOMETER;
+        printMsg("%.4lf %.4lf %.4lf\n\r", mag_curr.x, mag_curr.y, mag_curr.z);
 
         // Compute the magetic dipole moment: M = -k(bDot - n)
         mdm = computeMDM(magnetometer, mag_curr, mag_prev, delta_t, needle);
+        printMsg("%.4lf %.4lf %.4lf\n\r", mdm.x, mdm.y, mdm.z);
 
         // Send control command to coils
         if (vi_control_coil(mdm.x, mdm.y, mdm.z))

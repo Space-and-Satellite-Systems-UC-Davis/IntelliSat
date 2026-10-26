@@ -43,6 +43,7 @@ int branch_main() {
 int main() {
     init_init();
     bool fram_ready = init_platform(!RUN_TEST);
+    ADCS_MAIN(ADCS_COILS_TESTING);
     #if (RUN_TEST==1) && (TEST_ID != 0)
 
         void (*testFunc)();

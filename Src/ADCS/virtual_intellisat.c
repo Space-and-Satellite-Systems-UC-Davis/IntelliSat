@@ -1,4 +1,5 @@
 #include "virtual_intellisat.h"
+#include "loggers_interface.h"
 #include <print_scan.h>
 #include <globals.h>
 #include "../peripherals/IMU/ASM330LHH.h"
@@ -7,6 +8,7 @@
 #include "../peripherals/SunSensors/sun_sensors.h"
 #include "../system_config/RTC/rtc.h"
 #include <Timers/timers.h>
+#include <math.h>
 
 /*################## ACTUATOR COMMANDS ##################*/
 
@@ -259,8 +261,11 @@ vi_get_sensor_calibration(
 	float *filter_constant
 ){
 	//TODO: Implement
+	*offset = 0.0;
+	*scalar = 1.0;
+	*filter_constant = 0.0;
 
-	return GET_CONSTANT_FAILURE;
+	return GET_CONSTANT_SUCCESS;
 }
 
 vi_get_constant_status
@@ -280,26 +285,27 @@ vi_get_TLE(
 	char *tle_line1,
 	char *tle_line2
 ){
-	tle_line1 = pull_tle();
-	tle_line2 = pull_tle() + 70;
-
-	if (tle_line1[0] == '\0'){
-		return GET_TLE_FAILURE;
-	}
+//	tle_line1 = pull_tle();
+//	tle_line2 = pull_tle() + 70;
+//
+//	if (tle_line1[0] == '\0'){
+//		return GET_TLE_FAILURE;
+//	}
 
 	return GET_TLE_SUCCESS_NEW;
 }
 
 int vi_get_experiment_generation(){
 
-	return pull_experiment_generation();
+//	return pull_experiment_generation();
+	return 0;
 }
 
 void vi_increment_experiment_generation(){
 
-	uint32_t new_gen = pull_experiment_generation() + 1;
-
-	push_experiment_generation(new_gen);
+//	uint32_t new_gen = pull_experiment_generation() + 1;
+//
+//	push_experiment_generation(new_gen);
 
 	return;
 
@@ -307,14 +313,15 @@ void vi_increment_experiment_generation(){
 
 int vi_get_detumbling_generation(){
 
-	return pull_detumbling_generation();
+//	return pull_detumbling_generation();
+	return 0;
 }
 
 void vi_increment_detumbling_generation(){
 	
-	uint32_t new_gen = pull_detumbling_generation() + 1;
-
-	push_detumbling_generation(new_gen);
+//	uint32_t new_gen = pull_detumbling_generation() + 1;
+//
+//	push_detumbling_generation(new_gen);
 
 	return;
 
@@ -322,14 +329,15 @@ void vi_increment_detumbling_generation(){
 
 int vi_get_determination_generation(){
 
-	return pull_determination_generation();;
+//	return pull_determination_generation();;
+	return 0;
 }
 
 void vi_increment_determination_generation(){
 
-	uint32_t new_gen = pull_determination_generation() + 1;
-
-	push_determination_generation(new_gen);
+//	uint32_t new_gen = pull_determination_generation() + 1;
+//
+//	push_determination_generation(new_gen);
 
 	return;
 

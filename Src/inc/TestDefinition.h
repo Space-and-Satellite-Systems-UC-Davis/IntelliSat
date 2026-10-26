@@ -89,8 +89,6 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RTC2FRAM;
 		case 24:
 			return testFunction_virtual_intellisat;
-        case 25:
-            return testFunction_detumbling;
 		default:
 			return testFunction_Nothing;
 	}
