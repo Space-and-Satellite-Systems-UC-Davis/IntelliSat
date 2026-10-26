@@ -1,4 +1,4 @@
-#include "detumble_util.h"
+#include "control/detumble/detumble_util.h"
 
 #define DELAYTIME 1000 // TODO: define the delay through experimentation
 

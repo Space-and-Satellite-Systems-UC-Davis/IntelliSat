@@ -1,6 +1,7 @@
-#include "PID_experiment.h"
+#include "control/experiment/PID_experiment.h"
 #include "adcs_math/sensors.h"
 #include "virtual_intellisat.h"
+#include "virtual_rtos.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -46,11 +47,22 @@ PID_status PID_experiment(double target, int infinite)
     // Run a while loop
     while (infinite || (fabs(target - angVel_curr.z) > 0.1)) {
 
-        if (getIMU(imu, angVel_prev, &angVel_curr))
+        vi_enter_critical();
+        if (vi_task_has_restarted()) {
+            // Return to Schedulers to restart Detumbling
+            vi_exit_critical();
+            return PID_EXPERIMENT_HAS_RESTARTED;
+        }
+
+        if (getIMU(imu, angVel_prev, &angVel_curr)) {
+            vi_exit_critical();
             return PID_EXPERIMENT_ANGVEL_FAILURE;
+        }
         // Get the current time (Virtual Intellisat)
-        if (vi_get_curr_millis(&curr_millis))
+        if (vi_get_curr_millis(&curr_millis)) {
+            vi_exit_critical();
             return PID_EXPERIMENT_MILLIS_FAILURE;
+        }
 
         // PLug it into the control function
         throttle +=
@@ -68,10 +80,14 @@ PID_status PID_experiment(double target, int infinite)
         }
 
         // Take output and plug it into HDD
-        if (vi_hdd_command(hdd, throttle) == HDD_COMMAND_FAILURE)
+        if (vi_hdd_command(hdd, throttle) == HDD_COMMAND_FAILURE) {
+            vi_exit_critical();
             return PID_EXPERIMENT_COMMAND_FAILURE;
+        }
 
         angVel_prev = angVel_curr;
+
+        vi_exit_critical();
     }
 
     // Increment generation on successful execution

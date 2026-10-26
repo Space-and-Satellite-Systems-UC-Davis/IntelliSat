@@ -25,6 +25,12 @@
 #define PAGE_MASK                 0x11111100
 #define QSPI_READ_DATA            0x03
 #define QSPI_SECTOR_ERASE         0x20
+#define FLASH_SR1_BUSY            (1 << 0)
+#define FLASH_SR1_WEL             (1 << 1)
+
+// Longest flash_wait() polls before giving up. Above the datasheet's 400 ms
+// worst-case sector erase.
+#define FLASH_WAIT_TIMEOUT_MS     500
 
 //Memory organization macros
 #define FLASH_BLOCK_SIZE          65536
@@ -134,7 +140,7 @@ bool flash_writeCustom(uint32_t page, uint8_t* buffer, uint16_t size);
  * Writes '1' to write_enable bit on register one. i.e. enables write functionality.
  * Is already built into functions that need it. Generally, do not use manually.
  *
- * @returns whether write was successfully enabled.
+ * @returns whether write was successfully enabled, checked by reading the bit back.
  */
 bool flash_writeEnable();
 
@@ -150,7 +156,7 @@ bool flash_writeDisable();
  * Writes '1' to quad_enable bit on register two. i.e. enables QSPI functionality.
  * Is mostly unnecessary for currently written functions (2024-09-04).
  *
- * @returns whether QSPI was successfully enabled.
+ * @returns whether QSPI was successfully enabled (true if it already was).
  */
 bool flash_quadEnable();
 
@@ -159,14 +165,17 @@ bool flash_quadEnable();
  * Reads the contents of register two. Auxiliary function to flash_quadEnable().
  *
  * @param ptr_register_two    Reads the contents of register two into argued pointer.
+ *
+ * @returns whether the register was read.
  */
-void flash_readRegisterTwo(uint8_t* ptr_register_two);
+bool flash_readRegisterTwo(uint8_t* ptr_register_two);
 
 
 /**
  * Waits for get_flash_status() to return 0. i.e, waits until flash is available.
+ * Gives up after FLASH_WAIT_TIMEOUT_MS.
  *
- * @returns true when flash available.
+ * @returns true when flash available, false on timeout.
  */
 bool flash_wait();
 
@@ -174,7 +183,7 @@ bool flash_wait();
 /**
  * Reads register one's busy flag. i.e. finds whether flash is currently busy.
  *
- * @returns masked register one (00000010 if busy, 00000000 if not).
+ * @returns masked register one (00000001 if busy or unreadable, 00000000 if not).
  */
 uint8_t flash_getStatus();
 

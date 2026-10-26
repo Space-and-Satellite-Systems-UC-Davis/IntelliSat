@@ -15,6 +15,7 @@
 #define REALOP1_PLATFORM_INIT_H
 
 #include <globals.h>
+#include "data_management/lfs_config.h"
 #include <DBG/dbg_config.h>
 
 #include <core_config.h>
@@ -107,6 +108,12 @@ bool init_platform(bool run_scheduler) {
     // systick_init();
 	printer_init();
 	buttons_init();
+	qspi_config(23, 2, 0);
+	// Boot carries on without a filesystem; fs_isMounted() tells the logger.
+	int fs_err = fs_mount();
+	if (fs_err) {
+		printMsg("fs_mount failed (%d), logging disabled\n\r", fs_err);
+	}
     dma_initializePeripheralConstants();
     spi_config(SPI1);
     watchdog_init(300);

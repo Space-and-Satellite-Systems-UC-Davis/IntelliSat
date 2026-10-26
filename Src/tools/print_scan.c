@@ -34,3 +34,13 @@ int printMsg(const char *message, ...) {
 
 	usart_transmitStr(ConsoleUART, buff);
 }
+
+// newlib routes printf() through _write() in syscalls.c, which emits one
+// character at a time through this hook. syscalls.c only declares it, weakly,
+// so without a definition the linker resolves it to address 0 and the first
+// printf() faults. littlefs logs its errors with printf, so it needs this.
+int __io_putchar(int ch) {
+	uint8_t byte = (uint8_t)ch;
+	usart_transmitBytes(ConsoleUART, &byte, 1);
+	return ch;
+}

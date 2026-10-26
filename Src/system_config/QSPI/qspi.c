@@ -39,7 +39,7 @@ extern int core_Hz;	// from core_config.h
 
 void qspi_gpioInit() {
 
-#if OP_REV == 2
+#if OP_REV == 2 || OP_REV == 3
 	// GPIO
 	/* OP R2 GPIO pinout
 	 * 		QSPI SCK		E10		(Alternate Function, AF10)
@@ -147,7 +147,7 @@ void qspi_config(
 	qspi_disable();
 	QUADSPI->CR = QSPI_REG_RESET;
 	QUADSPI->CR |=
-		  ((core_Hz-1000000) << QUADSPI_CR_PRESCALER_Pos)
+		  ((core_Hz/1000000 - 1) << QUADSPI_CR_PRESCALER_Pos)	// 1 MHz QSPI clock
 		| QUADSPI_CR_SSHIFT
 		| QUADSPI_CR_APMS;
 	QUADSPI->DCR = QSPI_REG_RESET;

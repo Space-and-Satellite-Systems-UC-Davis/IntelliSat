@@ -5,6 +5,7 @@
 #include "ADCS.h"
 #include "adcs_math/matrix.h"
 
+
 /**
  *  Tagged structs for all data DOWNLINKED from REALOP
  */
@@ -95,6 +96,7 @@ typedef struct __attribute__((packed)) {
     float hdd_output_0;
     float hdd_output_1;
 } log_record_experiment_continue;
+
 
 /**
  *  Tagged structs for all data UPLINKED to REALOP
@@ -208,3 +210,4 @@ typedef struct __attribute__((packed)) {
     unsigned int coil_y : 1;
     unsigned int coil_z : 1;
 } uplink_record_sensor_enable;
+
