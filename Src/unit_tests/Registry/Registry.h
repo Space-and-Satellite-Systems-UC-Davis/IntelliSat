@@ -1,7 +1,7 @@
 #ifndef REGISTRY_H
 #define REGISTRY_H
 
-#include "../Suites/Suite.h"
+#include "../Suites/suite.h"
 
 typedef struct UT_Registry {
     UT_Suite** suites;

@@ -20,6 +20,7 @@
 #include <globals.h>
 #include <core_config.h>
 #include "WDG/watchdog.h"
+#include "sensor_offsets.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 
@@ -98,15 +99,6 @@ enum BKPDesignations {
   BootCounter = 0,
   ADCSVars = 1,
 };
-
-typedef enum SensorOffset_enum {
-	Sun0=0, Sun1, Sun2, Sun3, Sun4, Sun5, Sun6,
-	Sun7, Sun8, Sun9, Sun10, Sun11,
-	Coil0, Coil1, Coil2,
-	Imu0, Imu1,
-	Mag0, Mag1,
-	Hdd0, Hdd1
-} SensorOffset;
 
 /****************************** RTC TIME SETTERS *****************************/
 

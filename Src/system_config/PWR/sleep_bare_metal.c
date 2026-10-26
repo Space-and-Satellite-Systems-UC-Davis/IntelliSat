@@ -8,7 +8,7 @@ void PWR_maintainLPSleep() {mode = LPSLEEP;}
 bool PWR_enterLPSleepMode(uint16_t seconds) {
     PWR_enterLPRunMode();
     bool ok = PWR_armRTC(seconds, PWR_maintainLPSleep);
-    if (!ok) {PWR_exitLPRunMode(); return false;}
+    if (!ok) {PWR_disarmRTC(); PWR_exitLPRunMode(); return false;}
 
     mode = LPSLEEP;
     while (mode == LPSLEEP) {

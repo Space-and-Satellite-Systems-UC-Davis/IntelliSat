@@ -6,26 +6,15 @@
 #define FRAM_ADCS_VARIABLE_ADDR 4U
 #define FRAM_MAX_BYTES 0x8000U
 
-/* Reviewed record contract v2.1 layout (addresses and sizes in bytes) */
+/*
+ * Startup persistence: two 20-byte SSP1 records, slot A then slot B, at fixed
+ * byte addresses 8..47. Nothing else may be written there; Startup and the
+ * provisioning writer both stop at byte 47.
+ */
 #define FRAM_STARTUP_ADDR 8U
-#define FRAM_CRITICAL_A_ADDR 8U
-#define FRAM_CRITICAL_B_ADDR 104U
-#define FRAM_CRITICAL_RECORD_SIZE 96U
-
-#define FRAM_PROGRESS_A_ADDR 200U
-#define FRAM_PROGRESS_B_ADDR 264U
-#define FRAM_PROGRESS_RECORD_SIZE 64U
-
-#define FRAM_STARTUP_SNAPSHOT_ADDR 8U
-#define FRAM_STARTUP_SNAPSHOT_SIZE 320U
-#define FRAM_STARTUP_SNAPSHOT_END_ADDR 328U
-
-/* Legacy definitions preserved for reference */
-#define FRAM_STARTUP_SIZE 48U
-#define FRAM_STARTUP_CHECKPOINT_SIZE 40U
-#define FRAM_STARTUP_CHECKPOINT_ADDR (FRAM_STARTUP_ADDR + FRAM_STARTUP_SIZE)
-#define FRAM_STARTUP_CHECKPOINT_2_ADDR (FRAM_STARTUP_CHECKPOINT_ADDR + FRAM_STARTUP_CHECKPOINT_SIZE)
-#define FRAM_STARTUP_IMAGE_SIZE (FRAM_STARTUP_SIZE + 2U * FRAM_STARTUP_CHECKPOINT_SIZE)
+#define FRAM_STARTUP_SLOT_SIZE 20U
+#define FRAM_STARTUP_SLOT_A_ADDR FRAM_STARTUP_ADDR
+#define FRAM_STARTUP_SLOT_B_ADDR (FRAM_STARTUP_ADDR + FRAM_STARTUP_SLOT_SIZE)
+#define FRAM_STARTUP_IMAGE_SIZE (2U * FRAM_STARTUP_SLOT_SIZE)
 
 #endif
-
