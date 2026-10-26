@@ -8,6 +8,9 @@
 #include "stm32l476xx.h"
 #include <globals.h>
 
+/* Starts the 1 ms monotonic clock used by startup and peripheral timeouts. */
+bool heartbeat_timer_init(void);
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
@@ -111,17 +114,12 @@ void logger_registerLogFunction(void (*func)());
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-#define StartupTimer					TIM5
-#define StartupTimer_ClockEnable()		RCC->APB1ENR1 |=  RCC_APB1ENR1_TIM5EN
-#define StartupTimer_ClockDisable()		RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM5EN
-
-/**
- * Configures the Startup Timer registers to generate
- * an interrupt in 30 minutes
- *
- * @returns Boolean to indicate if the initialization was successful
- */
-void timer_waitStartupTime();
+/* Legacy TIM5 startup-timer API; the current Startup path does not invoke it. */
+#define StartupTimer TIM5
+#define StartupTimer_ClockEnable() RCC->APB1ENR1 |= RCC_APB1ENR1_TIM5EN
+#define StartupTimer_ClockDisable() RCC->APB1ENR1 &= ~RCC_APB1ENR1_TIM5EN
+void timer_initStartupTimer(void);
+void timer_waitStartupTime(void);
 
 bool heartbeat_timer_init();
 

@@ -11,13 +11,8 @@
 #include "MB85RS256B.h"
 #include <stddef.h>
 
-/*  Helper function:
-    Timing issue with raising CS at the end. It was triggering before we had a chance to read all the data.
-    Ensures the SPI hardware has finished transmitting and receiving data before moving on.
-*/
-void FRAM_wait() {
-    while (FRAM_SPI->SR & SPI_SR_BSY);
-}
+/* spi_transmitReceive already checks final BSY with a bounded timeout.
+ * Do not add an unbounded wait after either success or failure. */
 
 void FRAM_read_deviceID(uint8_t *MISO)
 {
@@ -41,7 +36,6 @@ bool FRAM_writeEnable() {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
-    FRAM_wait();
     // End communication
     spi_stopCommunication(FRAM_SPI_CS);
 
@@ -58,7 +52,6 @@ bool FRAM_writeDisable() {
 
     // Send WRITE_DISABLE command
     bool success = spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 1, false);
-    FRAM_wait();
 
     // End communication
     spi_stopCommunication(FRAM_SPI_CS);
@@ -69,7 +62,6 @@ bool FRAM_writeDisable() {
 uint8_t FRAM_readStatusRegister() {
     uint8_t MOSI = FRAM_READ_SR;
     uint8_t status = 0;
-    uint8_t trash;
 
     // Activate SPI communication
     spi_startCommunication(FRAM_SPI_CS);
@@ -80,9 +72,7 @@ uint8_t FRAM_readStatusRegister() {
         return 0;  // Return 0 if command fails
     }
 
-    // Trash the dummy byte
-    spi_transmitReceive(FRAM_SPI, NULL, &trash, 1, false);
-
+    // RDSR returns status immediately after the opcode; no dummy byte.
     // Receive and store status register value directly in 'status'
     if (!spi_transmitReceive(FRAM_SPI, NULL, &status, 1, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
@@ -96,7 +86,8 @@ uint8_t FRAM_readStatusRegister() {
 bool FRAM_readData(uint16_t address, uint8_t *buffer, uint16_t size)
 {
     // Validate address
-    if (address >= FRAM_MAX_BYTES) {
+    if (buffer == NULL || size == 0 || address >= FRAM_MAX_BYTES
+        || size > FRAM_MAX_BYTES - address) {
         return false;
     }
     uint8_t command = FRAM_READ; 
@@ -132,7 +123,7 @@ bool FRAM_readData(uint16_t address, uint8_t *buffer, uint16_t size)
 
 bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     // Validate address
-    if (address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES || (address + size) > FRAM_MAX_BYTES) {
+    if (data == NULL || size == 0 || address >= FRAM_MAX_BYTES || size > FRAM_MAX_BYTES - address) {
         return false;
     }
 
@@ -147,7 +138,7 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
     spi_startCommunication(FRAM_SPI_CS);
 
     // Send the WRITE command and address
-    if (!spi_transmitReceive(FRAM_SPI, &MOSI, NULL, 3, false)) {
+    if (!spi_transmitReceive(FRAM_SPI, MOSI, NULL, 3, false)) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
@@ -156,7 +147,6 @@ bool FRAM_writeData(uint16_t address, uint8_t* data, uint16_t size) {
         spi_stopCommunication(FRAM_SPI_CS);
         return false;
     }
-    FRAM_wait();
     spi_stopCommunication(FRAM_SPI_CS);
 
     return true;
@@ -174,24 +164,29 @@ static uint16_t sectorToAddress(uint16_t sector)
 
 bool FRAM_readPage(uint16_t page, uint8_t *buffer)
 {
+    if (page >= FRAM_MAX_BYTES / 256U) return false;
     uint16_t address = pageToAddress(page);
     return FRAM_readData(address, buffer, 256);
 }
 
 bool FRAM_readSector(uint16_t sector, uint8_t *buffer)
 {
+    if (sector >= FRAM_MAX_BYTES / 4096U) return false;
     uint16_t address = sectorToAddress(sector);
     return FRAM_readData(address, buffer, 4096);
 }
 
 bool FRAM_writePage(uint16_t page, const uint8_t *data)
 {
+    if (page >= FRAM_MAX_BYTES / 256U) return false;
     uint16_t address = pageToAddress(page);
-    return FRAM_writeData(address, data, 256);
+    /* The legacy SPI transmit API is mutable but does not modify its buffer. */
+    return FRAM_writeData(address, (uint8_t *)data, 256);
 }
 
 bool FRAM_writeSector(uint16_t sector, const uint8_t *data)
 {
+    if (sector >= FRAM_MAX_BYTES / 4096U) return false;
     uint16_t address = sectorToAddress(sector);
-    return FRAM_writeData(address, data, 4096);
+    return FRAM_writeData(address, (uint8_t *)data, 4096);
 }

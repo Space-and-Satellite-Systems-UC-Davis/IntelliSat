@@ -71,10 +71,10 @@ build
 
 # MacOS 
 .DS_Store
-Src/CLAUDE.md
 
 # ADCS host-specific build overrides
 Src/ADCS/local.mk
 
-# Claude Code project docs (private)
-CLAUDE.md
+# Test files
+/Src/*/tests/bin
+tests

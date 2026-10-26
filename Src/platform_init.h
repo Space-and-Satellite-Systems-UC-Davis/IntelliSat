@@ -16,6 +16,7 @@
 
 #include <globals.h>
 #include "data_management/lfs_config.h"
+#include <DBG/dbg_config.h>
 
 #include <core_config.h>
 #include <Timers/timers.h>
@@ -25,6 +26,7 @@
 #include <LED/led.h>
 #include <RTC/rtc.h>
 #include <FRAM/FRAM.h>
+#include <FRAM/MB85RS256B.h>
 #include <UART/uart.h>
 #include <IMU/ASM330LHH.h>
 #include <MAG/QMC5883L.h>
@@ -32,6 +34,8 @@
 #include <print_scan.h>
 #include <SunSensors/sun_sensors.h>
 #include <WDG/watchdog.h>
+
+#include <PDB/power_distribution.h>
 
 #define SCB_CPACR_CP10_POS 20U
 #define SCB_CPACR_CP11_POS 22U
@@ -46,40 +50,45 @@ enum scb_cpacr_cpn_privileges {
 /**
  * Configures only what is necessary to boot.
  *
- * @param   None
- * @returns None
- */
-void init_init() {
-	init_coreClocks();
-	rtc_config(LSE, false);
-
-
-    //TODO: retrieve RTC vars
-    //   and set scheduler flags?
-}
-
-
-/**
- * Performs first-time-startup behaviors.
+ * Establishes the safe output state first, then the fallible clock/RTC work:
+ * PDB owns GPIOA/GPIOC, so those ports are clocked and read back here before
+ * any GPIO access, and the pyro command is driven OFF before init_coreClocks(),
+ * led_init(), heartbeat_timer_init() or rtc_config() can stall or reset.
+ *
+ * The RTC is configured for its original source without forcing a
+ * reconfiguration: Startup no longer depends on it for timing, but the other
+ * RTC consumers keep the calendar they had. It is configured after the
+ * heartbeat timer, because the driver's waits use getSysTime() and only stay
+ * bounded once TIM7 is running.
  *
  * @param   None
  * @returns None
  */
-void init_first_time() {
-    timer_waitStartupTime();
-    //TODO: open antenna via burnwire.
-    //TODO: initialize flash headers.
-    //TODO: set first_time flag to on.
+void init_init() {
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOCEN;
+    (void)RCC->AHB2ENR;                              // read back before GPIO access
+    pdb_init();
+    pdb_pyro_off();                                  // Command OFF before fallible initialization.
+
+    init_coreClocks();
+    led_init();
+    heartbeat_timer_init();
+    rtc_config(LSE, false);
 }
 
+
+/* First-start waiting is implemented by Startup() in startup/startup.h on the normal boot path. */
 
 /**
  * Configures the system's various features,
  * such as clocks, protocol hardware, and more.
- * @returns None
+ *
+ * @param run_scheduler Reserved; this branch does not yet start a scheduler.
+ * @returns true if the persistent boot counter was read, incremented, and verified
  */
-void init_platform() {
-	init_callbacks();
+bool init_platform(bool run_scheduler) {
+    (void)run_scheduler;
+    init_callbacks();
 
     SCB->CPACR |= (SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP10_POS
     | SCB_CPACR_CPN_FULL_ACCESS << SCB_CPACR_CP11_POS); // Enable the Floating-Point Unit for full access
@@ -93,13 +102,11 @@ void init_platform() {
     //TODO: hdd_init().
     //TODO: initialize intercom.
     //TODO: fetch flash header.
-    //TODO: increment boot counter.
     //Activate GPIO G. From errata. Strange bug-fix.
 	PWR->CR2 |= PWR_CR2_IOSV;
 
     // systick_init();
 	printer_init();
-	led_init();
 	buttons_init();
 	qspi_config(23, 2, 0);
 	// Boot carries on without a filesystem; fs_isMounted() tells the logger.
@@ -107,14 +114,22 @@ void init_platform() {
 	if (fs_err) {
 		printMsg("fs_mount failed (%d), logging disabled\n\r", fs_err);
 	}
-	dma_initializePeripheralConstants();
-	spi_config(SPI1);
-	heartbeat_timer_init();
-	// Without delay, boot number is incremented several times per flashing
-//	delay_ms(15000);
-	FRAM_increment_boot_counter();
+    dma_initializePeripheralConstants();
+    spi_config(SPI1);
+    watchdog_init(300);
 
-	watchdog_init(300);
+    /* The legacy counter increment has no status; use checked byte I/O here. */
+    uint32_t count = 0;
+    uint32_t readback = 0;
+    if (!FRAM_readData(FRAM_BOOT_COUNTER_ADDR, (uint8_t *)&count, sizeof(count))
+        || count == UINT32_MAX) return false;
+    ++count;
+    if (!FRAM_writeEnable()) return false;
+    bool written = FRAM_writeData(FRAM_BOOT_COUNTER_ADDR, (uint8_t *)&count, sizeof(count));
+    bool disabled = FRAM_writeDisable();
+    return written && disabled
+        && FRAM_readData(FRAM_BOOT_COUNTER_ADDR, (uint8_t *)&readback, sizeof(readback))
+        && readback == count;
 }
 
 #endif // REALOP1_PLATFORM_INIT_H
