@@ -18,14 +18,45 @@
  }
  
  void softi2c_init(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin) {
-	 scl_port->OTYPER = (scl_port->OTYPER & ~(1 << scl_pin)) | (0 << scl_pin); // push pull
-	 sda_port->OTYPER = (sda_port->OTYPER & ~(1 << sda_pin)) | (0 << sda_pin);
-	 scl_port->OSPEEDR = (scl_port->OSPEEDR & ~(0x3 << (scl_pin*2))) | (3 << scl_pin*2); // very high speed
-	 sda_port->OSPEEDR = (sda_port->OSPEEDR & ~(0x3 << (sda_pin*2))) | (3 << sda_pin*2);
+	//  gpio_mode(
+	// 		 scl_port,
+	// 		 scl_pin,
+	// 		 GPIO_MODER_Output,
+	// 		 GPIO_OTYPER_PUSH_PULL,
+	// 		 GPIO_OSPEEDR_VERY_HIGH,
+	// 		 GPIO_PUPDR_PULL_UP
+	//  );
+	//  gpio_mode(
+	// 		 sda_port,
+	// 		 sda_pin,
+	// 		 GPIO_MODER_Output,
+	// 		 GPIO_OTYPER_PUSH_PULL,
+	// 		 GPIO_OSPEEDR_VERY_HIGH,
+	// 		 GPIO_PUPDR_PULL_UP
+	//  );
+
+	gpio_mode(
+		scl_port,
+		scl_pin,
+		GPIO_MODER_Output,
+		GPIO_OTYPER_OPEN_DRAIN,
+		GPIO_OSPEEDR_VERY_HIGH,
+		GPIO_PUPDR_NO_PULL
+	);
+	gpio_mode(
+		sda_port,
+		sda_pin,
+		GPIO_MODER_Output,
+		GPIO_OTYPER_OPEN_DRAIN,
+		GPIO_OSPEEDR_VERY_HIGH,
+		GPIO_PUPDR_NO_PULL
+	);
+
 	 scl_port->BSRR = 1 << (scl_pin + 16); // drive low when asserted
 	 sda_port->BSRR = 1 << (sda_pin + 16);
 	 softi2c_lineMode(scl_port, scl_pin, 1);
 	 softi2c_lineMode(sda_port, sda_pin, 1);
+	 softi2c_delay();
  }
  
  void softi2c_delay() {
@@ -166,7 +197,27 @@
 	 softi2c_lineMode(scl_port, scl_pin, 0);
  }
  
+ int softi2c_setRegister(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr) {
+	 
+	 int nack = 0;
  
+	 //start i2c
+	 softi2c_sigStart(scl_port,scl_pin,sda_port,sda_pin);
+	 //send device address w/ read/write pin low for write
+	 softi2c_send8(scl_port,scl_pin,sda_port,sda_pin, device_addr << 1 | 0);
+	 //get an acknowledge
+	 nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
+ 
+	 //send register address
+	 softi2c_send8(scl_port,scl_pin,sda_port,sda_pin,reg_addr);
+	 //get an ack
+	 nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
+ 
+	 //stop 
+	 softi2c_sigStop(scl_port,scl_pin,sda_port,sda_pin);
+	 return nack;
+ }
+
  int softi2c_writeReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr, int data) {
 	 
 	 int nack = 0;

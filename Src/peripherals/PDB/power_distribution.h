@@ -13,10 +13,10 @@
 #define PDB_PWR_PYRO_PIN 9
 #define PDB_PWR_MGT_PORT GPIOA
 #define PDB_PWR_MGT_PIN 8
-#define PDB_PWR_HDD_PORT GPIOA
-#define PDB_PWR_HDD_PIN 9
-//#define PDB_PWR_^_PORT GPIOx
-//#define PDB_PWR_^_PIN n
+#define PDB_PWR_ESC_PORT GPIOA
+#define PDB_PWR_ESC_PIN 9
+#define PDB_PWR_RF_PORT GPIOA
+#define PDB_PWR_RF_PIN 10
 
 /**
  * Initialize power pins for output
@@ -52,3 +52,13 @@ void pdb_hdd_on();
  * Turn off HDDs
  */
 void pdb_hdd_off();
+
+/**
+ * Turn on rf
+ */
+void pdb_rf_on();
+
+/**
+ * Turn off rf
+ */
+void pdb_rf_off();
