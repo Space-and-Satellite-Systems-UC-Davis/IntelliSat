@@ -20,6 +20,8 @@ void pdb_init() {
     PDB_PWR_MGT_PORT->MODER |= (GPIO_MODER_Output & GPIO_MODER_Analog) << (PDB_PWR_MGT_PIN*GPIO_MODER_BITS_SPAN);
     PDB_PWR_HDD_PORT->MODER &= ~(GPIO_MODER_Analog << (PDB_PWR_HDD_PIN*GPIO_MODER_BITS_SPAN));
     PDB_PWR_HDD_PORT->MODER |= (GPIO_MODER_Output & GPIO_MODER_Analog) << (PDB_PWR_HDD_PIN*GPIO_MODER_BITS_SPAN);
+    PDB_PWR_RF_PORT->MODER &= ~(GPIO_MODER_Analog << (PDB_PWR_RF_PIN*GPIO_MODER_BITS_SPAN));
+    PDB_PWR_RF_PIN->MODER |= (GPIO_MODER_Output & GPIO_MODER_Analog) << (PDB_PWR_RF_PIN*GPIO_MODER_BITS_SPAN);
 }
 
 /**
@@ -62,4 +64,15 @@ void pdb_hdd_on() {
  */
 void pdb_hdd_off() {
     gpio_low(PDB_PWR_HDD_PORT, PDB_PWR_HDD_PIN);
+}
+
+void pdb_rf_on() {
+    gpio_high(PDB_PWR_RF_PORT, PDB_PWR_RF_PIN);
+}
+
+/**
+ * Turn off rf
+ */
+void pdb_rf_off(){
+    gpio_low(PDB_PWR_RF_PORT, PDB_PWR_RF_PIN);
 }

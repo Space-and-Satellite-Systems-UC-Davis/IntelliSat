@@ -52,3 +52,13 @@ void pdb_hdd_on();
  * Turn off HDDs
  */
 void pdb_hdd_off();
+
+/**
+ * Turn on rf
+ */
+void pdb_rf_on();
+
+/**
+ * Turn off rf
+ */
+void pdb_rf_off();

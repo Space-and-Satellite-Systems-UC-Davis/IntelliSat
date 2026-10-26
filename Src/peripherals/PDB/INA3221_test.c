@@ -4,34 +4,66 @@
 #include "SunSensors/TMP275.h"
 
 void testFunction_INA3221() {
-	softi2c_init(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
+	gpio_mode(
+			INA3221_SDA_PORT,
+			INA3221_SDA_PIN,
+			GPIO_MODER_Output,
+			GPIO_OTYPER_PUSH_PULL,
+			GPIO_OSPEEDR_HIGH,
+			GPIO_PUPDR_NO_PULL
+	);
+	gpio_mode(
+			INA3221_SCL_PORT,
+			INA3221_SCL_PIN,
+			GPIO_MODER_Output,
+			GPIO_OTYPER_PUSH_PULL,
+			GPIO_OSPEEDR_HIGH,
+			GPIO_PUPDR_NO_PULL
+	);
 
-	static int resolution = 0;
-	static float resolution_conversion = 0;
+	for(int i = 0; i < 3; i++) {
+		gpio_low(INA3221_SDA_PORT, INA3221_SDA_PIN);
+		gpio_high(INA3221_SCL_PORT, INA3221_SCL_PIN);
+		delay_ms(1000);
 
-    int config = RESOLUTION_12 << 5;
-
-	softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 1);
-	softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
-    while(true) {
-//		softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 1);
-//		softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
-        softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, TMP0_ADDRESS, 1, config);
-
-        resolution = 12;
-        resolution_conversion = RESOLUTION_CONVERSION_12;
-
-        int16_t temp = softi2c_readReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, TMP0_ADDRESS, 0);
-        volatile float real_temp = (temp >> (16-resolution))* resolution_conversion;
-
-//        int16_t id = softi2c_readReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, TMP0_ADDRESS, 0);
-//        volatile float real_temp = (temp >> (16-resolution))* resolution_conversion;
-//
-//		softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 1);
-//		softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
-        delay_ms(1000);
-    }
+		gpio_high(INA3221_SDA_PORT, INA3221_SDA_PIN);
+		gpio_low(INA3221_SCL_PORT, INA3221_SCL_PIN);
+		delay_ms(1000);
+	}
+	gpio_high(INA3221_SDA_PORT, INA3221_SDA_PIN);
+	gpio_high(INA3221_SCL_PORT, INA3221_SCL_PIN);
 }
+
+
+// void testFunction_INA3221() {
+// 	softi2c_init(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN);
+
+// 	static int resolution = 0;
+// 	static float resolution_conversion = 0;
+
+//     int config = RESOLUTION_12 << 5;
+
+// 	softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 1);
+// 	softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
+//     while(true) {
+// //		softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 1);
+// //		softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
+//         softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, TMP0_ADDRESS, 1, config);
+
+//         resolution = 12;
+//         resolution_conversion = RESOLUTION_CONVERSION_12;
+
+//         int16_t temp = softi2c_readReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, TMP0_ADDRESS, 0);
+//         volatile float real_temp = (temp >> (16-resolution))* resolution_conversion;
+
+// //        int16_t id = softi2c_readReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT, INA3221_SDA_PIN, TMP0_ADDRESS, 0);
+// //        volatile float real_temp = (temp >> (16-resolution))* resolution_conversion;
+// //
+// //		softi2c_lineMode(INA3221_SCL_PORT, INA3221_SCL_PIN, 1);
+// //		softi2c_lineMode(INA3221_SDA_PORT, INA3221_SDA_PIN, 1);
+//         delay_ms(1000);
+//     }
+// }
 
 //void testFunction_INA3221() {
 ////	ina3221_init(0, 4, 4, 68, 30);
