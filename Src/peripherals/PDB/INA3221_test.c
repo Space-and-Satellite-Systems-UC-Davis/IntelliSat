@@ -4,34 +4,7 @@
 #include "SunSensors/TMP275.h"
 
 void testFunction_INA3221() {
-	gpio_mode(
-			INA3221_SDA_PORT,
-			INA3221_SDA_PIN,
-			GPIO_MODER_Output,
-			GPIO_OTYPER_PUSH_PULL,
-			GPIO_OSPEEDR_HIGH,
-			GPIO_PUPDR_NO_PULL
-	);
-	gpio_mode(
-			INA3221_SCL_PORT,
-			INA3221_SCL_PIN,
-			GPIO_MODER_Output,
-			GPIO_OTYPER_PUSH_PULL,
-			GPIO_OSPEEDR_HIGH,
-			GPIO_PUPDR_NO_PULL
-	);
-
-	for(int i = 0; i < 3; i++) {
-		gpio_low(INA3221_SDA_PORT, INA3221_SDA_PIN);
-		gpio_high(INA3221_SCL_PORT, INA3221_SCL_PIN);
-		delay_ms(1000);
-
-		gpio_high(INA3221_SDA_PORT, INA3221_SDA_PIN);
-		gpio_low(INA3221_SCL_PORT, INA3221_SCL_PIN);
-		delay_ms(1000);
-	}
-	gpio_high(INA3221_SDA_PORT, INA3221_SDA_PIN);
-	gpio_high(INA3221_SCL_PORT, INA3221_SCL_PIN);
+	ina3221_init();
 }
 
 

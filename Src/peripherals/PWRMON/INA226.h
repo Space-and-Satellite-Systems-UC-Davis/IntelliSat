@@ -137,12 +137,3 @@ float pwrmon_getCurrent(GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
  */
 void pwrmon_setMode(int mode);
 
-
-/**
- * Helper function to round up calculations to nearest number
- * @param num
- * 
- * @returns num rounded up
- */
-int ceiling(float num);
-
