@@ -18,20 +18,44 @@
 typedef enum INA3221_REG_ENUM {
     CONFIG_REG = 0x0,
     CH1_SHUNT_REG = 0x01,
-    // CH1_BUS_REG = 0x02,
+    CH1_BUS_REG = 0x02,
     CH2_SHUNT_REG = 0x03,
-    // CH2_BUS_REG = 0x04,
+    CH2_BUS_REG = 0x04,
     CH3_SHUNT_REG = 0x05,
-    // CH3_BUS_REG = 0x06,
+    CH3_BUS_REG = 0x06,
     FAB_ID_REG = 0xFE,
     DIE_ID_REG = 0xFF
 } INA3221_REG;
 
 typedef enum INA3221_MODE_ENUM {
     SHUNT_SINGLE_SHOT = 0x1,
-    SHUNT_CONTINUOUS = 0x5
+    SHUNT_CONTINUOUS = 0x5,
+    SHUNT_BUS_CONTINUOUS = 0x7
+
 } INA3221_MODE;
 
+//number of averages
+typedef enum INA3221_AVG_ENUM {
+    AVERAGE_1 = 0,
+    AVERAGE_4,
+    AVERAGE_16,
+    AVERAGE_64,
+    AVERAGE_128,
+    AVERAGE_256,
+    AVERAGE_512
+} INA3221_AVG;
+
+//conversion times in microseconds
+typedef enum INA3221_CONVERT_ENUM {
+    CONVERT_140 = 0,
+    CONVERT_204,
+    CONVERT_332,
+    CONVERT_588,
+    CONVERT_1100,
+    CONVERT_2116,
+    CONVERT_4156,
+    CONVERT_8244
+} INA3221_CONVERT_ENUM;
 
 //Macros for the INA3221 pins
 #define INA3221_SDA_PORT GPIOC
@@ -50,12 +74,10 @@ typedef enum INA3221_MODE_ENUM {
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
- * @param rshunt The value of the external shunt used in milliohms
- * @param max_current The value of the maximum current
  *
  * @returns None
  */
-void ina3221_init(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
+void ina3221_init(int averages, int bus_time, int shunt_time);
 
 /**
  * Initial configuration of the sun sensor's config register and calibration register
@@ -63,12 +85,10 @@ void ina3221_init(int averages, int bus_time, int shunt_time, int rshunt, int ma
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements
  * @param shunt_time The conversion time for shunt voltage measurements
- * @param rshunt The value of the external shunt used in milliohms
- * @param max_current The value of the maximum current in Amps
  *
  * @returns None
  */
-void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
+void ina3221_config(int averages, int bus_time, int shunt_time);
 
 /**
  * Reads the shunt voltage from the sun sensor
@@ -116,5 +136,17 @@ float ina3221_getCurrent(uint8_t address, INA3221_REG channel,
  * @returns None
  */
 void ina3221_setMode(uint8_t mode);
+
+/**
+ * Reads die ID of monitor
+ * @param address: Address for 1 of 2 monitors
+ * @param scl_port: i2c port for scl
+ * @param scl_pin: i2c scl pin
+ * @param sda_port: i2c port sda
+ * @param sda_pin: i2c sda_pin
+ * @returns die ID
+ */
+uint16_t ina3221_getDieID(uint8_t address,
+    GPIO_TypeDef* scl_port, int scl_pin, GPIO_TypeDef* sda_port, int sda_pin);
 
 #endif /* PERIPHERALS_PWRMON_INA3221_H_ */

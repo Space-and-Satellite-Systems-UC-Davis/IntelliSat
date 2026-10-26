@@ -134,6 +134,21 @@
   */
  int softi2c_readNack(GPIO_TypeDef *scl_port, int scl_pin, GPIO_TypeDef *sda_port, int sda_pin);
  
+  /**
+  * Writes the register address to modify the register pointer
+  * NOTE: Created for INA3221
+  *
+  * @param scl_port The GPIO port of the SCL pin.
+  * @param scl_pin The pin number of the SCL pin.
+  * @param sda_port The GPIO port of the SDA pin.
+  * @param sda_pin The pin number of the SDA pin.
+  * @param device_addr The address of the device to write to.
+  * @param reg_addr The address of the register to write to.
+  *
+  * @returns The number of NACKs received during the write operation.
+  */
+ int softi2c_setRegister(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr);
+
  /**
   * Writes data to a register of a device using software I2C.
   *

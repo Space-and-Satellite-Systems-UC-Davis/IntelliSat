@@ -60,7 +60,7 @@
  }
  
  void softi2c_delay() {
-	 nop(100);
+	 nop(50);
 //	 nop(10);
  }
  
@@ -198,7 +198,27 @@
 	 softi2c_lineMode(scl_port, scl_pin, 0);
  }
  
+ int softi2c_setRegister(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr) {
+	 
+	 int nack = 0;
  
+	 //start i2c
+	 softi2c_sigStart(scl_port,scl_pin,sda_port,sda_pin);
+	 //send device address w/ read/write pin low for write
+	 softi2c_send8(scl_port,scl_pin,sda_port,sda_pin, device_addr << 1 | 0);
+	 //get an acknowledge
+	 nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
+ 
+	 //send register address
+	 softi2c_send8(scl_port,scl_pin,sda_port,sda_pin,reg_addr);
+	 //get an ack
+	 nack += softi2c_readNack(scl_port,scl_pin,sda_port,sda_pin);
+ 
+	 //stop 
+	 softi2c_sigStop(scl_port,scl_pin,sda_port,sda_pin);
+	 return nack;
+ }
+
  int softi2c_writeReg16(GPIO_TypeDef * scl_port, int scl_pin, GPIO_TypeDef * sda_port, int sda_pin, int device_addr, int reg_addr, int data) {
 	 
 	 int nack = 0;

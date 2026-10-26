@@ -5,32 +5,30 @@
  */
 
 #include "INA3221.h"
+#include "I2C/i2c.h"
+#include <stdint.h>
 
 /*************************** Parameters *************************/
-static int current_lsb; //in microamps
 static int16_t config;
 
 int ceil(float num){
     return num - (int)num > 0 ? (int)num + 1: (int)num;
 }
 
-void ina3221_init(int averages, int bus_time, int shunt_time,
-    int rshunt, int max_current) {
+void ina3221_init(int averages, int bus_time, int shunt_time) {
     softi2c_init(INA3221_SCL_PORT, INA3221_SCL_PIN, INA3221_SDA_PORT,
         INA3221_SDA_PIN);
-    ina3221_config(averages, bus_time, shunt_time, rshunt, max_current);
+    ina3221_config(averages, bus_time, shunt_time);
 }
 
-void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current){
+void ina3221_config(int averages, int bus_time, int shunt_time){
     // TODO: Check later. Must enable all channels. Technically identical
     config = 0x7 << 12 // Enable all channels
         | averages << 9 
         | bus_time << 6 
         | shunt_time << 3
-        | SHUNT_CONTINUOUS << 0;
+        | SHUNT_BUS_CONTINUOUS << 0;
         // | SHUNT_SINGLE_SHOT;
-
-    current_lsb = ceil(max_current / 32768.0 * MICRO); //2^15
 
     //Monitor 0
     softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, 
@@ -57,23 +55,18 @@ void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int 
         set_mode(MODE_POWERED_DOWN, false);
 }*/
 
-float ina3221_getShuntVoltage(uint8_t address, INA3221_REG channel,
-    GPIO_TypeDef* gpio, int scl_pin, int sda_pin) {
-    int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, address, channel);
-
-    return output * .0025;
-}
-
 float ina3221_getPower(uint8_t address, INA3221_REG channel,
     GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
     int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, address, channel);
-    return output * current_lsb/(double)MICRO * 25; 
+    return output;
+    // return output * current_lsb/(double)MICRO * 25; 
 }
 
 float ina3221_getCurrent(uint8_t address, INA3221_REG channel,
     GPIO_TypeDef* gpio, int scl_pin, int sda_pin){
     int16_t output = softi2c_readReg16(gpio,scl_pin, gpio, sda_pin, address, channel);
-    return output * current_lsb / (double)MICRO;
+    return output;
+    // return output * current_lsb / (double)MICRO;
 }
 
 void ina3221_setMode(uint8_t mode){
@@ -88,4 +81,15 @@ void ina3221_setMode(uint8_t mode){
     softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, 
         INA3221_SDA_PORT, INA3221_SDA_PIN, 
         INA3221_ADDR_1, CONFIG_REG, changed_config);
+}
+
+uint16_t ina3221_getDieID(uint8_t address, GPIO_TypeDef* scl_port, 
+    int scl_pin, GPIO_TypeDef* sda_port, int sda_pin) {    
+    // Set register pointer
+    // softi2c_setRegister(scl_port, scl_pin, sda_port, sda_pin, address,
+    //     DIE_ID_REG);
+
+    uint16_t id = softi2c_readReg16(scl_port, scl_pin, sda_port, sda_pin, address, DIE_ID_REG);
+
+    return id;
 }
