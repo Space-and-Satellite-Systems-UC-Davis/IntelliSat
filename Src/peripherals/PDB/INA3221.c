@@ -10,7 +10,7 @@
 static int current_lsb; //in microamps
 static int16_t config;
 
-int ceiling(float num){
+int ceil(float num){
     return num - (int)num > 0 ? (int)num + 1: (int)num;
 }
 
@@ -30,7 +30,7 @@ void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int 
         | SHUNT_CONTINUOUS << 0;
         // | SHUNT_SINGLE_SHOT;
 
-    current_lsb = ceiling(max_current / 32768.0 * MICRO); //2^15
+    current_lsb = ceil(max_current / 32768.0 * MICRO); //2^15
 
     //Monitor 0
     softi2c_writeReg16(INA3221_SCL_PORT, INA3221_SCL_PIN, 

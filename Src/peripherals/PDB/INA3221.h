@@ -11,7 +11,6 @@
 
 //Battery INA address
 #define INA3221_ADDR_0 0x40
-
 // The other one
 #define INA3221_ADDR_1 0x41
 
@@ -71,7 +70,6 @@ void ina3221_init(int averages, int bus_time, int shunt_time, int rshunt, int ma
  */
 void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int max_current);
 
-
 /**
  * Reads the shunt voltage from the sun sensor
  * @param address: Address for 1 of 2 monitors
@@ -83,20 +81,6 @@ void ina3221_config(int averages, int bus_time, int shunt_time, int rshunt, int 
  * @returns Voltage in mV
  */
 float ina3221_getShuntVoltage(uint8_t address, INA3221_REG channel,
-		GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
-
-
-/**
- * Reads the bus voltage from the sun sensor
- * @param address: Address for 1 of 2 monitors
- * @param channel: Channel index for 1 of 3 channels
- * @param gpio: i2c port for scl and sda
- * @param scl_pin: i2c scl pin
- * @param sda_pin: i2c sda_pin
- *
- * @returns Voltage in Volts
- */
-float ina3221_getBusVoltage(uint8_t address, INA3221_REG channel,
 		GPIO_TypeDef* gpio, int scl_pin, int sda_pin);
 
 /**

@@ -4,7 +4,9 @@
 #include "SunSensors/TMP275.h"
 
 void testFunction_INA3221() {
-	ina3221_init();
+	ina3221_init(0, 4, 4, 68, 30);
+    ina3221_getShuntVoltage(INA3221_ADDR_0, CH1_SHUNT_REG,
+		INA3221_SDA_PORT, INA3221_SCL_PIN, INA3221_SDA_PIN);
 }
 
 
