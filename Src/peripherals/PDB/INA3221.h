@@ -9,38 +9,34 @@
 
 #include <I2C/i2c.h>
 
-//Address
-// TODO: THESE ARE COPIED, GET REAL VALUES
-//Address
-// Possible either 0x40 or 0x41 address
-#define INA3221_ADDRESS 0x40
-//#define INA3221_ADDRESS 0x41
+//Battery INA address
+#define INA3221_ADDR_0 0x40
 
-//#define INA3221_ADDRESS 0x42
-//#define INA3221_ADDRESS 0x43
+// The other one
+#define INA3221_ADDR_1 0x41
 
-//#define INA3221_ADDRESS 0x6
-//#define INA3221_ADDRESS 0x7
+typedef enum INA3221_REG_ENUM {
+    CONFIG_REG = 0x0,
+    CH1_SHUNT_REG = 0x01,
+    // CH1_BUS_REG = 0x02,
+    CH2_SHUNT_REG = 0x03,
+    // CH2_BUS_REG = 0x04,
+    CH3_SHUNT_REG = 0x05,
+    // CH3_BUS_REG = 0x06,
+    FAB_ID_REG = 0xFE,
+    DIE_ID_REG = 0xFF
+}INA3221_REG;
 
-//#define INA3221_ADDRESS 0x1
-//#define INA3221_ADDRESS 0x0
+typedef enum INA3221_MODE_ENUM {
+    SHUNT_SINGLE_SHOT = 0b001
+}INA3221_REG;
 
-#define CONFIG_REGISTER 0
-#define CAL_REGISTER 5
-
-////Macros for the INA3221 pins
-//#define INA3221_SDA_PORT GPIOF
-//#define INA3221_SCL_PORT GPIOF
-//#define INA3221_SDA_PIN 14
-//#define INA3221_SCL_PIN 15
 
 //Macros for the INA3221 pins
-#define INA3221_SDA_PORT GPIOE
-#define INA3221_SCL_PORT GPIOD
+#define INA3221_SDA_PORT GPIOC
+#define INA3221_SCL_PORT GPIOC
 #define INA3221_SDA_PIN 8
-#define INA3221_SCL_PIN 14
-
-#define MODE_CONTINUOUS     7
+#define INA3221_SCL_PIN 7
 
 //number conversions
 #define MICRO 1000000
@@ -48,7 +44,7 @@
 
 
 /**
- * Initializes PDB voltage monitor with I2c, and calls config function
+ * Initializes PDB voltage monitor with I2C and calls config function
  *
  * @param averages Number of samples to collect and average
  * @param bus_time The conversion time for bus voltage measurements

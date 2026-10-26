@@ -3,5 +3,6 @@
         "globals.h": "c",
         "cmath": "c"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "cmake.sourceDirectory": "/Users/redlik/Code/IntelliSat/FreeRTOS/Source/include"
 }
