@@ -16,6 +16,7 @@ int crc_wait(USART_TypeDef *bus) {
     int count = 0;
     for(int i = 0; i<10; i++){
         count = usart_receiveBytes(bus, ack, sizeof(ack));
+        if (count < 1) continue; /* No byte was received; do not inspect ack. */
         if (ack[0] == 'A'){
             acked = true;
             break;
@@ -86,7 +87,7 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
         ack = crc_wait(bus);
         if (ack != -1) break;
     }
-    return ack;
+    return ack == 1;
 }
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
@@ -94,13 +95,19 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     memset(buffer, 0, sizeof(buffer));
     uint8_t temp[1];
     int size = 0;
-    do{
+    bool escaped = false;
+    bool terminated = false;
+    while (size < MAX_MESSAGE_BYTES) {
         int count = usart_receiveBytes(bus, temp, 1);
-        if(count == 0) break;
-        buffer[size] = temp[0];
-        size++;
-    }while(buffer[size-1] != ';' && size <= MAX_MESSAGE_BYTES);
-    if (size <= 0) return -1;
+        if (count != 1) break;
+        buffer[size++] = temp[0];
+        if (!escaped && temp[0] == ';') {
+            terminated = true;
+            break;
+        }
+        escaped = !escaped && temp[0] == '\\';
+    }
+    if (!terminated || size < 2) return -1;
     if (crc_remainder(buffer, size)) return -1;
     if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
     crc_ack(bus);
@@ -132,11 +139,11 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
             memcpy(&subchunk[1], payload + i*lchunks, lchunks);
             bytes_copied += lchunks;
 
-            if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
+            if (!crc_transmit(bus, subchunk, lchunks + 1)) return false;
         } else {
         	// Copy remainder. Avoid sending random junk
             memcpy(&subchunk[1], payload + i*lchunks, nbytes-bytes_copied);
-            if (!crc_transmit(bus, subchunk, nbytes-bytes_copied+1)) return -1;
+            if (!crc_transmit(bus, subchunk, nbytes-bytes_copied+1)) return false;
         }
     }
     return cumulative_success;
