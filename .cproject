@@ -6,6 +6,7 @@
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -28,7 +29,7 @@
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.convertbinary.1978046145" name="Convert to binary file (-O binary)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.convertbinary" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.converthex.6079345" name="Convert to Intel Hex file (-O ihex)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.converthex" useByScannerDiscovery="false" value="false" valueType="boolean"/>
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoprintffloat.393499144" name="Use float with printf from newlib-nano (-u _printf_float)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoprintffloat" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.63284046" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.63284046" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
 							<builder buildPath="${workspace_loc:/Proj}/Debug" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.2079898057" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.258654456" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.940409933" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.value.g3" valueType="enumerated"/>
@@ -423,9 +424,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="FreeRTOS"/>
-						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runnersstartup/tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|startup/tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry excluding="data_management/littlefs/scripts|data_management/littlefs/tests|data_management/littlefs/benches|data_management/littlefs/runners|startup/tests|ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runnersstartup/tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runners|data_management/littlefs/scripts|data_management/littlefs/tests|data_management/littlefs/benches|startup/tests|startup_tests|unit_tests|simulations" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
 					</sourceEntries>
 				</configuration>
@@ -437,6 +436,7 @@
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -457,7 +457,7 @@
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.defaults.553305069" name="Defaults" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.defaults" useByScannerDiscovery="false" value="com.st.stm32cube.ide.common.services.build.inputs.revA.1.0.6 || Release || false || Executable || com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.value.workspace || STM32L476ZGTx || 0 || 0 || arm-none-eabi- || ${gnu_tools_for_stm32_compiler_path} || ../Inc ||  ||  || STM32L4 | STM32 | STM32L476ZGTx ||  || Src | Startup | Inc ||  ||  || ${workspace_loc:/${ProjName}/STM32L476ZGTX_FLASH.ld} || true || NonSecure ||  ||  ||  || None ||  ||  || " valueType="string"/>
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoprintffloat.898530898" name="Use float with printf from newlib-nano (-u _printf_float)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoprintffloat" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.convertbinary.1550093811" name="Convert to binary file (-O binary)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.convertbinary" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.1864970309" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.1864970309" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
 							<builder buildPath="${workspace_loc:/Proj}/Release" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.2131154847" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.1157178077" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.567855594" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.value.g0" valueType="enumerated"/>
@@ -757,10 +757,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="FreeRTOS"/>
-						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runners|startup/tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-
-						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|startup/tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry excluding="data_management/littlefs/scripts|data_management/littlefs/tests|data_management/littlefs/benches|ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runners|startup/tests" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry excluding="ADCS/determination/novasc3.1/checkout-mp.c|ADCS/determination/novasc3.1/checkout-stars-full.c|ADCS/determination/novasc3.1/checkout-stars.c|ADCS/determination/novasc3.1/cio_file.c|ADCS/determination/novasc3.1/example.c|ADCS/determination/novasc3.1/solsys2.c|ADCS/determination/novasc3.1/solsys3.c|ADCS/determination/pos_lookup/sgp4/src/c/TestSGP4.c|ADCS/groundstation|data_management/littlefs/bd|data_management/littlefs/runners|data_management/littlefs/scripts|data_management/littlefs/tests|data_management/littlefs/benches|startup/tests|startup_tests|unit_tests|simulations" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
 					</sourceEntries>
 				</configuration>
@@ -782,5 +779,10 @@
 			<resource resourceType="PROJECT" workspacePath="/IntelliSat"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.2146917372;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.2146917372.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.103575512;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1618841485">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
 </cproject>
