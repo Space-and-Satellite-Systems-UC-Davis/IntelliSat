@@ -19,6 +19,9 @@
 #include <GPIO/gpio.h>
 #include <string.h>
 
+extern volatile bool gotUplink;
+
+
 /*
  * Initializes the UART hardware to conduct UART communication with
  * 1 start bit, 8 data bits, 1 stop bits, No parity
@@ -76,5 +79,7 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
  * @param bus		The USART Bus that will be receiving
  */
 void usart_flushrx(USART_TypeDef* bus);
+
+void setCommunicatingRadio(bool isCommunicating);
 
 #endif	// REALOP1_UART_H_

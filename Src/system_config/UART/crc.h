@@ -46,6 +46,6 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
 /**
  * Read a series of chunks of length <= lchunks
  */
-int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks);
+int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int nchunks);
 
 #endif /* SYSTEM_CONFIG_UART_CRC_H_ */
