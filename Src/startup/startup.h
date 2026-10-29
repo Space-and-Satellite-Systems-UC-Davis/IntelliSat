@@ -38,14 +38,14 @@ static uint8_t handshake_step3_msg[] = "READY";
 /* Exact role tokens only; these are not authentication or replay protection. */
 static bool received_uplink(void) {
     uint8_t chunk[MAX_PAYLOAD_BYTES];
-    RadioPacket packet = radio_force_pull(chunk);
+    RadioPacket packet = radio_force_pull(chunk, sizeof chunk);
     return packet.size > 0 && packet.size <= sizeof(chunk) &&
            packet.size == 5 && memcmp(chunk, "START", 5) == 0;
 }
 
 static bool received_ground_signal(void) {
     uint8_t chunk[MAX_PAYLOAD_BYTES];
-    RadioPacket packet = radio_force_pull(chunk);
+    RadioPacket packet = radio_force_pull(chunk, sizeof chunk);
     return packet.size > 0 && packet.size <= sizeof(chunk) &&
            packet.size == 3 && memcmp(chunk, "ACK", 3) == 0;
 }

@@ -12,6 +12,7 @@
  * Initialize power pins for output
  */
 void pdb_init() {
+    pdb_pyro_off(); /* Clear the latch before selecting output mode. */
    // PDB_PWR_^_PORT->MODER &= ~(GPIO_MODER_Analog << (PDB_PWR_^_PIN*GPIO_MODER_BITS_SPAN));
    // PDB_PWR_^_PORT->MODER |= (GPIO_MODER_Output & GPIO_MODER_Analog) << (PDB_PWR_^_PIN*GPIO_MODER_BITS_SPAN);
    PDB_PWR_PYRO_PORT->MODER &= ~(GPIO_MODER_Analog << (PDB_PWR_PYRO_PIN*GPIO_MODER_BITS_SPAN));

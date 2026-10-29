@@ -45,9 +45,10 @@ bool are_talking() {
  * @returns success or failure
  */
 bool radio_push(uint8_t chunk[], size_t nbytes) {
+    if (!chunk || nbytes == 0 || nbytes > RADIO_MAX_DOWNLINK_BYTES) return false;
     if (!are_talking()) return false;
     setCommunicatingRadio(true);    
-    uint8_t header[2];
+    uint8_t header[3];
     header[0] = 'D';
     header[1] = ((nbytes - 1) / CHUNK_LENGTH) + 1;
     header[2] = nbytes % CHUNK_LENGTH; //remainder, to calculate total num bytes
@@ -59,6 +60,8 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
         setCommunicatingRadio(false);
         return transmitted;
     }
+    setCommunicatingRadio(false);
+    return false;
 }
 
 /**
@@ -68,14 +71,20 @@ bool radio_push(uint8_t chunk[], size_t nbytes) {
  * 
  * @returns number of bytes read and the data type
  */
-RadioPacket radio_force_pull(uint8_t chunk[]) {
-    RadioPacket fail = {-1, 'u'};
-    if (!are_talking()) return fail;
-    if (!crc_transmit(RADIO_USART, "U", 1)) return fail;
+RadioPacket radio_force_pull(uint8_t chunk[], size_t capacity) {
+    RadioPacket result = {(size_t)-1, 'u'};
+    if (!chunk || capacity == 0 || !are_talking()) return result;
+    setCommunicatingRadio(true);
     uint8_t buffer[MAX_PAYLOAD_BYTES];
-    crc_read(RADIO_USART, buffer);
-    int totalBytes = (buffer[1]-1) * CHUNK_LENGTH + buffer[2];
-    return radio_pull(chunk, totalBytes, buffer[3]);
+    if (crc_transmit(RADIO_USART, "U", 1) &&
+        crc_read(RADIO_USART, buffer) == 4 &&
+        buffer[0] == 'U' && buffer[1] != 0 &&
+        buffer[2] > 0 && buffer[2] <= CHUNK_LENGTH && buffer[3] == Unflagged) {
+        size_t total = (size_t)(buffer[1] - 1) * CHUNK_LENGTH + buffer[2];
+        if (total <= capacity) result = radio_pull(chunk, total, buffer[3]);
+    }
+    setCommunicatingRadio(false);
+    return result;
 }
 
 /**
@@ -90,11 +99,16 @@ RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType data
     RadioPacket fail;
     fail.size = 0;
     fail.datatype = 0;
+    if (!chunk || nbytes == 0 || nbytes > (size_t)CHUNK_LENGTH * MAX_UINT8_T)
+        return fail;
     if (!are_talking()) return fail;
     int nchunks = (nbytes-1)/CHUNK_LENGTH + 1;
-    crc_chunked_read(RADIO_USART, chunk, nchunks);
+    setCommunicatingRadio(true);
+    int received = crc_chunked_read(RADIO_USART, chunk, nchunks, nbytes);
+    setCommunicatingRadio(false);
+    if (received < 0 || (size_t)received != nbytes) return fail;
     RadioPacket success;
-    success.size = nbytes;
+    success.size = (size_t)received;
     success.datatype = datatype;
     return success;
 }
@@ -106,13 +120,17 @@ RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType data
  * @returns the state
  */
 PFC2RadioState radio_get_state() {
-    if (!are_talking()) return Idle;
+    if (!are_talking()) return RadioStateUnknown;
     setCommunicatingRadio(true);
-    crc_transmit(RADIO_USART, "S", 1);
-    PFC2RadioState buffer[MAX_PAYLOAD_BYTES];
-    crc_read(RADIO_USART, buffer);
+    PFC2RadioState state = RadioStateUnknown;
+    uint8_t buffer[MAX_PAYLOAD_BYTES];
+    if (crc_transmit(RADIO_USART, "S", 1) &&
+        crc_read(RADIO_USART, buffer) == 1 &&
+        (buffer[0] == TXactive || buffer[0] == RXactive || buffer[0] == Idle)) {
+        state = (PFC2RadioState)buffer[0];
+    }
     setCommunicatingRadio(false);
-    return buffer[0];
+    return state;
 }
 
 /**
@@ -138,22 +156,26 @@ bool radio_downlink(uint8_t chunk[], size_t nchunks) {
 }
 
 
-int radio_uplink(uint8_t chunk[]){
-    int read_status = crc_read(RADIO_USART, chunk);
-    if (read_status == -1) {
-        return -1;
-    }
+int radio_uplink(uint8_t chunk[], size_t capacity) {
+    if (!chunk || capacity == 0) return -1;
+    setCommunicatingRadio(true);
+    uint8_t header[MAX_PAYLOAD_BYTES];
+    int size = crc_read(RADIO_USART, header);
     int i = 0;
-    while(chunk[i] != 'U'){
-        if(chunk[i++] != 0x00 || i >= read_status)
-            return -1;
+    while (i < size && header[i] == 0) ++i; /* Preserve PR #121's zero padding. */
+    int received = -1;
+    if (size - i == 4 && header[i] == 'U' && header[i + 1] != 0 &&
+        header[i + 2] > 0 && header[i + 2] <= CHUNK_LENGTH &&
+        header[i + 3] == Unflagged) {
+        int nchunks = header[i + 1];
+        size_t total = (size_t)(nchunks - 1) * CHUNK_LENGTH + header[i + 2];
+        if (total <= capacity) {
+            int actual = crc_chunked_read(RADIO_USART, chunk, nchunks, total);
+            if (actual >= 0 && (size_t)actual == total) received = actual;
+        }
     }
-    int numchunks = chunk[i+1];
-    int remainder = chunk[i+2];
-    crc_chunked_read(RADIO_USART, chunk, numchunks);
-    if(remainder != 0)
-        numchunks --;
-    return numchunks * CHUNK_LENGTH + remainder;
+    setCommunicatingRadio(false);
+    return received;
 }
 
 void echo() {

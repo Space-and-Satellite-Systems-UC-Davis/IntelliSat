@@ -149,16 +149,16 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
     return cumulative_success;
 }
 
-int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int nchunks) {
+int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int nchunks, size_t capacity) {
+    if (!buf || capacity == 0 || nchunks <= 0 || nchunks > 256) return -1;
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = 0;
     for (int i = 0; i < nchunks; i++) {
         int size = crc_read(bus, subchunk);
-        // Giving a negative value for the third argument of memcpy is an error
-        if (size-1 < 0) continue;
-        memcpy(buf + read, &subchunk[1], size-1);
-        if (subchunk[0] == i) read += size-1;
-        if (subchunk[0] >= nchunks) return -1;
+        if (size <= 1 || subchunk[0] != i ||
+            (size_t)(size - 1) > capacity - (size_t)read) return -1;
+        memcpy(buf + read, &subchunk[1], (size_t)(size - 1));
+        read += size - 1;
     }
     return read;
 }

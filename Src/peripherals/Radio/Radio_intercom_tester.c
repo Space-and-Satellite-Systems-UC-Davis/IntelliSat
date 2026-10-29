@@ -10,7 +10,7 @@ void testFunction_RadioIntercom() {
     char chunk[3000];
     while(true){
         if(gotUplink){
-            int size = radio_uplink(chunk);
+            int size = radio_uplink(chunk, sizeof chunk);
             printMsg("GOT UPLINK! %d\r\n", size);
             for(int i = 0; i<size; i++){
                 printMsg("%c", chunk[i]);
@@ -28,7 +28,7 @@ void testFunction_RadioIntercom() {
         printMsg("State: %d\r\n", radio_get_state());
         delay_ms(1000);
         initEmptyChunk(str);
-        // RadioPacket packet = radio_force_pull(str);
+        // RadioPacket packet = radio_force_pull(str, sizeof str);
         // printMsg("Radio-->PFC received: \r\n");
         // for(int i = 0; i<packet.size; i++){
         //     printMsg("%c", str[i]);
@@ -43,7 +43,7 @@ void testFunction_RadioIntercom() {
         printMsg("Chunk is: '%s'\r\n", chunk);
         printMsg("I'm alive!\r\n");
         printMsg("%d\r\n", radio_push(chunk, sizeof chunk));
-        printMsg("%d\r\n", radio_force_pull(chunk).size);
+        printMsg("%d\r\n", radio_force_pull(chunk, sizeof chunk).size);
         printMsg("Chunk is: '%s'\r\n", chunk);
         printMsg("%c\r\n", radio_get_state());
         printMsg("%d\r\n", radio_downlink(chunk, 4));

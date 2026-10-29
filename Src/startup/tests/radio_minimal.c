@@ -6,7 +6,7 @@
 
 USART_TypeDef test_usart;
 static unsigned checks, tx_calls, tx_fail_at, read_at, read_count;
-static uint8_t sent[16][32], incoming[256][MAX_PAYLOAD_BYTES];
+static uint8_t sent[16][MAX_PAYLOAD_BYTES], incoming[256][MAX_PAYLOAD_BYTES];
 static int sent_size[16], incoming_size[256];
 #define CHECK(condition) do { ++checks; if (!(condition)) { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #condition); exit(1); \
@@ -18,7 +18,8 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t *p, uint16_t n) {
 }
 void printMsg(const char *format, ...) { (void)format; }
 bool mgt_killall(void) { return false; }
-log_record_idle fill_log_idle(void) { return (log_record_idle){{0}}; }
+void setCommunicatingRadio(bool value) { (void)value; }
+log_record_idle fill_log_idle(void) { return (log_record_idle){0}; }
 
 bool crc_transmit(USART_TypeDef *bus, uint8_t *p, int n) {
     CHECK(bus == USART1 && p && n > 0 && n <= (int)sizeof(sent[0]));
@@ -45,22 +46,23 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
         int count = nbytes - bytes_copied;
         if (count > lchunks) count = lchunks;
         memcpy(subchunk + 1, payload + i * lchunks, (size_t)count);
-        if (!crc_transmit(bus, subchunk, count + 1)) return -1;
+        if (!crc_transmit(bus, subchunk, count + 1)) return false;
         bytes_copied += count;
     }
     return true;
 }
-int crc_chunked_read(USART_TypeDef *bus, uint8_t *buffer, int lchunks, int nchunks) {
+/* Legacy payload-level fixture. tests/radio also links the real CRC source. */
+int crc_chunked_read(USART_TypeDef *bus, uint8_t *buffer, int nchunks, size_t capacity) {
+    if (!buffer || !capacity || nchunks <= 0 || nchunks > 256) return -1;
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = 0;
     for (int i = 0; i < nchunks; ++i) {
         int size = crc_read(bus, subchunk);
-        if (size - 1 < 0) continue;
+        if (size <= 1 || subchunk[0] != i ||
+            (size_t)(size - 1) > capacity - (size_t)read) return -1;
         memcpy(buffer + read, subchunk + 1, (size_t)(size - 1));
-        if (subchunk[0] == i) read += size - 1;
-        if (subchunk[0] >= nchunks) return -1;
+        read += size - 1;
     }
-    (void)lchunks;
     return read;
 }
 
@@ -97,18 +99,18 @@ static void test_push(void) {
     const uint8_t payload[] = "123456789";
     reset();
     CHECK(radio_push((uint8_t *)payload, sizeof(payload) - 1));
-    CHECK(tx_calls == 4 && sent_size[1] == 3 && sent[1][0] == 'D'
-          && sent[1][1] == 2 && sent[1][2] == 1);
-    CHECK(sent_size[2] == 9 && sent[2][0] == 0
-          && !memcmp(sent[2] + 1, payload, 8));
-    CHECK(sent_size[3] == 2 && sent[3][0] == 1 && sent[3][1] == '9');
+    CHECK(tx_calls == 3 && sent_size[1] == 3 && sent[1][0] == 'D'
+          && sent[1][1] == 1 && sent[1][2] == 9);
+    CHECK(sent_size[2] == 10 && sent[2][0] == 0
+          && !memcmp(sent[2] + 1, payload, 9));
     reset();
-    const uint8_t full[] = "12345678";
-    CHECK(radio_push((uint8_t *)full, 8));
-    CHECK(sent[1][1] == 1 && sent[1][2] == CHUNK_LENGTH);
-    CHECK(sent_size[2] == CHUNK_LENGTH + 1 && sent[2][0] == 0
-          && !memcmp(sent[2] + 1, full, CHUNK_LENGTH));
-    for (unsigned failed = 1; failed <= 4; ++failed) {
+    uint8_t full[50];
+    memset(full, 'X', sizeof full);
+    CHECK(radio_push(full, sizeof full));
+    CHECK(sent[1][1] == 1 && sent[1][2] == 50);
+    CHECK(sent_size[2] == 51 && sent[2][0] == 0
+          && !memcmp(sent[2] + 1, full, sizeof full));
+    for (unsigned failed = 1; failed <= 3; ++failed) {
         reset();
         tx_fail_at = failed;
         CHECK(!radio_push((uint8_t *)payload, sizeof(payload) - 1));
@@ -124,38 +126,38 @@ static void test_force_pull(void) {
     struct { uint8_t before, data[MAX_PAYLOAD_BYTES], after; } out;
     memset(&out, 0, sizeof(out)); out.before = 0xa5; out.after = 0x5a;
     reset(); response(payload, 9, 'u');
-    RadioPacket packet = radio_force_pull(out.data);
+    RadioPacket packet = radio_force_pull(out.data, sizeof out.data);
     CHECK(packet.size == 9 && packet.datatype == 'u' && !memcmp(out.data, payload, 9));
     CHECK(out.before == 0xa5 && out.after == 0x5a);
 
     reset();
-    packet = radio_force_pull(NULL);
+    packet = radio_force_pull(NULL, sizeof out.data);
     CHECK(packet.size == (size_t)-1 && read_at == 0);
     reset(); frame(0, (uint8_t[]){'U', 1, 3, 'u'}, 3);
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
     reset(); frame(0, (uint8_t[]){'U', 0, 3, 'u'}, 4);
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
     reset(); frame(0, (uint8_t[]){'U', 1, 0, 'u'}, 4);
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
-    reset(); frame(0, (uint8_t[]){'U', 1, 9, 'u'}, 4);
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
+    reset(); frame(0, (uint8_t[]){'U', 1, 51, 'u'}, 4);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
     reset(); frame(0, (uint8_t[]){'U', 32, 8, 'u'}, 4);
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
     reset(); tx_fail_at = 2;
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 0);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 0);
     reset(); frame(0, (uint8_t[]){'U', 1, 3, 'u'}, -1);
-    packet = radio_force_pull(out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == (size_t)-1 && read_at == 1);
 
     reset(); response(payload, 9, 'u'); incoming[1][0] = 1;
-    packet = radio_force_pull(out.data);
+    packet = radio_force_pull(out.data, sizeof out.data);
     CHECK(packet.size == 0 && out.before == 0xa5 && out.after == 0x5a);
-    reset(); response(payload, 9, 'u'); incoming_size[1] = 10;
-    packet = radio_force_pull(out.data);
+    reset(); response(payload, 9, 'u'); incoming_size[1] = 11;
+    packet = radio_force_pull(out.data, sizeof out.data);
     CHECK(packet.size == 0 && out.before == 0xa5 && out.after == 0x5a);
     reset(); response(payload, 9, 'u'); incoming_size[1] = 0;
-    packet = radio_force_pull(out.data); CHECK(packet.size == 0);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == 0);
     reset(); response(payload, 9, 'u'); incoming_size[1] = -1;
-    packet = radio_force_pull(out.data); CHECK(packet.size == 0);
+    packet = radio_force_pull(out.data, sizeof out.data); CHECK(packet.size == 0);
 }
 
 static void test_pull_and_state(void) {
@@ -194,13 +196,13 @@ static void test_pull_and_state(void) {
     packet = radio_pull(out.data, 3, UploadData); CHECK(packet.size == 0);
     reset(); CHECK(radio_pull(out.data, 0, UploadData).size == 0);
     reset(); tx_fail_at = 1;
-    CHECK(radio_get_state() == Idle);
+    CHECK(radio_get_state() == RadioStateUnknown);
     reset(); tx_fail_at = 2;
-    CHECK(radio_get_state() == Idle);
+    CHECK(radio_get_state() == RadioStateUnknown);
     reset(); frame(0, (uint8_t[]){TXactive}, 1);
     CHECK(radio_get_state() == TXactive);
     reset(); frame(0, (uint8_t[]){TXactive}, -1);
-    CHECK(radio_get_state() == Idle);
+    CHECK(radio_get_state() == RadioStateUnknown);
 }
 
 int main(void) {

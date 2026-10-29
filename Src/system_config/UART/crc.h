@@ -44,8 +44,11 @@ int crc_read(USART_TypeDef* bus, uint8_t* buf);
 bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int lchunks);
 
 /**
- * Read a series of chunks of length <= lchunks
+ * Read indexed chunks into at most capacity bytes. Returns the actual byte
+ * count, or -1 on frame, index or capacity failure. Earlier chunks may have
+ * been copied on failure; callers must not use them as a completed transfer.
+ * A CRC ACK confirms the frame, not application acceptance or buffer storage.
  */
-int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int nchunks);
+int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int nchunks, size_t capacity);
 
 #endif /* SYSTEM_CONFIG_UART_CRC_H_ */

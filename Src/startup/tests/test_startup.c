@@ -219,14 +219,15 @@ void startup_request_reset(void) {
     longjmp(run_env, 1);
 }
 
-RadioPacket radio_force_pull(uint8_t *chunk) {
+RadioPacket radio_force_pull(uint8_t *chunk, size_t capacity) {
+    require(capacity == MAX_PAYLOAD_BYTES, "diagnostic receive must pass its real buffer size");
     require(!pyro_on, "radio activity while the pyro is commanded ON");
     ++pulls;
     now_ms += poll_cost_ms;
     if (pulls < start_available_at_pull) return (RadioPacket){0, 0};
     if (input_pos >= input_count || now_ms < inputs[input_pos].not_before) return (RadioPacket){0, 0};
     Input input = inputs[input_pos++];
-    if (input.size > 0 && input.size <= MAX_PAYLOAD_BYTES && input.bytes != NULL) {
+    if (input.size > 0 && input.size <= capacity && input.bytes != NULL) {
         memcpy(chunk, input.bytes, input.size);
     }
     event(RX);

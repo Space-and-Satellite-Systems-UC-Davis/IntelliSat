@@ -20,6 +20,8 @@
 #define RADIO_USART USART1
 #define PFC2Radio_BAUDRATE 9600
 #define CHUNK_LENGTH 50
+/* Peer reserves whole chunks and rejects >= 30 chunks, even when empty. */
+#define RADIO_MAX_DOWNLINK_BYTES (CHUNK_LENGTH * 29)
 #define MAX_UINT8_T 255
 
 typedef enum {
@@ -37,6 +39,7 @@ typedef enum {
 } PFC2RadioUploadFlag;
 
 typedef enum {
+    RadioStateUnknown = 0, //No validated state response (local error, not a wire value)
     TXactive = 't', //Busy tranceiving data to ground station
 	RXactive = 'r', //Busy receiving data from ground station
     Idle = 'o', //Not busy
@@ -66,16 +69,17 @@ bool radio_push(uint8_t chunk[], size_t nbytes);
  * Force the radio to send data to the PFC
  * 
  * @param chunk  A storage location for the data to be received
+ * @param capacity  Size of that storage in bytes; oversized headers are rejected
  * 
  * @returns number of bytes read and the data type
  */
-RadioPacket radio_force_pull(uint8_t chunk[]);
+RadioPacket radio_force_pull(uint8_t chunk[], size_t capacity);
 
 /**
  * Receive data from the radio. This should be called by a signal handler.
  * I assume the first packet has already been received and processed.
  * 
- * @param chunk  an empty storage vessel
+ * @param chunk  An output array with at least nbytes bytes of storage
  * 
  * @returns number of bytes read and the data type
  */
@@ -85,7 +89,7 @@ RadioPacket radio_pull(uint8_t chunk[], size_t nbytes, PFC2RadioMessageType data
  * Retrieve the radio's state
  * (t: transferring to earth, r: receiving from earth, o: neither)
  * 
- * @returns the state
+ * @returns the validated state, or RadioStateUnknown on communication failure
  */
 PFC2RadioState radio_get_state();
 
@@ -116,10 +120,13 @@ bool radio_downlink_idle_log();
 
 /**
  * @param chunk An array to store the uplink data
- * 
- * @returns number of bytes uplinked
+ * @param capacity Size of that array in bytes
+ *
+ * @returns Actual byte count for a complete valid transfer, or -1 on failure.
+ * Failure does not establish a completed transfer or an empty peer; partial
+ * output must not be used. Uses the existing CRC ACKs, not an application ACK.
  */
-int radio_uplink(uint8_t chunk[]);
+int radio_uplink(uint8_t chunk[], size_t capacity);
 
 
 void radio_getLastUplink(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *hour, uint8_t *minute, uint8_t *second);

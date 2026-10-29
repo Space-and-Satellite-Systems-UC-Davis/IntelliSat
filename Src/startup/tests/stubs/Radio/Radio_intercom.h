@@ -13,4 +13,4 @@ typedef struct {
 bool radio_push(uint8_t chunk[], size_t nbytes);
 bool radio_downlink(uint8_t chunk[], size_t nchunks);
 void radio_init(void);
-RadioPacket radio_force_pull(uint8_t chunk[]);
+RadioPacket radio_force_pull(uint8_t chunk[], size_t capacity);
