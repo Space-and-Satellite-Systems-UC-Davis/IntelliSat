@@ -22,6 +22,10 @@ void testFunction_IMU_AcelGyro_Reads() {
 			gyro_X = ((int16_t)imu_readGyro_X() * 35.0) / 1000;
 			gyro_Y = ((int16_t)imu_readGyro_Y() * 35.0) / 1000;
 			gyro_Z = ((int16_t)imu_readGyro_Z() * 35.0) / 1000;
+
+			printMsg("acel_X: %f, acel_Y: %f, acel_Z: %f \r\n", acel_X, acel_Y, acel_Z);
+			printMsg("gyro_X: %f, gyro_Y: %f, gyro_Z: %f \r\n", gyro_X, gyro_Y, gyro_Z);
+			printMsg("\r\n");
 		}
 	}
 }

@@ -69,8 +69,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_watchdog;
 		case 16:
 			return testFunction_mgtIntercom;
-		case 17:
-			return testFunction_AssTest;
+//		case 17:
+//			return testFunction_AssTest;
 		case 18:
 			return testFunction_RTC_Alarm;
 		case 19:
