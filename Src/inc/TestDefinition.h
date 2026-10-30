@@ -81,8 +81,6 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RadioIntercom;
 		case 23:
 			return testFunction_LPSleep;
-		case 24:
-			return testFunction_INA3221;
 		case 26:
 			return testFunction_RTC_storage;
 		case 27:
@@ -93,6 +91,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_DMA_USART;
 		case 30:
 			return testFunction_LogDownlink;
+		case 31:
+			return testFunction_INA3221;
 		case 32:
 			return testFunction_RTC2FRAM;
 		case 33:

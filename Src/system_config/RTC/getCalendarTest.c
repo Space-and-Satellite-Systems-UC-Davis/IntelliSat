@@ -16,8 +16,8 @@ void testFunction_getCalendar(void) {
     printer_init();
     printMsg("RTC Calendar Test Start: \r\n");
 
-		// For testing, waiting 5 sec
-		delay_loops(50000000);
+	// For testing, waiting 5 sec
+	delay_ms(5000);
 
     // Init RTC using driver, LSE (Low Speed External) as source
     // Unknown if board has no crystal, but if not can change LSE to LSI or so
@@ -47,8 +47,7 @@ void testFunction_getCalendar(void) {
             printMsg("!!! HAPPY NEW YEAR (Rollover Successful) !!!\r\n");
         }
 
-        // Delay ~1 second for readable output
-        // This value should depend on CPU clock, might have to start with 1,000,000 and adjust
-        delay_loops(1000000);
+        // Delay 1 second for readable output
+        delay_ms(1000);
     }
 }

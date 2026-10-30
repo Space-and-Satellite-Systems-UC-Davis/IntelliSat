@@ -11,7 +11,7 @@
 // WARNING: THIS TEST REQUIRES SEVERAL RUNS.
 void testFunction_RTC_storage() {
 	// Uncomment if you want to clear first flag
-	// FRAM_writeDWord(FRAM_BOOT_COUNTER_ADDR, 0);
+	FRAM_writeDWord(FRAM_BOOT_COUNTER_ADDR, 0);
 	switch (FRAM_getBootCounter()) {
 		case 0:
 			printMsg("Flag is in Default after-erase state. This should not happen if called after init\n");
@@ -30,31 +30,31 @@ void testFunction_RTC_storage() {
 
 	printMsg("First time: %s\n", first ? "true" : "false");
 
-	printMsg("State of previous ADCS Variables: %d\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
+	printMsg("State of previous ADCS Variables: %u\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
 
 	// Clear ADCS vars
 	FRAM_writeDWord(FRAM_ADCS_VARIABLE_ADDR, 1);
-	printMsg("State of cleared ADCS Variables: %d\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
+	printMsg("State of cleared ADCS Variables: %u\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
 
 	FRAM_writeToADCSVariable(true, Sun0);
 	FRAM_writeToADCSVariable(true, Sun1);
 	FRAM_writeToADCSVariable(true, Coil1);
 	FRAM_writeToADCSVariable(true, Hdd0);
 
-	printMsg("New state ADCS Variables: %d\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
+	printMsg("New state ADCS Variables: %u\n", FRAM_readDWord(FRAM_ADCS_VARIABLE_ADDR));
 
-	printMsg("State of variable at offset Sun1: %d\n", FRAM_readFromADCSVariable(Sun1));
-	printMsg("State of variable at offset Hdd0: %d\n", FRAM_readFromADCSVariable(Hdd0));
-	printMsg("State of variable at offset Hdd1: %d\n", FRAM_readFromADCSVariable(Hdd1));
+	printMsg("State of variable at offset Sun1: %u\n", FRAM_readFromADCSVariable(Sun1));
+	printMsg("State of variable at offset Hdd0: %u\n", FRAM_readFromADCSVariable(Hdd0));
+	printMsg("State of variable at offset Hdd1: %u\n", FRAM_readFromADCSVariable(Hdd1));
 
 	nop(1);
 
-	/* EXPECTED OUTPUT, ASSUMING ONE CLEARS THE FIRST TIME FLAG AAND THEN RUNS
+	/* EXPECTED OUTPUT, ASSUMING ONE CLEARS THE FIRST TIME FLAG AND THEN RUNS
 	Flag has been initialized to First time state
 
 	First time: true
 	State of previous ADCS Variables: 532483
-	State of cleared ADCS Variables: 0
+	State of cleared ADCS Variables: 1
 	New state ADCS Variables: 532483
 	State of variable at offset Sun1: 1
 	State of variable at offset Hdd0: 1

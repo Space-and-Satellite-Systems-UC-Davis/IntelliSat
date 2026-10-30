@@ -21,9 +21,6 @@ void testFunction_LPSleep() {
   RCC->BDCR |= RCC_BDCR_LSEON;
   backup_domain_controlDisable();
 
-  // Window Watchdog not planned to be used
-  WWDG->CR &= ~WWDG_CR_WDGA;
-
   rtc_config(LSE, true);
   printMsg("\r\nStart LPSleep, LSE, Expected 100 seconds\r\n");
   PWR_enterLPSleepMode(100);
@@ -40,9 +37,7 @@ void testFunction_LPSleep() {
   PWR_enterLPSleepMode(300);
   printMsg("\r\nLPSleep Over\n");
 
-  while (true) {
-    printMsg("SUCCESS\r\n");
-  }
+  printMsg("SUCCESS\r\n");
 }
 
 void testFunction_mgtSleep() {

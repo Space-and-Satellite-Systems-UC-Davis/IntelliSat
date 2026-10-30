@@ -38,19 +38,19 @@ void testFunction_RTC_Alarm() {
 
 	// Check if entry is there
 	printMsg("Is entry active: %d\n\r", rtc_isEntryActive(id));
-	printMsg("When entry is going to be called: %d\n\r", rtc_getEntry(id).unix_time);
+	printMsg("When entry is going to be called: %u\n\r", rtc_getEntry(id).unix_time);
 
-	printMsg("Deleting of one shot entry response: %d\n\r", rtc_deleteEntry(id));
+	printMsg("Deleting of one shot entry response: %u\n\r", rtc_deleteEntry(id));
 
 	// Check if entry is there after deleting it
-	printMsg("Is deleted one shot entry active: %d\n\r", rtc_isEntryActive(id));
+	printMsg("Is deleted one shot entry active: %u\n\r", rtc_isEntryActive(id));
 	// Expect 134232923
-	printMsg("When entry is going to be called: %d\n\r", rtc_getEntry(id).unix_time);
+	printMsg("When entry is going to be called: %u\n\r", rtc_getEntry(id).unix_time);
 
 	// // Make sure continuous entry stops
-	printMsg("Deleting of continous entry response: %d\n\r", rtc_deleteEntry(id2));
+	printMsg("Deleting of continuous entry response: %u\n\r", rtc_deleteEntry(id2));
 	// Check if continuous entry is there
-	printMsg("Is deleted continous entry active: %d\n\r", rtc_isEntryActive(id2));
+	printMsg("Is deleted continuous entry active: %u\n\r", rtc_isEntryActive(id2));
 
 
 	// Kill everything
@@ -61,11 +61,11 @@ void testFunction_RTC_Alarm() {
 	 * 	Starting RTC alarm test
 	 * 	Is entry active: 1
 	 * 	When entry is going to be called: 35
-	 * 	Deleting of entry response: 1
+	 * 	Deleting of one shot entry response: 1
 	 * 	Is deleted one shot entry active: 0
-	 * 	When entry is going to be called: 134232923
-	 *  Deleting of continous entry: 1
-	 *	Is deleted continous entry active: 0
+	 * 	When entry is going to be called: 4294967295
+	 *  Deleting of continuous entry response: 1
+	 *	Is deleted continuous entry active: 0
 	 * 	Do something 1
 	 * 	Do something 4
 	 * 	Do something 2

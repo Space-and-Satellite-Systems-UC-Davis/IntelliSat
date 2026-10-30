@@ -18,6 +18,9 @@ void testFunction_INA_TMP_Outputs()
         power = sun_sensors_readPower(PANEL0);
         current = sun_sensors_readCurrent(PANEL0);
         temp = sun_sensors_readTemp(PANEL0, TEMP0);
+
+        printMsg("Voltage: %f, Bus Voltage: %f, Shunt Voltage %f, Power: %f, Current: %f, Temperature: %f",
+        		voltage, bus_voltage, shunt_voltage, power, current, temp);
     }
 
 

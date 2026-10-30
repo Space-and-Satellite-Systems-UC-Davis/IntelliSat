@@ -12,6 +12,7 @@ void testFunction_IMU_Dupe_Reads() {
 			imu_printAllValues();
 			set_IMU(IMU1);
 			imu_printAllValues();
+			printMsg("\r\n");
 		}
 	}
 }

@@ -468,5 +468,5 @@ void imu_printAllValues() {
 	printMsg("X: %f\n", imu_readAcel_X());
 	printMsg("Y: %f\n", imu_readAcel_Y());
 	printMsg("Z: %f\n", imu_readAcel_Z());
-	printMsg("%f\n", imu_readTemp());
+	printMsg("Temp: %f\n", imu_readTemp());
 }

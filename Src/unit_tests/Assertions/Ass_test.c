@@ -1,5 +1,5 @@
 #include "Ass.h"
-
+#include <globals.h>
 
 void testFunction_AssTest() {
 	printMsg("\r\n\r\n---- Starting Unit Tests ----\r\n");
